@@ -1,5 +1,7 @@
 import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
+import { LegalDisclaimer } from "@/components/shared/legal-disclaimer";
+import { LogoMark } from "@/components/shared/logo-mark";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Lock, CheckCircle2, Star, Shield, FileText, Crown, Zap, Flame, Heart, Cookie, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -127,6 +129,18 @@ export default function LandingPage() {
 
   const [showBackToTop, setShowBackToTop] = useState(false);
 
+  const { data: foundingSlots } = useQuery<{ total: number; remaining: number }>({
+    queryKey: ["/api/billing/founding-slots"],
+    queryFn: async () => {
+      const res = await fetch("/api/billing/founding-slots");
+      return res.json();
+    },
+  });
+
+  const remaining = foundingSlots?.remaining ?? 100;
+  const total = foundingSlots?.total ?? 100;
+  const percentClaimed = Math.round(((total - remaining) / total) * 100);
+
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       navigate("/dashboard");
@@ -151,7 +165,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-20 md:pb-0">
+    <div className="min-h-screen bg-gradient-to-b from-[#FDFBF7] via-[#F8F6F1] to-secondary/20 pb-20 md:pb-0">
       <Navbar />
 
       <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6 overflow-hidden">
@@ -461,6 +475,73 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section className="py-16 px-6" id="founding">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <GlassCard className="p-8 md:p-12 border-primary/20 bg-gradient-to-br from-primary/[0.03] to-accent/[0.03] relative overflow-hidden" hoverEffect={false}>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+              <div className="relative">
+                <div className="flex items-center justify-center gap-2 mb-6">
+                  <div className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-lg shadow-primary/20">
+                    <Flame size={12} /> Founder's Circle
+                  </div>
+                  {remaining > 0 && (
+                    <span className="bg-accent/10 text-accent px-3 py-1.5 rounded-full text-xs font-bold">
+                      {remaining} of {total} left
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-2xl md:text-3xl font-serif text-primary text-center mb-3 flex items-center justify-center gap-2">
+                  <Crown size={22} className="text-accent" /> Founding Member Access
+                </h3>
+                <p className="text-muted-foreground text-center leading-relaxed mb-6 max-w-lg mx-auto">
+                  Lock in lifetime access to ClinicalPlay for a one-time payment of <span className="font-bold text-primary">$99</span>. No subscription. No recurring fees. Just full access, forever.
+                </p>
+
+                {remaining > 0 && (
+                  <div className="max-w-sm mx-auto mb-6">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+                      <span>{percentClaimed}% claimed</span>
+                      <span className="font-semibold text-primary">{remaining} spots remaining</span>
+                    </div>
+                    <div className="w-full bg-primary/10 rounded-full h-2 overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-accent to-primary rounded-full"
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${percentClaimed}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1, delay: 0.3 }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Link href="/signup">
+                    <button
+                      className="h-12 px-8 rounded-full bg-primary text-primary-foreground font-medium shadow-xl shadow-primary/20 hover:scale-105 transition-transform active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      data-testid="button-founding-member-cta"
+                      disabled={remaining <= 0}
+                    >
+                      <Crown size={16} />
+                      {remaining > 0 ? "Claim Your Founding Spot — $99" : "Sold Out"}
+                    </button>
+                  </Link>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Lock size={10} /> One-time payment. Lifetime access.
+                  </p>
+                </div>
+              </div>
+            </GlassCard>
+          </motion.div>
+        </div>
+      </section>
+
       <section className="py-16 px-6">
         <div className="max-w-3xl mx-auto">
           <motion.div
@@ -489,11 +570,8 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-linear-to-tr from-primary to-accent flex items-center justify-center">
-                  <span className="text-white font-serif font-bold text-sm">C</span>
-                </div>
-                <span className="font-serif font-bold text-lg text-primary">ClinicalPlay</span>
+              <div className="mb-4">
+                <LogoMark size="md" />
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 A premium telehealth platform for evidence-based therapeutic engagement.
@@ -552,6 +630,7 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
+          <LegalDisclaimer />
         </div>
       </footer>
 

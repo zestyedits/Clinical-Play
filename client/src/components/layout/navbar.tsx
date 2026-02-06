@@ -4,6 +4,7 @@ import { Home, LayoutDashboard, Library, UserCircle, LogOut, Menu, X, Sparkles, 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
+import { LogoMark } from "@/components/shared/logo-mark";
 
 function PreLaunchBanner({ onDismiss, visible }: { onDismiss: () => void; visible: boolean }) {
   if (!visible) return null;
@@ -152,11 +153,8 @@ export function Navbar() {
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Link href="/" className="flex items-center gap-3 no-underline" data-testid="link-home-logo">
-          <div className="w-8 h-8 rounded-full bg-linear-to-tr from-primary to-accent flex items-center justify-center">
-            <span className="text-white font-serif font-bold text-lg">C</span>
-          </div>
-          <span className="font-serif font-bold text-xl text-primary tracking-tight">ClinicalPlay</span>
+        <Link href="/" className="no-underline" data-testid="link-home-logo">
+          <LogoMark size="md" />
         </Link>
 
         <div className="flex items-center gap-8">
@@ -233,11 +231,8 @@ export function Navbar() {
             ? "bg-white/80 backdrop-blur-xl border-b border-white/30 shadow-sm"
             : "bg-white/40 backdrop-blur-md"
         )}>
-          <Link href="/" className="flex items-center gap-2 no-underline">
-            <div className="w-8 h-8 rounded-full bg-linear-to-tr from-primary to-accent flex items-center justify-center shadow-md">
-              <span className="text-white font-serif font-bold">C</span>
-            </div>
-            <span className="font-serif font-bold text-lg text-primary">ClinicalPlay</span>
+          <Link href="/" className="no-underline">
+            <LogoMark size="sm" />
           </Link>
           <div className="flex items-center gap-2">
             {!isAuthenticated && (

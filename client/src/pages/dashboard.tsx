@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
+import { LegalDisclaimer } from "@/components/shared/legal-disclaimer";
 import {
   Plus, Users, Calendar, ArrowRight, Copy, CheckCircle2, Crown, Flame,
   CreditCard, Star, Lock, Sparkles, Lightbulb, ExternalLink, HelpCircle,
@@ -932,6 +933,10 @@ export default function Dashboard() {
             )}
           </AnimatePresence>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 pb-24 md:pb-8">
+        <LegalDisclaimer />
       </div>
 
       <NewSessionModal
