@@ -308,7 +308,7 @@ export default function Dashboard() {
     return "sessions";
   });
   const queryClient = useQueryClient();
-  const { user, isLoading: authLoading, isAuthenticated, session } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated, accessDenied, session, logout } = useAuth();
   const { toast } = useToast();
   const authFetch = createAuthFetch(session?.access_token);
 
@@ -469,6 +469,35 @@ export default function Dashboard() {
             <span className="text-2xl">✨</span>
           </div>
           <p className="text-muted-foreground font-medium" data-testid="text-loading">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+        <Navbar />
+        <div className="flex items-center justify-center min-h-screen px-6">
+          <GlassCard className="max-w-md w-full p-10 text-center" hoverEffect={false}>
+            <div className="w-16 h-16 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+              <Lock size={28} className="text-primary/60" />
+            </div>
+            <h2 className="text-2xl font-serif text-primary mb-3">We Haven't Launched Yet</h2>
+            <p className="text-muted-foreground leading-relaxed mb-6">
+              ClinicalPlay is currently in private preview. We're putting the finishing touches on the platform and will be opening access soon.
+            </p>
+            <p className="text-sm text-muted-foreground/70 mb-6">
+              Stay tuned — we'll let you know as soon as you can get started.
+            </p>
+            <button
+              onClick={() => logout()}
+              className="w-full py-3 rounded-xl bg-primary/10 text-primary font-medium hover:bg-primary/15 transition-colors cursor-pointer text-sm"
+              data-testid="button-access-denied-logout"
+            >
+              Sign Out
+            </button>
+          </GlassCard>
         </div>
       </div>
     );

@@ -4,6 +4,8 @@ import { db } from "./db";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
 
+const ALLOWED_EMAILS = ["clinicalplayapp@gmail.com"];
+
 export interface AuthUser {
   id: string;
   email: string;
@@ -57,11 +59,16 @@ export const isAuthenticated: RequestHandler = async (req: Request, res: Respons
       return res.status(401).json({ message: "Unauthorized" });
     }
 
+    const email = user.email || "";
+    if (!ALLOWED_EMAILS.includes(email.toLowerCase())) {
+      return res.status(403).json({ message: "Access restricted. ClinicalPlay has not launched yet." });
+    }
+
     await upsertUser(user);
 
     req.authUser = {
       id: user.id,
-      email: user.email || "",
+      email,
     };
 
     return next();

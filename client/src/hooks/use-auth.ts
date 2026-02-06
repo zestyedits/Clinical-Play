@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import type { User } from "@shared/models/auth";
 
-async function fetchUser(session: Session | null): Promise<User | null> {
-  if (!session?.access_token) return null;
+async function fetchUser(session: Session | null): Promise<{ user: User | null; accessDenied: boolean }> {
+  if (!session?.access_token) return { user: null, accessDenied: false };
 
   const response = await fetch("/api/auth/user", {
     headers: {
@@ -13,9 +13,11 @@ async function fetchUser(session: Session | null): Promise<User | null> {
     },
   });
 
-  if (response.status === 401) return null;
+  if (response.status === 401) return { user: null, accessDenied: false };
+  if (response.status === 403) return { user: null, accessDenied: true };
   if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
-  return response.json();
+  const user = await response.json();
+  return { user, accessDenied: false };
 }
 
 export function useAuth() {
@@ -54,13 +56,16 @@ export function useAuth() {
     };
   }, [queryClient]);
 
-  const { data: user, isLoading: userLoading } = useQuery<User | null>({
+  const { data: authResult, isLoading: userLoading } = useQuery({
     queryKey: ["/api/auth/user", session?.access_token],
     queryFn: () => fetchUser(session),
     enabled: !sessionLoading && !!session,
     retry: false,
     staleTime: 1000 * 60 * 5,
   });
+
+  const user = authResult?.user ?? null;
+  const accessDenied = authResult?.accessDenied ?? false;
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
@@ -75,9 +80,10 @@ export function useAuth() {
   });
 
   return {
-    user: session ? user ?? null : null,
+    user: session ? user : null,
     isLoading: sessionLoading || (!!session && userLoading),
     isAuthenticated: !!session && !!user,
+    accessDenied,
     session,
     logout: logoutMutation.mutate,
     isLoggingOut: logoutMutation.isPending,
