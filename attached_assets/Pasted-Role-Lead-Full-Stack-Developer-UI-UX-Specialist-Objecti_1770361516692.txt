@@ -1,0 +1,41 @@
+Role: Lead Full-Stack Developer & UI/UX Specialist. Objective: Transition ClinicalPlay.app from a functional prototype to a secure, high-end SaaS platform by implementing Authentication, polished UI, and the "Clinical Hub" framework.
+
+1. Secure Authentication & Multi-Tenancy (Clinicians Only)
+
+    Requirement: Implement a robust Authentication system using Lucia Auth or Supabase Auth.
+
+    Logic: * Clinicians must Sign Up/Log In to create sessions.
+
+        Participants (clients) remain anonymous and join via the 6-character inviteCode only.
+
+    Database Update: Link the sessions table to a real users (Clinician) table. Ensure clinicians can only see and manage their own sessions.
+
+2. UI/UX "Luxury" Refinement
+
+    The "No-Box" Aesthetic: Audit the current Tailwind components. Remove harsh borders. Use backdrop-blur-md, bg-white/10, and shadow-xl with very large border-radii (24px+).
+
+    Typography & Motion: Ensure all headings use Lora and body text uses Inter with generous letter spacing. Add Framer Motion "Entrance" animations to the Dashboard and Playroom (staggered fades).
+
+    Asset Drawer: Upgrade the Asset Library sidebar to a "dock" style at the bottom for mobile, and a translucent floating panel for desktop.
+
+3. The "Clinical Hub" Expansion (New Tool Scaffold)
+
+    The Goal: Clinicians need to see that more games are coming.
+
+    Implementation: * Create a "Tool Selector" modal in the Playroom.
+
+        Implement a second, simple tool: "The Calm Breathing Guide." This is a synchronized SVG "breathing bubble" that the clinician can start/stop for the group. It should pulse in size and color (Soft Sage to Deep Navy) in sync for all users.
+
+        Add "Coming Soon" cards in the Tool Selector for "Thought Bridge (CBT)" and "Feeling Wheel."
+
+4. Group Session Enhancements
+
+    Moderator Privacy: Implement a "Clinician View" toggle. When active, the clinician can see a private "Clinical Insights" panel (built in Phase 1's vision) that provides prompts for the current tool (e.g., "Ask the client: Which object represents your boundary?").
+
+    Presence Polish: Improve the "Participant List." Instead of just dots, show subtle "Active" pulses when a participant moves an item on the canvas.
+
+5. Mobile-First Optimization
+
+    Ensure the navigation bar collapses into a sleek bottom-bar on mobile.
+
+    Ensure the inviteCode is large and easy to copy-paste from the dashboard on a phone.
