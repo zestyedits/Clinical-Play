@@ -5,7 +5,7 @@ import {
   Plus, Users, Calendar, ArrowRight, Copy, CheckCircle2, Crown, Flame,
   CreditCard, Star, Lock, Sparkles, Lightbulb, ExternalLink, HelpCircle,
   Palette, Wind, Target, Clock, Layers, House, Brain, Gamepad2, TreePine, Theater,
-  X, User, UserPlus
+  X, User, UserPlus, Mail, RefreshCw
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -309,7 +309,7 @@ export default function Dashboard() {
     return "sessions";
   });
   const queryClient = useQueryClient();
-  const { user, isLoading: authLoading, isAuthenticated, accessDenied, session, logout } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated, emailConfirmed, accessDenied, session, logout } = useAuth();
   const { toast } = useToast();
   const authFetch = createAuthFetch(session?.access_token);
 
@@ -443,6 +443,20 @@ export default function Dashboard() {
     },
     onSuccess: (data: { url: string }) => {
       if (data.url) window.open(data.url, "_blank");
+    },
+  });
+
+  const resendVerification = useMutation({
+    mutationFn: async () => {
+      const res = await authFetch("/api/auth/resend-verification", { method: "POST" });
+      if (!res.ok) throw new Error("Failed to resend verification email");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Verification email sent", description: "Please check your inbox and spam folder." });
+    },
+    onError: () => {
+      toast({ title: "Could not send email", description: "Please try again in a moment.", variant: "destructive" });
     },
   });
 
@@ -862,6 +876,34 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 pb-24 md:pb-10 pt-24 md:pt-32 px-4 md:px-8">
       <Navbar />
+
+      {isAuthenticated && !emailConfirmed && (
+        <div className="max-w-7xl mx-auto mb-4">
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/60 backdrop-blur-sm"
+            data-testid="banner-email-verification"
+          >
+            <div className="shrink-0 w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
+              <Mail size={16} className="text-amber-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-amber-900">Please verify your email</p>
+              <p className="text-xs text-amber-700/70">Check your inbox for a confirmation link to activate your account.</p>
+            </div>
+            <button
+              onClick={() => resendVerification.mutate()}
+              disabled={resendVerification.isPending}
+              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-100 hover:bg-amber-200/80 text-amber-800 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+              data-testid="button-resend-verification"
+            >
+              <RefreshCw size={12} className={resendVerification.isPending ? "animate-spin" : ""} />
+              Resend
+            </button>
+          </motion.div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto">
         <motion.div

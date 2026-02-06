@@ -4,8 +4,14 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import type { User } from "@shared/models/auth";
 
-async function fetchUser(session: Session | null): Promise<{ user: User | null; accessDenied: boolean }> {
-  if (!session?.access_token) return { user: null, accessDenied: false };
+interface AuthResult {
+  user: User | null;
+  accessDenied: boolean;
+  emailConfirmed: boolean;
+}
+
+async function fetchUser(session: Session | null): Promise<AuthResult> {
+  if (!session?.access_token) return { user: null, accessDenied: false, emailConfirmed: false };
 
   const response = await fetch("/api/auth/user", {
     headers: {
@@ -13,11 +19,12 @@ async function fetchUser(session: Session | null): Promise<{ user: User | null; 
     },
   });
 
-  if (response.status === 401) return { user: null, accessDenied: false };
-  if (response.status === 403) return { user: null, accessDenied: true };
+  if (response.status === 401) return { user: null, accessDenied: false, emailConfirmed: false };
+  if (response.status === 403) return { user: null, accessDenied: true, emailConfirmed: false };
   if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
-  const user = await response.json();
-  return { user, accessDenied: false };
+  const data = await response.json();
+  const { emailConfirmed, ...user } = data;
+  return { user, accessDenied: false, emailConfirmed: !!emailConfirmed };
 }
 
 export function useAuth() {
@@ -66,6 +73,7 @@ export function useAuth() {
 
   const user = authResult?.user ?? null;
   const accessDenied = authResult?.accessDenied ?? false;
+  const emailConfirmed = authResult?.emailConfirmed ?? false;
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
@@ -83,6 +91,7 @@ export function useAuth() {
     user: session ? user : null,
     isLoading: sessionLoading || (!!session && userLoading),
     isAuthenticated: !!session && !!user,
+    emailConfirmed,
     accessDenied,
     session,
     logout: logoutMutation.mutate,

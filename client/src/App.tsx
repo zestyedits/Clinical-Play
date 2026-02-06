@@ -16,6 +16,7 @@ import FAQ from "@/pages/faq";
 import Contact from "@/pages/contact";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
+import EmailConfirmed from "@/pages/email-confirmed";
 
 function PageTransition({ children }: { children: React.ReactNode }) {
   return (
@@ -47,6 +48,7 @@ function Router() {
         <Route path="/contact">{() => <PageTransition><Contact /></PageTransition>}</Route>
         <Route path="/login">{() => <PageTransition><Login /></PageTransition>}</Route>
         <Route path="/signup">{() => <PageTransition><Signup /></PageTransition>}</Route>
+        <Route path="/email-confirmed">{() => <PageTransition><EmailConfirmed /></PageTransition>}</Route>
         <Route>{() => <PageTransition><NotFound /></PageTransition>}</Route>
       </Switch>
     </AnimatePresence>

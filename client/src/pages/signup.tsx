@@ -36,6 +36,7 @@ export default function Signup() {
             firstName,
             lastName,
           },
+          emailRedirectTo: `${window.location.origin}/email-confirmed`,
         },
       });
 
@@ -64,9 +65,7 @@ export default function Signup() {
         >
           <div className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl shadow-primary/5 p-8 md:p-10">
             <div className="text-center mb-8">
-              <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-linear-to-tr from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
-                <span className="text-white font-serif font-bold text-2xl">C</span>
-              </div>
+              <img src="/images/logo-icon.png" alt="ClinicalPlay" className="w-14 h-14 mx-auto mb-4 object-contain" />
               <h1 className="text-3xl font-serif text-primary mb-2" data-testid="text-signup-title">Create Account</h1>
               <p className="text-muted-foreground">Join ClinicalPlay and start your first session</p>
             </div>

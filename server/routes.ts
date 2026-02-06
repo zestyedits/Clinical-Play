@@ -5,6 +5,7 @@ import { insertTherapySessionSchema, insertParticipantSchema, insertSandtrayItem
 import { setupWebSocketServer } from "./websocket";
 import { isAuthenticated } from "./auth";
 import { registerStripeRoutes } from "./stripe";
+import { supabaseAdmin } from "./supabase";
 import { db } from "./db";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
@@ -26,10 +27,27 @@ export async function registerRoutes(
       const userId = req.authUser.id;
       const [user] = await db.select().from(users).where(eq(users.id, userId));
       if (!user) return res.status(404).json({ message: "User not found" });
-      res.json(user);
+      res.json({ ...user, emailConfirmed: req.authUser.emailConfirmed });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  app.post("/api/auth/resend-verification", isAuthenticated, async (req: any, res) => {
+    try {
+      const email = req.authUser.email;
+      const { error } = await supabaseAdmin.auth.resend({
+        type: "signup",
+        email,
+      });
+      if (error) {
+        return res.status(400).json({ message: error.message });
+      }
+      res.json({ message: "Verification email sent" });
+    } catch (error) {
+      console.error("Error resending verification:", error);
+      res.status(500).json({ message: "Failed to send verification email" });
     }
   });
 
