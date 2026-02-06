@@ -3,7 +3,7 @@ import type { Express, Request, Response } from "express";
 import { db } from "./db";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
-import { isAuthenticated } from "./replit_integrations/auth";
+import { isAuthenticated } from "./auth";
 import { log } from "./index";
 
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -38,7 +38,7 @@ async function getOrCreateStripeCustomer(userId: string, email: string): Promise
 export function registerStripeRoutes(app: Express) {
   app.get("/api/billing/status", isAuthenticated, async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.authUser.id;
       const [user] = await db.select().from(users).where(eq(users.id, userId));
       if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -59,8 +59,8 @@ export function registerStripeRoutes(app: Express) {
 
   app.post("/api/billing/create-checkout", isAuthenticated, async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
-      const email = req.user.claims.email || "";
+      const userId = req.authUser.id;
+      const email = req.authUser.email || "";
       const { plan } = req.body as { plan: string };
 
       const validPlans: PlanType[] = ["monthly", "annual", "founding"];
@@ -209,7 +209,7 @@ export function registerStripeRoutes(app: Express) {
 
   app.post("/api/create-portal-session", isAuthenticated, async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.authUser.id;
       const [user] = await db.select().from(users).where(eq(users.id, userId));
 
       if (!user?.stripeCustomerId) {

@@ -3,28 +3,47 @@ import { type Server } from "http";
 import { storage } from "./storage";
 import { insertTherapySessionSchema, insertParticipantSchema, insertSandtrayItemSchema, insertToolSuggestionSchema, insertSupportTicketSchema } from "@shared/schema";
 import { setupWebSocketServer } from "./websocket";
-import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { isAuthenticated } from "./auth";
 import { registerStripeRoutes } from "./stripe";
+import { db } from "./db";
+import { users } from "@shared/models/auth";
+import { eq } from "drizzle-orm";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
 
-  await setupAuth(app);
-  registerAuthRoutes(app);
+  app.get("/api/auth/config", (_req, res) => {
+    res.json({
+      url: process.env.SUPABASE_URL,
+      anonKey: process.env.SUPABASE_ANON_KEY,
+    });
+  });
+
+  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authUser.id;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user) return res.status(404).json({ message: "User not found" });
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
 
   // --- Session Routes (protected: clinicians must be logged in) ---
 
   app.get("/api/therapy-sessions/mine", isAuthenticated, async (req: any, res) => {
-    const userId = req.user.claims.sub;
+    const userId = req.authUser.id;
     const mySessions = await storage.getSessionsByClinician(userId);
     res.json(mySessions);
   });
 
   app.post("/api/therapy-sessions", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.authUser.id;
       const data = insertTherapySessionSchema.parse({
         ...req.body,
         clinicianId: userId,

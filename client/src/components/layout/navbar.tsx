@@ -114,15 +114,15 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
-              <a
-                href="/api/login"
+              <Link
+                href="/login"
                 className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors no-underline"
                 data-testid="link-nav-login"
               >
                 Log In
-              </a>
-              <a
-                href="/api/login"
+              </Link>
+              <Link
+                href="/signup"
                 className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-all shadow-lg shadow-primary/20 no-underline active:scale-95"
                 data-testid="link-nav-get-started"
               >
@@ -130,7 +130,7 @@ export function Navbar() {
                   <Sparkles size={14} />
                   Get Started
                 </span>
-              </a>
+              </Link>
             </>
           )}
         </div>
@@ -151,9 +151,9 @@ export function Navbar() {
           </Link>
           <div className="flex items-center gap-2">
             {!isAuthenticated && (
-              <a href="/api/login" className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium no-underline shadow-md active:scale-95 transition-transform" data-testid="link-mobile-signin">
+              <Link href="/login" className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium no-underline shadow-md active:scale-95 transition-transform" data-testid="link-mobile-signin">
                 Sign In
-              </a>
+              </Link>
             )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -216,14 +216,14 @@ export function Navbar() {
                         {item.label}
                       </Link>
                     ))}
-                    <a
-                      href="/api/login"
+                    <Link
+                      href="/signup"
                       className="flex items-center justify-center gap-2 px-4 py-3 mt-2 rounded-xl text-sm font-medium bg-primary text-primary-foreground no-underline shadow-md active:scale-[0.98] transition-transform"
                       data-testid="link-mobile-get-started"
                     >
                       <Sparkles size={14} />
                       Get Started Free
-                    </a>
+                    </Link>
                   </>
                 )}
               </div>

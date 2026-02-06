@@ -68,7 +68,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Database Schema (8 tables)
 1. **users** — id, email, firstName, lastName, profileImageUrl, isPro, subscriptionType, stripeCustomerId, stripeSubscriptionId, createdAt, updatedAt
-2. **sessions** — Replit Auth session store (sid, sess, expire)
+2. **sessions** — Legacy session store (sid, sess, expire) — retained for schema compatibility
 3. **therapy_sessions** — id, name, clinicianId (FK to users), inviteCode (unique), status, isCanvasLocked, isAnonymous, activeTool, createdAt
 4. **participants** — id, sessionId (FK), userId (FK, optional), displayName, role, color
 5. **sandtrayItems** — id, sessionId (FK), placedBy, icon, category, x, y, scale, rotation
@@ -77,11 +77,14 @@ Preferred communication style: Simple, everyday language.
 8. **values_card_placements** — id, sessionId (FK), placedBy, cardId, label, column, orderIndex
 
 ### Authentication
-- **Replit Auth** integration via `@replit/express-auth` — supports Google, GitHub, Apple, and email/password sign-in
-- Auth routes: `GET /api/login` (redirect to Replit auth), `GET /api/logout`, `GET /api/auth/user` (returns authenticated user info)
-- Protected routes use `isAuthenticated` middleware to restrict session creation/management to authenticated clinicians
-- Session table (`sessions`) is managed by Replit Auth; app uses `therapy_sessions` table to avoid naming conflict
-- Auth state managed client-side via `useAuth` hook (`client/src/hooks/use-auth.ts`)
+- **Supabase Auth** — email/password authentication via `@supabase/supabase-js`
+- Frontend uses Supabase client to sign in/up, stores JWT in browser; sends Bearer token in Authorization header
+- Backend validates JWT via `supabaseAdmin.auth.getUser(token)` in `server/auth.ts`
+- Auth routes: `GET /api/auth/config` (returns Supabase URL + anon key for frontend), `GET /api/auth/user` (returns authenticated user)
+- Custom `/login` and `/signup` pages with luxury glassmorphic design
+- Protected routes use `isAuthenticated` middleware (`server/auth.ts`) to restrict session creation/management to authenticated clinicians
+- User upsert on auth: Supabase user synced to local PostgreSQL `users` table on each authenticated request
+- Auth state managed client-side via `useAuth` hook (`client/src/hooks/use-auth.ts`) with Supabase session listener
 
 ### Project Structure
 ```
@@ -105,7 +108,8 @@ Preferred communication style: Simple, everyday language.
 │   ├── db.ts            # Drizzle + pg pool setup
 │   ├── vite.ts          # Vite dev server middleware
 │   ├── static.ts        # Production static file serving
-│   └── replit_integrations/     # Replit Auth integration
+│   ├── auth.ts          # Supabase JWT auth middleware
+│   └── supabase.ts      # Supabase admin client
 ├── shared/              # Shared between client and server
 │   └── schema.ts        # Drizzle schema + Zod validation schemas
 ├── script/
@@ -122,13 +126,15 @@ Preferred communication style: Simple, everyday language.
 
 ### Required Services
 - **PostgreSQL Database** — Required. Connection via `DATABASE_URL` environment variable. Used for all persistent data (users, sessions, participants, sandtray items).
+- **Supabase** — Authentication provider. Requires `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
 - **Stripe** — Payment processing for subscriptions and one-time purchases. Requires `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY`. Supports monthly ($7), annual ($67), and founding member ($99) plans.
 
 ### Key NPM Packages
 - **drizzle-orm** + **drizzle-kit** + **drizzle-zod** — ORM, migrations, and schema validation
 - **express** v5 — HTTP server
 - **ws** — WebSocket server for real-time collaboration
-- **pg** + **connect-pg-simple** — PostgreSQL client and session store
+- **pg** — PostgreSQL client
+- **@supabase/supabase-js** — Supabase Auth (frontend + backend)
 - **@tanstack/react-query** — Server state management
 - **framer-motion** — Animations
 - **wouter** — Client-side routing

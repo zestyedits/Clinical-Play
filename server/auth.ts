@@ -1,0 +1,85 @@
+import type { RequestHandler, Request, Response, NextFunction } from "express";
+import { supabaseAdmin } from "./supabase";
+import { db } from "./db";
+import { users } from "@shared/models/auth";
+import { eq } from "drizzle-orm";
+
+export interface AuthUser {
+  id: string;
+  email: string;
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      authUser?: AuthUser;
+    }
+  }
+}
+
+async function upsertUser(supabaseUser: { id: string; email?: string; user_metadata?: any }) {
+  const email = supabaseUser.email || "";
+  const firstName = supabaseUser.user_metadata?.first_name || supabaseUser.user_metadata?.firstName || null;
+  const lastName = supabaseUser.user_metadata?.last_name || supabaseUser.user_metadata?.lastName || null;
+
+  const [user] = await db
+    .insert(users)
+    .values({
+      id: supabaseUser.id,
+      email,
+      firstName,
+      lastName,
+    })
+    .onConflictDoUpdate({
+      target: users.id,
+      set: {
+        email,
+        ...(firstName && { firstName }),
+        ...(lastName && { lastName }),
+        updatedAt: new Date(),
+      },
+    })
+    .returning();
+  return user;
+}
+
+export const isAuthenticated: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+    if (error || !user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    await upsertUser(user);
+
+    req.authUser = {
+      id: user.id,
+      email: user.email || "",
+    };
+
+    return next();
+  } catch {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+};
+
+export async function getAuthUser(req: Request): Promise<AuthUser | null> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+    if (error || !user) return null;
+    return { id: user.id, email: user.email || "" };
+  } catch {
+    return null;
+  }
+}

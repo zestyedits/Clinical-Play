@@ -5,7 +5,7 @@ import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth, createAuthFetch } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import type { TherapySession } from "@shared/schema";
 
@@ -13,13 +13,14 @@ export default function Dashboard() {
   const [, navigate] = useLocation();
   const [copied, setCopied] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated, session } = useAuth();
   const { toast } = useToast();
+  const authFetch = createAuthFetch(session?.access_token);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({ title: "Please sign in", description: "Redirecting to login...", variant: "destructive" });
-      setTimeout(() => { window.location.href = "/api/login"; }, 500);
+      setTimeout(() => { window.location.href = "/login"; }, 500);
     }
   }, [authLoading, isAuthenticated]);
 
@@ -43,7 +44,7 @@ export default function Dashboard() {
   const { data: sessions = [], isLoading } = useQuery<TherapySession[]>({
     queryKey: ["/api/therapy-sessions/mine"],
     queryFn: async () => {
-      const res = await fetch("/api/therapy-sessions/mine", { credentials: "include" });
+      const res = await authFetch("/api/therapy-sessions/mine");
       if (!res.ok) return [];
       return res.json();
     },
@@ -53,7 +54,7 @@ export default function Dashboard() {
   const { data: billingStatus } = useQuery<{ isPro: boolean; subscriptionType: string }>({
     queryKey: ["/api/billing/status"],
     queryFn: async () => {
-      const res = await fetch("/api/billing/status", { credentials: "include" });
+      const res = await authFetch("/api/billing/status");
       if (!res.ok) return { isPro: false, subscriptionType: "free" };
       return res.json();
     },
@@ -70,10 +71,9 @@ export default function Dashboard() {
 
   const createSession = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/therapy-sessions", {
+      const res = await authFetch("/api/therapy-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ name: `Session ${new Date().toLocaleDateString()}` }),
       });
       return res.json();
@@ -86,10 +86,9 @@ export default function Dashboard() {
 
   const checkout = useMutation({
     mutationFn: async (plan: "monthly" | "annual" | "founding") => {
-      const res = await fetch("/api/billing/create-checkout", {
+      const res = await authFetch("/api/billing/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ plan }),
       });
       if (!res.ok) {
@@ -108,9 +107,8 @@ export default function Dashboard() {
 
   const manageSubscription = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/create-portal-session", {
+      const res = await authFetch("/api/create-portal-session", {
         method: "POST",
-        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to open billing portal");
       return res.json();

@@ -187,16 +187,16 @@ export default function LandingPage() {
                 Experience the intersection of clinical sophistication and interactive play.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <a href="/api/login">
+                <Link href="/signup">
                   <button className="h-14 px-8 rounded-full bg-primary text-primary-foreground font-medium text-lg shadow-xl shadow-primary/20 hover:scale-105 transition-transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto" data-testid="button-get-started">
                     Get Started <ArrowRight size={18} />
                   </button>
-                </a>
-                <a href="/api/login">
+                </Link>
+                <Link href="/login">
                   <button className="h-14 px-8 rounded-full bg-white/80 backdrop-blur-sm border border-white/40 text-foreground font-medium text-lg hover:bg-white transition-colors cursor-pointer w-full sm:w-auto" data-testid="button-sign-in">
                     Sign In
                   </button>
-                </a>
+                </Link>
               </div>
             </motion.div>
           </div>
@@ -478,11 +478,11 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <a href="/api/login">
+                <Link href="/signup">
                   <button className="w-full py-3 rounded-xl bg-white border border-primary/10 text-primary font-medium hover:bg-primary/5 transition-colors cursor-pointer text-sm" data-testid="button-plan-free">
                     Get Started
                   </button>
-                </a>
+                </Link>
               </GlassCard>
             </motion.div>
 
@@ -515,11 +515,11 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <a href="/api/login">
+                <Link href="/signup">
                   <button className="w-full py-3 rounded-xl bg-accent text-white font-medium shadow-lg shadow-accent/20 hover:brightness-110 transition-all cursor-pointer text-sm" data-testid="button-plan-community">
                     Start Monthly Plan
                   </button>
-                </a>
+                </Link>
                 <p className="mt-2.5 text-xs text-muted-foreground text-center">Cancel anytime</p>
               </GlassCard>
             </motion.div>
@@ -554,11 +554,11 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <a href="/api/login">
+                <Link href="/signup">
                   <button className="w-full py-3 rounded-xl bg-emerald-600 text-white font-medium shadow-lg shadow-emerald-600/20 hover:brightness-110 transition-all cursor-pointer text-sm" data-testid="button-plan-annual">
                     Start Annual Plan
                   </button>
-                </a>
+                </Link>
                 <p className="mt-2.5 text-xs text-muted-foreground text-center">Billed yearly</p>
               </GlassCard>
             </motion.div>
@@ -615,7 +615,7 @@ export default function LandingPage() {
                   </div>
                 )}
 
-                <a href="/api/login">
+                <Link href="/signup">
                   <button
                     className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                     data-testid="button-plan-founding"
@@ -623,7 +623,7 @@ export default function LandingPage() {
                   >
                     {remaining > 0 ? "Claim Founding Spot" : "Sold Out"}
                   </button>
-                </a>
+                </Link>
                 <p className="mt-2.5 text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
                   <Lock size={10} /> One-time. No subscription.
                 </p>
@@ -699,9 +699,9 @@ export default function LandingPage() {
             <div>
               <h4 className="font-serif text-primary font-medium mb-4">Platform</h4>
               <div className="space-y-3">
-                <a href="/api/login" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-signin">
+                <Link href="/login" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-signin">
                   Clinician Sign In
-                </a>
+                </Link>
                 <p className="text-sm text-muted-foreground">
                   No PHI Collected
                 </p>

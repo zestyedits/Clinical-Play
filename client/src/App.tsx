@@ -14,6 +14,8 @@ import Terms from "@/pages/terms";
 import Cookies from "@/pages/cookies";
 import FAQ from "@/pages/faq";
 import Contact from "@/pages/contact";
+import Login from "@/pages/login";
+import Signup from "@/pages/signup";
 
 function PageTransition({ children }: { children: React.ReactNode }) {
   return (
@@ -43,6 +45,8 @@ function Router() {
         <Route path="/cookies">{() => <PageTransition><Cookies /></PageTransition>}</Route>
         <Route path="/faq">{() => <PageTransition><FAQ /></PageTransition>}</Route>
         <Route path="/contact">{() => <PageTransition><Contact /></PageTransition>}</Route>
+        <Route path="/login">{() => <PageTransition><Login /></PageTransition>}</Route>
+        <Route path="/signup">{() => <PageTransition><Signup /></PageTransition>}</Route>
         <Route>{() => <PageTransition><NotFound /></PageTransition>}</Route>
       </Switch>
     </AnimatePresence>

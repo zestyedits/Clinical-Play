@@ -239,7 +239,7 @@ export default function Playroom() {
 
   useEffect(() => {
     if (!isClinician) return;
-    fetch("/api/billing/status", { credentials: "include" })
+    fetch("/api/billing/status")
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.subscriptionType) setSubscriptionType(data.subscriptionType); })
       .catch(() => {});
