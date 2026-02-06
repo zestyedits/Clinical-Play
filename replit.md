@@ -40,11 +40,16 @@ Preferred communication style: Simple, everyday language.
 - **Build**: Vite for client bundle, esbuild for server bundle; production output in `dist/`
 
 ### Key API Routes
-- `POST /api/sessions` — create a new session
-- `GET /api/sessions/:id` — get session by ID
-- `GET /api/sessions/invite/:code` — lookup session by invite code
-- `PATCH /api/sessions/:id` — update session settings
-- `GET /api/sessions/clinician/all` — list all sessions
+- `POST /api/therapy-sessions` — create a new session
+- `GET /api/therapy-sessions/:id` — get session by ID
+- `GET /api/therapy-sessions/invite/:code` — lookup session by invite code
+- `PATCH /api/therapy-sessions/:id` — update session settings
+- `GET /api/therapy-sessions/mine` — list clinician's sessions
+- `POST /api/billing/create-checkout` — create Stripe checkout (plan: monthly/annual/founding)
+- `GET /api/billing/status` — get user's billing status (isPro, subscriptionType)
+- `GET /api/billing/founding-slots` — get founding member slot counts
+- `POST /api/billing/webhook` — Stripe webhook for checkout.session.completed
+- `POST /api/billing/portal` — create Stripe billing portal session
 - Participant and sandtray item CRUD routes also exist
 
 ### WebSocket Protocol
@@ -61,11 +66,15 @@ Preferred communication style: Simple, everyday language.
 - **Migrations**: Generated via `drizzle-kit push` (stored in `migrations/`)
 - **Connection**: node-postgres (`pg`) Pool
 
-### Database Schema (4 tables)
-1. **users** — id, username, password, displayName, role (clinician/client)
-2. **sessions** — id, name, clinicianId (FK to users), inviteCode (unique), status, isCanvasLocked, isAnonymous, activeTool, createdAt
-3. **participants** — id, sessionId (FK), userId (FK, optional), displayName, role, color
-4. **sandtrayItems** — id, sessionId (FK), placedBy, icon, category, x, y, scale, rotation
+### Database Schema (8 tables)
+1. **users** — id, email, firstName, lastName, profileImageUrl, isPro, subscriptionType, stripeCustomerId, stripeSubscriptionId, createdAt, updatedAt
+2. **sessions** — Replit Auth session store (sid, sess, expire)
+3. **therapy_sessions** — id, name, clinicianId (FK to users), inviteCode (unique), status, isCanvasLocked, isAnonymous, activeTool, createdAt
+4. **participants** — id, sessionId (FK), userId (FK, optional), displayName, role, color
+5. **sandtrayItems** — id, sessionId (FK), placedBy, icon, category, x, y, scale, rotation
+6. **feeling_wheel_selections** — id, sessionId (FK), selectedBy, primaryEmotion, secondaryEmotion, tertiaryEmotion, createdAt
+7. **timeline_events** — id, sessionId (FK), placedBy, label, description, position, color, createdAt
+8. **values_card_placements** — id, sessionId (FK), placedBy, cardId, label, column, orderIndex
 
 ### Authentication
 - **Replit Auth** integration via `@replit/express-auth` — supports Google, GitHub, Apple, and email/password sign-in
@@ -91,6 +100,7 @@ Preferred communication style: Simple, everyday language.
 │   ├── index.ts         # Entry point, middleware setup
 │   ├── routes.ts        # API route registration
 │   ├── storage.ts       # Database storage layer (IStorage interface + DatabaseStorage)
+│   ├── stripe.ts        # Stripe billing routes (checkout, webhook, portal)
 │   ├── websocket.ts     # WebSocket server for real-time sync + room state
 │   ├── db.ts            # Drizzle + pg pool setup
 │   ├── vite.ts          # Vite dev server middleware
@@ -112,6 +122,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Required Services
 - **PostgreSQL Database** — Required. Connection via `DATABASE_URL` environment variable. Used for all persistent data (users, sessions, participants, sandtray items).
+- **Stripe** — Payment processing for subscriptions and one-time purchases. Requires `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY`. Supports monthly ($7), annual ($67), and founding member ($99) plans.
 
 ### Key NPM Packages
 - **drizzle-orm** + **drizzle-kit** + **drizzle-zod** — ORM, migrations, and schema validation

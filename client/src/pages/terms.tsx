@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { motion } from "framer-motion";
-import { Scale, Users, FileCheck, AlertTriangle, CreditCard, Gavel } from "lucide-react";
+import { Scale, Users, FileCheck, AlertTriangle, CreditCard, Gavel, Crown } from "lucide-react";
 import { Link } from "wouter";
 
 export default function TermsOfService() {
@@ -67,11 +67,34 @@ export default function TermsOfService() {
               icon={CreditCard}
               title="Subscription & Billing"
               content={[
-                "ClinicalPlay offers a 14-day free trial. After the trial, continued access requires an active subscription.",
-                "Subscription fees are billed monthly. You may cancel at any time; access continues until the end of the current billing period.",
+                "ClinicalPlay offers a free tier with limited access. Full access requires an active subscription (Community at $7/month, or Annual at $67/year) or a one-time Founding Member purchase ($99).",
+                "Community and Annual subscriptions may be cancelled at any time. Upon cancellation, access continues until the end of the current billing period.",
+                "Annual subscriptions are billed once per year. Community subscriptions are billed monthly.",
                 "All fees are non-refundable except as required by applicable law.",
+                "ClinicalPlay reserves the right to change subscription pricing at any time. Existing subscribers will be notified at least 30 days before any price change takes effect on their account.",
               ]}
             />
+
+            <div className="p-6 rounded-2xl bg-primary/[0.03] border border-primary/15">
+              <div className="flex items-center gap-2 mb-4">
+                <Crown size={18} className="text-accent" />
+                <h3 className="font-serif text-lg text-primary">Founding Member: Lifetime Access Terms</h3>
+              </div>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  The "Founding Member" tier grants the purchasing clinician a non-transferable, perpetual license to access all current and future clinical tools within the ClinicalPlay.app platform.
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  For the purposes of this agreement, <span className="font-medium text-primary">"Lifetime Access"</span> refers to the operational lifespan of the ClinicalPlay.app platform. This license remains active as long as the platform is commercially available and maintained by the developer.
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Founding Members are exempt from any future subscription price increases and will never be required to pay a recurring fee. This license is non-transferable — it is bound to the purchasing clinician's account and cannot be sold, gifted, or reassigned.
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  In the event that ClinicalPlay is acquired, merged, or discontinued, founding members will receive a minimum of 12 months' notice prior to any change affecting their access.
+                </p>
+              </div>
+            </div>
 
             <Section
               icon={Gavel}

@@ -1,5 +1,5 @@
 import { Link, useParams } from "wouter";
-import { ChevronRight, PanelRightClose, LogOut, Users, Ghost, Shield, Wrench, Camera } from "lucide-react";
+import { ChevronRight, PanelRightClose, LogOut, Users, Ghost, Shield, Wrench, Camera, Crown } from "lucide-react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -53,6 +53,7 @@ export default function Playroom() {
   const [feelingSelections, setFeelingSelections] = useState<FeelingSelection[]>([]);
   const [timelineEvents, setTimelineEvents] = useState<TimelineEventData[]>([]);
   const [valuesCards, setValuesCards] = useState<CardPlacement[]>([]);
+  const [subscriptionType, setSubscriptionType] = useState<string>("free");
 
   const isCanvasLocked = session?.isCanvasLocked ?? false;
   const isAnonymous = session?.isAnonymous ?? false;
@@ -236,6 +237,14 @@ export default function Playroom() {
       .catch(() => {});
   }, [sessionId]);
 
+  useEffect(() => {
+    if (!isClinician) return;
+    fetch("/api/billing/status", { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.subscriptionType) setSubscriptionType(data.subscriptionType); })
+      .catch(() => {});
+  }, [isClinician]);
+
   // Sandtray handlers
   const handleItemDrop = useCallback((icon: string, category: string, x: number, y: number) => {
     send({ type: "item-placed", icon, category, x, y, scale: 1, rotation: 0 });
@@ -417,6 +426,12 @@ export default function Playroom() {
                 <Shield size={12} className="text-accent fill-accent/20" />
                 <span className="text-xs font-medium text-accent">Clinician</span>
               </div>
+              {subscriptionType === "founding" && (
+                <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-100 to-yellow-50 border border-amber-200/60 shadow-sm shadow-amber-100/50" data-testid="badge-playroom-founding">
+                  <Crown size={11} className="text-amber-600" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Founder</span>
+                </div>
+              )}
 
               <button
                 onClick={handleSnapshot}

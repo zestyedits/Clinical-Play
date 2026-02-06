@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertTherapySessionSchema, insertParticipantSchema, insertSandtrayItemSchema, insertToolSuggestionSchema } from "@shared/schema";
 import { setupWebSocketServer } from "./websocket";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { registerStripeRoutes } from "./stripe";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -129,6 +130,9 @@ export async function registerRoutes(
       res.status(400).json({ message: e.message });
     }
   });
+
+  // --- Stripe Billing Routes ---
+  registerStripeRoutes(app);
 
   // --- WebSocket Setup ---
   setupWebSocketServer(httpServer);

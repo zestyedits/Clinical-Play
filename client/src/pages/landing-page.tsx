@@ -1,14 +1,23 @@
 import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { motion } from "framer-motion";
-import { ArrowRight, Lock, CheckCircle2, Star, Palette, Wind, House, Clock, Layers, Shield, FileText, Target } from "lucide-react";
+import { ArrowRight, Lock, CheckCircle2, Star, Palette, Wind, House, Clock, Layers, Shield, FileText, Target, Crown, Zap, Flame, Heart, Cookie } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function LandingPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const [, navigate] = useLocation();
+
+  const { data: foundingSlots } = useQuery<{ total: number; remaining: number }>({
+    queryKey: ["/api/billing/founding-slots"],
+    queryFn: async () => {
+      const res = await fetch("/api/billing/founding-slots");
+      return res.json();
+    },
+  });
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -16,11 +25,43 @@ export default function LandingPage() {
     }
   }, [isLoading, isAuthenticated, navigate]);
 
+  const remaining = foundingSlots?.remaining ?? 100;
+  const total = foundingSlots?.total ?? 100;
+  const percentClaimed = Math.round(((total - remaining) / total) * 100);
+
+  const features = [
+    "Unlimited Clinical Sessions",
+    "Full 5-Tool Clinical Suite",
+    "Real-time Collaboration",
+    "Clinical Insights & Prompts",
+    "HIPAA-Safe No-PHI Architecture",
+    "Priority Access to New Tools",
+  ];
+
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-20 md:pb-0">
+      {remaining > 0 && (
+        <div className="bg-linear-to-r from-primary via-primary/95 to-primary text-primary-foreground py-3 px-4 text-center relative overflow-hidden" data-testid="banner-founding">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyem0wLTMwdjJIMjRWNGgxMnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-50" />
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="relative z-10 flex items-center justify-center gap-3 flex-wrap"
+          >
+            <Crown size={16} className="text-accent" />
+            <span className="text-sm font-medium">
+              <span className="font-bold">Limited Time:</span> Become a Founding Member. Get Lifetime Access for $99.
+            </span>
+            <span className="bg-accent/20 text-accent px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide" data-testid="text-founding-remaining">
+              Only {remaining} slots remaining
+            </span>
+          </motion.div>
+        </div>
+      )}
+
       <Navbar />
 
-      {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="relative z-10">
@@ -93,7 +134,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Active Clinical Suite */}
       <section className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -167,7 +207,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Coming Next */}
       <section className="py-20 px-6 bg-white/30">
         <div className="max-w-4xl mx-auto">
           <motion.div
@@ -212,52 +251,228 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="py-20 px-6">
-        <div className="max-w-3xl mx-auto text-center">
+      <section className="py-20 px-6" id="pricing">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            className="text-center mb-16 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-sm font-bold tracking-widest text-accent uppercase mb-4">Pricing</h2>
+            <h3 className="text-3xl md:text-5xl font-serif text-primary mb-4">Choose Your Plan</h3>
+            <p className="text-muted-foreground text-lg">Start free, go monthly, save with annual, or lock in lifetime access.</p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 items-start">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0 }}
+            >
+              <GlassCard className="p-6 border-primary/5 h-full" hoverEffect={false}>
+                <div className="text-center mb-6">
+                  <h4 className="text-lg font-serif text-primary mb-1">Free</h4>
+                  <p className="text-xs text-muted-foreground mb-3">Explore the platform</p>
+                  <div className="flex justify-center items-baseline">
+                    <span className="text-4xl font-serif text-primary">$0</span>
+                  </div>
+                </div>
+                <ul className="space-y-2.5 mb-6">
+                  {["1 Active Session", "Zen Sandtray Only", "No-PHI Architecture"].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2.5 text-foreground/70 text-sm">
+                      <CheckCircle2 size={14} className="text-muted-foreground/50 shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <a href="/api/login">
+                  <button className="w-full py-3 rounded-xl bg-white border border-primary/10 text-primary font-medium hover:bg-primary/5 transition-colors cursor-pointer text-sm" data-testid="button-plan-free">
+                    Get Started
+                  </button>
+                </a>
+              </GlassCard>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="relative"
+            >
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                <div className="bg-accent text-white px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-lg shadow-accent/30">
+                  <Zap size={11} /> Most Popular
+                </div>
+              </div>
+              <GlassCard className="p-6 border-accent/30 ring-2 ring-accent/20 h-full relative" hoverEffect={false}>
+                <div className="text-center mb-6">
+                  <h4 className="text-lg font-serif text-primary mb-1">Community</h4>
+                  <p className="text-xs text-muted-foreground mb-3">Full access, monthly</p>
+                  <div className="flex justify-center items-baseline">
+                    <span className="text-4xl font-serif text-primary">$7</span>
+                    <span className="text-muted-foreground ml-1">/ mo</span>
+                  </div>
+                </div>
+                <ul className="space-y-2.5 mb-6">
+                  {features.map((item, i) => (
+                    <li key={i} className="flex items-center gap-2.5 text-foreground/80 text-sm">
+                      <CheckCircle2 size={14} className="text-accent shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <a href="/api/login">
+                  <button className="w-full py-3 rounded-xl bg-accent text-white font-medium shadow-lg shadow-accent/20 hover:brightness-110 transition-all cursor-pointer text-sm" data-testid="button-plan-community">
+                    Start Monthly Plan
+                  </button>
+                </a>
+                <p className="mt-2.5 text-xs text-muted-foreground text-center">Cancel anytime</p>
+              </GlassCard>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              className="relative"
+            >
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                <div className="bg-emerald-600 text-white px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-lg shadow-emerald-600/30">
+                  <Star size={11} /> Best Value
+                </div>
+              </div>
+              <GlassCard className="p-6 border-emerald-500/20 ring-1 ring-emerald-500/10 h-full relative" hoverEffect={false}>
+                <div className="text-center mb-6">
+                  <h4 className="text-lg font-serif text-primary mb-1">Annual</h4>
+                  <p className="text-xs text-muted-foreground mb-3">Save 20% vs monthly</p>
+                  <div className="flex justify-center items-baseline">
+                    <span className="text-4xl font-serif text-primary">$67</span>
+                    <span className="text-muted-foreground ml-1">/ yr</span>
+                  </div>
+                  <p className="text-xs text-emerald-600 font-semibold mt-1">$5.58/mo — save $17/yr</p>
+                </div>
+                <ul className="space-y-2.5 mb-6">
+                  {[...features, "Priority Email Support"].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2.5 text-foreground/80 text-sm">
+                      <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <a href="/api/login">
+                  <button className="w-full py-3 rounded-xl bg-emerald-600 text-white font-medium shadow-lg shadow-emerald-600/20 hover:brightness-110 transition-all cursor-pointer text-sm" data-testid="button-plan-annual">
+                    Start Annual Plan
+                  </button>
+                </a>
+                <p className="mt-2.5 text-xs text-muted-foreground text-center">Billed yearly</p>
+              </GlassCard>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="relative"
+            >
+              {remaining > 0 && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                  <div className="bg-primary text-primary-foreground px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-lg shadow-primary/30">
+                    <Flame size={11} /> Limited Offer
+                  </div>
+                </div>
+              )}
+              <GlassCard className="p-6 border-primary/20 bg-primary/[0.02] h-full" hoverEffect={false}>
+                <div className="text-center mb-6">
+                  <h4 className="text-lg font-serif text-primary mb-1 flex items-center justify-center gap-2">
+                    <Crown size={16} className="text-accent" /> Founding Member
+                  </h4>
+                  <p className="text-xs text-muted-foreground mb-3">Lifetime access, one payment</p>
+                  <div className="flex justify-center items-baseline">
+                    <span className="text-4xl font-serif text-primary">$99</span>
+                    <span className="text-muted-foreground ml-1.5 line-through text-xs">$84/yr</span>
+                  </div>
+                </div>
+                <ul className="space-y-2.5 mb-4">
+                  {[...features, "Founding Member Badge", "Lifetime Updates"].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2.5 text-foreground/80 text-sm">
+                      <CheckCircle2 size={14} className="text-primary shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
+                {remaining > 0 && (
+                  <div className="mb-4">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <span>{percentClaimed}% claimed</span>
+                      <span className="font-semibold text-primary">{remaining} left</span>
+                    </div>
+                    <div className="w-full bg-primary/10 rounded-full h-1.5 overflow-hidden">
+                      <motion.div
+                        className="h-full bg-linear-to-r from-accent to-primary rounded-full"
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${percentClaimed}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1, delay: 0.3 }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <a href="/api/login">
+                  <button
+                    className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    data-testid="button-plan-founding"
+                    disabled={remaining <= 0}
+                  >
+                    {remaining > 0 ? "Claim Founding Spot" : "Sold Out"}
+                  </button>
+                </a>
+                <p className="mt-2.5 text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
+                  <Lock size={10} /> One-time. No subscription.
+                </p>
+                <p className="mt-1.5 text-[10px] text-muted-foreground/60 text-center leading-relaxed">
+                  "Lifetime" = platform lifespan. Non-transferable.{" "}
+                  <Link href="/terms" className="underline hover:text-primary transition-colors no-underline" data-testid="link-founding-terms">
+                    Full terms
+                  </Link>
+                </p>
+              </GlassCard>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 px-6">
+        <div className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <GlassCard className="p-12 border-primary/10" hoverEffect={false}>
-              <h2 className="text-sm font-bold tracking-widest text-accent uppercase mb-4">Membership</h2>
-              <h3 className="text-4xl font-serif text-primary mb-6">One Simple Plan</h3>
-              <div className="flex justify-center items-baseline mb-8">
-                <span className="text-6xl font-serif text-primary">$49</span>
-                <span className="text-muted-foreground ml-2">/ month</span>
+            <GlassCard className="p-8 md:p-10 text-center" hoverEffect={false}>
+              <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-linear-to-tr from-primary to-accent flex items-center justify-center shadow-lg">
+                <Heart size={28} className="text-white" />
               </div>
-              
-              <ul className="space-y-4 mb-10 text-left max-w-sm mx-auto">
-                {[
-                  "Unlimited Clinical Sessions",
-                  "Full Access to Growing Tool Library",
-                  "HIPAA-Safe No-PHI Architecture",
-                  "Clinical Insights & On-The-Job Prompts",
-                  "Priority Access to New Tools"
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-foreground/80">
-                    <CheckCircle2 size={20} className="text-accent shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-
-              <a href="/api/login">
-                <button className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg hover:shadow-xl hover:bg-primary/90 transition-all cursor-pointer" data-testid="button-start-trial">
-                  Start Your 14-Day Free Trial
-                </button>
-              </a>
-              <p className="mt-4 text-xs text-muted-foreground flex items-center justify-center gap-1">
-                <Lock size={12} /> Secure 256-bit encryption
+              <h3 className="text-2xl md:text-3xl font-serif text-primary mb-3" data-testid="text-about-founder">About the Founder</h3>
+              <p className="text-muted-foreground leading-relaxed max-w-xl mx-auto mb-4">
+                Created by a Clinical Social Worker (CSW-I) and Veteran with a mission to bridge the gap between clinical efficacy and digital engagement.
+              </p>
+              <p className="text-sm text-muted-foreground/70 italic">
+                "I got tired of boring telehealth sessions, so I built us a digital playroom."
               </p>
             </GlassCard>
           </motion.div>
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-white/30 bg-white/20 backdrop-blur-sm py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-8">
@@ -283,6 +498,10 @@ export default function LandingPage() {
                 <Link href="/terms" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-terms">
                   <FileText size={14} />
                   Terms of Service
+                </Link>
+                <Link href="/cookies" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-cookies">
+                  <Cookie size={14} />
+                  Cookie Policy
                 </Link>
               </div>
             </div>
@@ -314,6 +533,10 @@ export default function LandingPage() {
               <span className="text-muted-foreground/30">|</span>
               <Link href="/terms" className="text-xs text-muted-foreground hover:text-primary transition-colors no-underline">
                 Terms
+              </Link>
+              <span className="text-muted-foreground/30">|</span>
+              <Link href="/cookies" className="text-xs text-muted-foreground hover:text-primary transition-colors no-underline">
+                Cookies
               </Link>
             </div>
           </div>

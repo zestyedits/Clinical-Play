@@ -1,0 +1,58 @@
+This is a crucial "legal shield" step. In the SaaS world, "Lifetime" usually carries a specific legal definition to protect the developer (you) in case the technology evolves or the platform eventually reaches its natural end-of-life.
+
+Here is a professionally worded paragraph you can include in your **Terms of Service** and also display in a small "tooltip" or fine print under the $99 Founding Member button.
+
+---
+
+### **Founding Member: Lifetime Access Terms**
+
+> **Founding Member Lifetime Access:** The "Founding Member" tier grants the purchasing clinician a non-transferable, perpetual license to access all current and future clinical tools within the **ClinicalPlay.app** platform. For the purposes of this agreement, "Lifetime Access" refers to the operational lifespan of the ClinicalPlay.app platform. This license remains active as long as the platform is commercially available and maintained by the developer. Founding Members are exempt from future monthly or annual subscription fee increases for the core suite of tools. ClinicalPlay.app reserves the right to sunset specific legacy tools or transition to new technology architectures if required for security or clinical efficacy, provided a functional equivalent is maintained. This tier is limited to the first 100 verified clinicians.
+
+---
+
+### **Why this wording protects you:**
+
+1. **"Operational Lifespan":** This ensures that if you decide to retire or sell the app 10 years from now, you aren't legally bound to host it for the next 80 years of a person's life.
+2. **"Non-transferable":** Prevents one person from buying it and "selling" their account to another therapist later.
+3. **"Exempt from increases":** This is the "carrot." It tells them that while the $7/mo price might go up to $15/mo in three years, they are locked in at zero.
+
+---
+
+### **Final Replit "Polishing" Prompt**
+
+Now that the logic, pricing, and terms are ready, let’s give Replit one last prompt to "tighten" the landing page for the launch.
+
+> **Role:** Lead UX Designer & Conversion Specialist.
+> **Objective:** Finalize the Landing Page for the "Founding Member" Launch.
+> **1. The "Trust" Section:**
+> * Add a small "About the Founder" section near the bottom.
+> * **Content:** "Created by a Clinical Social Worker (CSW-I) and Veteran with a mission to bridge the gap between clinical efficacy and digital engagement." (This builds massive "Peer-to-Peer" trust).
+> 
+> 
+> **2. The "Legal" Footer:**
+> * Create links in the footer for **Privacy Policy**, **Terms of Service**, and **Cookie Policy**.
+> * Embed the **Founding Member Terms** paragraph into the Terms of Service page.
+> 
+> 
+> **3. UI Polish - The "Founding Member" Badge:**
+> * When a clinician purchases the $99 plan, add a small, elegant "Founding Member" badge (gold text, soft glow) next to their name in the Dashboard and the Playroom.
+> * This makes them feel like part of an exclusive "inner circle."
+> 
+> 
+> **4. Launch-Ready Check:**
+> * Ensure all "Coming Soon" tool cards look consistent with the active ones.
+> * Verify that the "Join via Invite Code" flow works seamlessly on mobile Safari and Chrome.
+> 
+> 
+
+---
+
+### **The "Passive Income" Hand-off**
+
+You are now officially a **Founder.** Once Replit finishes this, your site is "live" and ready to collect money. Your "Work" now is simply:
+
+1. Log in to **mentalhealthcontent.ai**.
+2. Post a link to **clinicalplay.app**.
+3. Tell your fellow clinicians: *"I got tired of boring telehealth sessions, so I built us a digital playroom."*
+
+**Would you like me to draft your first LinkedIn or Facebook Group post to announce the "First 100 Slots" are open?** It’s a great way to kickstart the FOMO.

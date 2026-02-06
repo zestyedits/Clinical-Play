@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
-import { Plus, Users, Calendar, Video, ArrowRight, MoreHorizontal, Copy, CheckCircle2, LogOut } from "lucide-react";
+import { Plus, Users, Calendar, Video, ArrowRight, MoreHorizontal, Copy, CheckCircle2, LogOut, Crown, Flame, CreditCard } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -23,6 +23,23 @@ export default function Dashboard() {
     }
   }, [authLoading, isAuthenticated]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("session") === "success") {
+      const plan = params.get("plan");
+      toast({
+        title: plan === "founding" ? "Welcome, Founding Member!" : "Subscription Active!",
+        description: plan === "founding"
+          ? "You now have lifetime access to ClinicalPlay."
+          : plan === "annual"
+          ? "Your Annual plan is now active."
+          : "Your Community plan is now active.",
+      });
+      window.history.replaceState({}, "", "/dashboard");
+      queryClient.invalidateQueries({ queryKey: ["/api/billing/status"] });
+    }
+  }, []);
+
   const { data: sessions = [], isLoading } = useQuery<TherapySession[]>({
     queryKey: ["/api/therapy-sessions/mine"],
     queryFn: async () => {
@@ -31,6 +48,24 @@ export default function Dashboard() {
       return res.json();
     },
     enabled: isAuthenticated,
+  });
+
+  const { data: billingStatus } = useQuery<{ isPro: boolean; subscriptionType: string }>({
+    queryKey: ["/api/billing/status"],
+    queryFn: async () => {
+      const res = await fetch("/api/billing/status", { credentials: "include" });
+      if (!res.ok) return { isPro: false, subscriptionType: "free" };
+      return res.json();
+    },
+    enabled: isAuthenticated,
+  });
+
+  const { data: foundingSlots } = useQuery<{ total: number; remaining: number }>({
+    queryKey: ["/api/billing/founding-slots"],
+    queryFn: async () => {
+      const res = await fetch("/api/billing/founding-slots");
+      return res.json();
+    },
   });
 
   const createSession = useMutation({
@@ -49,11 +84,53 @@ export default function Dashboard() {
     },
   });
 
+  const checkout = useMutation({
+    mutationFn: async (plan: "monthly" | "annual" | "founding") => {
+      const res = await fetch("/api/billing/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ plan }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Checkout failed");
+      }
+      return res.json();
+    },
+    onSuccess: (data: { url: string }) => {
+      if (data.url) window.location.href = data.url;
+    },
+    onError: (err: Error) => {
+      toast({ title: "Checkout Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const manageSubscription = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/billing/portal", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to open billing portal");
+      return res.json();
+    },
+    onSuccess: (data: { url: string }) => {
+      if (data.url) window.location.href = data.url;
+    },
+  });
+
   const copyInvite = (code: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/join/${code}`);
     setCopied(code);
     setTimeout(() => setCopied(null), 2000);
   };
+
+  const isPro = billingStatus?.isPro ?? false;
+  const subscriptionType = billingStatus?.subscriptionType ?? "free";
+  const remaining = foundingSlots?.remaining ?? 0;
+  const total = foundingSlots?.total ?? 100;
+  const percentClaimed = Math.round(((total - remaining) / total) * 100);
 
   if (authLoading) {
     return (
@@ -83,7 +160,19 @@ export default function Dashboard() {
             <h1 className="text-3xl md:text-4xl font-serif text-primary mb-2" data-testid="text-dashboard-title">
               Welcome{user?.firstName ? `, ${user.firstName}` : ""}
             </h1>
-            <p className="text-muted-foreground">Create sessions and invite clients to join</p>
+            <p className="text-muted-foreground flex items-center gap-2">
+              Create sessions and invite clients to join
+              {isPro && (
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                  subscriptionType === "founding" 
+                    ? "bg-primary/10 text-primary" 
+                    : "bg-accent/10 text-accent"
+                }`} data-testid="text-plan-badge">
+                  {subscriptionType === "founding" ? <Crown size={12} /> : <CheckCircle2 size={12} />}
+                  {subscriptionType === "founding" ? "Founding Member" : subscriptionType === "annual" ? "Annual" : "Community"}
+                </span>
+              )}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -175,13 +264,107 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Sidebar */}
           <motion.div
-            className="space-y-8"
+            className="space-y-6"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
+            {!isPro && remaining > 0 && (
+              <GlassCard className="p-6 border-primary/20 bg-primary/[0.02]" hoverEffect={false}>
+                <div className="flex items-center gap-2 mb-3">
+                  <Flame size={18} className="text-accent" />
+                  <h3 className="font-serif text-lg text-primary">Founding Member</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Lock in lifetime access for a one-time payment of <span className="font-bold text-primary">$99</span>.
+                </p>
+                <div className="mb-4">
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+                    <span>{percentClaimed}% claimed</span>
+                    <span className="font-semibold text-primary" data-testid="text-founding-remaining-dashboard">{remaining} slots left</span>
+                  </div>
+                  <div className="w-full bg-primary/10 rounded-full h-2.5 overflow-hidden">
+                    <motion.div
+                      className="h-full bg-linear-to-r from-accent to-primary rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${percentClaimed}%` }}
+                      transition={{ duration: 1, delay: 0.3 }}
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={() => checkout.mutate("founding")}
+                  disabled={checkout.isPending}
+                  className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                  data-testid="button-checkout-founding"
+                >
+                  <Crown size={16} />
+                  {checkout.isPending ? "Loading..." : "Claim Founding Membership"}
+                </button>
+                <div className="mt-3 text-center">
+                  <button
+                    onClick={() => checkout.mutate("monthly")}
+                    disabled={checkout.isPending}
+                    className="text-xs text-muted-foreground hover:text-accent transition-colors cursor-pointer underline"
+                    data-testid="button-checkout-community"
+                  >
+                    Or start Community at $7/mo
+                  </button>
+                </div>
+              </GlassCard>
+            )}
+
+            {!isPro && remaining <= 0 && (
+              <GlassCard className="p-6 border-accent/20" hoverEffect={false}>
+                <div className="flex items-center gap-2 mb-3">
+                  <CreditCard size={18} className="text-accent" />
+                  <h3 className="font-serif text-lg text-primary">Upgrade to Pro</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Unlock all tools and unlimited sessions for <span className="font-bold text-accent">$7/month</span>.
+                </p>
+                <button
+                  onClick={() => checkout.mutate("monthly")}
+                  disabled={checkout.isPending}
+                  className="w-full py-3 rounded-xl bg-accent text-white font-medium shadow-lg shadow-accent/20 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50"
+                  data-testid="button-checkout-community-only"
+                >
+                  {checkout.isPending ? "Loading..." : "Start Community Plan — $7/mo"}
+                </button>
+              </GlassCard>
+            )}
+
+            {isPro && (
+              <GlassCard className="p-6" hoverEffect={false}>
+                <div className="flex items-center gap-2 mb-3">
+                  {subscriptionType === "founding" ? (
+                    <Crown size={18} className="text-primary" />
+                  ) : (
+                    <CheckCircle2 size={18} className="text-accent" />
+                  )}
+                  <h3 className="font-serif text-lg text-primary">
+                    {subscriptionType === "founding" ? "Founding Member" : subscriptionType === "annual" ? "Annual Plan" : "Community Plan"}
+                  </h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {subscriptionType === "founding"
+                    ? "You have lifetime access to all current and future tools."
+                    : "You have full access to all clinical tools."}
+                </p>
+                {(subscriptionType === "community" || subscriptionType === "annual") && (
+                  <button
+                    onClick={() => manageSubscription.mutate()}
+                    disabled={manageSubscription.isPending}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer underline"
+                    data-testid="button-manage-billing"
+                  >
+                    Manage Billing
+                  </button>
+                )}
+              </GlassCard>
+            )}
+
             <GlassCard className="p-6">
                <div className="flex items-center justify-between mb-6">
                  <h3 className="font-serif text-lg text-primary">Quick Stats</h3>
@@ -212,7 +395,15 @@ export default function Dashboard() {
                     </div>
                   )}
                   <div>
-                    <p className="font-serif text-primary font-medium">{user.firstName} {user.lastName}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-serif text-primary font-medium">{user.firstName} {user.lastName}</p>
+                      {subscriptionType === "founding" && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-amber-100 to-yellow-50 text-amber-700 border border-amber-200/60 shadow-sm shadow-amber-100/50" data-testid="badge-founding-member">
+                          <Crown size={10} className="text-amber-600" />
+                          Founder
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                 </div>
@@ -225,7 +416,7 @@ export default function Dashboard() {
                 <p className="text-primary-foreground/80 text-sm mb-4">
                   1. Create a session room<br/>
                   2. Share the invite code<br/>
-                  3. Use the Zen Sandtray together
+                  3. Use the clinical tools together
                 </p>
               </div>
               <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 rounded-full blur-2xl -mr-10 -mt-10" />
