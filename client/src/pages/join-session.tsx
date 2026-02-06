@@ -2,17 +2,17 @@ import { useParams, useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/navbar";
-import type { Session } from "@shared/schema";
+import type { TherapySession } from "@shared/schema";
 
 export default function JoinSession() {
   const { code } = useParams();
   const [, navigate] = useLocation();
   const [status, setStatus] = useState<"loading" | "found" | "error">("loading");
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<TherapySession | null>(null);
 
   useEffect(() => {
     if (!code) return;
-    fetch(`/api/sessions/invite/${code}`)
+    fetch(`/api/therapy-sessions/invite/${code}`)
       .then(r => {
         if (!r.ok) throw new Error("Not found");
         return r.json();

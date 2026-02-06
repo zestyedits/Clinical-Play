@@ -1,24 +1,33 @@
 import type { Express } from "express";
 import { type Server } from "http";
 import { storage } from "./storage";
-import { insertSessionSchema, insertParticipantSchema, insertSandtrayItemSchema } from "@shared/schema";
+import { insertTherapySessionSchema, insertParticipantSchema, insertSandtrayItemSchema } from "@shared/schema";
 import { setupWebSocketServer } from "./websocket";
+import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
 
-  // --- Session Routes ---
+  await setupAuth(app);
+  registerAuthRoutes(app);
 
-  app.get("/api/sessions/clinician/all", async (_req, res) => {
-    const allSessions = await storage.getAllSessions();
-    res.json(allSessions);
+  // --- Session Routes (protected: clinicians must be logged in) ---
+
+  app.get("/api/therapy-sessions/mine", isAuthenticated, async (req: any, res) => {
+    const userId = req.user.claims.sub;
+    const mySessions = await storage.getSessionsByClinician(userId);
+    res.json(mySessions);
   });
 
-  app.post("/api/sessions", async (req, res) => {
+  app.post("/api/therapy-sessions", isAuthenticated, async (req: any, res) => {
     try {
-      const data = insertSessionSchema.parse(req.body);
+      const userId = req.user.claims.sub;
+      const data = insertTherapySessionSchema.parse({
+        ...req.body,
+        clinicianId: userId,
+      });
       const session = await storage.createSession(data);
       res.json(session);
     } catch (e: any) {
@@ -26,19 +35,19 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/sessions/:id", async (req, res) => {
+  app.get("/api/therapy-sessions/:id", async (req, res) => {
     const session = await storage.getSession(req.params.id);
     if (!session) return res.status(404).json({ message: "Session not found" });
     res.json(session);
   });
 
-  app.get("/api/sessions/invite/:code", async (req, res) => {
+  app.get("/api/therapy-sessions/invite/:code", async (req, res) => {
     const session = await storage.getSessionByInviteCode(req.params.code);
     if (!session) return res.status(404).json({ message: "Invalid invite code" });
     res.json(session);
   });
 
-  app.patch("/api/sessions/:id", async (req, res) => {
+  app.patch("/api/therapy-sessions/:id", isAuthenticated, async (req: any, res) => {
     try {
       const session = await storage.updateSession(req.params.id, req.body);
       if (!session) return res.status(404).json({ message: "Session not found" });
@@ -50,7 +59,7 @@ export async function registerRoutes(
 
   // --- Participant Routes ---
 
-  app.post("/api/sessions/:sessionId/participants", async (req, res) => {
+  app.post("/api/therapy-sessions/:sessionId/participants", async (req, res) => {
     try {
       const data = insertParticipantSchema.parse({
         ...req.body,
@@ -63,7 +72,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/sessions/:sessionId/participants", async (req, res) => {
+  app.get("/api/therapy-sessions/:sessionId/participants", async (req, res) => {
     const list = await storage.getParticipantsBySession(req.params.sessionId);
     res.json(list);
   });
@@ -75,12 +84,12 @@ export async function registerRoutes(
 
   // --- Sandtray Item Routes ---
 
-  app.get("/api/sessions/:sessionId/items", async (req, res) => {
+  app.get("/api/therapy-sessions/:sessionId/items", async (req, res) => {
     const items = await storage.getSandtrayItems(req.params.sessionId);
     res.json(items);
   });
 
-  app.post("/api/sessions/:sessionId/items", async (req, res) => {
+  app.post("/api/therapy-sessions/:sessionId/items", async (req, res) => {
     try {
       const data = insertSandtrayItemSchema.parse({
         ...req.body,
@@ -104,7 +113,7 @@ export async function registerRoutes(
     res.json({ ok: true });
   });
 
-  app.delete("/api/sessions/:sessionId/items", async (req, res) => {
+  app.delete("/api/therapy-sessions/:sessionId/items", async (req, res) => {
     await storage.clearSandtrayItems(req.params.sessionId);
     res.json({ ok: true });
   });

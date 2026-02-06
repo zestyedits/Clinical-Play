@@ -12,6 +12,21 @@ interface WSClient {
 
 const rooms = new Map<string, Set<WSClient>>();
 
+interface RoomState {
+  activeTool: string;
+  breathingActive: boolean;
+  breathingStartTime: number | null;
+}
+
+const roomStates = new Map<string, RoomState>();
+
+function getRoomState(sessionId: string): RoomState {
+  if (!roomStates.has(sessionId)) {
+    roomStates.set(sessionId, { activeTool: "sandtray", breathingActive: false, breathingStartTime: null });
+  }
+  return roomStates.get(sessionId)!;
+}
+
 function broadcast(sessionId: string, message: any, excludeWs?: WebSocket) {
   const room = rooms.get(sessionId);
   if (!room) return;
@@ -46,6 +61,7 @@ export function setupWebSocketServer(server: Server) {
             const items = await storage.getSandtrayItems(sessionId);
             const participants = await storage.getParticipantsBySession(sessionId);
             const session = await storage.getSession(sessionId);
+            const state = getRoomState(sessionId);
 
             ws.send(JSON.stringify({
               type: "init",
@@ -56,6 +72,9 @@ export function setupWebSocketServer(server: Server) {
                 participantId: c.participantId,
                 displayName: c.displayName,
               })),
+              activeTool: state.activeTool,
+              breathingActive: state.breathingActive,
+              breathingStartTime: state.breathingStartTime,
             }));
 
             broadcast(sessionId, {
@@ -143,6 +162,42 @@ export function setupWebSocketServer(server: Server) {
             }, ws);
             break;
           }
+
+          case "tool-change": {
+            if (!client) return;
+            const toolState = getRoomState(client.sessionId);
+            toolState.activeTool = msg.tool;
+            broadcast(client.sessionId, {
+              type: "tool-changed",
+              tool: msg.tool,
+              changedBy: client.participantId,
+            });
+            break;
+          }
+
+          case "breathing-toggle": {
+            if (!client) return;
+            const breathState = getRoomState(client.sessionId);
+            breathState.breathingActive = msg.isActive;
+            breathState.breathingStartTime = msg.isActive ? Date.now() : null;
+            broadcast(client.sessionId, {
+              type: "breathing-toggled",
+              isActive: msg.isActive,
+              startedBy: client.participantId,
+              startTime: breathState.breathingStartTime,
+            });
+            break;
+          }
+
+          case "activity-pulse": {
+            if (!client) return;
+            broadcast(client.sessionId, {
+              type: "activity-pulse",
+              participantId: client.participantId,
+              displayName: client.displayName,
+            }, ws);
+            break;
+          }
         }
       } catch (err) {
         log(`WebSocket error: ${err}`, "ws");
@@ -156,6 +211,7 @@ export function setupWebSocketServer(server: Server) {
           room.delete(client);
           if (room.size === 0) {
             rooms.delete(client.sessionId);
+            roomStates.delete(client.sessionId);
           }
         }
         broadcast(client.sessionId, {

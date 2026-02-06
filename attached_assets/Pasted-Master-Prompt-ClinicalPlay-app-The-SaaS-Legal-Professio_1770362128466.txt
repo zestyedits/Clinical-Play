@@ -1,0 +1,65 @@
+Master Prompt: ClinicalPlay.app — The SaaS & Legal Professionalization Update
+
+Role: Full-Stack SaaS Architect, Legal Tech Specialist, and UI/UX Lead.
+
+Objective: Transform ClinicalPlay.app into a production-ready SaaS. Implement Clinician Authentication, a secondary "Breathing Guide" tool, a "Clinical Manual" system, and a "HIPAA-Safe" Privacy Framework.
+
+1. Secure Clinician Authentication (The "Gatekeeper")
+
+    Auth System: Implement Lucia Auth or Supabase Auth.
+
+    Rules: * Clinicians: Must sign up/log in to create and manage sessions. Add a "Profile" section to store their professional name (e.g., "Dr. Smith, LCSW").
+
+        Clients: Remain 100% anonymous. They only enter the room via the 6-digit inviteCode. No client data storage.
+
+    Database: Connect sessions to the users table via clinicianId.
+
+2. The Tool Library Expansion: "The Synchronized Breath"
+
+    The Tool: A second interactive tool available in the Playroom Tool Selector.
+
+    Mechanism: An elegant, expanding/contracting "Breathing Bubble" (SVG).
+
+    Sync Logic: The clinician controls the pace (Inhale/Exhale/Hold). When the clinician clicks "Start," the bubble pulses on every participant's screen in perfect sync.
+
+    Visuals: Use the "Soft Sage" palette. Add a "Luxury" feel with a soft glowing aura around the bubble.
+
+3. The "Clinical Manual" & Sidebar System
+
+    The "Manual": Create a clinical-manual.md or a database-driven guide.
+
+    UI Implementation: In the Playroom, add a "Clinical Insights" side-panel (visible only to the clinician).
+
+        For the Sandtray: Show prompts like "Encourage the client to choose an object that represents a boundary."
+
+        For Breathing: Show prompts like "Focus on the physiological sigh: two inhales, one long exhale."
+
+    Purpose: This provides "on-the-job" training, making the sub worth more to new clinicians.
+
+4. Legal & Privacy Framework (The "Compliance Shield")
+
+    Pages to Create:
+
+        /privacy: A clearly worded Privacy Policy highlighting the "No PHI" architecture, the ephemeral nature of sessions, and the lack of tracking.
+
+        /terms: Terms of Service tailored for mental health professionals.
+
+    UI Integration: Add these to the footer of the Landing Page and the Login screen to build immediate trust.
+
+5. Luxury UI/UX Polish
+
+    Transitions: Use Framer Motion for all page transitions (Layout transitions should be "Slide and Fade").
+
+    Dashboard: Add a "Recent Sessions" list with the ability to "Re-open" a room or "Export Screenshot" (a button that captures the canvas for the clinician to save to their own EHR).
+
+    Mobile: Ensure the "Clinical Insights" panel is a swipeable bottom-sheet.
+
+The "Why" Behind This Phase
+
+By implementing these specific items, you solve the three biggest hurdles to passive income in the clinical space:
+
+    Trust: The Privacy Policy and Auth system prove you are a professional peer who understands clinical liability.
+
+    Stickiness: By adding the Breathing Guide, you prove the site isn't just a "one-trick pony." Clinicians will stay subscribed because they see the "Library" growing.
+
+    Value-Add: The Clinical Manual makes you more than a software provider; you become a clinical consultant.

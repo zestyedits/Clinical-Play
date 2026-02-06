@@ -1,17 +1,12 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean, integer, real, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  displayName: text("display_name"),
-  role: text("role").notNull().default("client"),
-});
+export * from "./models/auth";
+import { users } from "./models/auth";
 
-export const sessions = pgTable("sessions", {
+export const therapySessions = pgTable("therapy_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   clinicianId: varchar("clinician_id").references(() => users.id),
@@ -25,7 +20,7 @@ export const sessions = pgTable("sessions", {
 
 export const participants = pgTable("participants", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  sessionId: varchar("session_id").notNull().references(() => sessions.id),
+  sessionId: varchar("session_id").notNull().references(() => therapySessions.id),
   userId: varchar("user_id").references(() => users.id),
   displayName: text("display_name").notNull(),
   role: text("role").notNull().default("client"),
@@ -34,7 +29,7 @@ export const participants = pgTable("participants", {
 
 export const sandtrayItems = pgTable("sandtray_items", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  sessionId: varchar("session_id").notNull().references(() => sessions.id),
+  sessionId: varchar("session_id").notNull().references(() => therapySessions.id),
   placedBy: varchar("placed_by"),
   icon: text("icon").notNull(),
   category: text("category").notNull(),
@@ -44,15 +39,7 @@ export const sandtrayItems = pgTable("sandtray_items", {
   rotation: real("rotation").notNull().default(0),
 });
 
-// Insert schemas
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  displayName: true,
-  role: true,
-});
-
-export const insertSessionSchema = createInsertSchema(sessions).pick({
+export const insertTherapySessionSchema = createInsertSchema(therapySessions).pick({
   name: true,
   clinicianId: true,
 });
@@ -76,11 +63,8 @@ export const insertSandtrayItemSchema = createInsertSchema(sandtrayItems).pick({
   rotation: true,
 });
 
-// Types
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
-export type InsertSession = z.infer<typeof insertSessionSchema>;
-export type Session = typeof sessions.$inferSelect;
+export type InsertTherapySession = z.infer<typeof insertTherapySessionSchema>;
+export type TherapySession = typeof therapySessions.$inferSelect;
 export type InsertParticipant = z.infer<typeof insertParticipantSchema>;
 export type Participant = typeof participants.$inferSelect;
 export type InsertSandtrayItem = z.infer<typeof insertSandtrayItemSchema>;

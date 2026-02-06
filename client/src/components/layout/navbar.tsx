@@ -1,12 +1,14 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Home, LayoutDashboard, Gamepad2, User } from "lucide-react";
+import { Home, LayoutDashboard, Gamepad2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/use-auth";
 
 export function Navbar() {
   const [location] = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,11 +18,14 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navItems = [
-    { label: "Home", path: "/", icon: Home },
-    { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-    { label: "Playroom", path: "/playroom/demo", icon: Gamepad2 },
-  ];
+  const navItems = isAuthenticated
+    ? [
+        { label: "Home", path: "/", icon: Home },
+        { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+      ]
+    : [
+        { label: "Home", path: "/", icon: Home },
+      ];
 
   return (
     <>
@@ -54,9 +59,15 @@ export function Navbar() {
               {item.label}
             </Link>
           ))}
-          <Link href="/dashboard" className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 no-underline">
-            Sign In
-          </Link>
+          {isAuthenticated ? (
+            <Link href="/dashboard" className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 no-underline">
+              Dashboard
+            </Link>
+          ) : (
+            <a href="/api/login" className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 no-underline">
+              Sign In
+            </a>
+          )}
         </div>
       </motion.nav>
 
@@ -82,6 +93,22 @@ export function Navbar() {
               </Link>
             );
           })}
+          {isAuthenticated && (
+            <Link href="/dashboard" className="flex flex-col items-center justify-center w-full h-full gap-1 no-underline">
+              <div className={cn(
+                "p-1.5 rounded-xl transition-all duration-300",
+                location === "/dashboard" ? "bg-primary/10 text-primary" : "text-muted-foreground"
+              )}>
+                <LayoutDashboard size={24} strokeWidth={location === "/dashboard" ? 2.5 : 1.5} />
+              </div>
+              <span className={cn(
+                "text-[10px] font-medium transition-all duration-300",
+                location === "/dashboard" ? "text-primary" : "text-muted-foreground translate-y-1 opacity-0 h-0 overflow-hidden"
+              )}>
+                Dashboard
+              </span>
+            </Link>
+          )}
         </div>
       </div>
       
@@ -93,6 +120,11 @@ export function Navbar() {
           </div>
           <span className="font-serif font-bold text-lg text-primary">ClinicalPlay</span>
         </Link>
+        {!isAuthenticated && (
+          <a href="/api/login" className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium no-underline shadow-md">
+            Sign In
+          </a>
+        )}
       </div>
     </>
   );

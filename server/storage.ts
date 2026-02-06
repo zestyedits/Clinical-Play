@@ -1,29 +1,23 @@
 import { eq } from "drizzle-orm";
 import { db } from "./db";
 import {
-  users, sessions, participants, sandtrayItems,
-  type User, type InsertUser,
-  type Session, type InsertSession,
+  therapySessions, participants, sandtrayItems,
+  type TherapySession, type InsertTherapySession,
   type Participant, type InsertParticipant,
   type SandtrayItem, type InsertSandtrayItem,
 } from "@shared/schema";
-import { randomUUID } from "crypto";
 
 function generateInviteCode(): string {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-
-  createSession(data: InsertSession): Promise<Session>;
-  getSession(id: string): Promise<Session | undefined>;
-  getAllSessions(): Promise<Session[]>;
-  getSessionByInviteCode(code: string): Promise<Session | undefined>;
-  getSessionsByClinician(clinicianId: string): Promise<Session[]>;
-  updateSession(id: string, data: Partial<Session>): Promise<Session | undefined>;
+  createSession(data: InsertTherapySession): Promise<TherapySession>;
+  getSession(id: string): Promise<TherapySession | undefined>;
+  getAllSessions(): Promise<TherapySession[]>;
+  getSessionByInviteCode(code: string): Promise<TherapySession | undefined>;
+  getSessionsByClinician(clinicianId: string): Promise<TherapySession[]>;
+  updateSession(id: string, data: Partial<TherapySession>): Promise<TherapySession | undefined>;
 
   addParticipant(data: InsertParticipant): Promise<Participant>;
   getParticipantsBySession(sessionId: string): Promise<Participant[]>;
@@ -37,50 +31,35 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
-  }
-
-  async createUser(data: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(data).returning();
-    return user;
-  }
-
-  async createSession(data: InsertSession): Promise<Session> {
+  async createSession(data: InsertTherapySession): Promise<TherapySession> {
     const inviteCode = generateInviteCode();
-    const [session] = await db.insert(sessions).values({
+    const [session] = await db.insert(therapySessions).values({
       ...data,
       inviteCode,
     }).returning();
     return session;
   }
 
-  async getSession(id: string): Promise<Session | undefined> {
-    const [session] = await db.select().from(sessions).where(eq(sessions.id, id));
+  async getSession(id: string): Promise<TherapySession | undefined> {
+    const [session] = await db.select().from(therapySessions).where(eq(therapySessions.id, id));
     return session;
   }
 
-  async getAllSessions(): Promise<Session[]> {
-    return db.select().from(sessions);
+  async getAllSessions(): Promise<TherapySession[]> {
+    return db.select().from(therapySessions);
   }
 
-  async getSessionByInviteCode(code: string): Promise<Session | undefined> {
-    const [session] = await db.select().from(sessions).where(eq(sessions.inviteCode, code));
+  async getSessionByInviteCode(code: string): Promise<TherapySession | undefined> {
+    const [session] = await db.select().from(therapySessions).where(eq(therapySessions.inviteCode, code));
     return session;
   }
 
-  async getSessionsByClinician(clinicianId: string): Promise<Session[]> {
-    return db.select().from(sessions).where(eq(sessions.clinicianId, clinicianId));
+  async getSessionsByClinician(clinicianId: string): Promise<TherapySession[]> {
+    return db.select().from(therapySessions).where(eq(therapySessions.clinicianId, clinicianId));
   }
 
-  async updateSession(id: string, data: Partial<Session>): Promise<Session | undefined> {
-    const [session] = await db.update(sessions).set(data).where(eq(sessions.id, id)).returning();
+  async updateSession(id: string, data: Partial<TherapySession>): Promise<TherapySession | undefined> {
+    const [session] = await db.update(therapySessions).set(data).where(eq(therapySessions.id, id)).returning();
     return session;
   }
 
