@@ -1,9 +1,32 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Home, LayoutDashboard, Library, UserCircle, LogOut, Menu, X, Sparkles } from "lucide-react";
+import { Home, LayoutDashboard, Library, UserCircle, LogOut, Menu, X, Sparkles, Rocket } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
+
+function PreLaunchBanner({ onDismiss, visible }: { onDismiss: () => void; visible: boolean }) {
+  if (!visible) return null;
+
+  return (
+    <div className="bg-gradient-to-r from-primary via-primary/90 to-accent text-white">
+      <div className="flex items-center justify-center gap-2 px-4 py-2 text-center text-sm">
+        <Rocket size={14} className="shrink-0 animate-pulse" />
+        <span className="font-medium">
+          We're launching soon! Join the waitlist for early access & founding member pricing.
+        </span>
+        <button
+          onClick={onDismiss}
+          className="ml-2 shrink-0 text-white/70 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0.5"
+          aria-label="Dismiss banner"
+          data-testid="button-dismiss-banner"
+        >
+          <X size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function MobileBottomNav({ items }: { items: { label: string; icon: React.ElementType; tab: string }[] }) {
   const [activeTab, setActiveTab] = useState("sessions");
@@ -63,6 +86,14 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuth();
+  const [bannerVisible, setBannerVisible] = useState(() => {
+    try { return sessionStorage.getItem("cp_banner_dismissed") !== "1"; } catch { return true; }
+  });
+
+  const dismissBanner = () => {
+    setBannerVisible(false);
+    try { sessionStorage.setItem("cp_banner_dismissed", "1"); } catch {}
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -102,11 +133,17 @@ export function Navbar() {
     }
   };
 
+  const bannerHeight = bannerVisible ? 36 : 0;
+
   return (
     <>
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <PreLaunchBanner onDismiss={dismissBanner} visible={bannerVisible} />
+      </div>
       <motion.nav
+        style={{ top: bannerHeight }}
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 hidden md:flex items-center justify-between px-8 py-4 transition-all duration-300",
+          "fixed left-0 right-0 z-50 hidden md:flex items-center justify-between px-8 py-4 transition-all duration-300",
           scrolled
             ? "bg-white/70 backdrop-blur-xl border-b border-white/30 shadow-sm py-3"
             : "bg-white/40 backdrop-blur-md py-6"
@@ -189,7 +226,7 @@ export function Navbar() {
         </div>
       </motion.nav>
 
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50">
+      <div className="md:hidden fixed left-0 right-0 z-50" style={{ top: bannerHeight }}>
         <div className={cn(
           "flex justify-between items-center p-4 transition-all duration-300",
           scrolled || mobileMenuOpen
