@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing-page";
 import Dashboard from "@/pages/dashboard";
 import Playroom from "@/pages/playroom";
+import JoinSession from "@/pages/join-session";
 
 function Router() {
   return (
@@ -14,6 +15,7 @@ function Router() {
       <Route path="/" component={LandingPage} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/playroom/:id" component={Playroom} />
+      <Route path="/join/:code" component={JoinSession} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -20,6 +20,7 @@ export interface IStorage {
 
   createSession(data: InsertSession): Promise<Session>;
   getSession(id: string): Promise<Session | undefined>;
+  getAllSessions(): Promise<Session[]>;
   getSessionByInviteCode(code: string): Promise<Session | undefined>;
   getSessionsByClinician(clinicianId: string): Promise<Session[]>;
   updateSession(id: string, data: Partial<Session>): Promise<Session | undefined>;
@@ -63,6 +64,10 @@ export class DatabaseStorage implements IStorage {
   async getSession(id: string): Promise<Session | undefined> {
     const [session] = await db.select().from(sessions).where(eq(sessions.id, id));
     return session;
+  }
+
+  async getAllSessions(): Promise<Session[]> {
+    return db.select().from(sessions);
   }
 
   async getSessionByInviteCode(code: string): Promise<Session | undefined> {

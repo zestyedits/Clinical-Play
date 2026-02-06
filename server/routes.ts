@@ -11,6 +11,11 @@ export async function registerRoutes(
 
   // --- Session Routes ---
 
+  app.get("/api/sessions/clinician/all", async (_req, res) => {
+    const allSessions = await storage.getAllSessions();
+    res.json(allSessions);
+  });
+
   app.post("/api/sessions", async (req, res) => {
     try {
       const data = insertSessionSchema.parse(req.body);

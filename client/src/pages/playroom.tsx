@@ -1,73 +1,212 @@
 import { Link, useParams } from "wouter";
-import { GlassCard } from "@/components/ui/glass-card";
-import { Mic, Video, MonitorUp, Settings, ChevronRight, PanelRightClose, Palette, Shapes, Brain, LogOut, Lock, Unlock, Users, Eye, EyeOff, RotateCcw, Ghost, Shield } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Mic, Video, MonitorUp, ChevronRight, PanelRightClose, Palette, Shapes, Brain, LogOut, Users, Ghost, Shield } from "lucide-react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ZenCanvas, type CanvasItem } from "@/components/sandtray/zen-canvas";
+import { AssetLibrary } from "@/components/sandtray/asset-library";
+import { ModeratorBar } from "@/components/sandtray/moderator-bar";
+import { useSessionSocket } from "@/hooks/use-session-socket";
+import type { Session, Participant } from "@shared/schema";
 
-interface Participant {
-  id: string;
-  name: string;
-  role: 'clinician' | 'client';
-  avatar: string;
-  status: 'active' | 'idle';
-  isAnonymous?: boolean;
+interface OnlineUser {
+  participantId: string;
+  displayName: string;
+}
+
+interface RemoteCursor {
+  participantId: string;
+  displayName: string;
+  x: number;
+  y: number;
 }
 
 export default function Playroom() {
   const { id } = useParams();
-  const [toolsOpen, setToolsOpen] = useState(true);
-  const [activeTool, setActiveTool] = useState("sandtray");
-  const [isClinician, setIsClinician] = useState(true); // Toggle for demo
-  const [isAnonymousMode, setIsAnonymousMode] = useState(false);
-  const [isCanvasLocked, setIsCanvasLocked] = useState(false);
-  const [participants, setParticipants] = useState<Participant[]>([
-    { id: '1', name: 'Dr. Thompson', role: 'clinician', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=DrThompson', status: 'active' },
-    { id: '2', name: 'Alex M.', role: 'client', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix', status: 'active' },
-    { id: '3', name: 'Sarah J.', role: 'client', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah', status: 'idle' },
-  ]);
+  const sessionId = id || null;
 
-  // Simulate real-time sync pulses
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Randomly update status for demo effect
-      setParticipants(prev => prev.map(p => ({
-        ...p,
-        status: Math.random() > 0.7 ? 'idle' : 'active'
-      })));
-    }, 3000);
-    return () => clearInterval(interval);
+  const [isClinician, setIsClinician] = useState(true);
+  const [session, setSession] = useState<Session | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
+  const [items, setItems] = useState<CanvasItem[]>([]);
+  const [remoteCursors, setRemoteCursors] = useState<RemoteCursor[]>([]);
+  const [assetLibraryOpen, setAssetLibraryOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [activeTool, setActiveTool] = useState("sandtray");
+  const [joinNotification, setJoinNotification] = useState<string | null>(null);
+
+  const isCanvasLocked = session?.isCanvasLocked ?? false;
+  const isAnonymous = session?.isAnonymous ?? false;
+
+  const myParticipantId = useRef(`local-${Date.now()}`);
+  const myDisplayName = isClinician ? "Dr. Thompson" : "Guest";
+  const throttleRef = useRef(0);
+
+  const handleMessage = useCallback((msg: any) => {
+    switch (msg.type) {
+      case "init":
+        setItems(msg.items.map((i: any) => ({
+          id: i.id,
+          icon: i.icon,
+          category: i.category,
+          x: i.x,
+          y: i.y,
+          scale: i.scale,
+          rotation: i.rotation,
+          placedBy: i.placedBy,
+        })));
+        setParticipants(msg.participants || []);
+        setOnlineUsers(msg.onlineUsers || []);
+        if (msg.session) setSession(msg.session);
+        break;
+      case "item-placed":
+        setItems(prev => [...prev, {
+          id: msg.item.id,
+          icon: msg.item.icon,
+          category: msg.item.category,
+          x: msg.item.x,
+          y: msg.item.y,
+          scale: msg.item.scale,
+          rotation: msg.item.rotation,
+          placedBy: msg.item.placedBy,
+        }]);
+        break;
+      case "item-moved":
+        setItems(prev => prev.map(i =>
+          i.id === msg.itemId ? { ...i, x: msg.x, y: msg.y } : i
+        ));
+        break;
+      case "item-removed":
+        setItems(prev => prev.filter(i => i.id !== msg.itemId));
+        break;
+      case "canvas-cleared":
+        setItems([]);
+        break;
+      case "session-updated":
+        if (msg.session) setSession(msg.session);
+        break;
+      case "cursor-move":
+        setRemoteCursors(prev => {
+          const existing = prev.filter(c => c.participantId !== msg.participantId);
+          return [...existing, {
+            participantId: msg.participantId,
+            displayName: msg.displayName,
+            x: msg.x,
+            y: msg.y,
+          }];
+        });
+        break;
+      case "user-joined":
+        setOnlineUsers(prev => [...prev.filter(u => u.participantId !== msg.participantId), {
+          participantId: msg.participantId,
+          displayName: msg.displayName,
+        }]);
+        setJoinNotification(msg.displayName);
+        setTimeout(() => setJoinNotification(null), 3000);
+        break;
+      case "user-left":
+        setOnlineUsers(prev => prev.filter(u => u.participantId !== msg.participantId));
+        setRemoteCursors(prev => prev.filter(c => c.participantId !== msg.participantId));
+        break;
+    }
   }, []);
 
-  const toggleAnonymity = () => {
-    setIsAnonymousMode(!isAnonymousMode);
-    // Simulate updating all clients
-    setParticipants(prev => prev.map(p => 
-      p.role === 'client' ? { ...p, isAnonymous: !isAnonymousMode } : p
-    ));
-  };
+  const { connected, send } = useSessionSocket(
+    sessionId,
+    myParticipantId.current,
+    myDisplayName,
+    handleMessage
+  );
+
+  // Create session if it doesn't exist yet
+  useEffect(() => {
+    if (!sessionId) return;
+    fetch(`/api/sessions/${sessionId}`)
+      .then(r => {
+        if (r.ok) return r.json();
+        return fetch("/api/sessions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: `Session ${sessionId}` }),
+        }).then(r => r.json());
+      })
+      .then(s => setSession(s))
+      .catch(() => {});
+  }, [sessionId]);
+
+  const handleItemDrop = useCallback((icon: string, category: string, x: number, y: number) => {
+    send({
+      type: "item-placed",
+      icon,
+      category,
+      x,
+      y,
+      scale: 1,
+      rotation: 0,
+    });
+  }, [send]);
+
+  const handleItemMove = useCallback((itemId: string, x: number, y: number) => {
+    setItems(prev => prev.map(i => i.id === itemId ? { ...i, x, y } : i));
+    send({ type: "item-moved", itemId, x, y });
+  }, [send]);
+
+  const handleItemRemove = useCallback((itemId: string) => {
+    setItems(prev => prev.filter(i => i.id !== itemId));
+    send({ type: "item-removed", itemId });
+  }, [send]);
+
+  const handleCursorMove = useCallback((x: number, y: number) => {
+    const now = Date.now();
+    if (now - throttleRef.current < 50) return;
+    throttleRef.current = now;
+    send({ type: "cursor-move", x, y });
+  }, [send]);
+
+  const handleToggleLock = useCallback(() => {
+    send({ type: "session-update", data: { isCanvasLocked: !isCanvasLocked } });
+    setSession(prev => prev ? { ...prev, isCanvasLocked: !prev.isCanvasLocked } : prev);
+  }, [send, isCanvasLocked]);
+
+  const handleToggleAnonymity = useCallback(() => {
+    send({ type: "session-update", data: { isAnonymous: !isAnonymous } });
+    setSession(prev => prev ? { ...prev, isAnonymous: !prev.isAnonymous } : prev);
+  }, [send, isAnonymous]);
+
+  const handleClearCanvas = useCallback(() => {
+    send({ type: "clear-canvas" });
+    setItems([]);
+  }, [send]);
 
   return (
     <div className="h-screen w-full bg-neutral-100 overflow-hidden flex flex-col font-sans">
-      {/* Playroom Header */}
-      <header className="h-16 bg-white/80 backdrop-blur-md border-b border-border/50 flex items-center justify-between px-4 z-20 shrink-0">
-        <div className="flex items-center gap-4">
+      {/* Header */}
+      <header className="h-14 md:h-16 bg-white/80 backdrop-blur-md border-b border-border/50 flex items-center justify-between px-4 z-20 shrink-0">
+        <div className="flex items-center gap-3">
           <Link href="/dashboard">
-            <button className="p-2 hover:bg-secondary rounded-full transition-colors cursor-pointer">
+            <button className="p-2 hover:bg-secondary rounded-full transition-colors cursor-pointer" data-testid="button-back">
               <ChevronRight className="rotate-180 text-muted-foreground" size={20} />
             </button>
           </Link>
           <div>
-            <h1 className="font-serif text-lg text-primary leading-tight flex items-center gap-2">
-              Session Room {id}
-              {isCanvasLocked && <Lock size={14} className="text-destructive" />}
+            <h1 className="font-serif text-base md:text-lg text-primary leading-tight flex items-center gap-2">
+              {session?.name || `Session ${id}`}
+              {isCanvasLocked && (
+                <span className="inline-flex items-center gap-1 text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">
+                  Locked
+                </span>
+              )}
             </h1>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs text-muted-foreground">Sync Active &lt;40ms</span>
+              <span className={cn("w-2 h-2 rounded-full", connected ? "bg-green-500 animate-pulse" : "bg-red-400")} />
+              <span className="text-[11px] text-muted-foreground">
+                {connected ? "Synced" : "Connecting..."}
+                {onlineUsers.length > 0 && ` · ${onlineUsers.length} online`}
+              </span>
             </div>
           </div>
         </div>
@@ -80,211 +219,127 @@ export default function Playroom() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Mobile Participant Drawer Trigger */}
+          {/* Invite Code Badge */}
+          {session?.inviteCode && (
+            <div className="hidden lg:flex items-center gap-2 bg-accent/10 text-accent px-3 py-1.5 rounded-full text-xs font-mono font-bold border border-accent/20">
+              {session.inviteCode}
+            </div>
+          )}
+
+          {/* Clinician Toggle */}
+          <div className="hidden lg:flex items-center gap-2 bg-yellow-50 px-2 py-1 rounded border border-yellow-200">
+            <Switch checked={isClinician} onCheckedChange={setIsClinician} id="role-mode" />
+            <label htmlFor="role-mode" className="text-xs font-medium text-yellow-800 cursor-pointer">Clinician</label>
+          </div>
+
+          {/* Mobile Participants */}
           <Sheet>
             <SheetTrigger asChild>
-              <button className="md:hidden p-2 text-primary hover:bg-secondary rounded-lg transition-colors relative">
+              <button className="md:hidden p-2 text-primary hover:bg-secondary rounded-lg transition-colors relative cursor-pointer" data-testid="button-mobile-participants">
                 <Users size={20} />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full border border-white" />
+                {onlineUsers.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-accent text-white text-[9px] font-bold rounded-full flex items-center justify-center">{onlineUsers.length}</span>
+                )}
               </button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="h-[80vh] rounded-t-3xl">
+            <SheetContent side="bottom" className="h-[60vh] rounded-t-3xl">
               <SheetHeader className="mb-6">
-                <SheetTitle className="font-serif text-2xl text-primary text-left">Session Participants</SheetTitle>
+                <SheetTitle className="font-serif text-xl text-primary text-left">Participants</SheetTitle>
               </SheetHeader>
-              <div className="space-y-4">
-                 {participants.map(p => (
-                   <div key={p.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/30 transition-colors">
-                     <div className="relative">
-                       <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
-                         <AvatarImage src={p.isAnonymous ? '' : p.avatar} />
-                         <AvatarFallback className={cn("bg-secondary text-primary", p.isAnonymous && "bg-neutral-200")}>
-                           {p.isAnonymous ? <Ghost size={20} className="text-muted-foreground" /> : p.name.charAt(0)}
-                         </AvatarFallback>
-                       </Avatar>
-                       {p.status === 'active' && <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />}
-                     </div>
-                     <div>
-                       <div className="font-medium text-primary flex items-center gap-2">
-                         {p.isAnonymous ? "Anonymous User" : p.name}
-                         {p.role === 'clinician' && <Shield size={14} className="text-accent fill-accent/20" />}
-                       </div>
-                       <div className="text-xs text-muted-foreground capitalize">{p.role} • {p.status}</div>
-                     </div>
-                   </div>
-                 ))}
+              <div className="space-y-3">
+                {onlineUsers.map(u => (
+                  <div key={u.participantId} className="flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/30 transition-colors">
+                    <div className="relative">
+                      <Avatar className="h-11 w-11 border-2 border-white shadow-sm">
+                        <AvatarFallback className={cn("bg-secondary text-primary", isAnonymous && "bg-neutral-200")}>
+                          {isAnonymous ? <Ghost size={18} className="text-muted-foreground" /> : u.displayName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-primary text-sm flex items-center gap-2">
+                        {isAnonymous ? "Anonymous" : u.displayName}
+                        {u.displayName.startsWith("Dr") && <Shield size={12} className="text-accent fill-accent/20" />}
+                      </div>
+                      <div className="text-xs text-green-600">Online</div>
+                    </div>
+                  </div>
+                ))}
+                {onlineUsers.length === 0 && (
+                  <p className="text-muted-foreground text-sm text-center py-8">No other participants yet</p>
+                )}
               </div>
             </SheetContent>
           </Sheet>
 
-          {/* Clinician Toggle (Demo Only) */}
-          <div className="hidden lg:flex items-center gap-2 mr-4 bg-yellow-50 px-2 py-1 rounded border border-yellow-200">
-            <Switch checked={isClinician} onCheckedChange={setIsClinician} id="role-mode" />
-            <label htmlFor="role-mode" className="text-xs font-medium text-yellow-800 cursor-pointer">Clinician View</label>
-          </div>
-
-          <button 
+          <button
             onClick={() => setToolsOpen(!toolsOpen)}
             className={cn("p-2 rounded-lg transition-colors cursor-pointer hidden md:block", toolsOpen ? "bg-primary text-white" : "text-muted-foreground hover:bg-secondary")}
+            data-testid="button-toggle-tools"
           >
             <PanelRightClose size={20} />
           </button>
           <Link href="/dashboard">
-             <button className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors ml-2 cursor-pointer">
-               <LogOut size={20} />
-             </button>
+            <button className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer" data-testid="button-leave">
+              <LogOut size={20} />
+            </button>
           </Link>
         </div>
       </header>
 
-      {/* Main Workspace */}
+      {/* Main */}
       <div className="flex-1 flex overflow-hidden relative">
         
-        {/* Canvas Area */}
-        <div className="flex-1 bg-linear-to-br from-neutral-100 to-neutral-200 relative p-4 md:p-8 flex items-center justify-center">
-           {/* Mock Game Canvas */}
-           <motion.div 
-             className={cn(
-               "w-full h-full max-w-5xl aspect-video bg-white rounded-3xl shadow-xl shadow-neutral-200/50 overflow-hidden relative border-8 transition-all duration-300",
-               isCanvasLocked ? "border-destructive/20 grayscale-[0.2]" : "border-white"
-             )}
-             initial={{ scale: 0.95, opacity: 0 }}
-             animate={{ scale: 1, opacity: 1 }}
-             transition={{ duration: 0.5 }}
-           >
-             {/* Locked Overlay */}
-             <AnimatePresence>
-               {isCanvasLocked && (
-                 <motion.div 
-                   initial={{ opacity: 0 }} 
-                   animate={{ opacity: 1 }} 
-                   exit={{ opacity: 0 }}
-                   className="absolute inset-0 z-30 bg-black/10 backdrop-blur-[2px] flex items-center justify-center"
-                 >
-                   <div className="bg-white/90 backdrop-blur-md px-6 py-3 rounded-full shadow-lg flex items-center gap-3 text-destructive font-medium border border-destructive/20">
-                     <Lock size={18} />
-                     Session Paused by Clinician
-                   </div>
-                 </motion.div>
-               )}
-             </AnimatePresence>
+        {/* Canvas */}
+        <div className="flex-1 relative">
+          {activeTool === "sandtray" ? (
+            <>
+              <ZenCanvas
+                items={items}
+                isLocked={isCanvasLocked && !isClinician}
+                isAnonymous={isAnonymous}
+                remoteCursors={remoteCursors}
+                onItemMove={handleItemMove}
+                onItemDrop={handleItemDrop}
+                onItemRemove={handleItemRemove}
+                onCursorMove={handleCursorMove}
+              />
+              <AssetLibrary
+                isOpen={assetLibraryOpen}
+                onToggle={() => setAssetLibraryOpen(!assetLibraryOpen)}
+                disabled={isCanvasLocked && !isClinician}
+              />
+            </>
+          ) : activeTool === "cbt" ? (
+            <div className="w-full h-full flex items-center justify-center bg-white">
+              <img src="/images/game-cbt.jpg" className="w-full h-full object-cover opacity-60" alt="CBT" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="font-serif text-3xl text-primary/30">Thought Bridge — Coming Soon</span>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-white">
+              <span className="font-serif text-3xl text-primary/20">Shared Whiteboard — Coming Soon</span>
+            </div>
+          )}
 
-             <div className="absolute top-4 left-4 z-10 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-primary border border-border uppercase tracking-widest shadow-sm">
-               {activeTool === 'sandtray' ? 'Digital Sandtray' : activeTool === 'cbt' ? 'Thought Bridge' : 'Canvas'}
-             </div>
-             
-             {activeTool === 'sandtray' && (
-               <img src="/images/game-sandtray.jpg" className="w-full h-full object-cover opacity-80" alt="Sandtray" />
-             )}
-             {activeTool === 'cbt' && (
-               <img src="/images/game-cbt.jpg" className="w-full h-full object-cover opacity-80" alt="CBT" />
-             )}
-             {activeTool === 'draw' && (
-               <div className="w-full h-full bg-white flex items-center justify-center text-muted-foreground/30 font-serif text-4xl">
-                 Shared Whiteboard Canvas
-               </div>
-             )}
-
-             {/* Mock Cursors (Multi-User) */}
-             {!isCanvasLocked && participants.filter(p => p.status === 'active' && p.id !== '1').map((p, i) => (
-               <motion.div 
-                 key={p.id}
-                 className="absolute z-20"
-                 style={{ top: `${40 + i * 10}%`, left: `${30 + i * 20}%` }}
-                 animate={{ 
-                   x: [0, 50, -30, 0], 
-                   y: [0, -40, 20, 0],
-                 }}
-                 transition={{ 
-                   duration: 8 + i * 2, 
-                   repeat: Infinity, 
-                   ease: "easeInOut" 
-                 }}
-               >
-                  <div className="flex flex-col items-center">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="drop-shadow-md">
-                      <path d="M3 3L10.07 19.97L12.58 12.58L19.97 10.07L3 3Z" fill={p.isAnonymous ? "#94a3b8" : "#D4AF37"} stroke="white" strokeWidth="2"/>
-                    </svg>
-                    <span className={cn(
-                      "text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm mt-1 transition-all",
-                      p.isAnonymous ? "bg-slate-400" : "bg-accent"
-                    )}>
-                      {p.isAnonymous ? "Anon" : p.name.split(' ')[0]}
-                    </span>
-                  </div>
-               </motion.div>
-             ))}
-           </motion.div>
-
-           {/* Moderator Overlay (Clinician Only) */}
-           <AnimatePresence>
-             {isClinician && (
-               <motion.div
-                 initial={{ y: 100, opacity: 0 }}
-                 animate={{ y: 0, opacity: 1 }}
-                 exit={{ y: 100, opacity: 0 }}
-                 className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-40"
-               >
-                 <div className="bg-primary/90 backdrop-blur-xl text-primary-foreground p-2 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-1 md:gap-2 ring-1 ring-black/5">
-                   <div className="hidden md:flex flex-col px-3 border-r border-white/10 mr-1">
-                     <span className="text-[10px] font-bold uppercase tracking-widest text-accent">Moderator</span>
-                     <span className="text-xs opacity-70">Controls</span>
-                   </div>
-
-                   <button 
-                     onClick={() => setIsCanvasLocked(!isCanvasLocked)}
-                     className={cn(
-                       "flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all active:scale-95 gap-1",
-                       isCanvasLocked ? "bg-destructive text-white shadow-inner shadow-black/20" : "hover:bg-white/10"
-                     )}
-                   >
-                     {isCanvasLocked ? <Unlock size={20} /> : <Lock size={20} />}
-                     <span className="text-[9px] font-medium">{isCanvasLocked ? "Unlock" : "Lock"}</span>
-                   </button>
-
-                   <button 
-                     className="flex flex-col items-center justify-center w-14 h-14 rounded-xl hover:bg-white/10 transition-all active:scale-95 gap-1 group"
-                     onClick={() => {
-                        // Demo reset flash
-                        const el = document.querySelector('.bg-white.rounded-3xl');
-                        el?.classList.add('brightness-150');
-                        setTimeout(() => el?.classList.remove('brightness-150'), 200);
-                     }}
-                   >
-                     <RotateCcw size={20} className="group-hover:-rotate-90 transition-transform" />
-                     <span className="text-[9px] font-medium">Reset</span>
-                   </button>
-
-                   <div className="w-px h-8 bg-white/10 mx-1" />
-
-                   <button 
-                     onClick={toggleAnonymity}
-                     className={cn(
-                       "flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all active:scale-95 gap-1",
-                       isAnonymousMode ? "bg-purple-500/80 text-white" : "hover:bg-white/10"
-                     )}
-                   >
-                     {isAnonymousMode ? <Ghost size={20} /> : <Eye size={20} />}
-                     <span className="text-[9px] font-medium">{isAnonymousMode ? "Anon On" : "Visible"}</span>
-                   </button>
-
-                   <div className="md:hidden">
-                     <Sheet>
-                       <SheetTrigger asChild>
-                         <button className="flex flex-col items-center justify-center w-14 h-14 rounded-xl hover:bg-white/10 transition-all active:scale-95 gap-1">
-                           <Users size={20} />
-                           <span className="text-[9px] font-medium">Users</span>
-                         </button>
-                       </SheetTrigger>
-                     </Sheet>
-                   </div>
-                 </div>
-               </motion.div>
-             )}
-           </AnimatePresence>
+          {/* Moderator Overlay */}
+          <AnimatePresence>
+            {isClinician && (
+              <ModeratorBar
+                isCanvasLocked={isCanvasLocked}
+                isAnonymous={isAnonymous}
+                onToggleLock={handleToggleLock}
+                onToggleAnonymity={handleToggleAnonymity}
+                onClearCanvas={handleClearCanvas}
+                participantCount={onlineUsers.length}
+              />
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Tools & Participants Sidebar (Desktop) */}
+        {/* Tools Sidebar (Desktop) */}
         <AnimatePresence>
           {toolsOpen && (
             <motion.aside
@@ -292,34 +347,34 @@ export default function Playroom() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="w-80 bg-white border-l border-border shadow-2xl z-30 hidden md:flex flex-col"
+              className="w-72 bg-white border-l border-border shadow-2xl z-30 hidden md:flex flex-col"
             >
-              <div className="p-6 border-b border-border/50">
+              <div className="p-5 border-b border-border/50">
                 <h2 className="font-serif text-primary text-lg">Toolkit</h2>
-                <p className="text-xs text-muted-foreground mt-1">Select an activity to launch</p>
               </div>
-              
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+
+              <div className="flex-1 overflow-y-auto p-3 space-y-2">
                 {[
-                  { id: 'sandtray', label: 'Sandtray', icon: Palette, desc: 'World building' },
-                  { id: 'cbt', label: 'Thought Bridge', icon: Brain, desc: 'CBT Exercises' },
-                  { id: 'draw', label: 'Whiteboard', icon: Shapes, desc: 'Free draw' },
+                  { id: "sandtray", label: "Zen Sandtray", icon: Palette, desc: "Expressive world-building" },
+                  { id: "cbt", label: "Thought Bridge", icon: Brain, desc: "CBT exercises" },
+                  { id: "draw", label: "Whiteboard", icon: Shapes, desc: "Free drawing" },
                 ].map((tool) => (
                   <button
                     key={tool.id}
                     onClick={() => setActiveTool(tool.id)}
                     className={cn(
-                      "w-full p-4 rounded-xl border text-left transition-all duration-200 flex items-start gap-4 hover:shadow-md cursor-pointer",
-                      activeTool === tool.id 
-                        ? "bg-primary text-primary-foreground border-primary" 
+                      "w-full p-3 rounded-xl border text-left transition-all duration-200 flex items-start gap-3 hover:shadow-md cursor-pointer",
+                      activeTool === tool.id
+                        ? "bg-primary text-primary-foreground border-primary"
                         : "bg-white border-border hover:border-accent/50"
                     )}
+                    data-testid={`button-tool-${tool.id}`}
                   >
                     <div className={cn("p-2 rounded-lg", activeTool === tool.id ? "bg-white/10" : "bg-secondary")}>
-                      <tool.icon size={20} />
+                      <tool.icon size={18} />
                     </div>
                     <div>
-                      <div className="font-medium">{tool.label}</div>
+                      <div className="font-medium text-sm">{tool.label}</div>
                       <div className={cn("text-xs mt-0.5", activeTool === tool.id ? "text-primary-foreground/70" : "text-muted-foreground")}>
                         {tool.desc}
                       </div>
@@ -327,36 +382,63 @@ export default function Playroom() {
                   </button>
                 ))}
 
-                <div className="mt-8 pt-8 border-t border-border/50">
-                   <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4 px-2">Participants ({participants.length})</h3>
-                   <div className="space-y-3">
-                     {participants.map(p => (
-                       <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/30 transition-colors">
-                         <div className="relative">
-                           <Avatar className="h-9 w-9 border border-white shadow-sm">
-                             <AvatarImage src={p.isAnonymous ? '' : p.avatar} />
-                             <AvatarFallback className={cn("bg-secondary text-primary text-xs", p.isAnonymous && "bg-neutral-200")}>
-                               {p.isAnonymous ? <Ghost size={14} className="text-muted-foreground" /> : p.name.charAt(0)}
-                             </AvatarFallback>
-                           </Avatar>
-                           {p.status === 'active' && <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full animate-pulse" />}
-                         </div>
-                         <div className="flex-1 min-w-0">
-                           <div className="text-sm font-medium text-primary flex items-center justify-between">
-                             <span className="truncate">{p.isAnonymous ? "Anonymous" : p.name}</span>
-                             {p.role === 'clinician' && <Shield size={12} className="text-accent fill-accent/20" />}
-                           </div>
-                           <div className="text-[10px] text-muted-foreground capitalize">{p.role}</div>
-                         </div>
-                       </div>
-                     ))}
-                   </div>
+                {/* Online Users */}
+                <div className="mt-6 pt-6 border-t border-border/50">
+                  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3 px-1">
+                    Online ({onlineUsers.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {onlineUsers.map(u => (
+                      <div key={u.participantId} className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/30 transition-colors">
+                        <div className="relative">
+                          <Avatar className="h-8 w-8 border border-white shadow-sm">
+                            <AvatarFallback className={cn("bg-secondary text-primary text-xs", isAnonymous && "bg-neutral-200")}>
+                              {isAnonymous ? <Ghost size={12} className="text-muted-foreground" /> : u.displayName.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border border-white rounded-full" />
+                        </div>
+                        <span className="text-sm font-medium text-primary truncate">
+                          {isAnonymous ? "Anonymous" : u.displayName}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Invite Code */}
+                {session?.inviteCode && (
+                  <div className="mt-4 p-3 rounded-xl bg-accent/5 border border-accent/20">
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-accent mb-1">Invite Code</p>
+                    <p className="text-lg font-mono font-bold text-primary tracking-widest">{session.inviteCode}</p>
+                  </div>
+                )}
               </div>
             </motion.aside>
           )}
         </AnimatePresence>
       </div>
+
+      {/* User Joined Notification */}
+      <AnimatePresence>
+        {joinNotification && (
+          <motion.div
+            initial={{ y: -60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -60, opacity: 0 }}
+            className="absolute top-20 left-1/2 -translate-x-1/2 z-50"
+          >
+            <div className="bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-full shadow-lg text-primary text-sm font-medium border border-accent/20 flex items-center gap-2">
+              <motion.span
+                animate={{ scale: [1, 1.4, 1] }}
+                transition={{ duration: 0.6 }}
+                className="w-2 h-2 rounded-full bg-accent inline-block"
+              />
+              {joinNotification} joined
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
