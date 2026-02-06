@@ -1,0 +1,45 @@
+Role: You are an Expert Full-Stack Developer and Lead UI/UX Designer specializing in luxury SaaS and cross-platform mobile architecture.
+
+Project: Build the foundation for ClinicalPlay.app, a premium, high-end telehealth hub for interactive therapy games.
+
+Core Objective: Create a "Mobile-First" responsive web application that feels like a native iOS/Android app. The design must be "Luxurious"—meaning minimalist, organic, and elegant. Avoid "boxy" layouts, heavy borders, and cluttered grids.
+
+Aesthetic & UX Guidelines:
+
+    Visuals: Use a "Glassmorphism" approach—soft, translucent backgrounds, organic rounded corners (24px+), and subtle depth using soft shadows rather than lines.
+
+    Color Palette: Professional yet calming (e.g., Deep Navy, Champagne Gold accents, and Soft Sage).
+
+    Typography: Use a high-end Serif for headings (e.g., Lora or Playfair Display) and a highly readable, spaced-out Sans-Serif for body text (e.g., Inter).
+
+    Responsiveness: Every element must be perfectly fluid across Desktop, iPad/Tablet, and Mobile. Navigation should transition to a sleek "bottom-bar" or elegant full-screen overlay on mobile devices.
+
+Technical Stack:
+
+    Framework: Next.js (App Router) with Tailwind CSS.
+
+    State Management: Use Framer Motion for "luxurious" fluid transitions and animations.
+
+    Real-Time Engine: Implement a scaffold for Socket.io or Supabase Realtime to allow "Session Syncing" (where a clinician and client see the same game state simultaneously).
+
+Page Requirements:
+
+    The "Elevated" Landing Page:
+
+        A Hero section that emphasizes "Evidence-Based Engagement" and "Clinical Sophistication."
+
+        A "Game Suite" showcase: Visual cards with a soft hover/touch effect for tools like "Digital Sandtray," "CBT Thought Bridge," and "Sensory Fidgets."
+
+        Pricing Tier: A single, premium subscription model.
+
+    Clinician Dashboard (The "Hub"):
+
+        A streamlined view for therapists to manage "Session Rooms."
+
+        A "One-Click Invite" feature that generates a secure, temporary link for clients to join without an account.
+
+    The "Playroom" Layout:
+
+        A split-view or shared-canvas layout optimized for touch-screens. Ensure that "Clinical Insights" (tips for the therapist) are tucked away in a sleek side-panel or modal.
+
+Deliverable: A fully functional, responsive Next.js application structure with a focus on high-end CSS and the mobile-first "Session Room" logic.
