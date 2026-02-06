@@ -79,6 +79,15 @@ export const valuesCardPlacements = pgTable("values_card_placements", {
   orderIndex: integer("order_index").notNull().default(0),
 });
 
+export const supportTickets = pgTable("support_tickets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  message: text("message").notNull(),
+  status: text("status").notNull().default("open"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // --- Insert Schemas ---
 
 export const insertTherapySessionSchema = createInsertSchema(therapySessions).pick({
@@ -138,6 +147,12 @@ export const insertValuesCardPlacementSchema = createInsertSchema(valuesCardPlac
   orderIndex: true,
 });
 
+export const insertSupportTicketSchema = createInsertSchema(supportTickets).pick({
+  name: true,
+  email: true,
+  message: true,
+});
+
 // --- Types ---
 
 export type InsertTherapySession = z.infer<typeof insertTherapySessionSchema>;
@@ -154,3 +169,5 @@ export type InsertTimelineEvent = z.infer<typeof insertTimelineEventSchema>;
 export type TimelineEvent = typeof timelineEvents.$inferSelect;
 export type InsertValuesCardPlacement = z.infer<typeof insertValuesCardPlacementSchema>;
 export type ValuesCardPlacement = typeof valuesCardPlacements.$inferSelect;
+export type InsertSupportTicket = z.infer<typeof insertSupportTicketSchema>;
+export type SupportTicket = typeof supportTickets.$inferSelect;

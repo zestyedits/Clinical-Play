@@ -133,3 +133,19 @@
     @apply bg-clip-text text-transparent bg-linear-to-r from-primary via-primary/80 to-accent;
   }
 }
+
+@media (hover: none) and (pointer: coarse) {
+  button:not(:disabled),
+  a[role="button"],
+  [data-testid^="button-"] {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s ease;
+  }
+
+  button:not(:disabled):active,
+  a[role="button"]:active,
+  [data-testid^="button-"]:active {
+    transform: scale(0.97);
+    opacity: 0.85;
+  }
+}

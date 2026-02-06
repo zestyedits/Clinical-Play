@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "./db";
 import {
   therapySessions, participants, sandtrayItems, toolSuggestions,
-  feelingWheelSelections, timelineEvents, valuesCardPlacements,
+  feelingWheelSelections, timelineEvents, valuesCardPlacements, supportTickets,
   type TherapySession, type InsertTherapySession,
   type Participant, type InsertParticipant,
   type SandtrayItem, type InsertSandtrayItem,
@@ -10,11 +10,14 @@ import {
   type FeelingWheelSelection, type InsertFeelingWheelSelection,
   type TimelineEvent, type InsertTimelineEvent,
   type ValuesCardPlacement, type InsertValuesCardPlacement,
+  type SupportTicket, type InsertSupportTicket,
 } from "@shared/schema";
 
 function generateInviteCode(): string {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
+
+const MAX_INVITE_CODE_RETRIES = 5;
 
 export interface IStorage {
   createSession(data: InsertTherapySession): Promise<TherapySession>;
@@ -52,16 +55,28 @@ export interface IStorage {
   updateValuesCardPlacement(id: string, data: Partial<ValuesCardPlacement>): Promise<ValuesCardPlacement | undefined>;
   removeValuesCardPlacement(id: string): Promise<void>;
   clearValuesCardPlacements(sessionId: string): Promise<void>;
+
+  addSupportTicket(data: InsertSupportTicket): Promise<SupportTicket>;
 }
 
 export class DatabaseStorage implements IStorage {
   async createSession(data: InsertTherapySession): Promise<TherapySession> {
-    const inviteCode = generateInviteCode();
-    const [session] = await db.insert(therapySessions).values({
-      ...data,
-      inviteCode,
-    }).returning();
-    return session;
+    for (let attempt = 0; attempt < MAX_INVITE_CODE_RETRIES; attempt++) {
+      const inviteCode = generateInviteCode();
+      try {
+        const [session] = await db.insert(therapySessions).values({
+          ...data,
+          inviteCode,
+        }).returning();
+        return session;
+      } catch (e: any) {
+        if (e.code === "23505" && e.constraint?.includes("invite_code")) {
+          continue;
+        }
+        throw e;
+      }
+    }
+    throw new Error("Failed to generate a unique invite code after multiple attempts");
   }
 
   async getSession(id: string): Promise<TherapySession | undefined> {
@@ -186,6 +201,11 @@ export class DatabaseStorage implements IStorage {
 
   async clearValuesCardPlacements(sessionId: string): Promise<void> {
     await db.delete(valuesCardPlacements).where(eq(valuesCardPlacements.sessionId, sessionId));
+  }
+
+  async addSupportTicket(data: InsertSupportTicket): Promise<SupportTicket> {
+    const [ticket] = await db.insert(supportTickets).values(data).returning();
+    return ticket;
   }
 }
 

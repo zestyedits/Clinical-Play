@@ -1,10 +1,11 @@
 import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Lock, CheckCircle2, Star, Palette, Wind, House, Clock, Layers, Shield, FileText, Target, Crown, Zap, Flame, Heart, Cookie } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ArrowUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function LandingPage() {
@@ -19,11 +20,21 @@ export default function LandingPage() {
     },
   });
 
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       navigate("/dashboard");
     }
   }, [isLoading, isAuthenticated, navigate]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 600);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const remaining = foundingSlots?.remaining ?? 100;
   const total = foundingSlots?.total ?? 100;
@@ -114,7 +125,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-20 px-6">
+      <section className="py-20 px-6" id="features">
         <div className="max-w-7xl mx-auto">
           <motion.div
             className="text-center mb-16 max-w-2xl mx-auto"
@@ -522,6 +533,22 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 w-12 h-12 rounded-full bg-primary/90 text-primary-foreground shadow-lg shadow-primary/30 backdrop-blur-sm flex items-center justify-center hover:bg-primary transition-colors cursor-pointer active:scale-90"
+            data-testid="button-back-to-top"
+          >
+            <ArrowUp size={20} />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

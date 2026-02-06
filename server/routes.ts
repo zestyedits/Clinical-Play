@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { type Server } from "http";
 import { storage } from "./storage";
-import { insertTherapySessionSchema, insertParticipantSchema, insertSandtrayItemSchema, insertToolSuggestionSchema } from "@shared/schema";
+import { insertTherapySessionSchema, insertParticipantSchema, insertSandtrayItemSchema, insertToolSuggestionSchema, insertSupportTicketSchema } from "@shared/schema";
 import { setupWebSocketServer } from "./websocket";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { registerStripeRoutes } from "./stripe";
@@ -126,6 +126,18 @@ export async function registerRoutes(
       const data = insertToolSuggestionSchema.parse(req.body);
       const suggestion = await storage.addToolSuggestion(data);
       res.json(suggestion);
+    } catch (e: any) {
+      res.status(400).json({ message: e.message });
+    }
+  });
+
+  // --- Support Ticket Routes ---
+
+  app.post("/api/support-tickets", async (req, res) => {
+    try {
+      const data = insertSupportTicketSchema.parse(req.body);
+      const ticket = await storage.addSupportTicket(data);
+      res.json(ticket);
     } catch (e: any) {
       res.status(400).json({ message: e.message });
     }

@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
-import { Plus, Users, Calendar, Video, ArrowRight, MoreHorizontal, Copy, CheckCircle2, LogOut, Crown, Flame, CreditCard } from "lucide-react";
+import { Plus, Users, Calendar, Video, ArrowRight, MoreHorizontal, Copy, CheckCircle2, Crown, Flame, CreditCard } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -13,7 +13,7 @@ export default function Dashboard() {
   const [, navigate] = useLocation();
   const [copied, setCopied] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const { user, isLoading: authLoading, isAuthenticated, logout } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -178,18 +178,10 @@ export default function Dashboard() {
             <button
               onClick={() => createSession.mutate()}
               disabled={createSession.isPending}
-              className="bg-primary text-primary-foreground px-6 py-3 rounded-full flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-transform cursor-pointer w-full md:w-auto justify-center disabled:opacity-50"
+              className="bg-primary text-primary-foreground px-6 py-3 rounded-full flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-transform cursor-pointer w-full md:w-auto justify-center disabled:opacity-50 active:scale-100"
               data-testid="button-new-session"
             >
               <Plus size={18} /> {createSession.isPending ? "Creating..." : "New Session Room"}
-            </button>
-            <button
-              onClick={() => logout()}
-              className="p-3 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-              data-testid="button-logout"
-              title="Sign out"
-            >
-              <LogOut size={18} />
             </button>
           </div>
         </motion.div>
