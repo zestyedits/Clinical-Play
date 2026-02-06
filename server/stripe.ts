@@ -122,7 +122,7 @@ export function registerStripeRoutes(app: Express) {
     }
   });
 
-  app.post("/api/billing/webhook", async (req: Request, res: Response) => {
+  app.post("/api/webhooks/stripe", async (req: Request, res: Response) => {
     const sig = req.headers["stripe-signature"];
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -135,22 +135,28 @@ export function registerStripeRoutes(app: Express) {
           sig,
           webhookSecret
         );
-      } else {
+      } else if (!webhookSecret) {
+        log("WARNING: STRIPE_WEBHOOK_SECRET not set — accepting unverified webhook for development");
         event = req.body as Stripe.Event;
+      } else {
+        return res.status(400).json({ message: "Missing stripe-signature header" });
       }
     } catch (e: any) {
       log(`Webhook signature verification failed: ${e.message}`);
-      return res.status(400).json({ message: "Webhook verification failed" });
+      return res.status(400).json({ message: "Webhook signature verification failed" });
     }
 
     try {
       switch (event.type) {
         case "checkout.session.completed": {
           const session = event.data.object as Stripe.Checkout.Session;
-          const userId = session.metadata?.userId;
+          const userId = session.metadata?.userId || session.client_reference_id;
           const plan = session.metadata?.plan;
 
-          if (!userId) break;
+          if (!userId) {
+            log("Webhook: checkout.session.completed missing userId in metadata");
+            break;
+          }
 
           if ((plan === "community" || plan === "annual") && session.subscription) {
             await db.update(users).set({
@@ -189,6 +195,9 @@ export function registerStripeRoutes(app: Express) {
           }
           break;
         }
+
+        default:
+          log(`Webhook: unhandled event type ${event.type}`);
       }
 
       res.json({ received: true });
@@ -198,7 +207,7 @@ export function registerStripeRoutes(app: Express) {
     }
   });
 
-  app.post("/api/billing/portal", isAuthenticated, async (req: any, res: Response) => {
+  app.post("/api/create-portal-session", isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const [user] = await db.select().from(users).where(eq(users.id, userId));

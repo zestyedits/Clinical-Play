@@ -108,7 +108,7 @@ export default function Dashboard() {
 
   const manageSubscription = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/billing/portal", {
+      const res = await fetch("/api/create-portal-session", {
         method: "POST",
         credentials: "include",
       });
@@ -116,7 +116,7 @@ export default function Dashboard() {
       return res.json();
     },
     onSuccess: (data: { url: string }) => {
-      if (data.url) window.location.href = data.url;
+      if (data.url) window.open(data.url, "_blank");
     },
   });
 
