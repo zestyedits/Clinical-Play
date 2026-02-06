@@ -43,3 +43,9 @@ waitForPort = 5000
 stack = "MOCKUP_JS"
 mockupState = "FULLSTACK"
 integrations = ["javascript_log_in_with_replit:2.0.0"]
+
+[userenv]
+
+[userenv.shared]
+FOUNDING_MEMBER_TOTAL_SLOTS = "100"
+FOUNDING_MEMBER_REMAINING_SLOTS = "100"

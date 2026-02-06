@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean, real } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, real, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -48,6 +48,39 @@ export const toolSuggestions = pgTable("tool_suggestions", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const feelingWheelSelections = pgTable("feeling_wheel_selections", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => therapySessions.id),
+  selectedBy: varchar("selected_by"),
+  primaryEmotion: text("primary_emotion").notNull(),
+  secondaryEmotion: text("secondary_emotion"),
+  tertiaryEmotion: text("tertiary_emotion"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const timelineEvents = pgTable("timeline_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => therapySessions.id),
+  placedBy: varchar("placed_by"),
+  label: text("label").notNull(),
+  description: text("description"),
+  position: real("position").notNull(),
+  color: text("color").notNull().default("#1B2A4A"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const valuesCardPlacements = pgTable("values_card_placements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => therapySessions.id),
+  placedBy: varchar("placed_by"),
+  cardId: text("card_id").notNull(),
+  label: text("label").notNull(),
+  column: text("column").notNull().default("deck"),
+  orderIndex: integer("order_index").notNull().default(0),
+});
+
+// --- Insert Schemas ---
+
 export const insertTherapySessionSchema = createInsertSchema(therapySessions).pick({
   name: true,
   clinicianId: true,
@@ -72,10 +105,6 @@ export const insertSandtrayItemSchema = createInsertSchema(sandtrayItems).pick({
   rotation: true,
 });
 
-export type InsertTherapySession = z.infer<typeof insertTherapySessionSchema>;
-export type TherapySession = typeof therapySessions.$inferSelect;
-export type InsertParticipant = z.infer<typeof insertParticipantSchema>;
-export type Participant = typeof participants.$inferSelect;
 export const insertToolSuggestionSchema = createInsertSchema(toolSuggestions).pick({
   clinicianId: true,
   toolName: true,
@@ -83,7 +112,45 @@ export const insertToolSuggestionSchema = createInsertSchema(toolSuggestions).pi
   email: true,
 });
 
+export const insertFeelingWheelSelectionSchema = createInsertSchema(feelingWheelSelections).pick({
+  sessionId: true,
+  selectedBy: true,
+  primaryEmotion: true,
+  secondaryEmotion: true,
+  tertiaryEmotion: true,
+});
+
+export const insertTimelineEventSchema = createInsertSchema(timelineEvents).pick({
+  sessionId: true,
+  placedBy: true,
+  label: true,
+  description: true,
+  position: true,
+  color: true,
+});
+
+export const insertValuesCardPlacementSchema = createInsertSchema(valuesCardPlacements).pick({
+  sessionId: true,
+  placedBy: true,
+  cardId: true,
+  label: true,
+  column: true,
+  orderIndex: true,
+});
+
+// --- Types ---
+
+export type InsertTherapySession = z.infer<typeof insertTherapySessionSchema>;
+export type TherapySession = typeof therapySessions.$inferSelect;
+export type InsertParticipant = z.infer<typeof insertParticipantSchema>;
+export type Participant = typeof participants.$inferSelect;
 export type InsertSandtrayItem = z.infer<typeof insertSandtrayItemSchema>;
 export type SandtrayItem = typeof sandtrayItems.$inferSelect;
 export type InsertToolSuggestion = z.infer<typeof insertToolSuggestionSchema>;
 export type ToolSuggestion = typeof toolSuggestions.$inferSelect;
+export type InsertFeelingWheelSelection = z.infer<typeof insertFeelingWheelSelectionSchema>;
+export type FeelingWheelSelection = typeof feelingWheelSelections.$inferSelect;
+export type InsertTimelineEvent = z.infer<typeof insertTimelineEventSchema>;
+export type TimelineEvent = typeof timelineEvents.$inferSelect;
+export type InsertValuesCardPlacement = z.infer<typeof insertValuesCardPlacementSchema>;
+export type ValuesCardPlacement = typeof valuesCardPlacements.$inferSelect;

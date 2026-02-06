@@ -58,9 +58,14 @@ export function setupWebSocketServer(server: Server) {
             }
             rooms.get(sessionId)!.add(client);
 
-            const items = await storage.getSandtrayItems(sessionId);
-            const participants = await storage.getParticipantsBySession(sessionId);
-            const session = await storage.getSession(sessionId);
+            const [items, participants, session, feelingSelections, timelineEvts, valuesCards] = await Promise.all([
+              storage.getSandtrayItems(sessionId),
+              storage.getParticipantsBySession(sessionId),
+              storage.getSession(sessionId),
+              storage.getFeelingSelections(sessionId),
+              storage.getTimelineEvents(sessionId),
+              storage.getValuesCardPlacements(sessionId),
+            ]);
             const state = getRoomState(sessionId);
 
             ws.send(JSON.stringify({
@@ -75,6 +80,9 @@ export function setupWebSocketServer(server: Server) {
               activeTool: state.activeTool,
               breathingActive: state.breathingActive,
               breathingStartTime: state.breathingStartTime,
+              feelingSelections,
+              timelineEvents: timelineEvts,
+              valuesCards,
             }));
 
             broadcast(sessionId, {
@@ -196,6 +204,135 @@ export function setupWebSocketServer(server: Server) {
               participantId: client.participantId,
               displayName: client.displayName,
             }, ws);
+            break;
+          }
+
+          // --- Feeling Wheel ---
+          case "feeling-select": {
+            if (!client) return;
+            const sel = await storage.addFeelingSelection({
+              sessionId: client.sessionId,
+              selectedBy: client.participantId,
+              primaryEmotion: msg.primaryEmotion,
+              secondaryEmotion: msg.secondaryEmotion || null,
+              tertiaryEmotion: msg.tertiaryEmotion || null,
+            });
+            broadcast(client.sessionId, {
+              type: "feeling-selected",
+              selection: sel,
+              selectedBy: client.participantId,
+              displayName: client.displayName,
+            });
+            break;
+          }
+
+          case "feeling-clear": {
+            if (!client) return;
+            await storage.clearFeelingSelections(client.sessionId);
+            broadcast(client.sessionId, { type: "feelings-cleared" });
+            break;
+          }
+
+          // --- Narrative Timeline ---
+          case "timeline-event-add": {
+            if (!client) return;
+            const evt = await storage.addTimelineEvent({
+              sessionId: client.sessionId,
+              placedBy: client.participantId,
+              label: msg.label,
+              description: msg.description || null,
+              position: msg.position,
+              color: msg.color || "#1B2A4A",
+            });
+            broadcast(client.sessionId, {
+              type: "timeline-event-added",
+              event: evt,
+              placedBy: client.participantId,
+              displayName: client.displayName,
+            });
+            break;
+          }
+
+          case "timeline-event-update": {
+            if (!client) return;
+            const updatedEvt = await storage.updateTimelineEvent(msg.eventId, {
+              label: msg.label,
+              description: msg.description,
+              position: msg.position,
+              color: msg.color,
+            });
+            broadcast(client.sessionId, {
+              type: "timeline-event-updated",
+              event: updatedEvt,
+            });
+            break;
+          }
+
+          case "timeline-event-remove": {
+            if (!client) return;
+            await storage.removeTimelineEvent(msg.eventId);
+            broadcast(client.sessionId, {
+              type: "timeline-event-removed",
+              eventId: msg.eventId,
+            });
+            break;
+          }
+
+          case "timeline-clear": {
+            if (!client) return;
+            await storage.clearTimelineEvents(client.sessionId);
+            broadcast(client.sessionId, { type: "timeline-cleared" });
+            break;
+          }
+
+          // --- Values Card Sort ---
+          case "values-card-place": {
+            if (!client) return;
+            const card = await storage.addValuesCardPlacement({
+              sessionId: client.sessionId,
+              placedBy: client.participantId,
+              cardId: msg.cardId,
+              label: msg.label,
+              column: msg.column,
+              orderIndex: msg.orderIndex || 0,
+            });
+            broadcast(client.sessionId, {
+              type: "values-card-placed",
+              card,
+              placedBy: client.participantId,
+              displayName: client.displayName,
+            });
+            break;
+          }
+
+          case "values-card-move": {
+            if (!client) return;
+            const movedCard = await storage.updateValuesCardPlacement(msg.cardId, {
+              column: msg.column,
+              orderIndex: msg.orderIndex,
+            });
+            broadcast(client.sessionId, {
+              type: "values-card-moved",
+              card: movedCard,
+              movedBy: client.participantId,
+            });
+            break;
+          }
+
+          case "values-card-remove": {
+            if (!client) return;
+            await storage.removeValuesCardPlacement(msg.cardId);
+            broadcast(client.sessionId, {
+              type: "values-card-removed",
+              cardId: msg.cardId,
+            });
+            break;
+          }
+
+          case "values-clear": {
+            if (!client) return;
+            await storage.clearValuesCardPlacements(client.sessionId);
+            broadcast(client.sessionId, { type: "values-cleared" });
             break;
           }
         }

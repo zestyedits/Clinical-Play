@@ -1,0 +1,42 @@
+Master Prompt: ClinicalPlay.app — The Launch Suite Buildout
+
+Role: Lead Game Systems Architect and Full-Stack Developer. Objective: Implement the remaining 3 core tools to complete the "ClinicalPlay Launch Suite," ensuring all tools are real-time synchronized and mobile-responsive.
+Tool 1: The Feeling Wheel (Psycho-Ed & Assessment)
+
+    The Mechanic: A multi-layered, interactive wheel.
+
+    Interaction: The clinician or client can click a "Primary" emotion (e.g., Sadness), and the wheel smoothly rotates and expands to show "Secondary" (e.g., Lonely) and "Tertiary" (e.g., Abandoned) emotions.
+
+    Sync Logic: When one user clicks an emotion, it highlights and centers for everyone.
+
+    Style: Minimalist, soft pastel gradients.
+
+Tool 2: The Narrative Timeline (Narrative Therapy)
+
+    The Mechanic: A horizontal, scrollable "River" or line across the screen.
+
+    Interaction: Users click anywhere on the line to "drop a stone" (an event). A small text bubble pops up to label the event (e.g., "Moved to Nevada").
+
+    Sync Logic: Real-time placement of "stones" and text labels.
+
+    Style: Uses the "Soft Sage" and "Deep Navy" palette with organic, hand-drawn line aesthetics.
+
+Tool 3: The Values Card Sort (ACT-Informed)
+
+    The Mechanic: A deck of 20+ cards (e.g., Family, Freedom, Wealth, Health) at the bottom.
+
+    Interaction: A "Drag-and-Drop" interface where users move cards into three columns: "Very Important," "Important," and "Not Important."
+
+    Sync Logic: Collaborative sorting. The clinician can see the client's values being prioritized in real-time.
+
+    Style: High-end card deck feel with subtle hover/lift animations.
+
+Global Requirements for the Suite:
+
+    State Persistence: If a user refreshes their browser, the items (stones, cards, sandtray icons) must remain in their last known position for that session.
+
+    Asset Library Update: Centralize the asset management so new emojis or icons can be added to any tool via a single configuration file (tools-config.ts).
+
+    Haptic/Audio Feedback: Add a subtle, luxurious "click" or "thud" sound (using a tiny <audio> file or Web Audio API) when an item is placed or sorted.
+
+    The "Snapshot" Feature: Add a button in the Clinician Sidebar: "Export Session Summary." This generates a clean, high-resolution PNG of the current tool's state (Canvas, Timeline, or Card Sort) for the therapist's records.

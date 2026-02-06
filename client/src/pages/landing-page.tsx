@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { motion } from "framer-motion";
-import { ArrowRight, Lock, CheckCircle2, Star, Palette, Wind, House, Clock, Layers, Shield, FileText } from "lucide-react";
+import { ArrowRight, Lock, CheckCircle2, Star, Palette, Wind, House, Clock, Layers, Shield, FileText, Target } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { useEffect } from "react";
@@ -109,19 +109,37 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {[
               { 
                 title: "Zen Sandtray", 
-                desc: "Expressive world-building with drag-and-drop emoji assets. Clinicians moderate in real-time with lock controls, anonymity toggles, and collaborative placement.",
+                desc: "Expressive world-building with drag-and-drop emoji assets. Real-time collaborative placement with moderator controls.",
                 icon: Palette,
                 gradient: "from-amber-100 to-amber-50",
               },
               { 
                 title: "Calm Breathing Guide", 
-                desc: "Synchronized breathing exercises that pulse on every participant's screen. Clinician-controlled 4-phase rhythm: inhale, hold, exhale, rest.",
+                desc: "Synchronized 4-phase breathing exercises that pulse on every participant's screen in real-time.",
                 icon: Wind,
                 gradient: "from-emerald-100 to-emerald-50",
+              },
+              { 
+                title: "Feeling Wheel", 
+                desc: "Multi-layered emotional exploration — primary, secondary, and tertiary emotions with real-time highlighting.",
+                icon: Target,
+                gradient: "from-purple-100 to-purple-50",
+              },
+              { 
+                title: "Narrative Timeline", 
+                desc: "A visual river where clients drop stones to map life events. Collaborative, scrollable, and deeply personal.",
+                icon: Clock,
+                gradient: "from-teal-100 to-teal-50",
+              },
+              { 
+                title: "Values Card Sort", 
+                desc: "Drag-and-drop card deck for prioritizing personal values — a cornerstone of ACT and motivational interviewing.",
+                icon: Layers,
+                gradient: "from-rose-100 to-rose-50",
               },
             ].map((tool, i) => (
               <motion.div
@@ -129,18 +147,18 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.15 }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
               >
                 <GlassCard className="group cursor-pointer h-full">
                   <div className={`aspect-[3/2] overflow-hidden bg-linear-to-br ${tool.gradient} flex items-center justify-center relative`}>
-                    <tool.icon size={80} className="text-primary/10 group-hover:text-primary/20 transition-colors duration-500" />
+                    <tool.icon size={64} className="text-primary/10 group-hover:text-primary/20 transition-colors duration-500" />
                     <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-green-700 border border-green-200">
                       Active
                     </div>
                   </div>
-                  <div className="p-8">
-                    <h3 className="text-2xl font-serif text-primary mb-3 group-hover:text-accent transition-colors">{tool.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{tool.desc}</p>
+                  <div className="p-6">
+                    <h3 className="text-xl font-serif text-primary mb-2 group-hover:text-accent transition-colors">{tool.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{tool.desc}</p>
                   </div>
                 </GlassCard>
               </motion.div>
@@ -149,11 +167,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Future Roadmap */}
+      {/* Coming Next */}
       <section className="py-20 px-6 bg-white/30">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <motion.div
-            className="text-center mb-16 max-w-2xl mx-auto"
+            className="text-center mb-12 max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -162,59 +180,35 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/5 border border-blue-500/10 text-blue-600 text-xs font-semibold tracking-wider uppercase mb-6">
               Actively Building
             </div>
-            <h2 className="text-3xl md:text-5xl font-serif text-primary mb-4">The Future of Clinical Engagement</h2>
+            <h2 className="text-3xl md:text-5xl font-serif text-primary mb-4">What's Coming Next</h2>
             <p className="text-muted-foreground text-lg">
-              Our library is constantly growing. These evidence-based tools are currently in development.
+              Our library keeps growing. The DBT House is next in line.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "The DBT House",
-                desc: "A room-by-room framework for exploring emotional regulation, distress tolerance, and interpersonal effectiveness.",
-                icon: House,
-                color: "text-rose-500",
-                bg: "bg-rose-50",
-              },
-              {
-                title: "Narrative Timeline",
-                desc: "Visual life story mapping. Clients place meaningful events on a collaborative timeline to explore patterns and turning points.",
-                icon: Clock,
-                color: "text-violet-500",
-                bg: "bg-violet-50",
-              },
-              {
-                title: "Values Card Sort",
-                desc: "An interactive card-sorting exercise where clients prioritize personal values — a cornerstone of ACT and motivational interviewing.",
-                icon: Layers,
-                color: "text-teal-500",
-                bg: "bg-teal-50",
-              },
-            ].map((tool, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.15 }}
-              >
-                <GlassCard className="group h-full opacity-90 hover:opacity-100" hoverEffect={true}>
-                  <div className={`aspect-[4/3] overflow-hidden ${tool.bg} flex items-center justify-center relative`}>
-                    <tool.icon size={72} className={`${tool.color} opacity-20 group-hover:opacity-30 transition-opacity duration-500`} />
-                    <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-blue-600 border border-blue-200 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                      In Development
-                    </div>
-                  </div>
-                  <div className="p-8">
-                    <h3 className="text-xl font-serif text-primary mb-2 group-hover:text-accent transition-colors">{tool.title}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">{tool.desc}</p>
-                  </div>
-                </GlassCard>
-              </motion.div>
-            ))}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-lg mx-auto"
+          >
+            <GlassCard className="group opacity-90 hover:opacity-100" hoverEffect={true}>
+              <div className="aspect-[4/3] overflow-hidden bg-rose-50 flex items-center justify-center relative">
+                <House size={72} className="text-rose-500 opacity-20 group-hover:opacity-30 transition-opacity duration-500" />
+                <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-blue-600 border border-blue-200 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                  In Development
+                </div>
+              </div>
+              <div className="p-8">
+                <h3 className="text-xl font-serif text-primary mb-2 group-hover:text-accent transition-colors">The DBT House</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  A room-by-room framework for exploring emotional regulation, distress tolerance, mindfulness, and interpersonal effectiveness — core DBT skills, visualized.
+                </p>
+              </div>
+            </GlassCard>
+          </motion.div>
         </div>
       </section>
 

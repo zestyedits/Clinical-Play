@@ -27,6 +27,45 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: string[] }> = {
       "What did you notice during the hold phase?",
     ],
   },
+  feelings: {
+    title: "Feeling Wheel Prompts",
+    prompts: [
+      "What surprised you about the emotion you landed on?",
+      "When did you first start noticing this feeling today?",
+      "Where in your body do you experience this emotion?",
+      "On a scale of 1-10, how intense is this feeling right now?",
+      "Is this a familiar feeling, or is it new?",
+      "What would you need in order to feel 1 point better?",
+      "If this emotion had a shape, what would it look like?",
+      "What triggered this emotion? Can you trace it back?",
+    ],
+  },
+  narrative: {
+    title: "Narrative Timeline Prompts",
+    prompts: [
+      "Which event on the timeline feels the heaviest?",
+      "Are there any gaps in the timeline that feel important?",
+      "What would the 'turning point' stone look like for you?",
+      "If you could change one event, which would it be?",
+      "What theme connects these events together?",
+      "Which event are you most proud of surviving?",
+      "What stone would you place for today? Where does it go?",
+      "If your future had a stone, what color and label would it have?",
+    ],
+  },
+  "values-sort": {
+    title: "Values Card Sort Prompts",
+    prompts: [
+      "Were any of these categories surprising to you?",
+      "Which value did you sort the fastest — what does that tell us?",
+      "Is there a tension between any of your top values?",
+      "How aligned is your daily life with your top values?",
+      "Which 'Not Important' value used to be important to you?",
+      "If you had to keep only three, which would they be?",
+      "How does seeing your values laid out make you feel?",
+      "What would change if you lived more by your #1 value?",
+    ],
+  },
 };
 
 interface ClinicalInsightsProps {

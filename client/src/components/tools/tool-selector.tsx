@@ -15,11 +15,11 @@ interface Tool {
 const TOOLS: Tool[] = [
   { id: "sandtray", label: "Zen Sandtray", desc: "Expressive world-building with drag-and-drop assets", icon: Palette, status: "active" },
   { id: "breathing", label: "Calm Breathing", desc: "Synchronized breathing exercise for the group", icon: Wind, status: "active" },
+  { id: "feelings", label: "Feeling Wheel", desc: "Multi-layered emotional identification and exploration", icon: Target, status: "active" },
+  { id: "narrative", label: "Narrative Timeline", desc: "Visual life story and event mapping on a river", icon: Clock, status: "active" },
+  { id: "values-sort", label: "Values Card Sort", desc: "Interactive values identification and prioritization", icon: Layers, status: "active" },
   { id: "dbt-house", label: "The DBT House", desc: "Room-by-room emotional regulation framework", icon: House, status: "development" },
-  { id: "narrative", label: "Narrative Timeline", desc: "Visual life story and event mapping", icon: Clock, status: "development" },
-  { id: "values-sort", label: "Values Card Sort", desc: "Interactive values identification and prioritization", icon: Layers, status: "development" },
   { id: "cbt", label: "Thought Bridge (CBT)", desc: "Cognitive restructuring visualization", icon: Brain, status: "planned" },
-  { id: "feelings", label: "Feeling Wheel", desc: "Interactive emotional identification tool", icon: Target, status: "planned" },
 ];
 
 interface ToolSelectorProps {

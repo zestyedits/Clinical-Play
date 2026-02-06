@@ -1,5 +1,5 @@
 import { Link, useParams } from "wouter";
-import { ChevronRight, PanelRightClose, LogOut, Users, Ghost, Shield, Wrench } from "lucide-react";
+import { ChevronRight, PanelRightClose, LogOut, Users, Ghost, Shield, Wrench, Camera } from "lucide-react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,9 @@ import { ModeratorBar } from "@/components/sandtray/moderator-bar";
 import { ToolSelector } from "@/components/tools/tool-selector";
 import { BreathingGuide } from "@/components/tools/breathing-guide";
 import { ClinicalInsights } from "@/components/tools/clinical-insights";
+import { FeelingWheel, type FeelingSelection } from "@/components/tools/feeling-wheel";
+import { NarrativeTimeline, type TimelineEventData } from "@/components/tools/narrative-timeline";
+import { ValuesCardSort, type CardPlacement } from "@/components/tools/values-card-sort";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
 import type { TherapySession, Participant } from "@shared/schema";
@@ -47,6 +50,10 @@ export default function Playroom() {
   const [breathingActive, setBreathingActive] = useState(false);
   const [insightsOpen, setInsightsOpen] = useState(false);
 
+  const [feelingSelections, setFeelingSelections] = useState<FeelingSelection[]>([]);
+  const [timelineEvents, setTimelineEvents] = useState<TimelineEventData[]>([]);
+  const [valuesCards, setValuesCards] = useState<CardPlacement[]>([]);
+
   const isCanvasLocked = session?.isCanvasLocked ?? false;
   const isAnonymous = session?.isAnonymous ?? false;
 
@@ -55,6 +62,7 @@ export default function Playroom() {
     ? (user?.firstName ? `Dr. ${user.firstName}` : "Clinician")
     : "Guest";
   const throttleRef = useRef(0);
+  const toolAreaRef = useRef<HTMLDivElement>(null);
 
   const handleMessage = useCallback((msg: any) => {
     switch (msg.type) {
@@ -74,6 +82,23 @@ export default function Playroom() {
         if (msg.session) setSession(msg.session);
         if (msg.activeTool) setActiveTool(msg.activeTool);
         if (msg.breathingActive !== undefined) setBreathingActive(msg.breathingActive);
+        if (msg.feelingSelections) setFeelingSelections(msg.feelingSelections);
+        if (msg.timelineEvents) setTimelineEvents(msg.timelineEvents.map((e: any) => ({
+          id: e.id,
+          label: e.label,
+          description: e.description,
+          position: e.position,
+          color: e.color,
+          placedBy: e.placedBy,
+        })));
+        if (msg.valuesCards) setValuesCards(msg.valuesCards.map((c: any) => ({
+          id: c.id,
+          cardId: c.cardId,
+          label: c.label,
+          column: c.column,
+          orderIndex: c.orderIndex,
+          placedBy: c.placedBy,
+        })));
         break;
       case "item-placed":
         setItems(prev => [...prev, {
@@ -136,6 +161,60 @@ export default function Playroom() {
           u.participantId === msg.participantId ? { ...u, lastActive: Date.now() } : u
         ));
         break;
+
+      // Feeling Wheel
+      case "feeling-selected":
+        setFeelingSelections(prev => [...prev, msg.selection]);
+        break;
+      case "feelings-cleared":
+        setFeelingSelections([]);
+        break;
+
+      // Narrative Timeline
+      case "timeline-event-added":
+        setTimelineEvents(prev => [...prev, {
+          id: msg.event.id,
+          label: msg.event.label,
+          description: msg.event.description,
+          position: msg.event.position,
+          color: msg.event.color,
+          placedBy: msg.event.placedBy,
+        }]);
+        break;
+      case "timeline-event-updated":
+        setTimelineEvents(prev => prev.map(e =>
+          e.id === msg.event.id ? { ...e, ...msg.event } : e
+        ));
+        break;
+      case "timeline-event-removed":
+        setTimelineEvents(prev => prev.filter(e => e.id !== msg.eventId));
+        break;
+      case "timeline-cleared":
+        setTimelineEvents([]);
+        break;
+
+      // Values Card Sort
+      case "values-card-placed":
+        setValuesCards(prev => [...prev, {
+          id: msg.card.id,
+          cardId: msg.card.cardId,
+          label: msg.card.label,
+          column: msg.card.column,
+          orderIndex: msg.card.orderIndex,
+          placedBy: msg.card.placedBy,
+        }]);
+        break;
+      case "values-card-moved":
+        setValuesCards(prev => prev.map(c =>
+          c.id === msg.card.id ? { ...c, column: msg.card.column, orderIndex: msg.card.orderIndex } : c
+        ));
+        break;
+      case "values-card-removed":
+        setValuesCards(prev => prev.filter(c => c.id !== msg.cardId));
+        break;
+      case "values-cleared":
+        setValuesCards([]);
+        break;
     }
   }, []);
 
@@ -157,16 +236,9 @@ export default function Playroom() {
       .catch(() => {});
   }, [sessionId]);
 
+  // Sandtray handlers
   const handleItemDrop = useCallback((icon: string, category: string, x: number, y: number) => {
-    send({
-      type: "item-placed",
-      icon,
-      category,
-      x,
-      y,
-      scale: 1,
-      rotation: 0,
-    });
+    send({ type: "item-placed", icon, category, x, y, scale: 1, rotation: 0 });
     send({ type: "activity-pulse" });
   }, [send]);
 
@@ -213,6 +285,90 @@ export default function Playroom() {
     setBreathingActive(next);
     send({ type: "breathing-toggle", isActive: next });
   }, [send, breathingActive]);
+
+  // Feeling Wheel handlers
+  const handleFeelingSelect = useCallback((primary: string, secondary: string | null, tertiary: string | null) => {
+    send({ type: "feeling-select", primaryEmotion: primary, secondaryEmotion: secondary, tertiaryEmotion: tertiary });
+    send({ type: "activity-pulse" });
+  }, [send]);
+
+  const handleFeelingClear = useCallback(() => {
+    send({ type: "feeling-clear" });
+    setFeelingSelections([]);
+  }, [send]);
+
+  // Timeline handlers
+  const handleTimelineAdd = useCallback((label: string, description: string | null, position: number, color: string) => {
+    send({ type: "timeline-event-add", label, description, position, color });
+    send({ type: "activity-pulse" });
+  }, [send]);
+
+  const handleTimelineRemove = useCallback((eventId: string) => {
+    send({ type: "timeline-event-remove", eventId });
+    setTimelineEvents(prev => prev.filter(e => e.id !== eventId));
+  }, [send]);
+
+  const handleTimelineUpdate = useCallback((eventId: string, label: string, description: string | null, position: number, color: string) => {
+    send({ type: "timeline-event-update", eventId, label, description, position, color });
+  }, [send]);
+
+  const handleTimelineClear = useCallback(() => {
+    send({ type: "timeline-clear" });
+    setTimelineEvents([]);
+  }, [send]);
+
+  // Values Card Sort handlers
+  const handleValuesPlace = useCallback((cardId: string, label: string, column: string, orderIndex: number) => {
+    send({ type: "values-card-place", cardId, label, column, orderIndex });
+    send({ type: "activity-pulse" });
+  }, [send]);
+
+  const handleValuesMove = useCallback((placementId: string, column: string, orderIndex: number) => {
+    send({ type: "values-card-move", cardId: placementId, column, orderIndex });
+    send({ type: "activity-pulse" });
+  }, [send]);
+
+  const handleValuesRemove = useCallback((placementId: string) => {
+    send({ type: "values-card-remove", cardId: placementId });
+    setValuesCards(prev => prev.filter(c => c.id !== placementId));
+  }, [send]);
+
+  const handleValuesClear = useCallback(() => {
+    send({ type: "values-clear" });
+    setValuesCards([]);
+  }, [send]);
+
+  // Snapshot export
+  const handleSnapshot = useCallback(async () => {
+    const el = toolAreaRef.current;
+    if (!el) return;
+    try {
+      const { default: html2canvas } = await import("html2canvas");
+      const canvas = await html2canvas(el, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      const link = document.createElement("a");
+      link.download = `ClinicalPlay_${activeTool}_${new Date().toISOString().slice(0,10)}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch (err) {
+      console.error("Snapshot failed:", err);
+    }
+  }, [activeTool]);
+
+  const toolDisplayName = (tool: string) => {
+    switch (tool) {
+      case "sandtray": return "Zen Sandtray";
+      case "breathing": return "Calm Breathing";
+      case "feelings": return "Feeling Wheel";
+      case "narrative": return "Narrative Timeline";
+      case "values-sort": return "Values Card Sort";
+      default: return tool;
+    }
+  };
 
   return (
     <div className="h-screen w-full bg-background overflow-hidden flex flex-col font-sans">
@@ -261,6 +417,15 @@ export default function Playroom() {
                 <Shield size={12} className="text-accent fill-accent/20" />
                 <span className="text-xs font-medium text-accent">Clinician</span>
               </div>
+
+              <button
+                onClick={handleSnapshot}
+                className="p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary/50 transition-colors cursor-pointer"
+                data-testid="button-snapshot"
+                title="Export Session Summary"
+              >
+                <Camera size={20} />
+              </button>
 
               <button
                 onClick={() => setToolSelectorOpen(true)}
@@ -339,8 +504,8 @@ export default function Playroom() {
       {/* Main */}
       <div className="flex-1 flex overflow-hidden relative">
 
-        {/* Canvas Area */}
-        <div className="flex-1 relative">
+        {/* Tool Area */}
+        <div className="flex-1 relative" ref={toolAreaRef}>
           <AnimatePresence mode="wait">
             {activeTool === "sandtray" && (
               <motion.div
@@ -382,6 +547,64 @@ export default function Playroom() {
                   isActive={breathingActive}
                   isClinician={isClinician}
                   onToggle={handleToggleBreathing}
+                />
+              </motion.div>
+            )}
+
+            {activeTool === "feelings" && (
+              <motion.div
+                key="feelings"
+                className="absolute inset-0"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <FeelingWheel
+                  selections={feelingSelections}
+                  onSelect={handleFeelingSelect}
+                  onClear={handleFeelingClear}
+                  isClinician={isClinician}
+                />
+              </motion.div>
+            )}
+
+            {activeTool === "narrative" && (
+              <motion.div
+                key="narrative"
+                className="absolute inset-0"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <NarrativeTimeline
+                  events={timelineEvents}
+                  onAddEvent={handleTimelineAdd}
+                  onRemoveEvent={handleTimelineRemove}
+                  onUpdateEvent={handleTimelineUpdate}
+                  onClear={handleTimelineClear}
+                  isClinician={isClinician}
+                />
+              </motion.div>
+            )}
+
+            {activeTool === "values-sort" && (
+              <motion.div
+                key="values-sort"
+                className="absolute inset-0"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <ValuesCardSort
+                  placements={valuesCards}
+                  onPlaceCard={handleValuesPlace}
+                  onMoveCard={handleValuesMove}
+                  onRemoveCard={handleValuesRemove}
+                  onClear={handleValuesClear}
+                  isClinician={isClinician}
                 />
               </motion.div>
             )}
@@ -470,7 +693,7 @@ export default function Playroom() {
 
                 <div className="mt-4 p-4 rounded-2xl bg-white/40">
                   <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-2">Active Tool</p>
-                  <p className="text-sm font-medium text-primary capitalize">{activeTool === "sandtray" ? "Zen Sandtray" : activeTool === "breathing" ? "Calm Breathing" : activeTool}</p>
+                  <p className="text-sm font-medium text-primary">{toolDisplayName(activeTool)}</p>
                 </div>
               </div>
             </motion.aside>
