@@ -7,9 +7,13 @@ ClinicalPlay is a premium telehealth SaaS platform for interactive therapy games
 Key features include:
 - **Real-time collaboration** via WebSockets for synchronized canvas/game state
 - **Digital Sandtray** — a shared canvas where participants drag-and-drop emoji-based therapeutic assets
+- **Calm Breathing Guide** — a synchronized breathing bubble (SVG with Soft Sage → Deep Navy gradient, 4-phase: inhale 4s, hold 4s, exhale 6s, rest 2s) that clinicians control and syncs to all participants
+- **Tool Selector** — modal for switching between clinical tools (Sandtray, Breathing active; CBT, Feeling Wheel coming soon)
+- **Clinical Insights** — private clinician-only panel with contextual therapeutic prompts per active tool
 - **Session management** — clinicians create sessions, generate invite codes, and moderate (lock canvas, toggle anonymity, clear items)
 - **Moderator controls** — clinician-only tools for managing the session experience
-- **Mobile-first design** with bottom navigation bar on mobile, glassmorphism throughout
+- **Presence system** — activity pulse animations on participants when interacting with the canvas
+- **Mobile-first design** with bottom navigation bar on mobile, bottom dock asset library, glassmorphism throughout
 
 ## User Preferences
 
@@ -23,7 +27,7 @@ Preferred communication style: Simple, everyday language.
 - **State/Data Fetching**: TanStack React Query for server state, local React state for UI
 - **Styling**: Tailwind CSS v4 (using `@tailwindcss/vite` plugin), with CSS variables for theming
 - **UI Components**: shadcn/ui (new-york style) with Radix UI primitives — extensive component library in `client/src/components/ui/`
-- **Custom Components**: GlassCard (glassmorphic cards), ZenCanvas (sandtray), AssetLibrary (drag-and-drop assets), ModeratorBar (clinician controls)
+- **Custom Components**: GlassCard (glassmorphic cards), ZenCanvas (sandtray), AssetLibrary (drag-and-drop assets), ModeratorBar (clinician controls), BreathingGuide (SVG breathing bubble), ToolSelector (clinical tool modal), ClinicalInsights (private clinician prompts)
 - **Animations**: Framer Motion for page transitions and UI interactions
 - **Typography**: Lora (serif headings), Inter (sans-serif body), Playfair Display (display text) — loaded via Google Fonts
 - **Color Palette**: Deep Navy primary, Champagne Gold accent, Soft Sage background — defined as CSS custom properties
@@ -45,8 +49,10 @@ Preferred communication style: Simple, everyday language.
 
 ### WebSocket Protocol
 - Clients connect to `/ws` and send a `join` message with sessionId, participantId, displayName
-- Messages include: `join`, `item-add`, `item-move`, `item-remove`, `clear`, `cursor-move`, `toggle-lock`, `toggle-anonymity`, `tool-change`
+- Messages include: `join`, `item-placed`, `item-moved`, `item-removed`, `clear-canvas`, `cursor-move`, `session-update`, `tool-change`, `breathing-toggle`, `activity-pulse`
 - Room-based broadcasting ensures only participants in the same session receive updates
+- Server maintains per-room state (activeTool, breathingActive, breathingStartTime) for late-joiner synchronization
+- Init payload includes room state so new participants sync to current tool and breathing exercise status
 
 ### Data Storage
 - **Database**: PostgreSQL (required via `DATABASE_URL` environment variable)
@@ -62,25 +68,34 @@ Preferred communication style: Simple, everyday language.
 4. **sandtrayItems** — id, sessionId (FK), placedBy, icon, category, x, y, scale, rotation
 
 ### Authentication
-- Currently **not fully implemented** — the design docs call for Lucia Auth or Supabase Auth, but the current codebase has a users table with username/password fields and basic storage methods without auth middleware. Sessions are created without authentication checks. This is a planned feature.
+- **Replit Auth** integration via `@replit/express-auth` — supports Google, GitHub, Apple, and email/password sign-in
+- Auth routes: `GET /api/login` (redirect to Replit auth), `GET /api/logout`, `GET /api/auth/user` (returns authenticated user info)
+- Protected routes use `isAuthenticated` middleware to restrict session creation/management to authenticated clinicians
+- Session table (`sessions`) is managed by Replit Auth; app uses `therapy_sessions` table to avoid naming conflict
+- Auth state managed client-side via `useAuth` hook (`client/src/hooks/use-auth.ts`)
 
 ### Project Structure
 ```
 ├── client/              # Frontend (Vite + React)
 │   ├── src/
-│   │   ├── components/  # UI components (shadcn/ui + custom)
-│   │   ├── hooks/       # Custom hooks (useSessionSocket, useMobile, useToast)
-│   │   ├── lib/         # Utilities, query client, sandtray assets
-│   │   └── pages/       # Route pages (landing, dashboard, playroom, join-session)
+│   │   ├── components/
+│   │   │   ├── ui/              # shadcn/ui + GlassCard
+│   │   │   ├── layout/          # Navbar
+│   │   │   ├── sandtray/        # ZenCanvas, AssetLibrary, ModeratorBar
+│   │   │   └── tools/           # BreathingGuide, ToolSelector, ClinicalInsights
+│   │   ├── hooks/               # useSessionSocket, useAuth, useMobile, useToast
+│   │   ├── lib/                 # Utilities, query client, sandtray assets
+│   │   └── pages/               # landing-page, dashboard, playroom, join-session
 │   └── index.html
 ├── server/              # Backend (Express)
 │   ├── index.ts         # Entry point, middleware setup
 │   ├── routes.ts        # API route registration
 │   ├── storage.ts       # Database storage layer (IStorage interface + DatabaseStorage)
-│   ├── websocket.ts     # WebSocket server for real-time sync
+│   ├── websocket.ts     # WebSocket server for real-time sync + room state
 │   ├── db.ts            # Drizzle + pg pool setup
 │   ├── vite.ts          # Vite dev server middleware
-│   └── static.ts        # Production static file serving
+│   ├── static.ts        # Production static file serving
+│   └── replit_integrations/     # Replit Auth integration
 ├── shared/              # Shared between client and server
 │   └── schema.ts        # Drizzle schema + Zod validation schemas
 ├── script/
