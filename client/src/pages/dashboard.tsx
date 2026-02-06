@@ -157,15 +157,15 @@ export default function Dashboard() {
                     <div className="flex gap-2 w-full md:w-auto">
                       <button
                         onClick={() => copyInvite(session.inviteCode)}
-                        className="px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-white/40 text-foreground rounded-xl text-sm font-medium hover:bg-white transition-colors flex items-center gap-2 cursor-pointer font-mono tracking-wider"
+                        className="min-h-[44px] px-4 py-3 bg-white/80 backdrop-blur-sm border border-white/40 text-foreground rounded-2xl text-sm font-medium hover:bg-white transition-colors flex items-center gap-2 cursor-pointer font-mono tracking-wider"
                         data-testid={`button-copy-invite-${session.id}`}
                       >
-                        {copied === session.inviteCode ? <CheckCircle2 size={14} className="text-green-600" /> : <Copy size={14} />}
+                        {copied === session.inviteCode ? <CheckCircle2 size={16} className="text-green-600" /> : <Copy size={16} />}
                         {copied === session.inviteCode ? "Copied!" : session.inviteCode}
                       </button>
                       <Link href={`/playroom/${session.id}`} className="flex-1 md:flex-initial no-underline">
-                        <button className="w-full px-5 py-2.5 bg-accent text-white rounded-xl text-sm font-medium shadow-md shadow-accent/20 hover:brightness-110 transition-all flex items-center justify-center gap-2 cursor-pointer" data-testid={`button-join-${session.id}`}>
-                          Enter <ArrowRight size={14} />
+                        <button className="w-full min-h-[44px] px-5 py-3 bg-accent text-white rounded-2xl text-sm font-medium shadow-md shadow-accent/20 hover:brightness-110 transition-all flex items-center justify-center gap-2 cursor-pointer" data-testid={`button-join-${session.id}`}>
+                          Enter <ArrowRight size={16} />
                         </button>
                       </Link>
                     </div>

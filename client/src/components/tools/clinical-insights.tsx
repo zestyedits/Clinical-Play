@@ -43,7 +43,7 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsig
       <motion.button
         onClick={onToggle}
         className={cn(
-          "absolute top-20 md:top-4 right-4 z-30 p-3 rounded-2xl shadow-lg transition-all cursor-pointer",
+          "absolute top-20 md:top-4 right-4 z-30 min-w-[44px] min-h-[44px] p-3 rounded-2xl shadow-lg transition-all cursor-pointer flex items-center justify-center",
           isOpen
             ? "bg-primary text-primary-foreground"
             : "bg-white/70 backdrop-blur-xl text-primary hover:bg-white/90 border border-white/30"

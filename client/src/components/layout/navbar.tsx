@@ -39,7 +39,7 @@ export function Navbar() {
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Link href="/" className="flex items-center gap-3 no-underline">
+        <Link href="/" className="flex items-center gap-3 no-underline" data-testid="link-home-logo">
           <div className="w-8 h-8 rounded-full bg-linear-to-tr from-primary to-accent flex items-center justify-center">
             <span className="text-white font-serif font-bold text-lg">C</span>
           </div>
@@ -55,16 +55,17 @@ export function Navbar() {
                 "text-sm font-medium transition-colors hover:text-accent no-underline",
                 location === item.path ? "text-primary font-semibold" : "text-muted-foreground"
               )}
+              data-testid={`link-nav-${item.label.toLowerCase()}`}
             >
               {item.label}
             </Link>
           ))}
           {isAuthenticated ? (
-            <Link href="/dashboard" className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 no-underline">
+            <Link href="/dashboard" className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 no-underline" data-testid="link-nav-dashboard-cta">
               Dashboard
             </Link>
           ) : (
-            <a href="/api/login" className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 no-underline">
+            <a href="/api/login" className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 no-underline" data-testid="link-nav-signin">
               Sign In
             </a>
           )}
@@ -77,7 +78,7 @@ export function Navbar() {
           {navItems.map((item) => {
             const isActive = location === item.path || (item.path !== "/" && location.startsWith(item.path));
             return (
-              <Link key={item.path} href={item.path} className="flex flex-col items-center justify-center w-full h-full gap-1 no-underline">
+              <Link key={item.path} href={item.path} className="flex flex-col items-center justify-center w-full h-full gap-1 no-underline" data-testid={`link-mobile-${item.label.toLowerCase()}`}>
                 <div className={cn(
                   "p-1.5 rounded-xl transition-all duration-300",
                   isActive ? "bg-primary/10 text-primary" : "text-muted-foreground"
@@ -121,7 +122,7 @@ export function Navbar() {
           <span className="font-serif font-bold text-lg text-primary">ClinicalPlay</span>
         </Link>
         {!isAuthenticated && (
-          <a href="/api/login" className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium no-underline shadow-md">
+          <a href="/api/login" className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium no-underline shadow-md" data-testid="link-mobile-signin">
             Sign In
           </a>
         )}

@@ -61,10 +61,10 @@ export function AssetLibrary({ isOpen, onToggle, disabled }: AssetLibraryProps) 
                 <h3 className="font-serif text-lg text-primary">Choose a Piece</h3>
                 <button
                   onClick={onToggle}
-                  className="p-2 hover:bg-secondary/50 rounded-full transition-colors cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] p-2.5 hover:bg-secondary/50 rounded-full transition-colors cursor-pointer flex items-center justify-center"
                   data-testid="button-close-assets"
                 >
-                  <X size={18} className="text-muted-foreground" />
+                  <X size={20} className="text-muted-foreground" />
                 </button>
               </div>
 
@@ -123,7 +123,7 @@ export function AssetLibrary({ isOpen, onToggle, disabled }: AssetLibraryProps) 
                 <h3 className="font-serif text-base text-primary">Asset Library</h3>
                 <button
                   onClick={onToggle}
-                  className="p-1.5 hover:bg-white/50 rounded-xl transition-colors cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] p-2 hover:bg-white/50 rounded-xl transition-colors cursor-pointer flex items-center justify-center"
                   data-testid="button-close-assets-desktop"
                 >
                   <X size={16} className="text-muted-foreground" />
