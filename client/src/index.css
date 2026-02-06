@@ -134,6 +134,104 @@
   }
 }
 
+/* ── Glassmorphism Tool Icons ── */
+
+.glass-icon {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.glass-icon::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  opacity: 0.5;
+  filter: blur(14px);
+  z-index: 0;
+  transition: opacity 0.5s ease;
+}
+
+.glass-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.08) 100%);
+  border: 1px solid rgba(255,255,255,0.5);
+  backdrop-filter: blur(12px);
+  z-index: 1;
+}
+
+.glass-icon > * {
+  position: relative;
+  z-index: 2;
+}
+
+.glass-icon.icon-sandtray::before {
+  background: linear-gradient(135deg, #c4956a 0%, #8B6914 100%);
+}
+.glass-icon.icon-breathing::before {
+  background: linear-gradient(135deg, #7fb99b 0%, #1a5c3a 100%);
+}
+.glass-icon.icon-feeling::before {
+  background: linear-gradient(135deg, #a78bda 0%, #5b21b6 100%);
+}
+.glass-icon.icon-timeline::before {
+  background: linear-gradient(135deg, #67c5c9 0%, #0d5e6e 100%);
+}
+.glass-icon.icon-values::before {
+  background: linear-gradient(135deg, #e88fa5 0%, #9f1239 100%);
+}
+.glass-icon.icon-dbt::before {
+  background: linear-gradient(135deg, #f59e6b 0%, #c2410c 100%);
+}
+.glass-icon.icon-ifs::before {
+  background: linear-gradient(135deg, #8db4e8 0%, #1e40af 100%);
+}
+
+@keyframes aura-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.18); opacity: 1; }
+}
+
+@keyframes zen-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes compass-tick {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+
+@keyframes parallax-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-18px) rotate(2deg); }
+  66% { transform: translateY(10px) rotate(-1deg); }
+}
+
+@keyframes parallax-float-slow {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-12px) scale(1.04); }
+}
+
+.social-proof-glow {
+  box-shadow: 0 0 20px rgba(201, 169, 110, 0.35), 0 0 60px rgba(201, 169, 110, 0.12);
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(201, 169, 110, 0.35), 0 0 60px rgba(201, 169, 110, 0.12); }
+  50% { box-shadow: 0 0 30px rgba(201, 169, 110, 0.5), 0 0 80px rgba(201, 169, 110, 0.2); }
+}
+
 @media (hover: none) and (pointer: coarse) {
   button:not(:disabled),
   a[role="button"],
