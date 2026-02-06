@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { type Server } from "http";
 import { storage } from "./storage";
-import { insertTherapySessionSchema, insertParticipantSchema, insertSandtrayItemSchema } from "@shared/schema";
+import { insertTherapySessionSchema, insertParticipantSchema, insertSandtrayItemSchema, insertToolSuggestionSchema } from "@shared/schema";
 import { setupWebSocketServer } from "./websocket";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 
@@ -116,6 +116,18 @@ export async function registerRoutes(
   app.delete("/api/therapy-sessions/:sessionId/items", async (req, res) => {
     await storage.clearSandtrayItems(req.params.sessionId);
     res.json({ ok: true });
+  });
+
+  // --- Tool Suggestion Routes ---
+
+  app.post("/api/tool-suggestions", async (req, res) => {
+    try {
+      const data = insertToolSuggestionSchema.parse(req.body);
+      const suggestion = await storage.addToolSuggestion(data);
+      res.json(suggestion);
+    } catch (e: any) {
+      res.status(400).json({ message: e.message });
+    }
   });
 
   // --- WebSocket Setup ---

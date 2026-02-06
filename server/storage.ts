@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
 import { db } from "./db";
 import {
-  therapySessions, participants, sandtrayItems,
+  therapySessions, participants, sandtrayItems, toolSuggestions,
   type TherapySession, type InsertTherapySession,
   type Participant, type InsertParticipant,
   type SandtrayItem, type InsertSandtrayItem,
+  type ToolSuggestion, type InsertToolSuggestion,
 } from "@shared/schema";
 
 function generateInviteCode(): string {
@@ -28,6 +29,8 @@ export interface IStorage {
   updateSandtrayItem(id: string, data: Partial<SandtrayItem>): Promise<SandtrayItem | undefined>;
   removeSandtrayItem(id: string): Promise<void>;
   clearSandtrayItems(sessionId: string): Promise<void>;
+
+  addToolSuggestion(data: InsertToolSuggestion): Promise<ToolSuggestion>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -96,6 +99,11 @@ export class DatabaseStorage implements IStorage {
 
   async clearSandtrayItems(sessionId: string): Promise<void> {
     await db.delete(sandtrayItems).where(eq(sandtrayItems.sessionId, sessionId));
+  }
+
+  async addToolSuggestion(data: InsertToolSuggestion): Promise<ToolSuggestion> {
+    const [suggestion] = await db.insert(toolSuggestions).values(data).returning();
+    return suggestion;
   }
 }
 

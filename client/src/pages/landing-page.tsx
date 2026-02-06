@@ -1,9 +1,9 @@
 import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { motion } from "framer-motion";
-import { ArrowRight, Lock, CheckCircle2, Star } from "lucide-react";
+import { ArrowRight, Lock, CheckCircle2, Star, Palette, Wind, House, Clock, Layers, Shield, FileText } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useEffect } from "react";
 
 export default function LandingPage() {
@@ -93,7 +93,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Game Suite */}
+      {/* Active Clinical Suite */}
       <section className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -109,27 +109,21 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {[
               { 
-                title: "Digital Sandtray", 
-                desc: "Expressive world-building with infinite assets.",
-                emoji: "🏖️",
+                title: "Zen Sandtray", 
+                desc: "Expressive world-building with drag-and-drop emoji assets. Clinicians moderate in real-time with lock controls, anonymity toggles, and collaborative placement.",
+                icon: Palette,
                 gradient: "from-amber-100 to-amber-50",
               },
               { 
-                title: "CBT Thought Bridge", 
-                desc: "Visualizing cognitive restructuring in real-time.",
-                emoji: "🧠",
-                gradient: "from-blue-100 to-blue-50",
+                title: "Calm Breathing Guide", 
+                desc: "Synchronized breathing exercises that pulse on every participant's screen. Clinician-controlled 4-phase rhythm: inhale, hold, exhale, rest.",
+                icon: Wind,
+                gradient: "from-emerald-100 to-emerald-50",
               },
-              { 
-                title: "Calm Breathing", 
-                desc: "Synchronized breathing exercises for the group.",
-                emoji: "🫧",
-                gradient: "from-green-100 to-green-50",
-              }
-            ].map((game, i) => (
+            ].map((tool, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
@@ -137,13 +131,85 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: i * 0.15 }}
               >
-                <GlassCard className="group cursor-pointer">
-                  <div className={`aspect-[4/3] overflow-hidden bg-linear-to-br ${game.gradient} flex items-center justify-center`}>
-                    <span className="text-7xl group-hover:scale-110 transition-transform duration-500">{game.emoji}</span>
+                <GlassCard className="group cursor-pointer h-full">
+                  <div className={`aspect-[3/2] overflow-hidden bg-linear-to-br ${tool.gradient} flex items-center justify-center relative`}>
+                    <tool.icon size={80} className="text-primary/10 group-hover:text-primary/20 transition-colors duration-500" />
+                    <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-green-700 border border-green-200">
+                      Active
+                    </div>
                   </div>
                   <div className="p-8">
-                    <h3 className="text-2xl font-serif text-primary mb-2 group-hover:text-accent transition-colors">{game.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{game.desc}</p>
+                    <h3 className="text-2xl font-serif text-primary mb-3 group-hover:text-accent transition-colors">{tool.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed">{tool.desc}</p>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Future Roadmap */}
+      <section className="py-20 px-6 bg-white/30">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            className="text-center mb-16 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/5 border border-blue-500/10 text-blue-600 text-xs font-semibold tracking-wider uppercase mb-6">
+              Actively Building
+            </div>
+            <h2 className="text-3xl md:text-5xl font-serif text-primary mb-4">The Future of Clinical Engagement</h2>
+            <p className="text-muted-foreground text-lg">
+              Our library is constantly growing. These evidence-based tools are currently in development.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "The DBT House",
+                desc: "A room-by-room framework for exploring emotional regulation, distress tolerance, and interpersonal effectiveness.",
+                icon: House,
+                color: "text-rose-500",
+                bg: "bg-rose-50",
+              },
+              {
+                title: "Narrative Timeline",
+                desc: "Visual life story mapping. Clients place meaningful events on a collaborative timeline to explore patterns and turning points.",
+                icon: Clock,
+                color: "text-violet-500",
+                bg: "bg-violet-50",
+              },
+              {
+                title: "Values Card Sort",
+                desc: "An interactive card-sorting exercise where clients prioritize personal values — a cornerstone of ACT and motivational interviewing.",
+                icon: Layers,
+                color: "text-teal-500",
+                bg: "bg-teal-50",
+              },
+            ].map((tool, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.15 }}
+              >
+                <GlassCard className="group h-full opacity-90 hover:opacity-100" hoverEffect={true}>
+                  <div className={`aspect-[4/3] overflow-hidden ${tool.bg} flex items-center justify-center relative`}>
+                    <tool.icon size={72} className={`${tool.color} opacity-20 group-hover:opacity-30 transition-opacity duration-500`} />
+                    <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-blue-600 border border-blue-200 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                      In Development
+                    </div>
+                  </div>
+                  <div className="p-8">
+                    <h3 className="text-xl font-serif text-primary mb-2 group-hover:text-accent transition-colors">{tool.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{tool.desc}</p>
                   </div>
                 </GlassCard>
               </motion.div>
@@ -153,7 +219,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section className="py-20 px-6 bg-white/50">
+      <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -161,7 +227,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <GlassCard className="p-12 border-primary/10">
+            <GlassCard className="p-12 border-primary/10" hoverEffect={false}>
               <h2 className="text-sm font-bold tracking-widest text-accent uppercase mb-4">Membership</h2>
               <h3 className="text-4xl font-serif text-primary mb-6">One Simple Plan</h3>
               <div className="flex justify-center items-baseline mb-8">
@@ -172,12 +238,13 @@ export default function LandingPage() {
               <ul className="space-y-4 mb-10 text-left max-w-sm mx-auto">
                 {[
                   "Unlimited Clinical Sessions",
-                  "Full Access to Game Library",
-                  "HIPAA Compliant Security",
-                  "Session Notes & Syncing"
+                  "Full Access to Growing Tool Library",
+                  "HIPAA-Safe No-PHI Architecture",
+                  "Clinical Insights & On-The-Job Prompts",
+                  "Priority Access to New Tools"
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-foreground/80">
-                    <CheckCircle2 size={20} className="text-accent" />
+                    <CheckCircle2 size={20} className="text-accent shrink-0" />
                     {item}
                   </li>
                 ))}
@@ -195,6 +262,69 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/30 bg-white/20 backdrop-blur-sm py-12 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-full bg-linear-to-tr from-primary to-accent flex items-center justify-center">
+                  <span className="text-white font-serif font-bold text-sm">C</span>
+                </div>
+                <span className="font-serif font-bold text-lg text-primary">ClinicalPlay</span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                A premium telehealth platform for evidence-based therapeutic engagement.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-serif text-primary font-medium mb-4">Legal</h4>
+              <div className="space-y-3">
+                <Link href="/privacy" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-privacy">
+                  <Shield size={14} />
+                  Privacy Policy
+                </Link>
+                <Link href="/terms" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-terms">
+                  <FileText size={14} />
+                  Terms of Service
+                </Link>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-serif text-primary font-medium mb-4">Platform</h4>
+              <div className="space-y-3">
+                <a href="/api/login" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-signin">
+                  Clinician Sign In
+                </a>
+                <p className="text-sm text-muted-foreground">
+                  No PHI Collected
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  256-bit TLS Encryption
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-white/30 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-muted-foreground">
+              &copy; {new Date().getFullYear()} ClinicalPlay. All rights reserved.
+            </p>
+            <div className="flex items-center gap-4">
+              <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors no-underline">
+                Privacy
+              </Link>
+              <span className="text-muted-foreground/30">|</span>
+              <Link href="/terms" className="text-xs text-muted-foreground hover:text-primary transition-colors no-underline">
+                Terms
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -39,6 +39,15 @@ export const sandtrayItems = pgTable("sandtray_items", {
   rotation: real("rotation").notNull().default(0),
 });
 
+export const toolSuggestions = pgTable("tool_suggestions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clinicianId: varchar("clinician_id").references(() => users.id),
+  toolName: text("tool_name").notNull(),
+  description: text("description"),
+  email: text("email"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertTherapySessionSchema = createInsertSchema(therapySessions).pick({
   name: true,
   clinicianId: true,
@@ -67,5 +76,14 @@ export type InsertTherapySession = z.infer<typeof insertTherapySessionSchema>;
 export type TherapySession = typeof therapySessions.$inferSelect;
 export type InsertParticipant = z.infer<typeof insertParticipantSchema>;
 export type Participant = typeof participants.$inferSelect;
+export const insertToolSuggestionSchema = createInsertSchema(toolSuggestions).pick({
+  clinicianId: true,
+  toolName: true,
+  description: true,
+  email: true,
+});
+
 export type InsertSandtrayItem = z.infer<typeof insertSandtrayItemSchema>;
 export type SandtrayItem = typeof sandtrayItems.$inferSelect;
+export type InsertToolSuggestion = z.infer<typeof insertToolSuggestionSchema>;
+export type ToolSuggestion = typeof toolSuggestions.$inferSelect;
