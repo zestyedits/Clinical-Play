@@ -40,26 +40,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-20 md:pb-0">
-      {remaining > 0 && (
-        <div className="bg-linear-to-r from-primary via-primary/95 to-primary text-primary-foreground py-3 px-4 text-center relative overflow-hidden" data-testid="banner-founding">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyem0wLTMwdjJIMjRWNGgxMnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-50" />
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="relative z-10 flex items-center justify-center gap-3 flex-wrap"
-          >
-            <Crown size={16} className="text-accent" />
-            <span className="text-sm font-medium">
-              <span className="font-bold">Limited Time:</span> Become a Founding Member. Get Lifetime Access for $99.
-            </span>
-            <span className="bg-accent/20 text-accent px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide" data-testid="text-founding-remaining">
-              Only {remaining} slots remaining
-            </span>
-          </motion.div>
-        </div>
-      )}
-
       <Navbar />
 
       <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6 overflow-hidden">
@@ -121,11 +101,11 @@ export default function LandingPage() {
                 <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl flex items-center justify-between border border-white/20">
                   <div>
                     <p className="text-white/80 text-xs uppercase tracking-widest font-medium">Session Active</p>
-                    <p className="text-white font-serif text-lg">Dr. Sarah & Michael</p>
+                    <p className="text-white font-serif text-lg">Playroom — 2 Connected</p>
                   </div>
                   <div className="flex -space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-bold text-primary border-2 border-white/20">S</div>
-                    <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-white border-2 border-white/20">M</div>
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs border-2 border-white/20"><Shield size={14} className="text-primary" /></div>
+                    <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-white border-2 border-white/20">?</div>
                   </div>
                 </div>
               </div>
