@@ -5,6 +5,59 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 
+function MobileBottomNav({ items }: { items: { label: string; icon: React.ElementType; tab: string }[] }) {
+  const [activeTab, setActiveTab] = useState("sessions");
+
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (hash === "tools") setActiveTab("library");
+    else if (hash === "account") setActiveTab("account");
+    else setActiveTab("sessions");
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      setActiveTab((e as CustomEvent).detail);
+    };
+    window.addEventListener("dashboard-tab", handler);
+    return () => window.removeEventListener("dashboard-tab", handler);
+  }, []);
+
+  return (
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-border/50 pb-safe">
+      <div className="flex justify-around items-center h-16 px-2">
+        {items.map((item) => {
+          const isActive = activeTab === item.tab;
+          return (
+            <button
+              key={item.tab}
+              onClick={() => {
+                setActiveTab(item.tab);
+                window.dispatchEvent(new CustomEvent("dashboard-tab", { detail: item.tab }));
+              }}
+              className="flex flex-col items-center justify-center w-full h-full gap-1 active:scale-95 transition-transform cursor-pointer bg-transparent border-none"
+              data-testid={`link-bottomnav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
+            >
+              <div className={cn(
+                "p-1.5 rounded-xl transition-all duration-300",
+                isActive ? "bg-primary/10 text-primary" : "text-muted-foreground"
+              )}>
+                <item.icon size={24} strokeWidth={isActive ? 2.5 : 1.5} />
+              </div>
+              <span className={cn(
+                "text-[10px] font-medium transition-all duration-300",
+                isActive ? "text-primary" : "text-muted-foreground"
+              )}>
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function Navbar() {
   const [location] = useLocation();
   const [scrolled, setScrolled] = useState(false);
@@ -31,9 +84,9 @@ export function Navbar() {
   ];
 
   const loggedInItems = [
-    { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-    { label: "Tool Library", path: "/dashboard#tools", icon: Library },
-    { label: "Account", path: "/dashboard#account", icon: UserCircle },
+    { label: "Sessions", path: "/dashboard", icon: LayoutDashboard, tab: "sessions" },
+    { label: "Library", path: "/dashboard#tools", icon: Library, tab: "library" },
+    { label: "Account", path: "/dashboard#account", icon: UserCircle, tab: "account" },
   ];
 
   const handleAnchorClick = (path: string, e: React.MouseEvent) => {
@@ -232,37 +285,8 @@ export function Navbar() {
         </AnimatePresence>
       </div>
 
-      {isAuthenticated && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-border/50 pb-safe">
-          <div className="flex justify-around items-center h-16 px-2">
-            {loggedInItems.map((item) => {
-              const basePath = item.path.split("#")[0];
-              const isActive = location === basePath || (basePath !== "/" && location.startsWith(basePath));
-              return (
-                <Link
-                  key={item.path}
-                  href={item.path}
-                  onClick={(e) => handleAnchorClick(item.path, e)}
-                  className="flex flex-col items-center justify-center w-full h-full gap-1 no-underline active:scale-95 transition-transform"
-                  data-testid={`link-bottomnav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
-                >
-                  <div className={cn(
-                    "p-1.5 rounded-xl transition-all duration-300",
-                    isActive ? "bg-primary/10 text-primary" : "text-muted-foreground"
-                  )}>
-                    {item.icon && <item.icon size={24} strokeWidth={isActive ? 2.5 : 1.5} />}
-                  </div>
-                  <span className={cn(
-                    "text-[10px] font-medium transition-all duration-300",
-                    isActive ? "text-primary translate-y-0 opacity-100" : "text-muted-foreground translate-y-1 opacity-0 h-0 overflow-hidden"
-                  )}>
-                    {item.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+      {isAuthenticated && location === "/dashboard" && (
+        <MobileBottomNav items={loggedInItems} />
       )}
     </>
   );

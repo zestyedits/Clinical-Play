@@ -1,0 +1,53 @@
+Master Prompt: ClinicalPlay.app — Dashboard & Onboarding Finalization
+
+Role: Lead Full-Stack Product Developer & UX Architect. Objective: Build a high-end, "mobile-first" Dashboard and a seamless onboarding experience for new clinicians.
+
+1. Dashboard Layout & Aesthetics:
+
+    Visuals: Use a "Card-Based" layout with large border-radii (24px+), backdrop-blur effects, and generous whitespace.
+
+    Welcome Header: Display a personalized greeting: "Welcome back, [Name]" using the clinician's profile data from Supabase.
+
+    The "Quick Start" Action: A prominent, animated "Start New Session" button at the top. When clicked, it should trigger a sleek modal to name the session and choose between "Solo" or "Group" mode.
+
+2. The Tool Library (Dashboard View):
+
+    Display all 8 tools (Sandtray, Breathing, Feeling Wheel, Timeline, Card Sort, Garden, Fidgets, Parts Theater).
+
+    Freemium Logic: * "Active" tools have a clear "Launch" button.
+
+        "Pro" tools (locked for free users) have a subtle lock icon and a "Upgrade to Unlock" overlay.
+
+    Favorites: Allow clinicians to click a small "Star" on any tool to pin it to a "Frequently Used" section at the top.
+
+3. Onboarding Flow (First-Time Users):
+
+    Implement a "Welcome to the Community" multi-step modal for first-time logins.
+
+    Step 1: High-level overview of the "No-PHI" security architecture.
+
+    Step 2: A 30-second "How to Use" GIF or animated graphic for the Zen Sandtray.
+
+    Step 3: CTA to "Start Your First Session."
+
+4. Session Management:
+
+    Active Sessions: List any ongoing sessions with their 6-digit inviteCode and a "Copy Link" button.
+
+    Session History: A "Past Sessions" list where clinicians can view the "Snapshots" they exported for their EHR documentation.
+
+5. Sidebar & Navigation:
+
+    Clinician's Corner: A sidebar section for "Clinical Tips" (e.g., "Tip: Use the Garden for closing sessions to build rapport").
+
+    Account Management: A direct link to the Stripe Customer Portal and a "Support" link.
+
+6. Mobile Optimization:
+
+    Ensure the entire dashboard is "Thumb-Friendly." Use a bottom-navigation bar for mobile users to switch between "Sessions," "Library," and "Account."
+
+Strategic Insight: Why This Works
+
+    The "Clinical Corner": By including tips, you position yourself as a master creative developer and an IT professional who understands the therapeutic process. It makes the software feel like a collaborative partner.
+
+    The "No-Box" Dashboard: Avoid the standard "admin template" look. Since you are building this for clinicians who are often overwhelmed, a minimalist, "Zen" dashboard reduces cognitive load.
