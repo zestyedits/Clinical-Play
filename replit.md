@@ -14,6 +14,7 @@ Key features include:
 - **Moderator controls** — clinician-only tools for managing the session experience
 - **Presence system** — activity pulse animations on participants when interacting with the canvas
 - **Mobile-first design** with bottom navigation bar on mobile, bottom dock asset library, glassmorphism throughout
+- **Pre-launch mode** — access restricted to allowlist (currently only clinicalplayapp@gmail.com); pricing section replaced with "Coming Soon" card; pre-launch banner at top of site
 
 ## User Preferences
 
