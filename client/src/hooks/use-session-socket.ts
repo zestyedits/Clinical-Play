@@ -45,6 +45,10 @@ export function useSessionSocket(
     ws.onmessage = (evt) => {
       try {
         const msg = JSON.parse(evt.data);
+        if (msg.type === "ping") {
+          ws.send(JSON.stringify({ type: "pong" }));
+          return;
+        }
         onMessageRef.current(msg);
       } catch {}
     };

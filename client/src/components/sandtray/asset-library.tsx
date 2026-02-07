@@ -27,7 +27,7 @@ export function AssetLibrary({ isOpen, onToggle, disabled }: AssetLibraryProps) 
       {!isOpen && (
         <motion.button
           onClick={onToggle}
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 bg-white/70 backdrop-blur-xl px-6 py-3 rounded-2xl shadow-xl border border-white/30 flex items-center gap-3 text-primary font-medium text-sm cursor-pointer hover:bg-white/90 hover:shadow-2xl transition-all md:bottom-6"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 md:z-30 bg-white/70 backdrop-blur-xl px-6 py-3 rounded-2xl shadow-xl border border-white/30 flex items-center gap-3 text-primary font-medium text-sm cursor-pointer hover:bg-white/90 hover:shadow-2xl transition-all md:bottom-6"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -52,8 +52,9 @@ export function AssetLibrary({ isOpen, onToggle, disabled }: AssetLibraryProps) 
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="md:hidden absolute bottom-0 left-0 right-0 z-30 bg-white/80 backdrop-blur-2xl rounded-t-[2rem] shadow-2xl border-t border-white/30"
-              style={{ maxHeight: "50%" }}
+              className="md:hidden absolute bottom-0 left-0 right-0 z-10 bg-white/80 backdrop-blur-2xl rounded-t-[2rem] shadow-2xl border-t border-white/30"
+              style={{ maxHeight: "50vh" }}
+              data-tour="playroom-asset-library"
             >
               <div className="flex justify-center pt-3 pb-1">
                 <div className="w-10 h-1 rounded-full bg-border/60" />

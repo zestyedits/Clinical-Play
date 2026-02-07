@@ -36,15 +36,36 @@ async function getOrCreateStripeCustomer(userId: string, email: string): Promise
 }
 
 export function registerStripeRoutes(app: Express) {
+  const paymentStatusCache = new Map<string, { paymentFailed: boolean; checkedAt: number }>();
+  const PAYMENT_CACHE_TTL = 5 * 60 * 1000;
+
   app.get("/api/billing/status", isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.authUser.id;
       const [user] = await db.select().from(users).where(eq(users.id, userId));
       if (!user) return res.status(404).json({ message: "User not found" });
 
+      let paymentFailed = false;
+      if (user.stripeSubscriptionId && user.subscriptionType !== "founding") {
+        const cached = paymentStatusCache.get(userId);
+        if (cached && Date.now() - cached.checkedAt < PAYMENT_CACHE_TTL) {
+          paymentFailed = cached.paymentFailed;
+        } else {
+          try {
+            const sub = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+            paymentFailed = sub.status === "past_due" || sub.status === "unpaid";
+            paymentStatusCache.set(userId, { paymentFailed, checkedAt: Date.now() });
+          } catch (e: any) {
+            log(`Failed to check subscription status for user ${userId}: ${e.message}`);
+            if (cached) paymentFailed = cached.paymentFailed;
+          }
+        }
+      }
+
       res.json({
         isPro: user.isPro,
         subscriptionType: user.subscriptionType || "free",
+        paymentFailed,
       });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
@@ -192,6 +213,23 @@ export function registerStripeRoutes(app: Express) {
               updatedAt: new Date(),
             }).where(eq(users.id, user.id));
             log(`User ${user.id} subscription cancelled`);
+          }
+          break;
+        }
+
+        case "invoice.payment_failed": {
+          const invoice = event.data.object as Stripe.Invoice;
+          const customerId = invoice.customer as string;
+
+          if (!customerId) {
+            log("Webhook: invoice.payment_failed missing customer ID");
+            break;
+          }
+
+          const [user] = await db.select().from(users).where(eq(users.stripeCustomerId, customerId));
+          if (user && user.isPro && user.subscriptionType !== "founding") {
+            paymentStatusCache.set(user.id, { paymentFailed: true, checkedAt: Date.now() });
+            log(`Payment failed for user ${user.id} (${user.email}) — subscription at risk`);
           }
           break;
         }

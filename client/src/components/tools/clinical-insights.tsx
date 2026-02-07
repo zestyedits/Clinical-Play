@@ -1,6 +1,73 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Lightbulb, MessageCircle, BookOpen } from "lucide-react";
+import { Eye, EyeOff, Lightbulb, MessageCircle, BookOpen, Sparkles, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const EMOTION_PROMPTS: Record<string, string[]> = {
+  sadness: [
+    "Grief is a heavy stone; ask where they feel that weight in their body.",
+    "What would you say to the grief if it could hear you?",
+    "When does the grief feel most present?",
+    "If your sadness could write a letter, who would it be addressed to?",
+  ],
+  grief: [
+    "Grief is a heavy stone; ask where they feel that weight in their body.",
+    "What would you say to the grief if it could hear you?",
+    "When does the grief feel most present?",
+    "What does this grief tell you about what you loved?",
+  ],
+  anger: [
+    "What is the anger protecting?",
+    "If you could direct that anger somewhere safe, where would it go?",
+    "Rate the intensity of the anger from 1-10.",
+    "What would the anger say if it had a voice?",
+  ],
+  fear: [
+    "What's the worst that could happen? And then what?",
+    "Where in your body do you notice the fear?",
+    "What would safety look like right now?",
+    "If you could shrink this fear to fit in your hand, what would it look like?",
+  ],
+  anxiety: [
+    "What's the worst that could happen? And then what?",
+    "Where in your body do you notice the anxiety?",
+    "What would safety look like right now?",
+    "Name three things you can see, hear, and feel right now.",
+  ],
+  joy: [
+    "What contributed to this feeling? Can you name three things?",
+    "How can you hold onto this feeling longer?",
+    "Who would you want to share this joy with?",
+    "What does this joy tell you about what matters most to you?",
+  ],
+  happiness: [
+    "What contributed to this feeling? Can you name three things?",
+    "How can you hold onto this feeling longer?",
+    "Who would you want to share this joy with?",
+    "How can you create more moments like this?",
+  ],
+  shame: [
+    "What would you say to a friend feeling this way?",
+    "Where did you first learn this shame?",
+    "What would self-compassion look like right now?",
+    "Is this shame yours, or did someone give it to you?",
+  ],
+  disgust: [
+    "What boundary is being crossed?",
+    "What value is this feeling protecting?",
+    "How would you like to respond differently?",
+    "What does this reaction tell you about your needs?",
+  ],
+  surprise: [
+    "Was this a welcome or unwelcome surprise?",
+    "What expectation was disrupted?",
+    "How did your body respond in that moment?",
+  ],
+  love: [
+    "What does this love feel like in your body?",
+    "How do you express this feeling to others?",
+    "What does this love teach you about yourself?",
+  ],
+};
 
 const TOOL_PROMPTS: Record<string, { title: string; prompts: string[] }> = {
   sandtray: {
@@ -68,14 +135,43 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: string[] }> = {
   },
 };
 
+function getEmotionPrompts(emotion: string): string[] | null {
+  const key = emotion.toLowerCase().trim();
+  if (EMOTION_PROMPTS[key]) return EMOTION_PROMPTS[key];
+  for (const [emotionKey, prompts] of Object.entries(EMOTION_PROMPTS)) {
+    if (key.includes(emotionKey) || emotionKey.includes(key)) return prompts;
+  }
+  return null;
+}
+
 interface ClinicalInsightsProps {
   isOpen: boolean;
   onToggle: () => void;
   activeTool: string;
+  sessionContext?: {
+    latestEmotion?: string;
+    itemCount?: number;
+    timelineEventCount?: number;
+    valuesCardCount?: number;
+  };
 }
 
-export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsightsProps) {
+export function ClinicalInsights({ isOpen, onToggle, activeTool, sessionContext }: ClinicalInsightsProps) {
   const toolData = TOOL_PROMPTS[activeTool] || TOOL_PROMPTS.sandtray;
+
+  const emotionPrompts = activeTool === "feelings" && sessionContext?.latestEmotion
+    ? getEmotionPrompts(sessionContext.latestEmotion)
+    : null;
+
+  const sandtrayNote = activeTool === "sandtray" && sessionContext?.itemCount && sessionContext.itemCount > 5
+    ? `The canvas has ${sessionContext.itemCount} items — consider asking about overwhelm or organization.`
+    : null;
+
+  const narrativeNote = activeTool === "narrative" && sessionContext?.timelineEventCount && sessionContext.timelineEventCount > 3
+    ? `The timeline has ${sessionContext.timelineEventCount} events — look for patterns or recurring themes.`
+    : null;
+
+  const contextNote = sandtrayNote || narrativeNote;
 
   return (
     <>
@@ -113,6 +209,50 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsig
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {emotionPrompts && sessionContext?.latestEmotion && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="rounded-2xl bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 border border-primary/20 p-3 space-y-2"
+                  data-testid="context-aware-insight"
+                >
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-primary" />
+                    <p className="text-xs font-bold text-primary uppercase tracking-widest">
+                      Based on: {sessionContext.latestEmotion}
+                    </p>
+                  </div>
+                  {emotionPrompts.map((prompt, i) => (
+                    <motion.div
+                      key={`emotion-${i}`}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="p-2.5 rounded-xl bg-white/50 hover:bg-white/70 transition-colors group cursor-pointer"
+                    >
+                      <div className="flex items-start gap-2">
+                        <Sparkles size={12} className="text-primary mt-0.5 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        <p className="text-sm text-primary/90 leading-relaxed">{prompt}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+
+              {contextNote && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200/40"
+                  data-testid="context-note"
+                >
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle size={13} className="text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-amber-800 leading-relaxed">{contextNote}</p>
+                  </div>
+                </motion.div>
+              )}
+
               <div className="px-2 py-1">
                 <p className="text-xs font-bold text-accent uppercase tracking-widest flex items-center gap-1.5">
                   <BookOpen size={11} />

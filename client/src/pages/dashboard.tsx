@@ -3,13 +3,13 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { LegalDisclaimer } from "@/components/shared/legal-disclaimer";
 import {
   Plus, Users, Calendar, ArrowRight, Copy, CheckCircle2, Crown, Flame,
-  CreditCard, Star, Lock, Sparkles, Lightbulb, ExternalLink, HelpCircle,
+  CreditCard, Star, Lock, Sparkles, Lightbulb, ExternalLink, HelpCircle, AlertTriangle,
   Palette, Wind, Target, Clock, Layers, House, Brain, Gamepad2, TreePine, Theater,
   X, User, UserPlus, Mail, RefreshCw
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth, createAuthFetch } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +54,10 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
 }) {
   const [name, setName] = useState("");
   const [mode, setMode] = useState<"solo" | "group">("solo");
+
+  const containsPotentialName = useMemo(() => {
+    return /\b[A-Z][a-z]+\s+[A-Z][a-z]+/.test(name);
+  }, [name]);
 
   useEffect(() => {
     if (isOpen) {
@@ -100,6 +104,27 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
                     autoFocus
                     data-testid="input-session-name"
                   />
+                  <p
+                    className="mt-2 text-xs text-muted-foreground/70 leading-relaxed"
+                    data-testid="text-phi-reminder"
+                  >
+                    Reminder: Do not include client names. Use initials or session codes only.
+                  </p>
+                  <AnimatePresence>
+                    {containsPotentialName && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="mt-2 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs leading-relaxed flex items-start gap-2"
+                        data-testid="warning-phi-name-detected"
+                      >
+                        <span className="mt-0.5 shrink-0">⚠️</span>
+                        <span>This may contain a client name. Consider using initials instead.</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <div>
@@ -287,6 +312,18 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                   )}
                 </button>
               </div>
+              {step === 2 && (
+                <div className="px-6 pb-6 pt-0 text-center">
+                  <Link href="/playroom/demo" className="no-underline">
+                    <button
+                      className="text-sm text-accent hover:text-accent/80 transition-colors cursor-pointer underline underline-offset-2"
+                      data-testid="button-try-demo-onboarding"
+                    >
+                      Or try a demo first
+                    </button>
+                  </Link>
+                </div>
+              )}
             </div>
           </motion.div>
         </>
@@ -415,11 +452,11 @@ export default function Dashboard() {
     enabled: isAuthenticated,
   });
 
-  const { data: billingStatus } = useQuery<{ isPro: boolean; subscriptionType: string }>({
+  const { data: billingStatus } = useQuery<{ isPro: boolean; subscriptionType: string; paymentFailed: boolean }>({
     queryKey: ["/api/billing/status"],
     queryFn: async () => {
       const res = await authFetch("/api/billing/status");
-      if (!res.ok) return { isPro: false, subscriptionType: "free" };
+      if (!res.ok) return { isPro: false, subscriptionType: "free", paymentFailed: false };
       return res.json();
     },
     enabled: isAuthenticated,
@@ -580,6 +617,15 @@ export default function Dashboard() {
           >
             <Plus size={18} /> Create Session
           </button>
+          <div className="mt-3">
+            <button
+              onClick={() => navigate("/playroom/demo")}
+              className="text-sm text-accent hover:text-accent/80 transition-colors cursor-pointer underline underline-offset-2"
+              data-testid="button-try-demo"
+            >
+              Or try a demo first
+            </button>
+          </div>
         </GlassCard>
       ) : (
         activeSessions.map((sess, i) => (
@@ -937,6 +983,34 @@ export default function Dashboard() {
             >
               <RefreshCw size={12} className={resendVerification.isPending ? "animate-spin" : ""} />
               Resend
+            </button>
+          </motion.div>
+        </div>
+      )}
+
+      {billingStatus?.paymentFailed && (
+        <div className="max-w-7xl mx-auto mb-4">
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-red-50/80 border border-red-200/60 backdrop-blur-sm"
+            data-testid="banner-payment-failed"
+          >
+            <div className="shrink-0 w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center">
+              <AlertTriangle size={16} className="text-red-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-red-900">Your payment method needs updating</p>
+              <p className="text-xs text-red-700/70">We were unable to process your latest payment. Please update your payment method to keep your subscription active.</p>
+            </div>
+            <button
+              onClick={() => manageSubscription.mutate()}
+              disabled={manageSubscription.isPending}
+              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200/80 text-red-800 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+              data-testid="button-update-payment"
+            >
+              <CreditCard size={12} />
+              Update Payment
             </button>
           </motion.div>
         </div>

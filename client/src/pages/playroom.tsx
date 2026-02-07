@@ -1,5 +1,5 @@
 import { Link, useParams, useLocation } from "wouter";
-import { ChevronRight, PanelRightClose, LogOut, Users, Ghost, Shield, Wrench, Camera, Crown, Square } from "lucide-react";
+import { ChevronRight, PanelRightClose, LogOut, Users, Ghost, Shield, Wrench, Camera, Crown, Square, Clock, CheckCircle2, Download } from "lucide-react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ import { ValuesCardSort, type CardPlacement } from "@/components/tools/values-ca
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
 import { GuidedTour, useTour, type TourStep } from "@/components/guided-tour";
+import { GlassCard } from "@/components/ui/glass-card";
 import { getSupabase } from "@/lib/supabase";
 import type { TherapySession, Participant } from "@shared/schema";
 
@@ -25,6 +26,7 @@ interface OnlineUser {
   participantId: string;
   displayName: string;
   lastActive?: number;
+  status?: "online" | "disconnected";
 }
 
 interface RemoteCursor {
@@ -36,10 +38,11 @@ interface RemoteCursor {
 
 export default function Playroom() {
   const { id } = useParams();
-  const sessionId = id || null;
+  const isDemo = id === "demo";
+  const sessionId = isDemo ? null : (id || null);
   const { user, isAuthenticated } = useAuth();
 
-  const isClinician = !!(isAuthenticated && user);
+  const isClinician = isDemo ? true : !!(isAuthenticated && user);
   const [session, setSession] = useState<TherapySession | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
@@ -51,6 +54,7 @@ export default function Playroom() {
   const [joinNotification, setJoinNotification] = useState<string | null>(null);
   const [toolSelectorOpen, setToolSelectorOpen] = useState(false);
   const [breathingActive, setBreathingActive] = useState(false);
+  const [breathingStartTime, setBreathingStartTime] = useState<number | null>(null);
   const [insightsOpen, setInsightsOpen] = useState(false);
 
   const [feelingSelections, setFeelingSelections] = useState<FeelingSelection[]>([]);
@@ -109,6 +113,8 @@ export default function Playroom() {
     : "Guest";
   const throttleRef = useRef(0);
   const toolAreaRef = useRef<HTMLDivElement>(null);
+  const peakParticipants = useRef(0);
+  const toolsUsed = useRef<Set<string>>(new Set(["sandtray"]));
 
   const handleMessage = useCallback((msg: any) => {
     switch (msg.type) {
@@ -128,6 +134,7 @@ export default function Playroom() {
         if (msg.session) setSession(msg.session);
         if (msg.activeTool) setActiveTool(msg.activeTool);
         if (msg.breathingActive !== undefined) setBreathingActive(msg.breathingActive);
+        if (msg.breathingStartTime !== undefined) setBreathingStartTime(msg.breathingStartTime);
         if (msg.feelingSelections) setFeelingSelections(msg.feelingSelections);
         if (msg.timelineEvents) setTimelineEvents(msg.timelineEvents.map((e: any) => ({
           id: e.id,
@@ -196,11 +203,17 @@ export default function Playroom() {
         setOnlineUsers(prev => prev.filter(u => u.participantId !== msg.participantId));
         setRemoteCursors(prev => prev.filter(c => c.participantId !== msg.participantId));
         break;
+      case "user-disconnected":
+        setOnlineUsers(prev => prev.map(u =>
+          u.participantId === msg.participantId ? { ...u, status: "disconnected" } : u
+        ));
+        break;
       case "tool-changed":
         setActiveTool(msg.tool);
         break;
       case "breathing-toggled":
         setBreathingActive(msg.isActive);
+        setBreathingStartTime(msg.startTime ?? null);
         break;
       case "activity-pulse":
         setOnlineUsers(prev => prev.map(u =>
@@ -268,14 +281,137 @@ export default function Playroom() {
     }
   }, []);
 
-  const { connected, send } = useSessionSocket(
+  const { connected: wsConnected, send: wsSend } = useSessionSocket(
     sessionId,
     myParticipantId.current,
     myDisplayName,
     handleMessage
   );
 
+  const connected = isDemo ? true : wsConnected;
+  const send = useCallback((msg: any) => {
+    if (isDemo) {
+      const pid = myParticipantId.current;
+      const dn = myDisplayName;
+      switch (msg.type) {
+        case "item-placed": {
+          const newItem = {
+            id: `demo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            icon: msg.icon,
+            category: msg.category,
+            x: msg.x,
+            y: msg.y,
+            scale: msg.scale ?? 1,
+            rotation: msg.rotation ?? 0,
+            placedBy: pid,
+          };
+          setItems(prev => [...prev, newItem]);
+          break;
+        }
+        case "item-moved":
+          setItems(prev => prev.map(i => i.id === msg.itemId ? { ...i, x: msg.x, y: msg.y } : i));
+          break;
+        case "item-removed":
+          setItems(prev => prev.filter(i => i.id !== msg.itemId));
+          break;
+        case "clear-canvas":
+          setItems([]);
+          break;
+        case "session-update":
+          if (msg.data) setSession(prev => prev ? { ...prev, ...msg.data } : prev);
+          break;
+        case "tool-change":
+          setActiveTool(msg.tool);
+          break;
+        case "breathing-toggle":
+          setBreathingActive(msg.isActive);
+          setBreathingStartTime(msg.isActive ? Date.now() : null);
+          break;
+        case "feeling-select":
+          setFeelingSelections(prev => [...prev, {
+            id: `demo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            selectedBy: pid,
+            participantId: pid,
+            displayName: dn,
+            primaryEmotion: msg.primaryEmotion,
+            secondaryEmotion: msg.secondaryEmotion,
+            tertiaryEmotion: msg.tertiaryEmotion,
+            timestamp: Date.now(),
+          } as FeelingSelection]);
+          break;
+        case "feeling-clear":
+          setFeelingSelections([]);
+          break;
+        case "timeline-event-add":
+          setTimelineEvents(prev => [...prev, {
+            id: `demo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            label: msg.label,
+            description: msg.description,
+            position: msg.position,
+            color: msg.color,
+            placedBy: pid,
+          }]);
+          break;
+        case "timeline-event-update":
+          setTimelineEvents(prev => prev.map(e =>
+            e.id === msg.eventId ? { ...e, label: msg.label, description: msg.description, position: msg.position, color: msg.color } : e
+          ));
+          break;
+        case "timeline-event-remove":
+          setTimelineEvents(prev => prev.filter(e => e.id !== msg.eventId));
+          break;
+        case "timeline-clear":
+          setTimelineEvents([]);
+          break;
+        case "values-card-place":
+          setValuesCards(prev => [...prev, {
+            id: `demo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            cardId: msg.cardId,
+            label: msg.label,
+            column: msg.column,
+            orderIndex: msg.orderIndex,
+            placedBy: pid,
+          }]);
+          break;
+        case "values-card-move":
+          setValuesCards(prev => prev.map(c =>
+            c.id === msg.cardId ? { ...c, column: msg.column, orderIndex: msg.orderIndex } : c
+          ));
+          break;
+        case "values-card-remove":
+          setValuesCards(prev => prev.filter(c => c.id !== msg.cardId));
+          break;
+        case "values-clear":
+          setValuesCards([]);
+          break;
+      }
+      return;
+    }
+    wsSend(msg);
+  }, [isDemo, wsSend, myDisplayName]);
+
   useEffect(() => {
+    if (isDemo) {
+      setSession({
+        id: "demo",
+        name: "Demo Playroom",
+        inviteCode: "DEMO",
+        isCanvasLocked: false,
+        isAnonymous: false,
+        status: "active",
+        clinicianId: "demo-clinician",
+        createdAt: new Date(),
+        activeTool: "sandtray",
+        endedAt: null,
+      } as TherapySession);
+      setOnlineUsers([{
+        participantId: myParticipantId.current,
+        displayName: myDisplayName,
+        lastActive: Date.now(),
+        status: "online" as const,
+      }]);
+      return;
+    }
     if (!sessionId) return;
     fetch(`/api/therapy-sessions/${sessionId}`)
       .then(r => {
@@ -289,7 +425,7 @@ export default function Playroom() {
         }
       })
       .catch(() => {});
-  }, [sessionId]);
+  }, [sessionId, isDemo]);
 
   useEffect(() => {
     if (isClinician && session && connected && !playroomTour.hasCompleted() && !sessionEnded) {
@@ -299,12 +435,24 @@ export default function Playroom() {
   }, [isClinician, session, connected, sessionEnded, playroomTour]);
 
   useEffect(() => {
-    if (!isClinician) return;
+    if (!isClinician || isDemo) return;
     fetch("/api/billing/status")
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.subscriptionType) setSubscriptionType(data.subscriptionType); })
       .catch(() => {});
-  }, [isClinician]);
+  }, [isClinician, isDemo]);
+
+  useEffect(() => {
+    if (onlineUsers.length > peakParticipants.current) {
+      peakParticipants.current = onlineUsers.length;
+    }
+  }, [onlineUsers]);
+
+  useEffect(() => {
+    if (activeTool) {
+      toolsUsed.current.add(activeTool);
+    }
+  }, [activeTool]);
 
   // Sandtray handlers
   const handleItemDrop = useCallback((icon: string, category: string, x: number, y: number) => {
@@ -313,15 +461,15 @@ export default function Playroom() {
   }, [send]);
 
   const handleItemMove = useCallback((itemId: string, x: number, y: number) => {
-    setItems(prev => prev.map(i => i.id === itemId ? { ...i, x, y } : i));
+    if (!isDemo) setItems(prev => prev.map(i => i.id === itemId ? { ...i, x, y } : i));
     send({ type: "item-moved", itemId, x, y });
     send({ type: "activity-pulse" });
-  }, [send]);
+  }, [send, isDemo]);
 
   const handleItemRemove = useCallback((itemId: string) => {
-    setItems(prev => prev.filter(i => i.id !== itemId));
+    if (!isDemo) setItems(prev => prev.filter(i => i.id !== itemId));
     send({ type: "item-removed", itemId });
-  }, [send]);
+  }, [send, isDemo]);
 
   const handleCursorMove = useCallback((x: number, y: number) => {
     const now = Date.now();
@@ -332,29 +480,29 @@ export default function Playroom() {
 
   const handleToggleLock = useCallback(() => {
     send({ type: "session-update", data: { isCanvasLocked: !isCanvasLocked } });
-    setSession(prev => prev ? { ...prev, isCanvasLocked: !prev.isCanvasLocked } : prev);
-  }, [send, isCanvasLocked]);
+    if (!isDemo) setSession(prev => prev ? { ...prev, isCanvasLocked: !prev.isCanvasLocked } : prev);
+  }, [send, isCanvasLocked, isDemo]);
 
   const handleToggleAnonymity = useCallback(() => {
     send({ type: "session-update", data: { isAnonymous: !isAnonymous } });
-    setSession(prev => prev ? { ...prev, isAnonymous: !prev.isAnonymous } : prev);
-  }, [send, isAnonymous]);
+    if (!isDemo) setSession(prev => prev ? { ...prev, isAnonymous: !prev.isAnonymous } : prev);
+  }, [send, isAnonymous, isDemo]);
 
   const handleClearCanvas = useCallback(() => {
     send({ type: "clear-canvas" });
-    setItems([]);
-  }, [send]);
+    if (!isDemo) setItems([]);
+  }, [send, isDemo]);
 
   const handleSelectTool = useCallback((toolId: string) => {
-    setActiveTool(toolId);
+    if (!isDemo) setActiveTool(toolId);
     send({ type: "tool-change", tool: toolId });
-  }, [send]);
+  }, [send, isDemo]);
 
   const handleToggleBreathing = useCallback(() => {
     const next = !breathingActive;
-    setBreathingActive(next);
+    if (!isDemo) setBreathingActive(next);
     send({ type: "breathing-toggle", isActive: next });
-  }, [send, breathingActive]);
+  }, [send, breathingActive, isDemo]);
 
   // Feeling Wheel handlers
   const handleFeelingSelect = useCallback((primary: string, secondary: string | null, tertiary: string | null) => {
@@ -364,8 +512,8 @@ export default function Playroom() {
 
   const handleFeelingClear = useCallback(() => {
     send({ type: "feeling-clear" });
-    setFeelingSelections([]);
-  }, [send]);
+    if (!isDemo) setFeelingSelections([]);
+  }, [send, isDemo]);
 
   // Timeline handlers
   const handleTimelineAdd = useCallback((label: string, description: string | null, position: number, color: string) => {
@@ -375,8 +523,8 @@ export default function Playroom() {
 
   const handleTimelineRemove = useCallback((eventId: string) => {
     send({ type: "timeline-event-remove", eventId });
-    setTimelineEvents(prev => prev.filter(e => e.id !== eventId));
-  }, [send]);
+    if (!isDemo) setTimelineEvents(prev => prev.filter(e => e.id !== eventId));
+  }, [send, isDemo]);
 
   const handleTimelineUpdate = useCallback((eventId: string, label: string, description: string | null, position: number, color: string) => {
     send({ type: "timeline-event-update", eventId, label, description, position, color });
@@ -384,8 +532,8 @@ export default function Playroom() {
 
   const handleTimelineClear = useCallback(() => {
     send({ type: "timeline-clear" });
-    setTimelineEvents([]);
-  }, [send]);
+    if (!isDemo) setTimelineEvents([]);
+  }, [send, isDemo]);
 
   // Values Card Sort handlers
   const handleValuesPlace = useCallback((cardId: string, label: string, column: string, orderIndex: number) => {
@@ -400,13 +548,13 @@ export default function Playroom() {
 
   const handleValuesRemove = useCallback((placementId: string) => {
     send({ type: "values-card-remove", cardId: placementId });
-    setValuesCards(prev => prev.filter(c => c.id !== placementId));
-  }, [send]);
+    if (!isDemo) setValuesCards(prev => prev.filter(c => c.id !== placementId));
+  }, [send, isDemo]);
 
   const handleValuesClear = useCallback(() => {
     send({ type: "values-clear" });
-    setValuesCards([]);
-  }, [send]);
+    if (!isDemo) setValuesCards([]);
+  }, [send, isDemo]);
 
   const handleEndSession = useCallback(async () => {
     if (!sessionId) return;
@@ -438,20 +586,52 @@ export default function Playroom() {
     if (!el) return;
     try {
       const { default: html2canvas } = await import("html2canvas");
-      const canvas = await html2canvas(el, {
+      const captured = await html2canvas(el, {
         backgroundColor: null,
         scale: 2,
         useCORS: true,
         logging: false,
       });
+
+      const scale = 2;
+      const barHeight = 40 * scale;
+      const watermarked = document.createElement("canvas");
+      watermarked.width = captured.width;
+      watermarked.height = captured.height + barHeight;
+      const ctx = watermarked.getContext("2d")!;
+
+      ctx.drawImage(captured, 0, 0);
+
+      ctx.fillStyle = "rgba(27, 42, 74, 0.9)";
+      ctx.fillRect(0, captured.height, watermarked.width, barHeight);
+
+      const now = new Date();
+      const formattedDate = now.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }) + " at " + now.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+      const sessionName = session?.name || "Untitled";
+      const toolName = toolDisplayName(activeTool);
+      const watermarkText = `ClinicalPlay.app  |  Session: ${sessionName}  |  ${formattedDate}  |  Tool: ${toolName}`;
+
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = `${12 * scale}px sans-serif`;
+      ctx.textBaseline = "middle";
+      ctx.fillText(watermarkText, 16 * scale, captured.height + barHeight / 2);
+
       const link = document.createElement("a");
-      link.download = `ClinicalPlay_${activeTool}_${new Date().toISOString().slice(0,10)}.png`;
-      link.href = canvas.toDataURL("image/png");
+      link.download = `ClinicalPlay_${activeTool}_${now.toISOString().slice(0,10)}.png`;
+      link.href = watermarked.toDataURL("image/png");
       link.click();
     } catch (err) {
       console.error("Snapshot failed:", err);
     }
-  }, [activeTool]);
+  }, [activeTool, session]);
 
   const toolDisplayName = (tool: string) => {
     switch (tool) {
@@ -560,7 +740,8 @@ export default function Playroom() {
               </SheetHeader>
               <div className="space-y-3">
                 {onlineUsers.map(u => {
-                  const isActive = u.lastActive && (Date.now() - u.lastActive < 5000);
+                  const isDisconnected = u.status === "disconnected";
+                  const isActive = !isDisconnected && u.lastActive && (Date.now() - u.lastActive < 5000);
                   return (
                     <div key={u.participantId} className="flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/30 transition-colors">
                       <div className="relative">
@@ -571,7 +752,7 @@ export default function Playroom() {
                         </Avatar>
                         <span className={cn(
                           "absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full",
-                          isActive ? "bg-accent animate-pulse" : "bg-green-500"
+                          isDisconnected ? "bg-red-500" : isActive ? "bg-accent animate-pulse" : "bg-green-500"
                         )} />
                       </div>
                       <div>
@@ -579,8 +760,8 @@ export default function Playroom() {
                           {isAnonymous ? "Anonymous" : u.displayName}
                           {u.displayName.startsWith("Dr") && <Shield size={12} className="text-accent fill-accent/20" />}
                         </div>
-                        <div className={cn("text-xs", isActive ? "text-accent font-medium" : "text-green-600")}>
-                          {isActive ? "Active" : "Online"}
+                        <div className={cn("text-xs", isDisconnected ? "text-red-500 font-medium" : isActive ? "text-accent font-medium" : "text-green-600")}>
+                          {isDisconnected ? "Disconnected" : isActive ? "Active" : "Online"}
                         </div>
                       </div>
                     </div>
@@ -641,6 +822,17 @@ export default function Playroom() {
         </div>
       </motion.header>
 
+      {isDemo && (
+        <div className="bg-amber-50 border-b border-amber-200/60 px-4 py-2 flex items-center justify-center gap-3 shrink-0 z-20" data-testid="banner-demo-mode">
+          <span className="text-xs text-amber-700 font-medium">Demo Mode — changes won't be saved</span>
+          <Link href="/dashboard" className="no-underline">
+            <span className="text-xs text-accent font-semibold hover:text-accent/80 transition-colors cursor-pointer underline underline-offset-2" data-testid="link-start-real-session">
+              Start a Real Session
+            </span>
+          </Link>
+        </div>
+      )}
+
       {/* Main */}
       <div className="flex-1 flex overflow-hidden relative">
 
@@ -687,6 +879,7 @@ export default function Playroom() {
                   isActive={breathingActive}
                   isClinician={isClinician}
                   onToggle={handleToggleBreathing}
+                  startTime={breathingStartTime}
                 />
               </motion.div>
             )}
@@ -770,6 +963,14 @@ export default function Playroom() {
               isOpen={insightsOpen}
               onToggle={() => setInsightsOpen(!insightsOpen)}
               activeTool={activeTool}
+              sessionContext={{
+                latestEmotion: feelingSelections.length > 0
+                  ? feelingSelections[feelingSelections.length - 1].primaryEmotion
+                  : undefined,
+                itemCount: items.length,
+                timelineEventCount: timelineEvents.length,
+                valuesCardCount: valuesCards.length,
+              }}
             />
           )}
         </div>
@@ -794,7 +995,8 @@ export default function Playroom() {
                 </h3>
                 <div className="space-y-2">
                   {onlineUsers.map(u => {
-                    const isActive = u.lastActive && (Date.now() - u.lastActive < 5000);
+                    const isDisconnected = u.status === "disconnected";
+                    const isActive = !isDisconnected && u.lastActive && (Date.now() - u.lastActive < 5000);
                     return (
                       <div key={u.participantId} className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-white/50 transition-colors">
                         <div className="relative">
@@ -805,15 +1007,15 @@ export default function Playroom() {
                           </Avatar>
                           <span className={cn(
                             "absolute bottom-0 right-0 w-2.5 h-2.5 border-2 border-white rounded-full",
-                            isActive ? "bg-accent animate-pulse" : "bg-green-500"
+                            isDisconnected ? "bg-red-500" : isActive ? "bg-accent animate-pulse" : "bg-green-500"
                           )} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <span className="text-sm font-medium text-primary truncate block">
                             {isAnonymous ? "Anonymous" : u.displayName}
                           </span>
-                          <span className={cn("text-[10px]", isActive ? "text-accent" : "text-green-600")}>
-                            {isActive ? "Active" : "Online"}
+                          <span className={cn("text-[10px]", isDisconnected ? "text-red-500 font-medium" : isActive ? "text-accent" : "text-green-600")}>
+                            {isDisconnected ? "Disconnected" : isActive ? "Active" : "Online"}
                           </span>
                         </div>
                       </div>
@@ -892,24 +1094,89 @@ export default function Playroom() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.15, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="text-center max-w-sm mx-auto px-6"
+              className="text-center max-w-lg mx-auto px-6 w-full"
             >
               <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center">
-                <span className="text-3xl">&#10003;</span>
+                <CheckCircle2 size={32} className="text-primary" />
               </div>
-              <h2 className="font-serif text-2xl text-primary mb-2">Session Complete</h2>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-8">
+              <h2 className="font-serif text-2xl text-primary mb-2" data-testid="text-session-complete">Session Complete</h2>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
                 {isClinician
                   ? "The session has been ended successfully. All participants have been disconnected."
                   : "This session has ended. Thank you for participating."}
               </p>
-              <button
-                onClick={() => navigate(isClinician ? "/dashboard" : "/")}
-                className="btn-luxury bg-primary text-primary-foreground px-8 py-3 rounded-xl text-sm font-medium shadow-lg cursor-pointer"
-                data-testid="button-session-ended-navigate"
-              >
-                {isClinician ? "Back to Dashboard" : "Return Home"}
-              </button>
+
+              <GlassCard hoverEffect={false} className="text-left p-5 mb-6" data-testid="card-session-summary">
+                <h3 className="font-serif text-sm font-semibold text-primary mb-3">Session Summary</h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Shield size={14} className="text-muted-foreground mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Session Name</p>
+                      <p className="text-sm font-medium text-primary" data-testid="text-session-name">{session?.name || "Untitled Session"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Clock size={14} className="text-muted-foreground mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Date & Time</p>
+                      <p className="text-sm font-medium text-primary" data-testid="text-session-datetime">
+                        {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        {" at "}
+                        {new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Wrench size={14} className="text-muted-foreground mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Tools Used</p>
+                      <div className="flex flex-wrap gap-1.5 mt-1" data-testid="text-tools-used">
+                        {Array.from(toolsUsed.current).map(tool => (
+                          <span key={tool} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent border border-accent/20">
+                            {toolDisplayName(tool)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Users size={14} className="text-muted-foreground mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Participants</p>
+                      <p className="text-sm font-medium text-primary" data-testid="text-participant-count">
+                        {peakParticipants.current > 0 ? `${peakParticipants.current} (peak)` : "No participants joined"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </GlassCard>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
+                {isClinician && (
+                  <button
+                    onClick={handleSnapshot}
+                    className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-primary px-6 py-3 rounded-xl text-sm font-medium transition-colors cursor-pointer w-full sm:w-auto justify-center"
+                    data-testid="button-save-snapshot"
+                  >
+                    <Download size={16} />
+                    Save Snapshot
+                  </button>
+                )}
+                <button
+                  onClick={() => navigate(isClinician ? "/dashboard" : "/")}
+                  className="btn-luxury bg-primary text-primary-foreground px-8 py-3 rounded-xl text-sm font-medium shadow-lg cursor-pointer w-full sm:w-auto"
+                  data-testid="button-session-ended-navigate"
+                >
+                  {isClinician ? "Back to Dashboard" : "Return Home"}
+                </button>
+              </div>
+
+              {isClinician && (
+                <p className="text-xs text-muted-foreground/70 italic" data-testid="text-ehr-reminder">
+                  Don't forget to save your session notes to your EHR system.
+                </p>
+              )}
             </motion.div>
           </motion.div>
         )}

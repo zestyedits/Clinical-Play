@@ -8,6 +8,7 @@ interface WSClient {
   sessionId: string;
   participantId: string;
   displayName: string;
+  lastPong: number;
 }
 
 const rooms = new Map<string, Set<WSClient>>();
@@ -65,7 +66,7 @@ export function setupWebSocketServer(server: Server) {
         switch (msg.type) {
           case "join": {
             const { sessionId, participantId, displayName } = msg;
-            client = { ws, sessionId, participantId, displayName };
+            client = { ws, sessionId, participantId, displayName, lastPong: Date.now() };
 
             if (!rooms.has(sessionId)) {
               rooms.set(sessionId, new Set());
@@ -349,6 +350,13 @@ export function setupWebSocketServer(server: Server) {
             broadcast(client.sessionId, { type: "values-cleared" });
             break;
           }
+
+          case "pong": {
+            if (client) {
+              client.lastPong = Date.now();
+            }
+            break;
+          }
         }
       } catch (err) {
         log(`WebSocket error: ${err}`, "ws");
@@ -370,9 +378,44 @@ export function setupWebSocketServer(server: Server) {
           participantId: client.participantId,
           displayName: client.displayName,
         });
+        broadcast(client.sessionId, {
+          type: "user-disconnected",
+          participantId: client.participantId,
+          displayName: client.displayName,
+        });
         log(`User ${client.displayName} left session ${client.sessionId}`, "ws");
       }
     });
+  });
+
+  const heartbeatInterval = setInterval(() => {
+    const now = Date.now();
+    const pingPayload = JSON.stringify({ type: "ping" });
+    rooms.forEach((room, sessionId) => {
+      room.forEach((client) => {
+        if (client.ws.readyState === WebSocket.OPEN) {
+          if (now - client.lastPong > 15000) {
+            broadcast(sessionId, {
+              type: "user-disconnected",
+              participantId: client.participantId,
+              displayName: client.displayName,
+            });
+            client.ws.close(1000, "Heartbeat timeout");
+            room.delete(client);
+            if (room.size === 0) {
+              rooms.delete(sessionId);
+              roomStates.delete(sessionId);
+            }
+          } else {
+            client.ws.send(pingPayload);
+          }
+        }
+      });
+    });
+  }, 5000);
+
+  wss.on("close", () => {
+    clearInterval(heartbeatInterval);
   });
 
   log("WebSocket server initialized on /ws", "ws");

@@ -7,6 +7,7 @@ interface BreathingGuideProps {
   isActive: boolean;
   isClinician: boolean;
   onToggle: () => void;
+  startTime?: number | null;
 }
 
 const PHASES = [
@@ -18,7 +19,7 @@ const PHASES = [
 
 const TOTAL_CYCLE = PHASES.reduce((sum, p) => sum + p.duration, 0);
 
-export function BreathingGuide({ isActive, isClinician, onToggle }: BreathingGuideProps) {
+export function BreathingGuide({ isActive, isClinician, onToggle, startTime }: BreathingGuideProps) {
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [elapsed, setElapsed] = useState(0);
 
@@ -28,6 +29,9 @@ export function BreathingGuide({ isActive, isClinician, onToggle }: BreathingGui
       setElapsed(0);
       return;
     }
+
+    const initialElapsed = startTime ? Date.now() - startTime : 0;
+    setElapsed(initialElapsed);
 
     const interval = setInterval(() => {
       setElapsed(prev => {
@@ -45,7 +49,7 @@ export function BreathingGuide({ isActive, isClinician, onToggle }: BreathingGui
     }, 50);
 
     return () => clearInterval(interval);
-  }, [isActive]);
+  }, [isActive, startTime]);
 
   const currentPhase = PHASES[phaseIndex];
   const phaseProgress = (() => {

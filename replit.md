@@ -9,16 +9,20 @@ Key features include:
 - **Digital Sandtray** — a shared canvas where participants drag-and-drop emoji-based therapeutic assets
 - **Calm Breathing Guide** — a synchronized breathing bubble (SVG with Soft Sage → Deep Navy gradient, 4-phase: inhale 4s, hold 4s, exhale 6s, rest 2s) that clinicians control and syncs to all participants
 - **Tool Selector** — modal for switching between clinical tools (Sandtray, Breathing active; CBT, Feeling Wheel coming soon)
-- **Clinical Insights** — private clinician-only panel with contextual therapeutic prompts per active tool
+- **Clinical Insights** — private clinician-only panel with context-aware therapeutic prompts; dynamically responds to session state (e.g., emotion-specific prompts when Feeling Wheel selections are made, item-count awareness for Sandtray, event-count notes for Timeline)
 - **Session management** — clinicians create sessions, generate invite codes, and moderate (lock canvas, toggle anonymity, clear items)
 - **Moderator controls** — clinician-only tools for managing the session experience
-- **Presence system** — activity pulse animations on participants when interacting with the canvas
+- **Presence system** — activity pulse animations on participants when interacting with the canvas; WebSocket heartbeat/ping-pong monitors connection health, auto-detects and displays "Disconnected" status after 15s timeout
 - **Mobile-first design** with bottom navigation bar on mobile, bottom dock asset library, glassmorphism throughout
 - **Pre-launch mode** — access restricted to allowlist (currently only clinicalplayapp@gmail.com); pricing section replaced with "Coming Soon" card; pre-launch banner at top of site
 - **Waitlist** — email signup on landing page (in pricing section); submits to DB and notifies admin via Resend
 - **Inbox system** — all authenticated users have an inbox (/inbox) for announcements and support messages; unread badge in navbar
 - **Admin panel** — admin-only (/admin) panel for clinicalplayapp@gmail.com; manage users (upgrade/remove), view waitlist, send mass announcements (in-app + optional email via Resend)
-- **Session lifecycle** — clinicians can end sessions via End Session button with confirmation dialog; all participants receive "session-ended" WebSocket message and see graceful "Session Complete" overlay; ended sessions can't be rejoined; `endedAt` timestamp tracked in DB
+- **Session lifecycle** — clinicians can end sessions via End Session button with confirmation dialog; all participants receive "session-ended" WebSocket message; rich Session Summary screen shows session name, date, tools used, peak participants, snapshot export CTA, and EHR reminder; ended sessions can't be rejoined; `endedAt` timestamp tracked in DB
+- **PHI safety** — New Session Dialog includes regex-based name detection (warns on potential client names like "John Smith") and persistent HIPAA reminder text
+- **Snapshot watermarking** — exported session PNGs include metadata footer bar with "ClinicalPlay.app | Session: [name] | Date | Tool: [name]" for easy identification
+- **Demo mode** — clinicians can "Try a Demo" from Dashboard to explore all tools in a local-only sandbox session (no DB writes, no WebSocket) with demo banner
+- **Payment failure handling** — Stripe `invoice.payment_failed` webhook updates payment status; Dashboard shows red warning banner with "Update Payment" CTA when subscription is past_due; Stripe status cached for 5 minutes to avoid API overhead
 - **Guided tours** — interactive spotlight-based guided tours for new users on Dashboard (4 steps: new session, sessions area, tool library, account) and Playroom (5 steps: invite code, tool selector, asset library, snapshot, end session); uses SVG mask overlay with positioned tooltips, step progress dots, skip/back/next controls; completion tracked via localStorage; clinician-only for playroom tour
 
 ## User Preferences
