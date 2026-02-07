@@ -79,6 +79,50 @@ export async function notifyAdminSupportMessage(userEmail: string, subject: stri
   }
 }
 
+export async function sendWelcomeVerificationEmail(
+  email: string,
+  firstName: string,
+  verificationLink: string,
+) {
+  try {
+    const safeName = escapeHtml(firstName);
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: "Welcome to ClinicalPlay — Verify Your Email",
+      html: `
+        <div style="font-family: 'Inter', sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 24px; background: #f8f7f4;">
+          <div style="background: white; border-radius: 16px; padding: 32px; border: 1px solid #e8e5de;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <h1 style="color: #1B2A4A; font-family: 'Lora', serif; margin: 0 0 8px; font-size: 26px;">Welcome, ${safeName}!</h1>
+              <p style="color: #666; font-size: 15px; margin: 0;">We're excited to have you on board.</p>
+            </div>
+            <div style="color: #333; font-size: 15px; line-height: 1.7; margin-bottom: 24px;">
+              <p style="margin: 0 0 12px;">Thank you for joining <strong style="color: #1B2A4A;">ClinicalPlay</strong> — the premium telehealth platform designed for play therapists and clinicians.</p>
+              <p style="margin: 0;">Please verify your email address to unlock the full experience:</p>
+            </div>
+            <div style="text-align: center; margin-bottom: 24px;">
+              <a href="${verificationLink}" style="display: inline-block; background: #1B2A4A; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 36px; border-radius: 12px;">Verify Your Email</a>
+            </div>
+            <div style="background: #f8f7f4; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+              <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.6; text-align: center;">
+                If the button doesn't work, copy and paste this link into your browser:<br />
+                <a href="${verificationLink}" style="color: #1B2A4A; word-break: break-all; font-size: 12px;">${verificationLink}</a>
+              </p>
+            </div>
+            <hr style="border: none; border-top: 1px solid #e8e5de; margin: 24px 0;" />
+            <p style="color: #888; font-size: 12px; text-align: center; margin: 0;">
+              ClinicalPlay &mdash; Premium Telehealth Platform
+            </p>
+          </div>
+        </div>
+      `,
+    });
+  } catch (error) {
+    console.error("Failed to send welcome verification email:", error);
+  }
+}
+
 export async function sendAnnouncementEmail(to: string, subject: string, body: string) {
   try {
     const safeSubject = escapeHtml(subject);

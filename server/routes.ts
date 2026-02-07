@@ -9,7 +9,7 @@ import { supabaseAdmin } from "./supabase";
 import { db } from "./db";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
-import { notifyAdminWaitlistSignup, notifyAdminSupportMessage, sendAnnouncementEmail } from "./email";
+import { notifyAdminWaitlistSignup, notifyAdminSupportMessage, sendAnnouncementEmail, sendWelcomeVerificationEmail } from "./email";
 
 const ADMIN_EMAIL = "clinicalplayapp@gmail.com";
 
@@ -41,16 +41,72 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const { email, password, firstName, lastName } = req.body;
+      if (!email || !password || !firstName || !lastName) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+      if (password.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters" });
+      }
+
+      const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: false,
+        user_metadata: { firstName, lastName },
+      });
+
+      if (createError) {
+        return res.status(400).json({ message: createError.message });
+      }
+
+      const redirectTo = `${req.protocol}://${req.get("host")}/email-confirmed`;
+      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+        type: "signup",
+        email,
+        password,
+        options: { redirectTo },
+      });
+
+      if (linkError) {
+        console.error("Failed to generate verification link:", linkError);
+      } else if (linkData?.properties?.action_link) {
+        await sendWelcomeVerificationEmail(email, firstName, linkData.properties.action_link);
+      }
+
+      res.json({ message: "Account created successfully" });
+    } catch (error) {
+      console.error("Error during signup:", error);
+      res.status(500).json({ message: "Failed to create account" });
+    }
+  });
+
   app.post("/api/auth/resend-verification", isAuthenticated, async (req: any, res) => {
     try {
       const email = req.authUser.email;
-      const { error } = await supabaseAdmin.auth.resend({
-        type: "signup",
+      const userId = req.authUser.id;
+
+      // Fetch firstName from DB
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      const firstName = user?.firstName || "there";
+
+      const redirectTo = `${req.protocol}://${req.get("host")}/email-confirmed`;
+      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+        type: "magiclink",
         email,
+        options: { redirectTo },
       });
-      if (error) {
-        return res.status(400).json({ message: error.message });
+
+      if (linkError) {
+        return res.status(400).json({ message: linkError.message });
       }
+
+      if (linkData?.properties?.action_link) {
+        await sendWelcomeVerificationEmail(email, firstName, linkData.properties.action_link);
+      }
+
       res.json({ message: "Verification email sent" });
     } catch (error) {
       console.error("Error resending verification:", error);

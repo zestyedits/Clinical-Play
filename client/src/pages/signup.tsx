@@ -27,21 +27,29 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const supabase = await getSupabase();
-      const { error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            firstName,
-            lastName,
-          },
-          emailRedirectTo: `${window.location.origin}/email-confirmed`,
-        },
+      // Create account via backend (sends branded welcome email)
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, firstName, lastName }),
       });
 
-      if (authError) {
-        setError(authError.message);
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Failed to create account.");
+        setLoading(false);
+        return;
+      }
+
+      // Sign in to establish session
+      const supabase = await getSupabase();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError(signInError.message);
         setLoading(false);
         return;
       }
