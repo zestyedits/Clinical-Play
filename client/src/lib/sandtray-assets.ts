@@ -3,6 +3,7 @@ export interface SandtrayAsset {
   icon: string;
   label: string;
   category: "nature" | "people" | "abstract";
+  mass?: number;
 }
 
 export const SANDTRAY_ASSETS: SandtrayAsset[] = [

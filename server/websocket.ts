@@ -13,17 +13,41 @@ interface WSClient {
 
 const rooms = new Map<string, Set<WSClient>>();
 
+interface LightSource {
+  x: number;
+  y: number;
+  temperature: number;
+}
+
+interface RakePath {
+  id: string;
+  points: { x: number; y: number }[];
+  width: number;
+  createdBy: string;
+  timestamp: number;
+}
+
 interface RoomState {
   activeTool: string;
   breathingActive: boolean;
   breathingStartTime: number | null;
+  lightSource: LightSource;
+  rakePaths: RakePath[];
+  zenMode: boolean;
 }
 
 const roomStates = new Map<string, RoomState>();
 
 function getRoomState(sessionId: string): RoomState {
   if (!roomStates.has(sessionId)) {
-    roomStates.set(sessionId, { activeTool: "sandtray", breathingActive: false, breathingStartTime: null });
+    roomStates.set(sessionId, {
+      activeTool: "sandtray",
+      breathingActive: false,
+      breathingStartTime: null,
+      lightSource: { x: 0.3, y: 0.2, temperature: 0.5 },
+      rakePaths: [],
+      zenMode: false,
+    });
   }
   return roomStates.get(sessionId)!;
 }
@@ -95,6 +119,9 @@ export function setupWebSocketServer(server: Server) {
               activeTool: state.activeTool,
               breathingActive: state.breathingActive,
               breathingStartTime: state.breathingStartTime,
+              lightSource: state.lightSource,
+              rakePaths: state.rakePaths,
+              zenMode: state.zenMode,
               feelingSelections,
               timelineEvents: timelineEvts,
               valuesCards,
@@ -365,6 +392,59 @@ export function setupWebSocketServer(server: Server) {
             if (!client) return;
             await storage.clearValuesCardPlacements(client.sessionId);
             broadcast(client.sessionId, { type: "values-cleared" });
+            break;
+          }
+
+          // --- Ambient / Zen ---
+          case "light-source-update": {
+            if (!client) return;
+            const lsState = getRoomState(client.sessionId);
+            lsState.lightSource = { x: msg.x, y: msg.y, temperature: msg.temperature };
+            broadcast(client.sessionId, {
+              type: "light-source-updated",
+              x: msg.x,
+              y: msg.y,
+              temperature: msg.temperature,
+              updatedBy: client.participantId,
+            }, ws);
+            break;
+          }
+
+          case "rake-path-add": {
+            if (!client) return;
+            const rpState = getRoomState(client.sessionId);
+            const rakePath = {
+              id: msg.id,
+              points: msg.points,
+              width: msg.width || 12,
+              createdBy: client.participantId,
+              timestamp: Date.now(),
+            };
+            rpState.rakePaths.push(rakePath);
+            broadcast(client.sessionId, {
+              type: "rake-path-added",
+              path: rakePath,
+            }, ws);
+            break;
+          }
+
+          case "rake-path-clear": {
+            if (!client) return;
+            const rcState = getRoomState(client.sessionId);
+            rcState.rakePaths = [];
+            broadcast(client.sessionId, { type: "rake-paths-cleared" });
+            break;
+          }
+
+          case "zen-mode-toggle": {
+            if (!client) return;
+            const zmState = getRoomState(client.sessionId);
+            zmState.zenMode = msg.enabled;
+            broadcast(client.sessionId, {
+              type: "zen-mode-toggled",
+              enabled: msg.enabled,
+              toggledBy: client.participantId,
+            });
             break;
           }
 

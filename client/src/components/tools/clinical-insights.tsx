@@ -194,13 +194,18 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool, sessionContext 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 20, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="absolute top-32 md:top-14 right-4 z-30 w-72 max-h-[60vh] bg-white/30 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/30 overflow-hidden flex flex-col"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed top-0 right-0 bottom-0 z-50 w-80 flex flex-col overflow-hidden"
+            style={{
+              backdropFilter: "blur(25px)",
+              background: "rgba(255, 255, 255, 0.15)",
+              borderLeft: "0.5px solid rgba(212, 175, 55, 0.5)",
+            }}
           >
-            <div className="p-4 border-b border-white/20">
+            <div className="p-5 border-b" style={{ borderColor: "rgba(212, 175, 55, 0.2)" }}>
               <div className="flex items-center gap-2 mb-1">
                 <Lightbulb size={16} className="text-accent" />
                 <h3 className="font-serif text-sm text-primary font-medium">Clinical Insights</h3>
@@ -208,7 +213,7 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool, sessionContext 
               <p className="text-[11px] text-muted-foreground">Private — only you can see this</p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {emotionPrompts && sessionContext?.latestEmotion && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -232,7 +237,7 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool, sessionContext 
                     >
                       <div className="flex items-start gap-2">
                         <Sparkles size={12} className="text-primary mt-0.5 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" />
-                        <p className="text-sm text-primary/90 leading-relaxed">{prompt}</p>
+                        <p className="text-sm font-serif text-primary/90 leading-relaxed">{prompt}</p>
                       </div>
                     </motion.div>
                   ))}
@@ -269,7 +274,7 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool, sessionContext 
                 >
                   <div className="flex items-start gap-2.5">
                     <MessageCircle size={14} className="text-accent mt-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
-                    <p className="text-sm text-primary/80 leading-relaxed">{prompt}</p>
+                    <p className="text-sm font-serif text-primary/80 leading-relaxed">{prompt}</p>
                   </div>
                 </motion.div>
               ))}

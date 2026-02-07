@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Lock, Unlock, RotateCcw, Ghost, Eye, Shield } from "lucide-react";
+import { Lock, Unlock, RotateCcw, Ghost, Eye, Shield, Sun, Brush, Minimize2, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ModeratorBarProps {
@@ -9,6 +9,12 @@ interface ModeratorBarProps {
   onToggleAnonymity: () => void;
   onClearCanvas: () => void;
   participantCount: number;
+  lightTemperature?: number;
+  onLightTemperatureChange?: (temperature: number) => void;
+  rakeMode?: boolean;
+  onToggleRakeMode?: () => void;
+  zenMode?: boolean;
+  onToggleZenMode?: () => void;
 }
 
 export function ModeratorBar({
@@ -18,6 +24,12 @@ export function ModeratorBar({
   onToggleAnonymity,
   onClearCanvas,
   participantCount,
+  lightTemperature,
+  onLightTemperatureChange,
+  rakeMode,
+  onToggleRakeMode,
+  zenMode,
+  onToggleZenMode,
 }: ModeratorBarProps) {
   return (
     <motion.div
@@ -54,6 +66,20 @@ export function ModeratorBar({
           <span className="text-[8px] font-medium">Clear</span>
         </button>
 
+        {onToggleRakeMode && (
+          <button
+            onClick={onToggleRakeMode}
+            className={cn(
+              "flex flex-col items-center justify-center w-11 h-11 rounded-xl transition-all active:scale-95 gap-0.5 cursor-pointer",
+              rakeMode ? "bg-accent/80 text-primary shadow-inner shadow-black/20" : "hover:bg-white/10"
+            )}
+            data-testid="button-toggle-rake"
+          >
+            <Brush size={18} />
+            <span className="text-[8px] font-medium">Rake</span>
+          </button>
+        )}
+
         <div className="w-7 h-px bg-white/10 mx-auto" />
 
         <button
@@ -67,6 +93,49 @@ export function ModeratorBar({
           {isAnonymous ? <Ghost size={18} /> : <Eye size={18} />}
           <span className="text-[8px] font-medium">{isAnonymous ? "Anon" : "Named"}</span>
         </button>
+
+        {onToggleZenMode && (
+          <button
+            onClick={onToggleZenMode}
+            className={cn(
+              "flex flex-col items-center justify-center w-11 h-11 rounded-xl transition-all active:scale-95 gap-0.5 cursor-pointer",
+              zenMode ? "bg-accent/80 text-primary shadow-inner shadow-black/20" : "hover:bg-white/10"
+            )}
+            data-testid="button-toggle-zen"
+          >
+            {zenMode ? <Maximize2 size={18} /> : <Minimize2 size={18} />}
+            <span className="text-[8px] font-medium">{zenMode ? "Show" : "Zen"}</span>
+          </button>
+        )}
+
+        {/* Mood Slider */}
+        {onLightTemperatureChange && (
+          <div className="flex flex-col items-center gap-1 pt-1 border-t border-white/10 mt-0.5 px-1">
+            <Sun size={12} className="text-accent" />
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="text-[7px] opacity-50">Cool</span>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={lightTemperature ?? 0.5}
+                onChange={(e) => onLightTemperatureChange(parseFloat(e.target.value))}
+                className="w-9 h-1 appearance-none rounded-full cursor-pointer"
+                style={{
+                  writingMode: "vertical-lr",
+                  direction: "rtl",
+                  height: "48px",
+                  width: "6px",
+                  background: `linear-gradient(to top, #4a5568, #d4af37)`,
+                  WebkitAppearance: "none",
+                }}
+                data-testid="slider-mood"
+              />
+              <span className="text-[7px] opacity-50">Warm</span>
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );

@@ -42,8 +42,16 @@
 
 :root {
   /* Soft Sage / Creamy White Background for Light Mode */
-  --background: 150 15% 97%; 
+  --background: 150 15% 97%;
   --foreground: 220 35% 15%; /* Deep Navy Text */
+
+  /* Ambient / Glass Luxury Tokens */
+  --glass-blur: 25px;
+  --glass-border: rgba(212, 175, 55, 0.5);
+  --glass-tint: rgba(255, 255, 255, 0.15);
+  --gold-champagne: #D4AF37;
+  --light-temp-cool: 220;
+  --light-temp-warm: 35;
 
   /* Glass Cards */
   --card: 0 0% 100%;
@@ -154,11 +162,23 @@
 
 @layer utilities {
   .glass {
-    @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-white/20 shadow-lg;
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+    background: var(--glass-tint);
+    border: 0.5px solid var(--glass-border);
+    @apply shadow-lg;
   }
-  
+
   .glass-card {
-    @apply bg-white/60 dark:bg-white/5 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.01];
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+    background: var(--glass-tint);
+    border: 0.5px solid var(--glass-border);
+    @apply shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.01];
+  }
+
+  .glass-luxury {
+    backdrop-filter: blur(25px) saturate(1.2);
+    background: rgba(255, 255, 255, 0.15);
+    border: 0.5px solid rgba(212, 175, 55, 0.5);
   }
   
   .text-gradient {
@@ -360,4 +380,29 @@ select:focus-visible {
     transform: scale(0.97);
     opacity: 0.85;
   }
+}
+
+/* ── Ambient Floor Keyframes ── */
+@keyframes ambient-drift {
+  0% { transform: translate(0%, 0%) scale(1); }
+  25% { transform: translate(10%, -8%) scale(1.05); }
+  50% { transform: translate(-5%, 12%) scale(0.95); }
+  75% { transform: translate(-12%, -5%) scale(1.08); }
+  100% { transform: translate(0%, 0%) scale(1); }
+}
+
+@keyframes ambient-drift-2 {
+  0% { transform: translate(0%, 0%) scale(1.02); }
+  25% { transform: translate(-8%, 10%) scale(0.97); }
+  50% { transform: translate(12%, 5%) scale(1.06); }
+  75% { transform: translate(5%, -12%) scale(0.94); }
+  100% { transform: translate(0%, 0%) scale(1.02); }
+}
+
+@keyframes ambient-drift-3 {
+  0% { transform: translate(5%, -5%) scale(0.98); }
+  25% { transform: translate(-10%, 6%) scale(1.04); }
+  50% { transform: translate(8%, -10%) scale(1.01); }
+  75% { transform: translate(-6%, 8%) scale(0.96); }
+  100% { transform: translate(5%, -5%) scale(0.98); }
 }

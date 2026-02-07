@@ -12,14 +12,17 @@ import { ModeratorBar } from "@/components/sandtray/moderator-bar";
 import { ToolSelector } from "@/components/tools/tool-selector";
 import { BreathingGuide } from "@/components/tools/breathing-guide";
 import { ClinicalInsights } from "@/components/tools/clinical-insights";
-import { FeelingWheel, type FeelingSelection } from "@/components/tools/feeling-wheel";
+import { FeelingWheelSVG, type FeelingSelection } from "@/components/tools/feeling-wheel-svg";
 import { NarrativeTimeline, type TimelineEventData } from "@/components/tools/narrative-timeline";
 import { ValuesCardSort, type CardPlacement } from "@/components/tools/values-card-sort";
+import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
 import { GuidedTour, useTour, type TourStep } from "@/components/guided-tour";
 import { GlassCard } from "@/components/ui/glass-card";
 import { getSupabase } from "@/lib/supabase";
+import type { LightSource, RakePath } from "@/lib/ambient-types";
+import { DEFAULT_LIGHT_SOURCE } from "@/lib/ambient-types";
 import type { TherapySession, Participant } from "@shared/schema";
 
 interface OnlineUser {
@@ -63,6 +66,13 @@ export default function Playroom() {
   const [subscriptionType, setSubscriptionType] = useState<string>("free");
   const [sessionEnded, setSessionEnded] = useState(false);
   const [endingSession, setEndingSession] = useState(false);
+
+  // Ambient / Zen state
+  const [lightSource, setLightSource] = useState<LightSource>(DEFAULT_LIGHT_SOURCE);
+  const [rakePaths, setRakePaths] = useState<RakePath[]>([]);
+  const [zenMode, setZenMode] = useState(false);
+  const [rakeMode, setRakeMode] = useState(false);
+  const lightThrottleRef = useRef(0);
   const [, navigate] = useLocation();
   const playroomTour = useTour("playroom");
 
@@ -135,6 +145,9 @@ export default function Playroom() {
         if (msg.activeTool) setActiveTool(msg.activeTool);
         if (msg.breathingActive !== undefined) setBreathingActive(msg.breathingActive);
         if (msg.breathingStartTime !== undefined) setBreathingStartTime(msg.breathingStartTime);
+        if (msg.lightSource) setLightSource(msg.lightSource);
+        if (msg.rakePaths) setRakePaths(msg.rakePaths);
+        if (msg.zenMode !== undefined) setZenMode(msg.zenMode);
         if (msg.feelingSelections) setFeelingSelections(msg.feelingSelections);
         if (msg.timelineEvents) setTimelineEvents(msg.timelineEvents.map((e: any) => ({
           id: e.id,
@@ -265,6 +278,20 @@ export default function Playroom() {
         break;
       case "timeline-cleared":
         setTimelineEvents([]);
+        break;
+
+      // Ambient / Zen
+      case "light-source-updated":
+        setLightSource({ x: msg.x, y: msg.y, temperature: msg.temperature });
+        break;
+      case "rake-path-added":
+        setRakePaths(prev => [...prev, msg.path]);
+        break;
+      case "rake-paths-cleared":
+        setRakePaths([]);
+        break;
+      case "zen-mode-toggled":
+        setZenMode(msg.enabled);
         break;
 
       // Values Card Sort
@@ -405,6 +432,18 @@ export default function Playroom() {
           break;
         case "values-clear":
           setValuesCards([]);
+          break;
+        case "light-source-update":
+          setLightSource({ x: msg.x, y: msg.y, temperature: msg.temperature });
+          break;
+        case "rake-path-add":
+          setRakePaths(prev => [...prev, { id: msg.id, points: msg.points, width: msg.width || 12, createdBy: pid, timestamp: Date.now() }]);
+          break;
+        case "rake-path-clear":
+          setRakePaths([]);
+          break;
+        case "zen-mode-toggle":
+          setZenMode(msg.enabled);
           break;
       }
       return;
@@ -583,6 +622,40 @@ export default function Playroom() {
     if (!isDemo) setValuesCards([]);
   }, [send, isDemo]);
 
+  // Ambient / Zen handlers
+  const handleLightSourceUpdate = useCallback((ls: LightSource) => {
+    setLightSource(ls);
+    const now = Date.now();
+    if (now - lightThrottleRef.current < 33) return; // 30fps throttle
+    lightThrottleRef.current = now;
+    send({ type: "light-source-update", x: ls.x, y: ls.y, temperature: ls.temperature });
+  }, [send]);
+
+  const handleLightTemperatureChange = useCallback((temperature: number) => {
+    const newLs = { ...lightSource, temperature };
+    handleLightSourceUpdate(newLs);
+  }, [lightSource, handleLightSourceUpdate]);
+
+  const handleRakePathAdd = useCallback((path: RakePath) => {
+    setRakePaths(prev => [...prev, path]);
+    send({ type: "rake-path-add", id: path.id, points: path.points, width: path.width });
+  }, [send]);
+
+  const handleRakePathClear = useCallback(() => {
+    setRakePaths([]);
+    send({ type: "rake-path-clear" });
+  }, [send]);
+
+  const handleZenModeToggle = useCallback(() => {
+    const next = !zenMode;
+    setZenMode(next);
+    send({ type: "zen-mode-toggle", enabled: next });
+  }, [send, zenMode]);
+
+  const handleToggleRakeMode = useCallback(() => {
+    setRakeMode(prev => !prev);
+  }, []);
+
   const handleEndSession = useCallback(async () => {
     if (!sessionId) return;
     setEndingSession(true);
@@ -674,10 +747,13 @@ export default function Playroom() {
   return (
     <div className="h-screen w-full bg-background overflow-hidden flex flex-col font-sans">
       {/* Header */}
+      <AnimatePresence>
+      {!zenMode && (
       <motion.header
         className="h-14 md:h-16 bg-white/60 backdrop-blur-xl border-b border-white/20 flex items-center justify-between px-4 z-20 shrink-0"
-        initial={{ y: -60 }}
-        animate={{ y: 0 }}
+        initial={{ y: -60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: -60, opacity: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="flex items-center gap-3">
@@ -848,8 +924,11 @@ export default function Playroom() {
           </Link>
         </div>
       </motion.header>
+      )}
+      </AnimatePresence>
 
-      {isDemo && (
+      <AnimatePresence>
+      {!zenMode && isDemo && (
         <div className="bg-amber-50 border-b border-amber-200/60 px-4 py-2 flex items-center justify-center gap-3 shrink-0 z-20" data-testid="banner-demo-mode">
           <span className="text-xs text-amber-700 font-medium">Demo Mode — changes won't be saved</span>
           <Link href="/dashboard" className="no-underline">
@@ -859,6 +938,7 @@ export default function Playroom() {
           </Link>
         </div>
       )}
+      </AnimatePresence>
 
       {/* Main */}
       <div className="flex-1 flex overflow-hidden relative">
@@ -885,12 +965,20 @@ export default function Playroom() {
                   onItemRemove={handleItemRemove}
                   onItemTransform={handleItemTransform}
                   onCursorMove={handleCursorMove}
+                  lightSource={lightSource}
+                  rakePaths={rakePaths}
+                  zenMode={zenMode}
+                  onLightSourceUpdate={handleLightSourceUpdate}
+                  onRakePathAdd={handleRakePathAdd}
+                  onRakePathClear={handleRakePathClear}
                 />
-                <AssetLibrary
-                  isOpen={assetLibraryOpen}
-                  onToggle={() => setAssetLibraryOpen(!assetLibraryOpen)}
-                  disabled={isCanvasLocked && !isClinician}
-                />
+                {!zenMode && (
+                  <AssetLibrary
+                    isOpen={assetLibraryOpen}
+                    onToggle={() => setAssetLibraryOpen(!assetLibraryOpen)}
+                    disabled={isCanvasLocked && !isClinician}
+                  />
+                )}
               </motion.div>
             )}
 
@@ -921,7 +1009,7 @@ export default function Playroom() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
               >
-                <FeelingWheel
+                <FeelingWheelSVG
                   selections={feelingSelections}
                   onSelect={handleFeelingSelect}
                   onClear={handleFeelingClear}
@@ -971,9 +1059,9 @@ export default function Playroom() {
             )}
           </AnimatePresence>
 
-          {/* Moderator Bar — only on sandtray */}
+          {/* Moderator Bar — only on sandtray, hidden in zen mode */}
           <AnimatePresence>
-            {isClinician && activeTool === "sandtray" && (
+            {isClinician && activeTool === "sandtray" && !zenMode && (
               <ModeratorBar
                 isCanvasLocked={isCanvasLocked}
                 isAnonymous={isAnonymous}
@@ -981,6 +1069,12 @@ export default function Playroom() {
                 onToggleAnonymity={handleToggleAnonymity}
                 onClearCanvas={handleClearCanvas}
                 participantCount={onlineUsers.length}
+                lightTemperature={lightSource.temperature}
+                onLightTemperatureChange={handleLightTemperatureChange}
+                rakeMode={rakeMode}
+                onToggleRakeMode={handleToggleRakeMode}
+                zenMode={zenMode}
+                onToggleZenMode={handleZenModeToggle}
               />
             )}
           </AnimatePresence>
@@ -1003,9 +1097,9 @@ export default function Playroom() {
           )}
         </div>
 
-        {/* Tools Sidebar (Desktop) */}
+        {/* Tools Sidebar (Desktop) — hidden in zen mode */}
         <AnimatePresence>
-          {toolsOpen && (
+          {toolsOpen && !zenMode && (
             <motion.aside
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -1109,6 +1203,9 @@ export default function Playroom() {
           onSkip={playroomTour.skip}
         />
       )}
+
+      {/* Connection Status — zen mode indicator */}
+      <ConnectionStatus connected={connected} zenMode={zenMode} sessionEnded={sessionEnded} />
 
       {/* Session Ended Overlay */}
       <AnimatePresence>
