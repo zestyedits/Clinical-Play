@@ -45,7 +45,7 @@ export default function Login() {
         >
           <div className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl shadow-primary/5 p-8 md:p-10">
             <div className="text-center mb-8">
-              <img src="/images/logo-icon.png" alt="ClinicalPlay" className="w-14 h-14 mx-auto mb-4 object-contain" />
+              <img src="/images/logo-icon.png" alt="ClinicalPlay" className="w-18 h-18 mx-auto mb-4 object-contain" />
               <h1 className="text-3xl font-serif text-primary mb-2" data-testid="text-login-title">Welcome Back</h1>
               <p className="text-muted-foreground">Sign in to your ClinicalPlay account</p>
             </div>

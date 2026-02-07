@@ -7,10 +7,10 @@ interface LogoMarkProps {
 }
 
 const sizeMap = {
-  sm: { height: "h-7" },
-  md: { height: "h-8" },
-  lg: { height: "h-10" },
-  xl: { height: "h-14" },
+  sm: { height: "h-9" },
+  md: { height: "h-11" },
+  lg: { height: "h-14" },
+  xl: { height: "h-18" },
 };
 
 export function LogoMark({ size = "md", className, variant = "full" }: LogoMarkProps) {
