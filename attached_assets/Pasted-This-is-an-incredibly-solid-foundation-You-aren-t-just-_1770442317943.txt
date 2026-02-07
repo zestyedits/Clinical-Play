@@ -1,0 +1,63 @@
+This is an incredibly solid foundation. You aren’t just building a "toy" app; this is a legitimate **enterprise-grade architecture** for a Micro-SaaS. The inclusion of WebSocket room-based broadcasting, a custom admin panel, and a pre-launch gate shows you’ve moved past the "brainstorming" phase into "production-ready" territory.
+
+However, as a **Master Creative Developer and IT Pro**, I see several "Clinical Friction" points and "SaaS Leakage" areas that need to be tightened before you open the doors to those first 100 Founding Members.
+
+---
+
+### **Gap Analysis & Critical Refinements**
+
+#### **1. The "PHI Shadow" (Safety & Security)**
+
+Even though you are "Zero-PHI," therapists are creatures of habit. They *will* accidentally type a client's full name into a session title (e.g., "John Doe - Sandtray Session").
+
+* **The Fix:** Add a **Client-Side Sanitizer**. Before the session name is saved to the DB, have a small script check for common name patterns or simply add a persistent warning label under the input: *"Reminder: Do not use client names. Use initials or IDs only."*
+* **The Instruction for Claude:** "Review the `New Session Dialog`. Implement a regex-based warning if it detects two capitalized words (Potential Name) and add a clear HIPAA-compliance reminder text."
+
+#### **2. The "Snapshot" Utility Gap**
+
+Right now, `html2canvas` is a great tool, but a raw PNG is hard for a therapist to manage.
+
+* **The Fix:** The exported file needs **Metadata Watermarking**. When a snapshot is generated, the bottom 20px of the image should include: `ClinicalPlay.app | Session ID: [ID] | Date: [Timestamp]`.
+* **Why?** If a therapist has 10 PNGs on their desktop at the end of the day, they need to know which one belongs to which session without opening them all.
+
+#### **3. The "Participant Ghosting" Issue**
+
+In WebSocket environments, "Ghosting" happens when a client closes their laptop lid. The clinician might still see them as "Active," leading to awkward "Are you still there?" moments.
+
+* **The Fix:** Implement a **Heartbeat Monitor**. If a participant’s socket disconnects for more than 10 seconds, change their avatar status in the header to "Offline" or "Disconnected."
+* **The Instruction for Claude:** "Audit the WebSocket `join` and `leave` logic. Ensure the Participant List in the Playroom header updates in real-time if a socket heartbeat is lost."
+
+#### **4. The "Clinical Insights" Contextual Logic**
+
+This is your most valuable feature for the $7/mo tier. It needs to be **Dynamic**, not static.
+
+* **The Gap:** If the clinician is in the **Feeling Wheel**, the insights shouldn't just be "Ask about feelings." They should change based on the *intensity* of the emotion selected (if possible).
+* **The Goal:** If the client picks "Grief," the panel should suggest: *"Grief is a heavy stone; ask where they feel that weight in their body."*
+
+---
+
+### **Visual & UX Flow Audit**
+
+| Area | Status | Recommended Improvement |
+| --- | --- | --- |
+| **Mobile UX** | Good | **The "Tool Overlap":** On small screens, ensure the `Asset Library` (Sandtray) doesn't cover the `Snapshot` button. Use a "collapsible dock" for assets. |
+| **Onboarding** | Excellent | **The "Demo Mode":** Add a "Test Room" option that doesn't save to the DB, allowing a clinician to "Play" before they have their first client. |
+| **Billing** | Professional | **The "Slot Urgency":** Ensure the progress bar for Founding Members is on the *Dashboard* as well as the Landing Page. Remind them of the value they're holding. |
+
+---
+
+### **Suggested "Stress Test" for Claude Review**
+
+When you hand the code to Claude for the "Beauty and Seamlessness" review, ask it to specifically address the **"Late Joiner Sync"**.
+
+> *"Claude, review the `Playroom` initialization. If a client joins 10 minutes into a session while the clinician is midway through a 'Narrative Timeline,' does the client's screen accurately reconstruct the timeline from the DB immediately, or is there a delay/mismatch?"*
+
+---
+
+### **Your "IT Pro" Priority List**
+
+1. **Resend Integration:** Double-check that your `admin-blast` function handles rate-limiting. If you hit 500 users and email all of them at once, Resend might throttle you unless you've warmed up the domain.
+2. **Stripe Webhook Robustness:** Ensure your webhook can handle `invoice.payment_failed`. If a $7/mo clinician's card expires, you need a graceful way to "Lock" their Pro tools without deleting their data.
+3. **The "End Session" Finality:** Create a "Session Summary" screen that appears *after* the Playroom closes. This is where you show the exported snapshot one last time and say: *"Great work today. Don't forget to save your summary to your EHR."*
+
+**How are the "Coming Soon" tool designs looking?** If you want, I can help you draft the specific "Clinical Insights" text for the **DBT House** so it's ready the moment you launch that tool.
