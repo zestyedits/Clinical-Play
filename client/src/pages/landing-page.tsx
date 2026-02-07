@@ -123,6 +123,94 @@ function PuppetTheaterIcon() {
   );
 }
 
+function GrowthGardenIcon() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+      <rect x="4" y="32" width="32" height="6" rx="3" fill="url(#gardenGrad)" fillOpacity="0.15" stroke="url(#gardenGrad)" strokeWidth="1.2" />
+      <path d="M14 32 Q14 22 10 18 Q8 16 10 14 Q12 12 14 14 Q16 16 14 18" stroke="url(#gardenGrad)" strokeWidth="1.5" fill="url(#gardenGrad)" fillOpacity="0.08" />
+      <circle cx="12" cy="12" r="4" fill="url(#gardenGrad)" fillOpacity="0.2" stroke="url(#gardenGrad)" strokeWidth="1.2" />
+      <path d="M20 32 Q20 16 20 12" stroke="url(#gardenGrad)" strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="20" cy="8" r="5" fill="url(#gardenGrad)" fillOpacity="0.25" stroke="url(#gardenGrad)" strokeWidth="1.5" />
+      <circle cx="20" cy="8" r="2" fill="url(#gardenGrad)" fillOpacity="0.5" />
+      <path d="M28 32 Q28 26 26 22 Q24 18 28 16 Q32 18 30 22 Q28 26 28 32" stroke="url(#gardenGrad)" strokeWidth="1.2" fill="url(#gardenGrad)" fillOpacity="0.1" />
+      <circle cx="28" cy="14" r="3" fill="url(#gardenGrad)" fillOpacity="0.15" stroke="url(#gardenGrad)" strokeWidth="1" />
+      <defs><linearGradient id="gardenGrad" x1="0" y1="0" x2="40" y2="40"><stop stopColor="#86c97e" /><stop offset="1" stopColor="#2d6a30" /></linearGradient></defs>
+    </svg>
+  );
+}
+
+function FidgetToolsIcon() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+      <circle cx="20" cy="20" r="8" stroke="url(#fidgetGrad)" strokeWidth="2" fill="url(#fidgetGrad)" fillOpacity="0.08" />
+      <circle cx="20" cy="20" r="3" fill="url(#fidgetGrad)" fillOpacity="0.6" />
+      <circle cx="20" cy="8" r="4.5" stroke="url(#fidgetGrad)" strokeWidth="1.5" fill="url(#fidgetGrad)" fillOpacity="0.12" />
+      <circle cx="9.6" cy="26" r="4.5" stroke="url(#fidgetGrad)" strokeWidth="1.5" fill="url(#fidgetGrad)" fillOpacity="0.12" />
+      <circle cx="30.4" cy="26" r="4.5" stroke="url(#fidgetGrad)" strokeWidth="1.5" fill="url(#fidgetGrad)" fillOpacity="0.12" />
+      <line x1="20" y1="12.5" x2="20" y2="12" stroke="url(#fidgetGrad)" strokeWidth="1.5" />
+      <line x1="13.5" y1="23" x2="14" y2="22.5" stroke="url(#fidgetGrad)" strokeWidth="1.5" />
+      <line x1="26.5" y1="23" x2="26" y2="22.5" stroke="url(#fidgetGrad)" strokeWidth="1.5" />
+      <defs><linearGradient id="fidgetGrad" x1="0" y1="0" x2="40" y2="40"><stop stopColor="#c084fc" /><stop offset="1" stopColor="#7c3aed" /></linearGradient></defs>
+    </svg>
+  );
+}
+
+function SafetyMapIcon() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+      <circle cx="20" cy="20" r="16" stroke="url(#safetyGrad)" strokeWidth="1" opacity="0.2" />
+      <circle cx="20" cy="20" r="11" stroke="url(#safetyGrad)" strokeWidth="1.2" opacity="0.3" strokeDasharray="4 3" />
+      <circle cx="20" cy="20" r="6" stroke="url(#safetyGrad)" strokeWidth="1.5" opacity="0.5" fill="url(#safetyGrad)" fillOpacity="0.08" />
+      <circle cx="20" cy="20" r="2.5" fill="url(#safetyGrad)" opacity="0.7" />
+      <circle cx="12" cy="10" r="2" fill="url(#safetyGrad)" opacity="0.4" />
+      <circle cx="30" cy="12" r="1.5" fill="url(#safetyGrad)" opacity="0.3" />
+      <circle cx="8" cy="24" r="1.8" fill="url(#safetyGrad)" opacity="0.35" />
+      <circle cx="32" cy="28" r="2.2" fill="url(#safetyGrad)" opacity="0.3" />
+      <circle cx="14" cy="34" r="1.5" fill="url(#safetyGrad)" opacity="0.25" />
+      <line x1="20" y1="20" x2="12" y2="10" stroke="url(#safetyGrad)" strokeWidth="0.8" opacity="0.2" strokeDasharray="2 2" />
+      <line x1="20" y1="20" x2="30" y2="12" stroke="url(#safetyGrad)" strokeWidth="0.8" opacity="0.2" strokeDasharray="2 2" />
+      <line x1="20" y1="20" x2="8" y2="24" stroke="url(#safetyGrad)" strokeWidth="0.8" opacity="0.2" strokeDasharray="2 2" />
+      <defs><linearGradient id="safetyGrad" x1="0" y1="0" x2="40" y2="40"><stop stopColor="#60a5fa" /><stop offset="1" stopColor="#1d4ed8" /></linearGradient></defs>
+    </svg>
+  );
+}
+
+function CopingDeckIcon() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+      <rect x="6" y="14" width="18" height="22" rx="3" stroke="url(#copingGrad)" strokeWidth="1" fill="url(#copingGrad)" fillOpacity="0.06" opacity="0.3" transform="rotate(-8 15 25)" />
+      <rect x="8" y="12" width="18" height="22" rx="3" stroke="url(#copingGrad)" strokeWidth="1.2" fill="url(#copingGrad)" fillOpacity="0.1" opacity="0.5" transform="rotate(-3 17 23)" />
+      <rect x="10" y="10" width="18" height="22" rx="3" stroke="url(#copingGrad)" strokeWidth="1.5" fill="url(#copingGrad)" fillOpacity="0.15" />
+      <path d="M15 18 L19 22 L23 16" stroke="url(#copingGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.6" fill="none" />
+      <line x1="14" y1="26" x2="24" y2="26" stroke="url(#copingGrad)" strokeWidth="1" opacity="0.3" strokeLinecap="round" />
+      <line x1="14" y1="29" x2="21" y2="29" stroke="url(#copingGrad)" strokeWidth="0.8" opacity="0.2" strokeLinecap="round" />
+      <circle cx="30" cy="8" r="6" stroke="url(#copingGrad)" strokeWidth="1.2" fill="url(#copingGrad)" fillOpacity="0.08" />
+      <path d="M28 8 L30 10 L33 6" stroke="url(#copingGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" fill="none" />
+      <defs><linearGradient id="copingGrad" x1="0" y1="0" x2="40" y2="40"><stop stopColor="#fb923c" /><stop offset="1" stopColor="#c2410c" /></linearGradient></defs>
+    </svg>
+  );
+}
+
+function SocialStoryIcon() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+      <rect x="4" y="6" width="32" height="28" rx="4" stroke="url(#storyGrad)" strokeWidth="1.5" fill="url(#storyGrad)" fillOpacity="0.06" />
+      <line x1="20" y1="6" x2="20" y2="34" stroke="url(#storyGrad)" strokeWidth="1" opacity="0.2" />
+      <rect x="8" y="10" width="8" height="6" rx="1.5" fill="url(#storyGrad)" fillOpacity="0.15" stroke="url(#storyGrad)" strokeWidth="0.8" />
+      <circle cx="12" cy="13" r="1.5" fill="url(#storyGrad)" opacity="0.5" />
+      <line x1="8" y1="19" x2="16" y2="19" stroke="url(#storyGrad)" strokeWidth="0.8" opacity="0.3" strokeLinecap="round" />
+      <line x1="8" y1="21.5" x2="14" y2="21.5" stroke="url(#storyGrad)" strokeWidth="0.8" opacity="0.2" strokeLinecap="round" />
+      <rect x="24" y="10" width="8" height="6" rx="1.5" fill="url(#storyGrad)" fillOpacity="0.12" stroke="url(#storyGrad)" strokeWidth="0.8" />
+      <path d="M26 13 L28 11 L30 13" stroke="url(#storyGrad)" strokeWidth="0.8" opacity="0.4" fill="none" />
+      <line x1="24" y1="19" x2="32" y2="19" stroke="url(#storyGrad)" strokeWidth="0.8" opacity="0.3" strokeLinecap="round" />
+      <line x1="24" y1="21.5" x2="30" y2="21.5" stroke="url(#storyGrad)" strokeWidth="0.8" opacity="0.2" strokeLinecap="round" />
+      <rect x="8" y="25" width="8" height="5" rx="1.5" fill="url(#storyGrad)" fillOpacity="0.1" stroke="url(#storyGrad)" strokeWidth="0.8" />
+      <rect x="24" y="25" width="8" height="5" rx="1.5" fill="url(#storyGrad)" fillOpacity="0.1" stroke="url(#storyGrad)" strokeWidth="0.8" />
+      <defs><linearGradient id="storyGrad" x1="0" y1="0" x2="40" y2="40"><stop stopColor="#f472b6" /><stop offset="1" stopColor="#be185d" /></linearGradient></defs>
+    </svg>
+  );
+}
+
 export default function LandingPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const [, navigate] = useLocation();
@@ -284,7 +372,7 @@ export default function LandingPage() {
             <p className="text-xs font-bold tracking-[0.25em] text-accent uppercase mb-4">Your Digital Office</p>
             <h2 className="text-3xl md:text-5xl font-serif text-primary mb-4">The Clinical Suite</h2>
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Five interactive tools designed to bridge the physical distance without losing the therapeutic connection — all included from day one.
+              Five evidence-based interactive tools — ready on day one. Each one designed to bridge the physical distance without losing the therapeutic connection.
             </p>
           </motion.div>
 
@@ -292,43 +380,48 @@ export default function LandingPage() {
             const tools = [
               {
                 title: "Zen Sandtray",
-                desc: "Expressive world-building with drag-and-drop emoji assets. Real-time collaborative placement with moderator controls.",
+                desc: "A physics-based shared canvas where clients drag emoji assets to build expressive worlds. Features lift shadows, soft collision nudging, sand dust particles, and clinician moderator controls — all synchronized in real-time across devices.",
                 IconComponent: ZenCircleIcon,
                 iconClass: "icon-sandtray",
                 gradient: "from-amber-50 via-amber-100/60 to-orange-50",
                 borderGlow: "hover:shadow-amber-200/40",
+                tags: ["Expressive Arts", "Ages 5+"],
               },
               {
                 title: "Calm Breathing Guide",
-                desc: "Synchronized 4-phase breathing exercises that pulse on every participant's screen in real-time.",
+                desc: "A beautiful SVG breathing bubble with a 4-phase cycle (inhale, hold, exhale, rest) that the clinician controls and every participant follows in sync. Perfect for grounding, co-regulation, and session warm-ups.",
                 IconComponent: AuraPulseIcon,
                 iconClass: "icon-breathing",
                 gradient: "from-emerald-50 via-green-100/50 to-teal-50",
                 borderGlow: "hover:shadow-emerald-200/40",
+                tags: ["Somatic", "Co-Regulation"],
               },
               {
                 title: "Feeling Wheel",
-                desc: "Multi-layered emotional exploration — primary, secondary, and tertiary emotions with real-time highlighting.",
+                desc: "An interactive three-layer emotion wheel that guides clients from broad feelings to nuanced emotions. Selections sync in real-time and feed into Clinical Insights so you always know where the session is headed.",
                 IconComponent: CompassWheelIcon,
                 iconClass: "icon-feeling",
                 gradient: "from-purple-50 via-violet-100/50 to-fuchsia-50",
                 borderGlow: "hover:shadow-purple-200/40",
+                tags: ["Emotional Literacy", "CBT"],
               },
               {
                 title: "Narrative Timeline",
-                desc: "A visual river where clients drop stones to map life events. Collaborative, scrollable, and deeply personal.",
+                desc: "A scrollable visual river where clients place event stones to map their life story. Drag to reorder, color-code by theme, and explore patterns across time — a powerful tool for trauma-informed narrative therapy.",
                 IconComponent: TimelineRiverIcon,
                 iconClass: "icon-timeline",
                 gradient: "from-cyan-50 via-teal-100/50 to-sky-50",
                 borderGlow: "hover:shadow-teal-200/40",
+                tags: ["Narrative Therapy", "Trauma-Informed"],
               },
               {
                 title: "Values Card Sort",
-                desc: "Drag-and-drop card deck for prioritizing personal values — a cornerstone of ACT and motivational interviewing.",
+                desc: "A tactile drag-and-drop card deck for identifying and prioritizing personal values. Clients sort 30+ value cards into columns — a cornerstone exercise for ACT, motivational interviewing, and life transitions work.",
                 IconComponent: CardStackIcon,
                 iconClass: "icon-values",
                 gradient: "from-rose-50 via-pink-100/50 to-red-50",
                 borderGlow: "hover:shadow-rose-200/40",
+                tags: ["ACT", "Motivational Interviewing"],
               },
             ];
             const topRow = tools.slice(0, 3);
@@ -359,7 +452,16 @@ export default function LandingPage() {
                   </div>
                   <div className="p-6">
                     <h3 className="text-xl font-serif text-primary mb-2 group-hover:text-accent transition-colors duration-300">{tool.title}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">{tool.desc}</p>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-3">{tool.desc}</p>
+                    {tool.tags && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {tool.tags.map((tag: string) => (
+                          <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full font-semibold tracking-wide bg-[#2E8B57]/8 text-[#2E8B57] border border-[#2E8B57]/15">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </GlassCard>
               </motion.div>
@@ -398,73 +500,134 @@ export default function LandingPage() {
             </div>
             <h2 className="text-3xl md:text-5xl font-serif text-primary mb-4">What's Coming Next</h2>
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Our clinical library keeps growing. Premium tools in development — included free with every plan.
+              Our clinical library keeps growing. These premium tools are actively being built — and will be included free with every plan at launch.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
-              whileHover={{ y: -5, transition: { duration: 0.3 } }}
-            >
-              <GlassCard className="group h-full hover:shadow-xl hover:shadow-orange-200/30 transition-shadow duration-500" hoverEffect={true}>
-                <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-orange-50 via-amber-50/60 to-rose-50 flex items-center justify-center relative">
-                  <motion.div
-                    animate={{ y: [0, -5, 0] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <div className="glass-icon icon-dbt">
-                      <DBTHouseIcon />
-                    </div>
-                  </motion.div>
-                  <div className="absolute top-4 right-4 bg-[#0F52BA]/5 backdrop-blur-sm px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase text-[#0F52BA] border border-[#0F52BA]/20 shadow-sm flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0F52BA] animate-pulse" />
-                    In Development
-                  </div>
-                </div>
-                <div className="p-7">
-                  <h3 className="text-xl font-serif text-primary mb-2 group-hover:text-accent transition-colors duration-300">The DBT House</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    A room-by-room framework for exploring emotional regulation, distress tolerance, mindfulness, and interpersonal effectiveness — core DBT skills, visualized.
-                  </p>
-                </div>
-              </GlassCard>
-            </motion.div>
+          {(() => {
+            const upcomingTools = [
+              {
+                title: "The DBT House",
+                desc: "A room-by-room interactive framework for exploring emotional regulation, distress tolerance, mindfulness, and interpersonal effectiveness. Clients furnish each room with skills they're building — a visual, tactile way to internalize core DBT concepts.",
+                IconComponent: DBTHouseIcon,
+                iconClass: "icon-dbt",
+                gradient: "from-orange-50 via-amber-50/60 to-rose-50",
+                borderGlow: "hover:shadow-orange-200/30",
+                tags: ["DBT", "Skills Training"],
+              },
+              {
+                title: "Parts Puppet Theater",
+                desc: "An IFS-inspired stage where clients give voice to internal parts through interactive puppet figures. Drag characters onto the stage, assign them emotions and roles, create dialogues between parts — externalize, explore, and integrate in real-time.",
+                IconComponent: PuppetTheaterIcon,
+                iconClass: "icon-ifs",
+                gradient: "from-sky-50 via-blue-50/60 to-indigo-50",
+                borderGlow: "hover:shadow-blue-200/30",
+                tags: ["IFS", "Parts Work"],
+              },
+              {
+                title: "Growth Garden",
+                desc: "A collaborative virtual garden where clients and clinicians plant seeds that grow over multiple sessions. Each plant represents a goal, coping skill, or positive habit. Watch the garden flourish as therapeutic progress unfolds — a living metaphor for growth.",
+                IconComponent: GrowthGardenIcon,
+                iconClass: "icon-garden",
+                gradient: "from-green-50 via-emerald-50/60 to-lime-50",
+                borderGlow: "hover:shadow-green-200/30",
+                tags: ["Rapport Building", "Goal Tracking"],
+              },
+              {
+                title: "Fidget Toolbox",
+                desc: "A calming sensory toolkit with interactive fidget spinners, breathing sand, a digital worry stone, and a color-mixing canvas. Designed for clients who need tactile regulation during talk therapy — especially effective for ADHD and anxiety.",
+                IconComponent: FidgetToolsIcon,
+                iconClass: "icon-fidgets",
+                gradient: "from-violet-50 via-purple-50/60 to-fuchsia-50",
+                borderGlow: "hover:shadow-violet-200/30",
+                tags: ["Sensory", "ADHD-Friendly"],
+              },
+              {
+                title: "Safety & Support Map",
+                desc: "An interactive concentric-circle map where clients plot their support network — from inner circle (trusted people) to outer ring (community resources). Visualize connection strength, identify gaps, and build safety plans collaboratively.",
+                IconComponent: SafetyMapIcon,
+                iconClass: "icon-safety",
+                gradient: "from-blue-50 via-sky-50/60 to-cyan-50",
+                borderGlow: "hover:shadow-blue-200/30",
+                tags: ["Safety Planning", "Crisis Intervention"],
+              },
+              {
+                title: "Coping Skills Deck",
+                desc: "A beautifully illustrated card deck with 50+ evidence-based coping strategies organized by category — grounding, distraction, self-soothing, opposite action, and more. Clients swipe, save favorites, and build a personalized coping toolkit.",
+                IconComponent: CopingDeckIcon,
+                iconClass: "icon-coping",
+                gradient: "from-amber-50 via-orange-50/60 to-yellow-50",
+                borderGlow: "hover:shadow-amber-200/30",
+                tags: ["CBT", "DBT Skills"],
+              },
+              {
+                title: "Social Story Builder",
+                desc: "A visual storyboard editor for creating personalized social stories. Clinicians and clients choose scenes, add characters, write captions, and sequence events — ideal for autism spectrum work, social skills groups, and pediatric therapy.",
+                IconComponent: SocialStoryIcon,
+                iconClass: "icon-social",
+                gradient: "from-pink-50 via-rose-50/60 to-red-50",
+                borderGlow: "hover:shadow-pink-200/30",
+                tags: ["Autism Spectrum", "Pediatric"],
+              },
+            ];
 
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.1 }}
-              whileHover={{ y: -5, transition: { duration: 0.3 } }}
-            >
-              <GlassCard className="group h-full hover:shadow-xl hover:shadow-blue-200/30 transition-shadow duration-500" hoverEffect={true}>
-                <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-sky-50 via-blue-50/60 to-indigo-50 flex items-center justify-center relative">
-                  <motion.div
-                    animate={{ y: [0, -5, 0] }}
-                    transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                  >
-                    <div className="glass-icon icon-ifs">
-                      <PuppetTheaterIcon />
+            const topRow = upcomingTools.slice(0, 3);
+            const middleRow = upcomingTools.slice(3, 5);
+            const bottomRow = upcomingTools.slice(5);
+
+            const renderUpcomingCard = (tool: typeof upcomingTools[number], i: number) => (
+              <motion.div
+                key={tool.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: i * 0.08 }}
+                whileHover={{ y: -5, transition: { duration: 0.3 } }}
+              >
+                <GlassCard className={`group h-full hover:shadow-xl ${tool.borderGlow} transition-shadow duration-500`} hoverEffect={true}>
+                  <div className={`aspect-[5/3] overflow-hidden bg-gradient-to-br ${tool.gradient} flex items-center justify-center relative`}>
+                    <motion.div
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 5 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: i * 0.2 }}
+                    >
+                      <div className={`glass-icon ${tool.iconClass}`}>
+                        <tool.IconComponent />
+                      </div>
+                    </motion.div>
+                    <div className="absolute top-4 right-4 bg-[#0F52BA]/5 backdrop-blur-sm px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase text-[#0F52BA] border border-[#0F52BA]/20 shadow-sm flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#0F52BA] animate-pulse" />
+                      In Development
                     </div>
-                  </motion.div>
-                  <div className="absolute top-4 right-4 bg-[#0F52BA]/5 backdrop-blur-sm px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase text-[#0F52BA] border border-[#0F52BA]/20 shadow-sm flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0F52BA] animate-pulse" />
-                    In Development
                   </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-serif text-primary mb-2 group-hover:text-accent transition-colors duration-300">{tool.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-3">{tool.desc}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {tool.tags.map((tag) => (
+                        <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full font-semibold tracking-wide bg-[#0F52BA]/6 text-[#0F52BA] border border-[#0F52BA]/12">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            );
+
+            return (
+              <>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-7 max-w-6xl mx-auto">
+                  {topRow.map((tool, i) => renderUpcomingCard(tool, i))}
                 </div>
-                <div className="p-7">
-                  <h3 className="text-xl font-serif text-primary mb-2 group-hover:text-accent transition-colors duration-300">The Parts Puppet Theater</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    An IFS-inspired stage where clients give voice to internal parts through interactive puppet figures — externalize, dialogue, and integrate in real-time.
-                  </p>
+                <div className="grid md:grid-cols-2 gap-7 mt-7 max-w-4xl mx-auto">
+                  {middleRow.map((tool, i) => renderUpcomingCard(tool, i + 3))}
                 </div>
-              </GlassCard>
-            </motion.div>
-          </div>
+                <div className="grid md:grid-cols-2 gap-7 mt-7 max-w-4xl mx-auto">
+                  {bottomRow.map((tool, i) => renderUpcomingCard(tool, i + 5))}
+                </div>
+              </>
+            );
+          })()}
         </div>
       </section>
 
