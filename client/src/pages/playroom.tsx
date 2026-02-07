@@ -17,6 +17,7 @@ import { NarrativeTimeline, type TimelineEventData } from "@/components/tools/na
 import { ValuesCardSort, type CardPlacement } from "@/components/tools/values-card-sort";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
+import { GuidedTour, useTour, type TourStep } from "@/components/guided-tour";
 import { getSupabase } from "@/lib/supabase";
 import type { TherapySession, Participant } from "@shared/schema";
 
@@ -59,6 +60,45 @@ export default function Playroom() {
   const [sessionEnded, setSessionEnded] = useState(false);
   const [endingSession, setEndingSession] = useState(false);
   const [, navigate] = useLocation();
+  const playroomTour = useTour("playroom");
+
+  const playroomTourSteps: TourStep[] = isClinician ? [
+    {
+      target: "playroom-invite-code",
+      title: "Share the Invite Code",
+      content: "Tap this code to copy the invite link. Send it to your client — they'll join instantly, no account needed.",
+      position: "bottom",
+      emoji: "🔗",
+    },
+    {
+      target: "button-open-tool-selector",
+      title: "Switch Tools",
+      content: "Open the tool selector to switch between the Sandtray, Breathing Guide, Feeling Wheel, and more during your session.",
+      position: "bottom",
+      emoji: "🧰",
+    },
+    {
+      target: "playroom-asset-library",
+      title: "Asset Library",
+      content: "Tap here to open the drag-and-drop asset library. You and your client can place items onto the shared canvas.",
+      position: "top",
+      emoji: "🎨",
+    },
+    {
+      target: "button-snapshot",
+      title: "Save a Snapshot",
+      content: "Export the current canvas as an image. Useful for session notes or sharing progress with your client.",
+      position: "bottom",
+      emoji: "📸",
+    },
+    {
+      target: "button-end-session",
+      title: "End the Session",
+      content: "When you're done, end the session here. All participants will be disconnected and the session will be saved.",
+      position: "bottom",
+      emoji: "🏁",
+    },
+  ] : [];
 
   const isCanvasLocked = session?.isCanvasLocked ?? false;
   const isAnonymous = session?.isAnonymous ?? false;
@@ -250,6 +290,13 @@ export default function Playroom() {
       })
       .catch(() => {});
   }, [sessionId]);
+
+  useEffect(() => {
+    if (isClinician && session && connected && !playroomTour.hasCompleted() && !sessionEnded) {
+      const timer = setTimeout(() => playroomTour.start(), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [isClinician, session, connected, sessionEnded, playroomTour]);
 
   useEffect(() => {
     if (!isClinician) return;
@@ -459,6 +506,7 @@ export default function Playroom() {
               }}
               className="flex items-center gap-2 bg-accent/10 text-accent px-3 py-1.5 rounded-full text-xs font-mono font-bold border border-accent/20 cursor-pointer hover:bg-accent/15 transition-colors active:scale-95"
               title="Copy invite link"
+              data-tour="playroom-invite-code"
             >
               {session.inviteCode}
             </button>
@@ -821,6 +869,16 @@ export default function Playroom() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {isClinician && playroomTourSteps.length > 0 && (
+        <GuidedTour
+          steps={playroomTourSteps}
+          tourKey="playroom"
+          isActive={playroomTour.isActive}
+          onComplete={playroomTour.complete}
+          onSkip={playroomTour.skip}
+        />
+      )}
 
       {/* Session Ended Overlay */}
       <AnimatePresence>

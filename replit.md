@@ -18,6 +18,8 @@ Key features include:
 - **Waitlist** — email signup on landing page (in pricing section); submits to DB and notifies admin via Resend
 - **Inbox system** — all authenticated users have an inbox (/inbox) for announcements and support messages; unread badge in navbar
 - **Admin panel** — admin-only (/admin) panel for clinicalplayapp@gmail.com; manage users (upgrade/remove), view waitlist, send mass announcements (in-app + optional email via Resend)
+- **Session lifecycle** — clinicians can end sessions via End Session button with confirmation dialog; all participants receive "session-ended" WebSocket message and see graceful "Session Complete" overlay; ended sessions can't be rejoined; `endedAt` timestamp tracked in DB
+- **Guided tours** — interactive spotlight-based guided tours for new users on Dashboard (4 steps: new session, sessions area, tool library, account) and Playroom (5 steps: invite code, tool selector, asset library, snapshot, end session); uses SVG mask overlay with positioned tooltips, step progress dots, skip/back/next controls; completion tracked via localStorage; clinician-only for playroom tour
 
 ## User Preferences
 
@@ -31,7 +33,7 @@ Preferred communication style: Simple, everyday language.
 - **State/Data Fetching**: TanStack React Query for server state, local React state for UI
 - **Styling**: Tailwind CSS v4 (using `@tailwindcss/vite` plugin), with CSS variables for theming
 - **UI Components**: shadcn/ui (new-york style) with Radix UI primitives — extensive component library in `client/src/components/ui/`
-- **Custom Components**: GlassCard (glassmorphic cards), ZenCanvas (sandtray), AssetLibrary (drag-and-drop assets), ModeratorBar (clinician controls), BreathingGuide (SVG breathing bubble), ToolSelector (clinical tool modal), ClinicalInsights (private clinician prompts)
+- **Custom Components**: GlassCard (glassmorphic cards), ZenCanvas (sandtray), AssetLibrary (drag-and-drop assets), ModeratorBar (clinician controls), BreathingGuide (SVG breathing bubble), ToolSelector (clinical tool modal), ClinicalInsights (private clinician prompts), GuidedTour (spotlight-based onboarding tours)
 - **Animations**: Framer Motion for page transitions and UI interactions
 - **Typography**: Lora (serif headings), Inter (sans-serif body), Playfair Display (display text) — loaded via Google Fonts
 - **Color Palette**: Deep Navy primary, Champagne Gold accent, Soft Sage background — defined as CSS custom properties

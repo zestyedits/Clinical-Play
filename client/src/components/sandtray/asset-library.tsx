@@ -34,6 +34,7 @@ export function AssetLibrary({ isOpen, onToggle, disabled }: AssetLibraryProps) 
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           data-testid="button-toggle-assets"
+          data-tour="playroom-asset-library"
         >
           <ChevronUp size={16} className="text-accent" />
           <span>Asset Library</span>

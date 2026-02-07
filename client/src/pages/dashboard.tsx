@@ -13,6 +13,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth, createAuthFetch } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { GuidedTour, useTour, type TourStep } from "@/components/guided-tour";
 import type { TherapySession } from "@shared/schema";
 
 interface DashboardTool {
@@ -312,6 +313,38 @@ export default function Dashboard() {
   const { user, isLoading: authLoading, isAuthenticated, emailConfirmed, accessDenied, session, logout } = useAuth();
   const { toast } = useToast();
   const authFetch = createAuthFetch(session?.access_token);
+  const dashboardTour = useTour("dashboard");
+
+  const dashboardTourSteps: TourStep[] = [
+    {
+      target: "button-new-session",
+      title: "Start a Session",
+      content: "Create a new session room here. You'll get a unique invite code to share with your client — they just click the link to join.",
+      position: "bottom",
+      emoji: "🎮",
+    },
+    {
+      target: "dashboard-sessions",
+      title: "Your Sessions",
+      content: "All your active and past sessions live here. Copy an invite code or jump right back into a session with one tap.",
+      position: "top",
+      emoji: "📋",
+    },
+    {
+      target: "dashboard-tools",
+      title: "Clinical Tool Library",
+      content: "Browse all 8 interactive therapy tools. Star your favorites for quick access, and try new ones in any session.",
+      position: "top",
+      emoji: "🧰",
+    },
+    {
+      target: "dashboard-account",
+      title: "Your Account",
+      content: "Manage your subscription, view session stats, and get quick clinical tips right from your sidebar.",
+      position: "left",
+      emoji: "👤",
+    },
+  ];
 
   const [tipIndex] = useState(() => Math.floor(Math.random() * CLINICAL_TIPS.length));
 
@@ -357,8 +390,12 @@ export default function Dashboard() {
   const handleOnboardingClose = useCallback(() => {
     setShowOnboarding(false);
     localStorage.setItem("cp_onboarded", "true");
-    setShowNewSession(true);
-  }, []);
+    if (!dashboardTour.hasCompleted()) {
+      setTimeout(() => dashboardTour.start(), 600);
+    } else {
+      setShowNewSession(true);
+    }
+  }, [dashboardTour]);
 
   const toggleFavorite = useCallback((toolId: string) => {
     setFavorites(prev => {
@@ -519,7 +556,7 @@ export default function Dashboard() {
   }
 
   const SessionsView = () => (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="dashboard-sessions">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-medium text-primary flex items-center gap-2">
           <Users size={18} className="text-accent" /> Active Sessions
@@ -616,7 +653,7 @@ export default function Dashboard() {
   );
 
   const ToolLibraryView = () => (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="dashboard-tools">
       {favoritedTools.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-medium text-primary flex items-center gap-2">
@@ -729,7 +766,7 @@ export default function Dashboard() {
   );
 
   const AccountSidebar = () => (
-    <div className="space-y-5">
+    <div className="space-y-5" data-tour="dashboard-account">
       {user && (
         <GlassCard className="p-5" hoverEffect={false}>
           <div className="flex items-center gap-4 mb-4">
@@ -991,6 +1028,20 @@ export default function Dashboard() {
       <OnboardingModal
         isOpen={showOnboarding}
         onClose={handleOnboardingClose}
+      />
+
+      <GuidedTour
+        steps={dashboardTourSteps}
+        tourKey="dashboard"
+        isActive={dashboardTour.isActive}
+        onComplete={() => {
+          dashboardTour.complete();
+          setShowNewSession(true);
+        }}
+        onSkip={() => {
+          dashboardTour.skip();
+          setShowNewSession(true);
+        }}
       />
     </div>
   );
