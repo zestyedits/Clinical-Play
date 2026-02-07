@@ -1,5 +1,5 @@
-import { useRef, useState, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRef, useState, useCallback } from "react";
+import { motion, AnimatePresence, useMotionTemplate, useMotionValue, useSpring } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export interface CanvasItem {
@@ -20,6 +20,16 @@ interface RemoteCursor {
   y: number;
 }
 
+interface DustParticle {
+  id: number;
+  x: number;
+  y: number;
+  dx: number;
+  dy: number;
+  size: number;
+  opacity: number;
+}
+
 interface ZenCanvasProps {
   items: CanvasItem[];
   isLocked: boolean;
@@ -29,6 +39,181 @@ interface ZenCanvasProps {
   onItemDrop: (icon: string, category: string, x: number, y: number) => void;
   onItemRemove: (id: string) => void;
   onCursorMove: (x: number, y: number) => void;
+}
+
+const COLLISION_RADIUS = 0.06;
+const NUDGE_STRENGTH = 0.04;
+
+function resolveCollisions(
+  movedId: string,
+  movedX: number,
+  movedY: number,
+  allItems: CanvasItem[],
+  onItemMove: (id: string, x: number, y: number) => void
+) {
+  for (const other of allItems) {
+    if (other.id === movedId) continue;
+    const dx = other.x - movedX;
+    const dy = other.y - movedY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < COLLISION_RADIUS && dist > 0.001) {
+      const overlap = COLLISION_RADIUS - dist;
+      const pushX = (dx / dist) * Math.min(overlap, NUDGE_STRENGTH);
+      const pushY = (dy / dist) * Math.min(overlap, NUDGE_STRENGTH);
+      const newX = Math.max(0.02, Math.min(0.98, other.x + pushX));
+      const newY = Math.max(0.02, Math.min(0.98, other.y + pushY));
+      onItemMove(other.id, newX, newY);
+    }
+  }
+}
+
+function spawnDustParticles(x: number, y: number): DustParticle[] {
+  const particles: DustParticle[] = [];
+  const count = 8 + Math.floor(Math.random() * 5);
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.8;
+    const speed = 0.3 + Math.random() * 0.7;
+    particles.push({
+      id: Date.now() + i,
+      x,
+      y,
+      dx: Math.cos(angle) * speed,
+      dy: Math.sin(angle) * speed,
+      size: 2 + Math.random() * 4,
+      opacity: 0.4 + Math.random() * 0.3,
+    });
+  }
+  return particles;
+}
+
+function DustEffect({ particles }: { particles: DustParticle[] }) {
+  return (
+    <>
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute rounded-full pointer-events-none z-20"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: p.size,
+            height: p.size,
+            backgroundColor: `rgba(180, 160, 120, ${p.opacity})`,
+          }}
+          initial={{ opacity: p.opacity, scale: 1 }}
+          animate={{
+            x: p.dx * 40,
+            y: p.dy * 40,
+            opacity: 0,
+            scale: 0.3,
+          }}
+          transition={{ duration: 0.6 + Math.random() * 0.4, ease: "easeOut" }}
+        />
+      ))}
+    </>
+  );
+}
+
+function DraggableItem({
+  item,
+  isLocked,
+  isDragging,
+  canvasRef,
+  onDragStart,
+  onDragEnd,
+  onCursorMove,
+  onItemRemove,
+}: {
+  item: CanvasItem;
+  isLocked: boolean;
+  isDragging: boolean;
+  canvasRef: React.RefObject<HTMLDivElement | null>;
+  onDragStart: () => void;
+  onDragEnd: (x: number, y: number) => void;
+  onCursorMove: (x: number, y: number) => void;
+  onItemRemove: (id: string) => void;
+}) {
+  const shadowBlur = useMotionValue(6);
+  const shadowY = useMotionValue(2);
+  const shadowOpacity = useMotionValue(0.2);
+  const springBlur = useSpring(shadowBlur, { stiffness: 300, damping: 20 });
+  const springY = useSpring(shadowY, { stiffness: 300, damping: 20 });
+  const springOpacity = useSpring(shadowOpacity, { stiffness: 300, damping: 20 });
+  const dropShadowFilter = useMotionTemplate`drop-shadow(0px ${springY}px ${springBlur}px rgba(0,0,0,${springOpacity}))`;
+
+  const handleDragStart = useCallback(() => {
+    shadowBlur.set(20);
+    shadowY.set(8);
+    shadowOpacity.set(0.35);
+    onDragStart();
+  }, [shadowBlur, shadowY, shadowOpacity, onDragStart]);
+
+  const handleDragEnd = useCallback((_: any, info: any) => {
+    shadowBlur.set(6);
+    shadowY.set(2);
+    shadowOpacity.set(0.2);
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const newX = Math.max(0.02, Math.min(0.98, (info.point.x - rect.left) / rect.width));
+    const newY = Math.max(0.02, Math.min(0.98, (info.point.y - rect.top) / rect.height));
+    onDragEnd(newX, newY);
+  }, [canvasRef, onDragEnd, shadowBlur, shadowY, shadowOpacity]);
+
+  const handleDrag = useCallback((_: any, info: any) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const newX = (info.point.x - rect.left) / rect.width;
+    const newY = (info.point.y - rect.top) / rect.height;
+    onCursorMove(newX, newY);
+  }, [canvasRef, onCursorMove]);
+
+  return (
+    <motion.div
+      className={cn(
+        "absolute flex items-center justify-center cursor-grab active:cursor-grabbing z-10",
+        isDragging && "z-30"
+      )}
+      style={{
+        left: `${item.x * 100}%`,
+        top: `${item.y * 100}%`,
+        transform: `translate(-50%, -50%) rotate(${item.rotation}deg)`,
+      }}
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{
+        scale: isDragging ? item.scale * 1.12 : item.scale,
+        opacity: 1,
+      }}
+      exit={{ scale: 0, opacity: 0, transition: { duration: 0.2 } }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      drag={!isLocked}
+      dragMomentum={true}
+      dragElastic={0.1}
+      dragTransition={{
+        power: 0.3,
+        timeConstant: 200,
+        modifyTarget: (v) => v,
+      }}
+      onDragStart={handleDragStart}
+      onDrag={handleDrag}
+      onDragEnd={handleDragEnd}
+      onDoubleClick={() => !isLocked && onItemRemove(item.id)}
+      whileHover={{ scale: item.scale * 1.1 }}
+    >
+      <motion.span
+        className="text-5xl md:text-5xl select-none"
+        style={{
+          minWidth: '44px',
+          minHeight: '44px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          filter: dropShadowFilter,
+        }}
+      >
+        {item.icon}
+      </motion.span>
+    </motion.div>
+  );
 }
 
 export function ZenCanvas({
@@ -43,7 +228,7 @@ export function ZenCanvas({
 }: ZenCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [placePulse, setPlacePulse] = useState<{ x: number; y: number } | null>(null);
+  const [dustParticles, setDustParticles] = useState<DustParticle[]>([]);
 
   const getRelativePosition = useCallback((clientX: number, clientY: number) => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -52,6 +237,14 @@ export function ZenCanvas({
       x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
       y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)),
     };
+  }, []);
+
+  const emitDust = useCallback((x: number, y: number) => {
+    const newParticles = spawnDustParticles(x * 100, y * 100);
+    setDustParticles(prev => [...prev, ...newParticles]);
+    setTimeout(() => {
+      setDustParticles(prev => prev.filter(p => !newParticles.includes(p)));
+    }, 1200);
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -70,16 +263,21 @@ export function ZenCanvas({
 
     const pos = getRelativePosition(e.clientX, e.clientY);
     onItemDrop(icon, category, pos.x, pos.y);
-
-    setPlacePulse({ x: pos.x * 100, y: pos.y * 100 });
-    setTimeout(() => setPlacePulse(null), 600);
-  }, [isLocked, getRelativePosition, onItemDrop]);
+    emitDust(pos.x, pos.y);
+  }, [isLocked, getRelativePosition, onItemDrop, emitDust]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (isLocked) return;
     const pos = getRelativePosition(e.clientX, e.clientY);
     onCursorMove(pos.x, pos.y);
   }, [isLocked, getRelativePosition, onCursorMove]);
+
+  const handleItemDragEnd = useCallback((itemId: string, x: number, y: number) => {
+    setDraggingId(null);
+    onItemMove(itemId, x, y);
+    emitDust(x, y);
+    resolveCollisions(itemId, x, y, items, onItemMove);
+  }, [onItemMove, items, emitDust]);
 
   return (
     <div
@@ -116,67 +314,23 @@ export function ZenCanvas({
       {/* Placed Items */}
       <AnimatePresence>
         {items.map((item) => (
-          <motion.div
+          <DraggableItem
             key={item.id}
-            className={cn(
-              "absolute flex items-center justify-center cursor-grab active:cursor-grabbing z-10",
-              draggingId === item.id && "z-30 scale-110"
-            )}
-            style={{
-              left: `${item.x * 100}%`,
-              top: `${item.y * 100}%`,
-              transform: `translate(-50%, -50%) scale(${item.scale}) rotate(${item.rotation}deg)`,
-            }}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: item.scale, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0, transition: { duration: 0.2 } }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            drag={!isLocked}
-            dragMomentum={false}
+            item={item}
+            isLocked={isLocked}
+            isDragging={draggingId === item.id}
+            canvasRef={canvasRef}
             onDragStart={() => setDraggingId(item.id)}
-            onDrag={(_, info) => {
-              const rect = canvasRef.current?.getBoundingClientRect();
-              if (!rect) return;
-              const newX = (info.point.x - rect.left) / rect.width;
-              const newY = (info.point.y - rect.top) / rect.height;
-              onCursorMove(newX, newY);
-            }}
-            onDragEnd={(_, info) => {
-              setDraggingId(null);
-              const rect = canvasRef.current?.getBoundingClientRect();
-              if (!rect) return;
-              const newX = Math.max(0.02, Math.min(0.98, (info.point.x - rect.left) / rect.width));
-              const newY = Math.max(0.02, Math.min(0.98, (info.point.y - rect.top) / rect.height));
-              onItemMove(item.id, newX, newY);
-            }}
-            onDoubleClick={() => !isLocked && onItemRemove(item.id)}
-            whileHover={{ scale: item.scale * 1.15 }}
-            whileTap={{ scale: item.scale * 0.95 }}
-          >
-            <span
-              className="text-5xl md:text-5xl drop-shadow-md select-none"
-              style={{ minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              {item.icon}
-            </span>
-          </motion.div>
+            onDragEnd={(x, y) => handleItemDragEnd(item.id, x, y)}
+            onCursorMove={onCursorMove}
+            onItemRemove={onItemRemove}
+          />
         ))}
       </AnimatePresence>
 
-      {/* Placement Pulse */}
+      {/* Dust Particles */}
       <AnimatePresence>
-        {placePulse && (
-          <motion.div
-            className="absolute pointer-events-none z-20"
-            style={{ left: `${placePulse.x}%`, top: `${placePulse.y}%`, transform: "translate(-50%, -50%)" }}
-            initial={{ scale: 0, opacity: 0.6 }}
-            animate={{ scale: 3, opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            <div className="w-8 h-8 rounded-full bg-accent/40" />
-          </motion.div>
-        )}
+        {dustParticles.length > 0 && <DustEffect particles={dustParticles} />}
       </AnimatePresence>
 
       {/* Remote Cursors */}

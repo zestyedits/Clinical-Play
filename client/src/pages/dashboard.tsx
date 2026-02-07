@@ -450,6 +450,8 @@ export default function Dashboard() {
       return res.json();
     },
     enabled: isAuthenticated,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: billingStatus } = useQuery<{ isPro: boolean; subscriptionType: string; paymentFailed: boolean }>({
@@ -460,6 +462,8 @@ export default function Dashboard() {
       return res.json();
     },
     enabled: isAuthenticated,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: foundingSlots } = useQuery<{ total: number; remaining: number }>({
@@ -468,6 +472,7 @@ export default function Dashboard() {
       const res = await fetch("/api/billing/founding-slots");
       return res.json();
     },
+    staleTime: 5 * 60_000,
   });
 
   const createSession = useMutation({
@@ -602,7 +607,21 @@ export default function Dashboard() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-16 text-muted-foreground">Loading sessions...</div>
+        <div className="space-y-4">
+          {[1, 2].map(i => (
+            <GlassCard key={i} className="p-5 flex flex-col md:flex-row items-center gap-5 animate-pulse" hoverEffect={false}>
+              <div className="w-12 h-12 rounded-2xl bg-secondary/60" />
+              <div className="flex-1 space-y-2 w-full">
+                <div className="h-4 bg-secondary/60 rounded-xl w-3/5" />
+                <div className="h-3 bg-secondary/40 rounded-xl w-2/5" />
+              </div>
+              <div className="flex gap-2 w-full md:w-auto">
+                <div className="h-12 bg-secondary/50 rounded-2xl w-28" />
+                <div className="h-12 bg-accent/20 rounded-2xl w-24" />
+              </div>
+            </GlassCard>
+          ))}
+        </div>
       ) : activeSessions.length === 0 ? (
         <GlassCard className="p-10 text-center" hoverEffect={false}>
           <div className="w-16 h-16 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-primary/5 to-accent/10 flex items-center justify-center">

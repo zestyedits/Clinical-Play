@@ -1,0 +1,37 @@
+Master Prompt: ClinicalPlay.app — Performance & Physics Overhaul
+
+Role: Senior Full-Stack Engineer & Creative Developer. Objective: Eliminate choppy data loading on the dashboard and breathe life into the clinical tools with physics-based interactivity.
+
+Part 1: Fixing the "Choppy" Dashboard Loading
+
+The multiple loading indicators suggest we are fetching data too often or inefficiently.
+
+    The Problem: It's likely that the useAuth hook, the session fetching, and the user profile fetching are all triggering separate re-renders.
+
+    The Fix: Implement React Query (TanStack Query) for all data fetching.
+
+        Why? It handles caching, deduplication (preventing multiple identical requests), and "stale-while-revalidate" (showing cached data instantly while fetching new data in the background).
+
+    Instruction: > "Audit the Dashboard component. Replace all raw useEffect data fetching with React Query hooks. Configure a 1-minute staleTime for session data so it doesn't re-fetch on every tab switch. Implement a single, elegant skeleton loader for the entire 'Active Sessions' card instead of individual spinners."
+
+Part 2: Making the Tools "Alive" (Physics & Interaction)
+
+The user wants the tools to feel like the Therapist Aid example (e.g., a sandtray where items have weight and collision) but with more control.
+
+    The Engine Switch: The current drag-and-drop is likely a simple CSS translation. We need to introduce a lightweight physics engine.
+
+    The Fix: Implement react-use-gesture combined with react-spring or a dedicated library like matter.js (for true collision).
+
+    The New Standard for All Tools (Sandtray, Card Sort, Timeline, House):
+
+        Drag Physics: Items should have "momentum." When you let go, they shouldn't just stop; they should gently slide to a halt.
+
+        Collision Detection (Sandtray): Items shouldn't overlap perfectly. If you drag a rock onto a tree, the tree should gently nudge out of the way or the rock should "bump" against it. This creates a sense of reality.
+
+        Haptic/Visual Feedback: Add a subtle "lift" animation (shadow grows) and a tiny scale-up when an item is grabbed.
+
+        Rotation & Scale: Ensure the rotation is smooth and intuitive (e.g., using a two-finger twist on mobile or a dedicated handle on desktop).
+
+Part 3: The "Living" Zen Sandtray
+
+    Instruction: > "Refactor the ZenSandtray component. Implement a physics-based drag system. When a user drags an asset, give it mass and friction. Add soft collision detection so items 'nudge' each other. Add a subtle particle effect (like dust) when an item is placed on the sand."
