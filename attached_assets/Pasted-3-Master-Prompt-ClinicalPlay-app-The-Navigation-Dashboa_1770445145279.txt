@@ -1,0 +1,49 @@
+3. Master Prompt: ClinicalPlay.app — The Navigation & Dashboard Polish
+
+Role: Lead Frontend Architect & UI/UX Specialist. Objective: Finalize all navigation routes and transform the Dashboard into a "Quiet Luxury" interactive command center.
+
+Part 1: Routing & Navbar Activation
+
+    Task: Wire up all Nav Links. Ensure the "Dashboard" link works from any sub-page.
+
+    Auth Guard: Implement a "Protected Route" wrapper. If a user tries to access /dashboard or /playroom without being logged in, redirect them gracefully to /login with a toast message: "Please sign in to access your clinical tools."
+
+Part 2: Dashboard Visual Design (The "Jewel-Tone" Balance)
+
+    Palette Rule: Keep the background Deep Navy (#1B2A4A) and cards Soft Cream/Glass. Use "Jewel Tones" only for interaction:
+
+        Action Buttons (Start Session): Deep Emerald (#2E8B57) with a gold border.
+
+        Active Badges: Ruby Red (#9B111E) or Sapphire Blue (#0F52BA).
+
+    Sidebar Layout: Move "Account Settings" and "Clinician's Corner" to a persistent, collapsible Right Sidebar that can be toggled on/off to keep the view clean.
+
+    Layout: Use a Masonry Grid for the Tool Library. It looks more organic and "creative" than a standard square grid.
+
+Part 3: Interactive Feedbacks
+
+    Task: Add Framer Motion to the Dashboard.
+
+        Page transitions should be a "Dissolve and Slide."
+
+        Tab switching between "Active Sessions" and "Tool Library" should be an animated "underline" or "pill" slider.
+
+Part 4: The "Finalized" User Profile
+
+    Create a dedicated /profile page (accessible via the Avatar in the Navbar).
+
+    Include fields for: Professional Title (e.g., LCSW), Clinical Specialty, and a "Default Session Settings" toggle (e.g., "Always start in Anonymous Mode").
+
+Strategic Design Advice: "The Colorful Minimalist"
+
+To achieve "vibrant but not too much color," follow the 60-30-10 Rule:
+
+    60% Navy/Cream: Your primary atmosphere.
+
+    30% Champagne Gold: Your accents (borders, icons, small text).
+
+    10% Jewel Tones: Reserved only for the actual therapy tools. This makes the tools feel like "Treasures" in a high-end box.
+
+Next Step for You
+
+While Replit is connecting the hallways and painting the dashboard, we should finalize the FAQ content. Since you're targeting clinicians, the FAQ needs to answer their "Security" and "Clinical Workflow" questions immediately.

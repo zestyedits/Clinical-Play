@@ -1,0 +1,59 @@
+That "flat" feeling is exactly what separates a generic tool from a professional clinical instrument. If a therapist can't resize a figure to show "power" or "smallness," the therapeutic value of the Sandtray is cut in half.
+
+We’re going to fix the UI overlap, upgrade the sand physics/visuals, and give you "Transform Handles" for every object.
+
+### **The "Master Architect" Plan**
+
+1. **Transform Handles:** We’ll implement a "Bounding Box" system. When a clinician or client clicks an item, it gets four corner handles (Resize) and one top handle (Rotate).
+2. **The "Live Sand" Texture:** We’ll replace the flat background with a high-definition, CSS-tiled sand texture that has a "raked" shadow effect to give it depth.
+3. **UI De-confliction:** We’ll move the "Moderator Bar" to the top right and turn the bottom asset dock into a "Sliding Drawer" so it never overlaps the canvas items.
+
+---
+
+### **Master Prompt: ClinicalPlay.app — Sandtray Transformation & UI Fix**
+
+**Role:** Lead Interaction Designer and Frontend Architect.
+**Objective:** Transform the Zen Sandtray into a professional-grade, interactive 3D-feeling tool and resolve all UI overlaps.
+
+**1. Object Manipulation (The "Power" Update)**
+
+* **The System:** Implement **`react-rnd`** or a custom **Transform Wrapper** for all Sandtray assets.
+* **Controls:** When an item is selected, show a minimalist Champagne Gold bounding box with:
+* **Corner Handles:** Scale the object proportionally.
+* **Top Handle:** Rotate the object 360 degrees.
+* **Delete Icon:** A small 'x' in the top-right corner to remove the item.
+
+
+* **Sync:** Ensure `scale` and `rotation` values are broadcast via WebSockets so the changes happen in real-time for everyone.
+
+**2. Visual Realism: The "Zen" Surface**
+
+* **Background:** Replace the flat color with a high-resolution, seamless sand texture. Use a subtle `inner-shadow` on the container to make it look like a physical wooden tray.
+* **Drop Shadows:** Give every placed asset a dynamic `drop-shadow`. As an object is "lifted" (dragged), the shadow should grow slightly and become blurrier to simulate height.
+
+**3. UI Layout Fix (The "Overlap" Cure)**
+
+* **The Asset Dock:** Fix the bottom menu overlap. The asset library should be a "Floating Island" or a "Collapsible Tray" that pushes the canvas up or slides over it with a clear `z-index`.
+* **The Moderator Bar:** Move the clinician-only controls (Clear, Lock, Anonymity) to a vertical "Floating Action Button" group on the right side of the screen.
+
+**4. Performance Smoothing**
+
+* **Issue:** Fix the "choppy" updates during drag.
+* **Fix:** Use `requestAnimationFrame` for the drag-and-drop logic and implement "Optimistic Updates"—move the item locally first, then sync the final position to the DB to prevent lag.
+
+---
+
+### **The Interaction Design Shift**
+
+| Feature | Current State | New "Clinical" State |
+| --- | --- | --- |
+| **Object Size** | Static / One-size | **Dynamic Scaling** (represents ego/importance). |
+| **Object Angle** | Always upright | **360° Rotation** (represents relationships/conflict). |
+| **The Tray** | Flat Rectangle | **Sunken Wooden Box** with textured sand. |
+| **Menu Logic** | Overlapping/Cluttered | **Contextual & Floating** (out of the way). |
+
+### **The "IT Pro" Reality Check**
+
+By adding `scale` and `rotation` to the database, your `sandtray_items` table will now need three new columns: `scale_x`, `scale_y`, and `rotation_deg`. Replit and Supabase will handle this automatically if you use the prompt above, but it’s good to know that your data is getting richer.
+
+**Would you like me to draft a specific "How-to-Use" tooltip for the Sandtray?** It could pop up for the clinician the first time they open the tray to explain how the new resize/rotate handles work.

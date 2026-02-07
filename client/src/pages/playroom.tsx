@@ -170,6 +170,17 @@ export default function Playroom() {
           i.id === msg.itemId ? { ...i, x: msg.x, y: msg.y } : i
         ));
         break;
+      case "item-transformed":
+        setItems(prev => prev.map(i =>
+          i.id === msg.itemId ? {
+            ...i,
+            ...(msg.scale !== undefined && { scale: msg.scale }),
+            ...(msg.rotation !== undefined && { rotation: msg.rotation }),
+            ...(msg.x !== undefined && { x: msg.x }),
+            ...(msg.y !== undefined && { y: msg.y }),
+          } : i
+        ));
+        break;
       case "item-removed":
         setItems(prev => prev.filter(i => i.id !== msg.itemId));
         break;
@@ -310,6 +321,17 @@ export default function Playroom() {
         }
         case "item-moved":
           setItems(prev => prev.map(i => i.id === msg.itemId ? { ...i, x: msg.x, y: msg.y } : i));
+          break;
+        case "item-transformed":
+          setItems(prev => prev.map(i =>
+            i.id === msg.itemId ? {
+              ...i,
+              ...(msg.scale !== undefined && { scale: msg.scale }),
+              ...(msg.rotation !== undefined && { rotation: msg.rotation }),
+              ...(msg.x !== undefined && { x: msg.x }),
+              ...(msg.y !== undefined && { y: msg.y }),
+            } : i
+          ));
           break;
         case "item-removed":
           setItems(prev => prev.filter(i => i.id !== msg.itemId));
@@ -470,6 +492,11 @@ export default function Playroom() {
     if (!isDemo) setItems(prev => prev.filter(i => i.id !== itemId));
     send({ type: "item-removed", itemId });
   }, [send, isDemo]);
+
+  const handleItemTransform = useCallback((itemId: string, scale: number, rotation: number) => {
+    setItems(prev => prev.map(i => i.id === itemId ? { ...i, scale, rotation } : i));
+    send({ type: "item-transformed", itemId, scale, rotation });
+  }, [send]);
 
   const handleCursorMove = useCallback((x: number, y: number) => {
     const now = Date.now();
@@ -856,6 +883,7 @@ export default function Playroom() {
                   onItemMove={handleItemMove}
                   onItemDrop={handleItemDrop}
                   onItemRemove={handleItemRemove}
+                  onItemTransform={handleItemTransform}
                   onCursorMove={handleCursorMove}
                 />
                 <AssetLibrary

@@ -147,6 +147,23 @@ export function setupWebSocketServer(server: Server) {
             break;
           }
 
+          case "item-transformed": {
+            if (!client) return;
+            const transformData: Record<string, number> = {};
+            if (msg.scale !== undefined) transformData.scale = msg.scale;
+            if (msg.rotation !== undefined) transformData.rotation = msg.rotation;
+            if (msg.x !== undefined) transformData.x = msg.x;
+            if (msg.y !== undefined) transformData.y = msg.y;
+            await storage.updateSandtrayItem(msg.itemId, transformData);
+            broadcast(client.sessionId, {
+              type: "item-transformed",
+              itemId: msg.itemId,
+              ...transformData,
+              transformedBy: client.participantId,
+            }, ws);
+            break;
+          }
+
           case "item-removed": {
             if (!client) return;
             await storage.removeSandtrayItem(msg.itemId);
