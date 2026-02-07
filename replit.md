@@ -6,7 +6,7 @@ ClinicalPlay is a premium telehealth SaaS platform for interactive therapy games
 
 Key features include:
 - **Real-time collaboration** via WebSockets for synchronized canvas/game state
-- **Digital Sandtray** — a shared canvas where participants drag-and-drop emoji-based therapeutic assets
+- **Digital Sandtray** — a physics-based shared canvas with drag momentum/friction, lift shadow effects, soft collision nudging between items, and sand dust particle effects on placement
 - **Calm Breathing Guide** — a synchronized breathing bubble (SVG with Soft Sage → Deep Navy gradient, 4-phase: inhale 4s, hold 4s, exhale 6s, rest 2s) that clinicians control and syncs to all participants
 - **Tool Selector** — modal for switching between clinical tools (Sandtray, Breathing active; CBT, Feeling Wheel coming soon)
 - **Clinical Insights** — private clinician-only panel with context-aware therapeutic prompts; dynamically responds to session state (e.g., emotion-specific prompts when Feeling Wheel selections are made, item-count awareness for Sandtray, event-count notes for Timeline)
