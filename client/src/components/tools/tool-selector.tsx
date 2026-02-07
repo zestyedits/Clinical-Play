@@ -72,7 +72,7 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
 
   const statusBadgeClass = (status: Tool["status"]) => {
     switch (status) {
-      case "development": return "bg-blue-500/10 text-blue-600 border-blue-500/20";
+      case "development": return "bg-[#0F52BA]/10 text-[#0F52BA] border-[#0F52BA]/20";
       case "planned": return "bg-accent/10 text-accent border-accent/20";
       default: return "";
     }
@@ -135,7 +135,7 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
                           className={cn(
                             "w-full p-4 rounded-2xl text-left transition-all flex items-start gap-4",
                             activeTool === tool.id
-                              ? "bg-primary text-primary-foreground shadow-lg cursor-pointer"
+                              ? "bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 cursor-pointer"
                               : isAvailable
                                 ? "bg-white/50 hover:bg-white/80 hover:shadow-md border border-white/30 cursor-pointer"
                                 : "bg-white/20 border border-dashed border-border/40 opacity-50 cursor-default"
@@ -197,7 +197,7 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
                           animate={{ scale: 1 }}
                           transition={{ type: "spring", stiffness: 300, damping: 20 }}
                         >
-                          <CheckCircle2 size={48} className="text-green-500 mx-auto mb-4" />
+                          <CheckCircle2 size={48} className="text-[#2E8B57] mx-auto mb-4" />
                         </motion.div>
                         <h3 className="font-serif text-xl text-primary mb-2">Thank You!</h3>
                         <p className="text-sm text-muted-foreground">Your suggestion helps us build a better clinical toolkit.</p>
@@ -244,7 +244,7 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
                         <button
                           onClick={() => submitSuggestion.mutate()}
                           disabled={!toolName.trim() || submitSuggestion.isPending}
-                          className="w-full min-h-[44px] py-3 rounded-xl bg-primary text-primary-foreground font-medium flex items-center justify-center gap-2 shadow-lg hover:bg-primary/90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full min-h-[44px] py-3 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium flex items-center justify-center gap-2 shadow-lg hover:opacity-90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           data-testid="button-submit-suggestion"
                         >
                           <Send size={16} />

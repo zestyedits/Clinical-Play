@@ -215,7 +215,7 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/signup">
-                  <button className="h-14 px-8 rounded-full bg-primary text-primary-foreground font-medium text-lg shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 btn-luxury flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto" data-testid="button-get-started">
+                  <button className="h-14 px-8 rounded-full bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white border border-[#D4AF37]/40 shadow-xl shadow-[#2E8B57]/20 hover:shadow-2xl hover:shadow-[#2E8B57]/30 font-medium text-lg btn-luxury flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto" data-testid="button-get-started">
                     Get Started <ArrowRight size={18} />
                   </button>
                 </Link>
@@ -352,8 +352,8 @@ export default function LandingPage() {
                         <tool.IconComponent />
                       </div>
                     </motion.div>
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase text-emerald-700 border border-emerald-200/60 shadow-sm">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 align-middle" />
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase text-[#2E8B57] border border-[#2E8B57]/20 shadow-sm">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#2E8B57] mr-1.5 align-middle" />
                       Active
                     </div>
                   </div>
@@ -392,8 +392,8 @@ export default function LandingPage() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/5 border border-blue-500/10 text-blue-600 text-xs font-bold tracking-[0.2em] uppercase mb-6">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0F52BA]/5 border border-[#0F52BA]/20 text-[#0F52BA] text-xs font-bold tracking-[0.2em] uppercase mb-6">
+              <span className="w-2 h-2 rounded-full bg-[#0F52BA] animate-pulse" />
               Actively Building
             </div>
             <h2 className="text-3xl md:text-5xl font-serif text-primary mb-4">What's Coming Next</h2>
@@ -420,8 +420,8 @@ export default function LandingPage() {
                       <DBTHouseIcon />
                     </div>
                   </motion.div>
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase text-blue-600 border border-blue-200/60 shadow-sm flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                  <div className="absolute top-4 right-4 bg-[#0F52BA]/5 backdrop-blur-sm px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase text-[#0F52BA] border border-[#0F52BA]/20 shadow-sm flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0F52BA] animate-pulse" />
                     In Development
                   </div>
                 </div>
@@ -451,8 +451,8 @@ export default function LandingPage() {
                       <PuppetTheaterIcon />
                     </div>
                   </motion.div>
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase text-blue-600 border border-blue-200/60 shadow-sm flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                  <div className="absolute top-4 right-4 bg-[#0F52BA]/5 backdrop-blur-sm px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase text-[#0F52BA] border border-[#0F52BA]/20 shadow-sm flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0F52BA] animate-pulse" />
                     In Development
                   </div>
                 </div>
@@ -526,7 +526,7 @@ export default function LandingPage() {
                     <button
                       type="submit"
                       disabled={waitlistMutation.isPending}
-                      className="h-11 px-5 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:scale-105 transition-transform active:scale-95 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+                      className="h-11 px-5 rounded-full bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white text-sm font-medium hover:scale-105 transition-transform active:scale-95 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
                       data-testid="button-waitlist-submit"
                     >
                       {waitlistMutation.isPending ? "Joining..." : "Join Waitlist"}
@@ -554,7 +554,7 @@ export default function LandingPage() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
               <div className="relative">
                 <div className="flex items-center justify-center gap-2 mb-6">
-                  <div className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-lg shadow-primary/20">
+                  <div className="bg-gradient-to-r from-[#2E8B57] to-[#236B43] border border-[#D4AF37]/40 text-white px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-lg shadow-[#2E8B57]/20">
                     <Flame size={12} /> Founder's Circle
                   </div>
                   {remaining > 0 && (
@@ -591,7 +591,7 @@ export default function LandingPage() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   <Link href="/signup">
                     <button
-                      className="h-12 px-8 rounded-full bg-primary text-primary-foreground font-medium shadow-xl shadow-primary/20 hover:scale-105 transition-transform active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-12 px-8 rounded-full bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white border border-[#D4AF37]/40 shadow-xl shadow-[#2E8B57]/20 hover:scale-105 transition-transform active:scale-95 font-medium flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       data-testid="button-founding-member-cta"
                       disabled={remaining <= 0}
                     >
@@ -618,7 +618,7 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
           >
             <GlassCard className="p-8 md:p-10 text-center" hoverEffect={false}>
-              <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-linear-to-tr from-primary to-accent flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-linear-to-tr from-[#2E8B57] to-[#D4AF37] flex items-center justify-center shadow-lg">
                 <Heart size={28} className="text-white" />
               </div>
               <h3 className="text-2xl md:text-3xl font-serif text-primary mb-3" data-testid="text-about-founder">About the Founder</h3>

@@ -105,7 +105,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 btn-luxury cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 btn-luxury cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 data-testid="button-login"
               >
                 {loading ? (

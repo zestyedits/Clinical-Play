@@ -401,7 +401,7 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
               {isClinician && (
                 <button
                   onClick={onClear}
-                  className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 cursor-pointer"
+                  className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 cursor-pointer min-h-[44px] min-w-[44px] p-2 rounded-xl"
                   data-testid="button-clear-feelings"
                 >
                   <RotateCcw size={10} />

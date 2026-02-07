@@ -134,12 +134,12 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
                       onClick={() => setMode("solo")}
                       className={`p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
                         mode === "solo"
-                          ? "border-primary bg-primary/5 shadow-md"
+                          ? "border-[#2E8B57] bg-[#2E8B57]/5 shadow-md"
                           : "border-white/40 bg-white/40 hover:border-primary/30"
                       }`}
                       data-testid="button-mode-solo"
                     >
-                      <User size={24} className={mode === "solo" ? "text-primary mb-2" : "text-muted-foreground mb-2"} />
+                      <User size={24} className={mode === "solo" ? "text-[#2E8B57] mb-2" : "text-muted-foreground mb-2"} />
                       <div className="font-medium text-sm text-primary">Solo</div>
                       <div className="text-xs text-muted-foreground mt-0.5">1-on-1 session</div>
                     </button>
@@ -147,12 +147,12 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
                       onClick={() => setMode("group")}
                       className={`p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
                         mode === "group"
-                          ? "border-primary bg-primary/5 shadow-md"
+                          ? "border-[#2E8B57] bg-[#2E8B57]/5 shadow-md"
                           : "border-white/40 bg-white/40 hover:border-primary/30"
                       }`}
                       data-testid="button-mode-group"
                     >
-                      <UserPlus size={24} className={mode === "group" ? "text-primary mb-2" : "text-muted-foreground mb-2"} />
+                      <UserPlus size={24} className={mode === "group" ? "text-[#2E8B57] mb-2" : "text-muted-foreground mb-2"} />
                       <div className="font-medium text-sm text-primary">Group</div>
                       <div className="text-xs text-muted-foreground mt-0.5">Multiple clients</div>
                     </button>
@@ -165,7 +165,7 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
               <button
                 onClick={() => onSubmit(name || `Session — ${new Date().toLocaleDateString()}`, mode)}
                 disabled={isPending}
-                className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                 data-testid="button-create-session-submit"
               >
                 <Sparkles size={16} />
@@ -205,7 +205,7 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                   <div
                     key={i}
                     className={`h-1.5 rounded-full transition-all duration-500 ${
-                      i === step ? "w-8 bg-primary" : i < step ? "w-4 bg-accent" : "w-4 bg-primary/15"
+                      i === step ? "w-8 bg-[#2E8B57]" : i < step ? "w-4 bg-accent" : "w-4 bg-primary/15"
                     }`}
                   />
                 ))}
@@ -296,7 +296,7 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                     if (step < 2) setStep(step + 1);
                     else onClose();
                   }}
-                  className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 hover:brightness-110 transition-all cursor-pointer flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 hover:brightness-110 transition-all cursor-pointer flex items-center justify-center gap-2"
                   data-testid="button-onboarding-next"
                 >
                   {step === 2 ? (
@@ -796,7 +796,7 @@ export default function Dashboard() {
                     <div className="absolute inset-0 bg-white/30 backdrop-blur-[1px] rounded-3xl z-10 flex items-center justify-center">
                       <button
                         onClick={() => checkout.mutate("monthly")}
-                        className="bg-primary/90 text-primary-foreground px-5 py-2.5 rounded-2xl text-sm font-medium shadow-lg flex items-center gap-2 cursor-pointer hover:bg-primary transition-colors"
+                        className="bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white px-5 py-2.5 rounded-2xl text-sm font-medium shadow-lg flex items-center gap-2 cursor-pointer hover:brightness-110 transition-all border border-[#D4AF37]/30"
                         data-testid={`button-upgrade-${tool.id}`}
                       >
                         <Lock size={14} /> Upgrade to Unlock
@@ -933,7 +933,7 @@ export default function Dashboard() {
           <button
             onClick={() => checkout.mutate("founding")}
             disabled={checkout.isPending}
-            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
             data-testid="button-checkout-founding"
           >
             <Crown size={16} />
@@ -964,7 +964,7 @@ export default function Dashboard() {
           <button
             onClick={() => checkout.mutate("monthly")}
             disabled={checkout.isPending}
-            className="w-full py-3 rounded-xl bg-accent text-white font-medium shadow-lg shadow-accent/20 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50"
             data-testid="button-checkout-community-only"
           >
             {checkout.isPending ? "Loading..." : "Start Community Plan"}

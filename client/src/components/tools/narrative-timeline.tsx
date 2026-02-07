@@ -70,7 +70,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
       {/* Header */}
       <div className="flex items-center justify-between px-6 pt-6 pb-2 shrink-0 relative z-10">
         <div>
-          <h2 className="font-serif text-2xl md:text-3xl text-primary">Narrative Timeline</h2>
+          <h2 className="font-serif text-xl md:text-2xl text-primary">Narrative Timeline</h2>
           <p className="text-sm text-muted-foreground">Click the river to drop a stone. Tell your story.</p>
         </div>
         {isClinician && events.length > 0 && (
@@ -93,7 +93,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
           onClick={handleTimelineClick}
           data-testid="timeline-track"
         >
-          <div className="relative min-w-[800px] md:min-w-[1200px] h-48">
+          <div className="relative min-w-[600px] md:min-w-[1200px] h-48">
             {/* River Path */}
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1200 200" preserveAspectRatio="none">
               <defs>
@@ -267,7 +267,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                     value={newLabel}
                     onChange={e => setNewLabel(e.target.value)}
                     placeholder="What happened? (e.g., Moved to Nevada)"
-                    className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-white/40 text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 text-sm"
+                    className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-white/40 text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 text-sm min-h-[44px]"
                     autoFocus
                     data-testid="input-event-label"
                     onKeyDown={e => e.key === "Enter" && handleSubmitEvent()}
@@ -277,7 +277,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                     onChange={e => setNewDesc(e.target.value)}
                     placeholder="How did it feel? (optional)"
                     rows={2}
-                    className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-white/40 text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 text-sm resize-none"
+                    className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-white/40 text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 text-sm resize-none min-h-[44px]"
                     data-testid="input-event-description"
                   />
                   <div className="flex items-center gap-2">
@@ -298,7 +298,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                   <button
                     onClick={handleSubmitEvent}
                     disabled={!newLabel.trim()}
-                    className="w-full min-h-[44px] py-3 rounded-xl bg-primary text-primary-foreground font-medium flex items-center justify-center gap-2 shadow-lg hover:bg-primary/90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full min-h-[44px] py-3 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white border border-[#D4AF37]/30 font-medium flex items-center justify-center gap-2 shadow-lg hover:opacity-90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     data-testid="button-submit-event"
                   >
                     <Plus size={16} />

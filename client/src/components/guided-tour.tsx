@@ -270,7 +270,7 @@ export function GuidedTour({ steps, tourKey, isActive, onComplete, onSkip }: Gui
               )}
               <button
                 onClick={handleNext}
-                className="px-4 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-lg shadow-sm hover:brightness-110 transition-all cursor-pointer flex items-center gap-1"
+                className="px-4 py-1.5 bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white text-xs font-medium rounded-lg shadow-sm hover:brightness-110 transition-all cursor-pointer flex items-center gap-1 border border-[#D4AF37]/30"
                 data-testid="button-tour-next"
               >
                 {currentStep === steps.length - 1 ? "Got it!" : "Next"}

@@ -1221,8 +1221,8 @@ export default function Playroom() {
               transition={{ delay: 0.15, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="text-center max-w-lg mx-auto px-6 w-full"
             >
-              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center">
-                <CheckCircle2 size={32} className="text-primary" />
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[#2E8B57]/5 border border-[#2E8B57]/10 flex items-center justify-center">
+                <CheckCircle2 size={32} className="text-[#2E8B57]" />
               </div>
               <h2 className="font-serif text-2xl text-primary mb-2" data-testid="text-session-complete">Session Complete</h2>
               <p className="text-muted-foreground text-sm leading-relaxed mb-6">
@@ -1290,7 +1290,7 @@ export default function Playroom() {
                 )}
                 <button
                   onClick={() => navigate(isClinician ? "/dashboard" : "/")}
-                  className="btn-luxury bg-primary text-primary-foreground px-8 py-3 rounded-xl text-sm font-medium shadow-lg cursor-pointer w-full sm:w-auto"
+                  className="btn-luxury bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white border border-[#D4AF37]/30 px-8 py-3 rounded-xl text-sm font-medium shadow-lg cursor-pointer w-full sm:w-auto"
                   data-testid="button-session-ended-navigate"
                 >
                   {isClinician ? "Back to Dashboard" : "Return Home"}

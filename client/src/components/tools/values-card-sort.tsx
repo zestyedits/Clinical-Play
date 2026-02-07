@@ -113,7 +113,7 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
 
               {/* Column Drop Zone */}
               <div className={cn(
-                "flex-1 rounded-2xl border-2 border-dashed p-2 overflow-y-auto space-y-2 transition-colors min-h-[80px]",
+                "flex-1 rounded-2xl border-2 border-dashed p-2 overflow-y-auto space-y-2 transition-colors min-h-[60px] md:min-h-[80px]",
                 dragCard ? "border-accent/40 bg-accent/5" : "border-white/30 bg-white/20"
               )}>
                 <AnimatePresence>
@@ -145,7 +145,7 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
                           </div>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleReturnToDeck(placement.id); }}
-                            className="opacity-0 group-hover:opacity-100 min-w-[32px] min-h-[32px] p-1 rounded-lg hover:bg-secondary transition-all cursor-pointer text-muted-foreground hover:text-destructive"
+                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 min-w-[32px] min-h-[32px] p-1 rounded-lg hover:bg-secondary transition-all cursor-pointer text-muted-foreground hover:text-destructive"
                             title="Return to deck"
                           >
                             <X size={14} />
