@@ -32,6 +32,7 @@ function PreLaunchBanner({ onDismiss, visible }: { onDismiss: () => void; visibl
 
 function MobileBottomNav({ items }: { items: { label: string; icon: React.ElementType; tab: string }[] }) {
   const [activeTab, setActiveTab] = useState("sessions");
+  const activeIndex = items.findIndex(i => i.tab === activeTab);
 
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
@@ -50,7 +51,17 @@ function MobileBottomNav({ items }: { items: { label: string; icon: React.Elemen
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-border/40 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]" aria-label="Mobile navigation" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-      <div className="flex justify-around items-center h-[68px] px-2" role="tablist">
+      <div className="relative flex justify-around items-center h-[68px] px-2" role="tablist">
+        <motion.div
+          className="absolute top-2 rounded-2xl"
+          style={{
+            width: `${100 / items.length}%`,
+            height: "calc(100% - 16px)",
+            background: "linear-gradient(135deg, rgba(27,42,74,0.08), rgba(212,175,55,0.06))",
+          }}
+          animate={{ left: `${(activeIndex / items.length) * 100}%` }}
+          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        />
         {items.map((item) => {
           const isActive = activeTab === item.tab;
           return (
@@ -60,21 +71,28 @@ function MobileBottomNav({ items }: { items: { label: string; icon: React.Elemen
                 setActiveTab(item.tab);
                 window.dispatchEvent(new CustomEvent("dashboard-tab", { detail: item.tab }));
               }}
-              className="flex flex-col items-center justify-center w-full h-full gap-1 active:scale-95 transition-transform cursor-pointer bg-transparent border-none"
+              className="relative z-10 flex flex-col items-center justify-center w-full h-full gap-1 active:scale-95 transition-transform cursor-pointer bg-transparent border-none"
               data-testid={`link-bottomnav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
             >
-              <div className={cn(
-                "p-1.5 rounded-xl transition-all duration-300",
-                isActive ? "bg-primary/10 text-primary" : "text-muted-foreground"
-              )}>
+              <motion.div
+                className="p-1.5 rounded-xl"
+                animate={{
+                  color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
+                }}
+                transition={{ duration: 0.2 }}
+              >
                 <item.icon size={24} strokeWidth={isActive ? 2.5 : 1.5} />
-              </div>
-              <span className={cn(
-                "text-[10px] font-medium transition-all duration-300",
-                isActive ? "text-primary" : "text-muted-foreground"
-              )}>
+              </motion.div>
+              <motion.span
+                className="text-[10px] font-medium"
+                animate={{
+                  color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
+                  fontWeight: isActive ? 600 : 500,
+                }}
+                transition={{ duration: 0.2 }}
+              >
                 {item.label}
-              </span>
+              </motion.span>
             </button>
           );
         })}
@@ -233,6 +251,17 @@ export function Navbar() {
                   </span>
                 )}
               </Link>
+              <Link
+                href="/profile"
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-accent no-underline flex items-center gap-1.5 nav-link-premium",
+                  location === "/profile" ? "text-primary font-semibold active" : "text-muted-foreground"
+                )}
+                data-testid="link-nav-profile"
+              >
+                <UserCircle size={16} />
+                Profile
+              </Link>
               <button
                 onClick={() => logout()}
                 className="text-sm font-medium text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95"
@@ -363,6 +392,17 @@ export function Navbar() {
                           {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
                       )}
+                    </Link>
+                    <Link
+                      href="/profile"
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors no-underline active:scale-[0.98]",
+                        location === "/profile" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary/50"
+                      )}
+                      data-testid="link-mobile-profile"
+                    >
+                      <UserCircle size={18} />
+                      Profile
                     </Link>
                     <button
                       onClick={() => logout()}

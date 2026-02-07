@@ -5,7 +5,7 @@ import {
   Plus, Users, Calendar, ArrowRight, Copy, CheckCircle2, Crown, Flame,
   CreditCard, Star, Lock, Sparkles, Lightbulb, ExternalLink, HelpCircle, AlertTriangle,
   Palette, Wind, Target, Clock, Layers, House, Brain, Gamepad2, TreePine, Theater,
-  X, User, UserPlus, Mail, RefreshCw
+  X, UserPlus, Mail, RefreshCw, User
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -387,7 +387,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      toast({ title: "Please sign in", description: "Redirecting to login...", variant: "destructive" });
+      toast({ title: "Please sign in", description: "Please sign in to access your clinical tools.", variant: "destructive" });
       setTimeout(() => { window.location.href = "/login"; }, 500);
     }
   }, [authLoading, isAuthenticated]);
@@ -631,7 +631,12 @@ export default function Dashboard() {
           <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">Create a session room and share the invite code with your client to get started.</p>
           <button
             onClick={() => setShowNewSession(true)}
-            className="bg-primary text-primary-foreground px-6 py-3 rounded-2xl inline-flex items-center gap-2 shadow-lg cursor-pointer hover:brightness-110 transition-all"
+            className="px-6 py-3 rounded-2xl inline-flex items-center gap-2 shadow-lg cursor-pointer hover:brightness-110 transition-all text-white font-medium border-2"
+            style={{
+              background: "linear-gradient(135deg, #2E8B57 0%, #256D47 100%)",
+              borderColor: "#D4AF37",
+              boxShadow: "0 4px 16px rgba(46,139,87,0.2)",
+            }}
             data-testid="button-new-session-empty"
           >
             <Plus size={18} /> Create Session
@@ -665,7 +670,7 @@ export default function Dashboard() {
                     <Calendar size={13} />
                     {new Date(sess.createdAt).toLocaleDateString()}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">active</span>
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "rgba(46,139,87,0.12)", color: "#2E8B57" }}>active</span>
                 </div>
               </div>
               <div className="flex gap-2 w-full md:w-auto flex-col sm:flex-row">
@@ -678,7 +683,15 @@ export default function Dashboard() {
                   {copied === sess.inviteCode ? "Copied!" : sess.inviteCode}
                 </button>
                 <Link href={`/playroom/${sess.id}`} className="flex-1 no-underline">
-                  <button className="w-full min-h-[48px] px-5 py-3 bg-accent text-white rounded-2xl text-sm font-medium shadow-md shadow-accent/20 hover:brightness-110 transition-all flex items-center justify-center gap-2 cursor-pointer" data-testid={`button-join-${sess.id}`}>
+                  <button
+                    className="w-full min-h-[48px] px-5 py-3 text-white rounded-2xl text-sm font-medium shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 cursor-pointer border"
+                    style={{
+                      background: "linear-gradient(135deg, #2E8B57 0%, #256D47 100%)",
+                      borderColor: "rgba(212,175,55,0.4)",
+                      boxShadow: "0 4px 12px rgba(46,139,87,0.2)",
+                    }}
+                    data-testid={`button-join-${sess.id}`}
+                  >
                     Enter <ArrowRight size={16} />
                   </button>
                 </Link>
@@ -764,10 +777,11 @@ export default function Dashboard() {
         <h2 className="text-lg font-medium text-primary flex items-center gap-2">
           <Palette size={18} className="text-accent" /> All Tools
         </h2>
-        <div className="space-y-3">
+        <div className="columns-1 sm:columns-2 gap-3 space-y-3">
           {ALL_TOOLS.map((tool, i) => {
             const isLocked = tool.tier === "pro" && !isPro;
             const isFavorited = favorites.includes(tool.id);
+            const isExpanded = i === 0 || i === 3 || i === 5;
 
             return (
               <motion.div
@@ -775,8 +789,9 @@ export default function Dashboard() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.05 }}
+                className="break-inside-avoid"
               >
-                <GlassCard className={`p-5 flex items-start gap-4 relative ${isLocked ? "opacity-75" : ""}`} hoverEffect={!isLocked}>
+                <GlassCard className={`relative ${isLocked ? "opacity-75" : ""} ${isExpanded ? "p-6" : "p-5"}`} hoverEffect={!isLocked}>
                   {isLocked && (
                     <div className="absolute inset-0 bg-white/30 backdrop-blur-[1px] rounded-3xl z-10 flex items-center justify-center">
                       <button
@@ -789,38 +804,41 @@ export default function Dashboard() {
                     </div>
                   )}
 
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-secondary/60 to-secondary/30 flex items-center justify-center shrink-0">
-                    <span className="text-2xl">{tool.emoji}</span>
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-primary text-sm">{tool.label}</h3>
-                      {tool.tier === "pro" && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent font-semibold border border-accent/20">PRO</span>
-                      )}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className={`${isExpanded ? "w-14 h-14" : "w-12 h-12"} rounded-2xl bg-gradient-to-br from-secondary/60 to-secondary/30 flex items-center justify-center shrink-0`}>
+                      <span className={isExpanded ? "text-3xl" : "text-2xl"}>{tool.emoji}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{tool.desc}</p>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => toggleFavorite(tool.id)}
-                      className="p-2 rounded-xl hover:bg-secondary/50 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-xl hover:bg-secondary/50 transition-colors cursor-pointer"
                       data-testid={`button-favorite-${tool.id}`}
                     >
-                      <Star size={16} className={isFavorited ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40"} />
+                      <Star size={14} className={isFavorited ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40"} />
                     </button>
-                    {!isLocked && (
-                      <button
-                        onClick={() => setShowNewSession(true)}
-                        className="px-4 py-2 rounded-xl bg-accent/10 text-accent text-xs font-medium hover:bg-accent/20 transition-colors cursor-pointer flex items-center gap-1"
-                        data-testid={`button-launch-${tool.id}`}
-                      >
-                        Launch <ArrowRight size={12} />
-                      </button>
+                  </div>
+
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-medium text-primary text-sm">{tool.label}</h3>
+                    {tool.tier === "pro" && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold border" style={{ backgroundColor: "rgba(15,82,186,0.08)", color: "#0F52BA", borderColor: "rgba(15,82,186,0.2)" }}>PRO</span>
                     )}
                   </div>
+                  <p className="text-xs text-muted-foreground mb-3">{tool.desc}</p>
+
+                  {!isLocked && (
+                    <button
+                      onClick={() => setShowNewSession(true)}
+                      className="w-full px-4 py-2.5 rounded-xl text-xs font-medium transition-colors cursor-pointer flex items-center justify-center gap-1 border"
+                      style={{
+                        backgroundColor: "rgba(46,139,87,0.08)",
+                        color: "#2E8B57",
+                        borderColor: "rgba(46,139,87,0.15)",
+                      }}
+                      data-testid={`button-launch-${tool.id}`}
+                    >
+                      Launch <ArrowRight size={12} />
+                    </button>
+                  )}
                 </GlassCard>
               </motion.div>
             );
@@ -862,6 +880,12 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="space-y-2">
+            <Link href="/profile" className="no-underline">
+              <button className="w-full py-2.5 rounded-xl bg-secondary/50 text-primary text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2" data-testid="button-edit-profile">
+                <User size={14} />
+                Edit Profile
+              </button>
+            </Link>
             {isPro && (subscriptionType === "community" || subscriptionType === "annual") && (
               <button
                 onClick={() => manageSubscription.mutate()}
@@ -1063,8 +1087,13 @@ export default function Dashboard() {
           <motion.button
             onClick={() => setShowNewSession(true)}
             disabled={createSession.isPending}
-            className="bg-primary text-primary-foreground px-7 py-3.5 rounded-2xl flex items-center gap-2.5 shadow-lg shadow-primary/20 btn-luxury cursor-pointer w-full md:w-auto justify-center disabled:opacity-50"
-            whileHover={{ scale: 1.02 }}
+            className="px-7 py-3.5 rounded-2xl flex items-center gap-2.5 shadow-lg cursor-pointer w-full md:w-auto justify-center disabled:opacity-50 text-white font-medium border-2"
+            style={{
+              background: "linear-gradient(135deg, #2E8B57 0%, #256D47 100%)",
+              borderColor: "#D4AF37",
+              boxShadow: "0 4px 20px rgba(46,139,87,0.25), 0 0 0 1px rgba(212,175,55,0.15)",
+            }}
+            whileHover={{ scale: 1.02, boxShadow: "0 6px 24px rgba(46,139,87,0.35), 0 0 0 1px rgba(212,175,55,0.3)" }}
             whileTap={{ scale: 0.97 }}
             data-testid="button-new-session"
           >

@@ -24,6 +24,9 @@ Key features include:
 - **Demo mode** — clinicians can "Try a Demo" from Dashboard to explore all tools in a local-only sandbox session (no DB writes, no WebSocket) with demo banner
 - **Payment failure handling** — Stripe `invoice.payment_failed` webhook updates payment status; Dashboard shows red warning banner with "Update Payment" CTA when subscription is past_due; Stripe status cached for 5 minutes to avoid API overhead
 - **Guided tours** — interactive spotlight-based guided tours for new users on Dashboard (4 steps: new session, sessions area, tool library, account) and Playroom (5 steps: invite code, tool selector, asset library, snapshot, end session); uses SVG mask overlay with positioned tooltips, step progress dots, skip/back/next controls; completion tracked via localStorage; clinician-only for playroom tour
+- **Sandtray transform handles** — click-to-select items shows Champagne Gold bounding box with 4 corner resize handles (0.4-3.0 scale), top rotation handle (atan2-based), and delete button; real-time sync via `item-transformed` WebSocket message
+- **Profile page** — /profile page with professional title (credential), clinical specialty selector, and default session settings (anonymous mode toggle); linked from navbar and dashboard account sidebar
+- **Dashboard jewel-tone palette** — 60-30-10 color rule: Deep Emerald (#2E8B57) action buttons with gold borders, Sapphire Blue (#0F52BA) PRO badges, masonry-style tool library grid, animated pill slider on mobile bottom nav
 
 ## User Preferences
 
