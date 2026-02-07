@@ -88,6 +88,24 @@ export const supportTickets = pgTable("support_tickets", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const waitlistEntries = pgTable("waitlist_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull().unique(),
+  name: text("name"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const messages = pgTable("messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fromUserId: varchar("from_user_id").references(() => users.id),
+  toUserId: varchar("to_user_id").references(() => users.id),
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  isAnnouncement: boolean("is_announcement").notNull().default(false),
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // --- Insert Schemas ---
 
 export const insertTherapySessionSchema = createInsertSchema(therapySessions).pick({
@@ -153,6 +171,19 @@ export const insertSupportTicketSchema = createInsertSchema(supportTickets).pick
   message: true,
 });
 
+export const insertWaitlistEntrySchema = createInsertSchema(waitlistEntries).pick({
+  email: true,
+  name: true,
+});
+
+export const insertMessageSchema = createInsertSchema(messages).pick({
+  fromUserId: true,
+  toUserId: true,
+  subject: true,
+  body: true,
+  isAnnouncement: true,
+});
+
 // --- Types ---
 
 export type InsertTherapySession = z.infer<typeof insertTherapySessionSchema>;
@@ -171,3 +202,7 @@ export type InsertValuesCardPlacement = z.infer<typeof insertValuesCardPlacement
 export type ValuesCardPlacement = typeof valuesCardPlacements.$inferSelect;
 export type InsertSupportTicket = z.infer<typeof insertSupportTicketSchema>;
 export type SupportTicket = typeof supportTickets.$inferSelect;
+export type InsertWaitlistEntry = z.infer<typeof insertWaitlistEntrySchema>;
+export type WaitlistEntry = typeof waitlistEntries.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;
