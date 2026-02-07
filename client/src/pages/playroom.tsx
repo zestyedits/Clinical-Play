@@ -1,9 +1,10 @@
-import { Link, useParams } from "wouter";
-import { ChevronRight, PanelRightClose, LogOut, Users, Ghost, Shield, Wrench, Camera, Crown } from "lucide-react";
+import { Link, useParams, useLocation } from "wouter";
+import { ChevronRight, PanelRightClose, LogOut, Users, Ghost, Shield, Wrench, Camera, Crown, Square } from "lucide-react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ZenCanvas, type CanvasItem } from "@/components/sandtray/zen-canvas";
 import { AssetLibrary } from "@/components/sandtray/asset-library";
@@ -16,6 +17,7 @@ import { NarrativeTimeline, type TimelineEventData } from "@/components/tools/na
 import { ValuesCardSort, type CardPlacement } from "@/components/tools/values-card-sort";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
+import { getSupabase } from "@/lib/supabase";
 import type { TherapySession, Participant } from "@shared/schema";
 
 interface OnlineUser {
@@ -54,6 +56,9 @@ export default function Playroom() {
   const [timelineEvents, setTimelineEvents] = useState<TimelineEventData[]>([]);
   const [valuesCards, setValuesCards] = useState<CardPlacement[]>([]);
   const [subscriptionType, setSubscriptionType] = useState<string>("free");
+  const [sessionEnded, setSessionEnded] = useState(false);
+  const [endingSession, setEndingSession] = useState(false);
+  const [, navigate] = useLocation();
 
   const isCanvasLocked = session?.isCanvasLocked ?? false;
   const isAnonymous = session?.isAnonymous ?? false;
@@ -163,6 +168,10 @@ export default function Playroom() {
         ));
         break;
 
+      case "session-ended":
+        setSessionEnded(true);
+        break;
+
       // Feeling Wheel
       case "feeling-selected":
         setFeelingSelections(prev => [...prev, msg.selection]);
@@ -233,7 +242,12 @@ export default function Playroom() {
         if (r.ok) return r.json();
         return null;
       })
-      .then(s => { if (s) setSession(s); })
+      .then(s => {
+        if (s) {
+          setSession(s);
+          if (s.status === "ended") setSessionEnded(true);
+        }
+      })
       .catch(() => {});
   }, [sessionId]);
 
@@ -346,6 +360,30 @@ export default function Playroom() {
     send({ type: "values-clear" });
     setValuesCards([]);
   }, [send]);
+
+  const handleEndSession = useCallback(async () => {
+    if (!sessionId) return;
+    setEndingSession(true);
+    try {
+      const supabase = await getSupabase();
+      const { data: { session: sbSession } } = await supabase.auth.getSession();
+      const token = sbSession?.access_token || "";
+      const res = await fetch(`/api/therapy-sessions/${sessionId}/end`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        setSessionEnded(true);
+      }
+    } catch (err) {
+      console.error("Failed to end session:", err);
+    } finally {
+      setEndingSession(false);
+    }
+  }, [sessionId]);
 
   // Snapshot export
   const handleSnapshot = useCallback(async () => {
@@ -514,9 +552,42 @@ export default function Playroom() {
           >
             <PanelRightClose size={20} />
           </button>
+          {isClinician && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  className="p-2 text-destructive hover:bg-destructive/10 rounded-xl transition-colors cursor-pointer"
+                  data-testid="button-end-session"
+                  title="End Session"
+                  disabled={endingSession}
+                >
+                  <Square size={18} className="fill-destructive/20" />
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white/95 backdrop-blur-xl border border-white/30 shadow-2xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="font-serif text-primary">End This Session?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-muted-foreground leading-relaxed">
+                    This will end the session for all participants. Everyone will be disconnected and the session will be marked as complete. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleEndSession}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl"
+                    disabled={endingSession}
+                    data-testid="button-confirm-end-session"
+                  >
+                    {endingSession ? "Ending..." : "End Session"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <Link href="/dashboard">
-            <button className="p-2 text-destructive hover:bg-destructive/10 rounded-xl transition-colors cursor-pointer" data-testid="button-leave">
-              <LogOut size={20} />
+            <button className="p-2 text-muted-foreground hover:bg-secondary rounded-xl transition-colors cursor-pointer" data-testid="button-leave">
+              <LogOut size={18} />
             </button>
           </Link>
         </div>
@@ -747,6 +818,41 @@ export default function Playroom() {
               />
               {joinNotification} joined
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Session Ended Overlay */}
+      <AnimatePresence>
+        {sessionEnded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.15, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="text-center max-w-sm mx-auto px-6"
+            >
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center">
+                <span className="text-3xl">&#10003;</span>
+              </div>
+              <h2 className="font-serif text-2xl text-primary mb-2">Session Complete</h2>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-8">
+                {isClinician
+                  ? "The session has been ended successfully. All participants have been disconnected."
+                  : "This session has ended. Thank you for participating."}
+              </p>
+              <button
+                onClick={() => navigate(isClinician ? "/dashboard" : "/")}
+                className="btn-luxury bg-primary text-primary-foreground px-8 py-3 rounded-xl text-sm font-medium shadow-lg cursor-pointer"
+                data-testid="button-session-ended-navigate"
+              >
+                {isClinician ? "Back to Dashboard" : "Return Home"}
+              </button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -38,6 +38,20 @@ function broadcast(sessionId: string, message: any, excludeWs?: WebSocket) {
   });
 }
 
+export function broadcastSessionEnded(sessionId: string) {
+  const room = rooms.get(sessionId);
+  if (!room) return;
+  const payload = JSON.stringify({ type: "session-ended" });
+  room.forEach((client) => {
+    if (client.ws.readyState === WebSocket.OPEN) {
+      client.ws.send(payload);
+      client.ws.close(1000, "Session ended");
+    }
+  });
+  rooms.delete(sessionId);
+  roomStates.delete(sessionId);
+}
+
 export function setupWebSocketServer(server: Server) {
   const wss = new WebSocketServer({ server, path: "/ws" });
 

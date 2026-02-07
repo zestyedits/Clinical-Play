@@ -30,6 +30,7 @@ export interface IStorage {
   getSessionByInviteCode(code: string): Promise<TherapySession | undefined>;
   getSessionsByClinician(clinicianId: string): Promise<TherapySession[]>;
   updateSession(id: string, data: Partial<TherapySession>): Promise<TherapySession | undefined>;
+  endSession(id: string): Promise<TherapySession | undefined>;
 
   addParticipant(data: InsertParticipant): Promise<Participant>;
   getParticipantsBySession(sessionId: string): Promise<Participant[]>;
@@ -112,6 +113,14 @@ export class DatabaseStorage implements IStorage {
 
   async getSessionsByClinician(clinicianId: string): Promise<TherapySession[]> {
     return db.select().from(therapySessions).where(eq(therapySessions.clinicianId, clinicianId));
+  }
+
+  async endSession(id: string): Promise<TherapySession | undefined> {
+    const [session] = await db.update(therapySessions)
+      .set({ status: "ended", endedAt: new Date() })
+      .where(eq(therapySessions.id, id))
+      .returning();
+    return session;
   }
 
   async updateSession(id: string, data: Partial<TherapySession>): Promise<TherapySession | undefined> {

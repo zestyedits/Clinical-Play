@@ -16,6 +16,7 @@ export const therapySessions = pgTable("therapy_sessions", {
   isAnonymous: boolean("is_anonymous").notNull().default(false),
   activeTool: text("active_tool").notNull().default("sandtray"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  endedAt: timestamp("ended_at"),
 });
 
 export const participants = pgTable("participants", {

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { type Server } from "http";
 import { storage } from "./storage";
 import { insertTherapySessionSchema, insertParticipantSchema, insertSandtrayItemSchema, insertToolSuggestionSchema, insertSupportTicketSchema, insertWaitlistEntrySchema, insertMessageSchema } from "@shared/schema";
-import { setupWebSocketServer } from "./websocket";
+import { setupWebSocketServer, broadcastSessionEnded } from "./websocket";
 import { isAuthenticated } from "./auth";
 import { registerStripeRoutes } from "./stripe";
 import { supabaseAdmin } from "./supabase";
@@ -155,6 +155,25 @@ export async function registerRoutes(
       res.json(session);
     } catch (e: any) {
       res.status(400).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/therapy-sessions/:id/end", isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = req.params.id;
+      const existing = await storage.getSession(sessionId);
+      if (!existing) return res.status(404).json({ message: "Session not found" });
+      if (existing.clinicianId !== req.authUser.id) {
+        return res.status(403).json({ message: "Only the session clinician can end a session" });
+      }
+      if (existing.status === "ended") {
+        return res.status(400).json({ message: "Session is already ended" });
+      }
+      const session = await storage.endSession(sessionId);
+      broadcastSessionEnded(sessionId);
+      res.json(session);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
     }
   });
 
