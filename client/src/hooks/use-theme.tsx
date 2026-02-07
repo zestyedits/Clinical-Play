@@ -1,7 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 
-export type ThemeMode = "light" | "dark" | "system";
-
 export interface AccentPreset {
   id: string;
   name: string;
@@ -63,28 +61,12 @@ export const accentPresets: AccentPreset[] = [
 ];
 
 interface ThemeContextType {
-  mode: ThemeMode;
-  setMode: (mode: ThemeMode) => void;
-  resolvedMode: "light" | "dark";
   accentId: string;
   setAccentId: (id: string) => void;
   currentAccent: AccentPreset;
 }
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
-
-function getSystemTheme(): "light" | "dark" {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
-function getStoredMode(): ThemeMode {
-  try {
-    const stored = localStorage.getItem("cp_theme_mode");
-    if (stored === "light" || stored === "dark" || stored === "system") return stored;
-  } catch {}
-  return "light";
-}
 
 function getStoredAccent(): string {
   try {
@@ -94,28 +76,13 @@ function getStoredAccent(): string {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>(getStoredMode);
   const [accentId, setAccentIdState] = useState<string>(getStoredAccent);
-  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(getSystemTheme);
 
-  const resolvedMode = mode === "system" ? systemTheme : mode;
   const currentAccent = accentPresets.find((p) => p.id === accentId) || accentPresets[0];
 
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e: MediaQueryListEvent) => setSystemTheme(e.matches ? "dark" : "light");
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
+    document.documentElement.classList.remove("dark");
   }, []);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (resolvedMode === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  }, [resolvedMode]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -124,18 +91,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.style.setProperty("--accent", currentAccent.accent);
   }, [currentAccent]);
 
-  const setMode = useCallback((m: ThemeMode) => {
-    setModeState(m);
-    try { localStorage.setItem("cp_theme_mode", m); } catch {}
-  }, []);
-
   const setAccentId = useCallback((id: string) => {
     setAccentIdState(id);
     try { localStorage.setItem("cp_theme_accent", id); } catch {}
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ mode, setMode, resolvedMode, accentId, setAccentId, currentAccent }}>
+    <ThemeContext.Provider value={{ accentId, setAccentId, currentAccent }}>
       {children}
     </ThemeContext.Provider>
   );

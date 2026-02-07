@@ -1,60 +1,11 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Home, LayoutDashboard, Library, UserCircle, LogOut, Menu, X, Sparkles, Rocket, Inbox, Shield, Sun, Moon } from "lucide-react";
+import { Home, LayoutDashboard, Library, UserCircle, LogOut, Menu, X, Sparkles, Rocket, Inbox, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth, useAuthFetch } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { LogoMark } from "@/components/shared/logo-mark";
-import { useTheme } from "@/hooks/use-theme";
-
-function ThemeToggle() {
-  const { mode, setMode, resolvedMode } = useTheme();
-  const isDark = resolvedMode === "dark";
-
-  const cycleMode = () => {
-    if (mode === "light") setMode("dark");
-    else if (mode === "dark") setMode("system");
-    else setMode("light");
-  };
-
-  return (
-    <button
-      onClick={cycleMode}
-      className="relative p-2 rounded-xl transition-colors cursor-pointer active:scale-95 hover:bg-primary/10 text-muted-foreground hover:text-primary"
-      aria-label={`Current theme: ${mode}. Click to change.`}
-      title={mode === "system" ? "Theme: System" : mode === "dark" ? "Theme: Dark" : "Theme: Light"}
-      data-testid="button-theme-toggle"
-    >
-      <AnimatePresence mode="wait" initial={false}>
-        {isDark ? (
-          <motion.div
-            key="moon"
-            initial={{ rotate: -90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: 90, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Moon size={18} />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="sun"
-            initial={{ rotate: 90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: -90, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Sun size={18} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {mode === "system" && (
-        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
-      )}
-    </button>
-  );
-}
 
 function PreLaunchBanner({ onDismiss, visible }: { onDismiss: () => void; visible: boolean }) {
   if (!visible) return null;
@@ -311,7 +262,6 @@ export function Navbar() {
                 <UserCircle size={16} />
                 Profile
               </Link>
-              <ThemeToggle />
               <button
                 onClick={() => logout()}
                 className="text-sm font-medium text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95"
@@ -337,7 +287,6 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
-              <ThemeToggle />
               <Link
                 href="/login"
                 className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors no-underline"
@@ -376,7 +325,6 @@ export function Navbar() {
                 Sign In
               </Link>
             )}
-            <ThemeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-xl text-primary hover:bg-primary/10 transition-colors cursor-pointer active:scale-95"

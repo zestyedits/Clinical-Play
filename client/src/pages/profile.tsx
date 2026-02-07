@@ -5,9 +5,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Save, User, Briefcase, Shield, Eye, EyeOff, CheckCircle2, Palette, Sun, Moon, Monitor, Check } from "lucide-react";
+import { ArrowLeft, Save, User, Briefcase, Shield, Eye, EyeOff, CheckCircle2, Palette, Check } from "lucide-react";
 import { Link } from "wouter";
-import { useTheme, accentPresets, type ThemeMode } from "@/hooks/use-theme";
+import { useTheme, accentPresets } from "@/hooks/use-theme";
 
 const SPECIALTY_OPTIONS = [
   "General Practice",
@@ -37,40 +37,10 @@ interface ProfileData {
 }
 
 function ThemeSection() {
-  const { mode, setMode, resolvedMode, accentId, setAccentId } = useTheme();
-
-  const modeOptions: { value: ThemeMode; label: string; icon: React.ElementType }[] = [
-    { value: "light", label: "Light", icon: Sun },
-    { value: "dark", label: "Dark", icon: Moon },
-    { value: "system", label: "System", icon: Monitor },
-  ];
+  const { accentId, setAccentId } = useTheme();
 
   return (
     <div className="space-y-6">
-      <div>
-        <label className="text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-3">Mode</label>
-        <div className="grid grid-cols-3 gap-3">
-          {modeOptions.map((opt) => {
-            const isActive = mode === opt.value;
-            return (
-              <button
-                key={opt.value}
-                onClick={() => setMode(opt.value)}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all cursor-pointer active:scale-95 ${
-                  isActive
-                    ? "border-accent bg-accent/10 shadow-sm"
-                    : "border-border/40 bg-secondary/20 hover:bg-secondary/40"
-                }`}
-                data-testid={`button-theme-${opt.value}`}
-              >
-                <opt.icon size={20} className={isActive ? "text-accent" : "text-muted-foreground"} />
-                <span className={`text-sm font-medium ${isActive ? "text-primary" : "text-muted-foreground"}`}>{opt.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       <div>
         <label className="text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-3">Color Palette</label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

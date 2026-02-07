@@ -291,7 +291,7 @@ export default function LandingPage() {
             >
               <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-gradient-to-r from-accent/10 via-accent/5 to-primary/5 border border-accent/25 text-primary text-xs font-bold tracking-[0.2em] uppercase mb-6 social-proof-glow">
                 <Star size={13} className="fill-accent text-accent" />
-                Trusted by 2,000+ Clinicians
+                Built for Licensed Clinicians
               </div>
               <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif font-medium leading-[1.1] text-primary mb-6">
                 Therapy, <br />
