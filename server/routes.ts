@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { type Server } from "http";
 import { storage } from "./storage";
-import { insertTherapySessionSchema, insertParticipantSchema, insertSandtrayItemSchema, insertToolSuggestionSchema, insertSupportTicketSchema } from "@shared/schema";
+import { insertTherapySessionSchema, insertParticipantSchema, insertSandtrayItemSchema, insertToolSuggestionSchema, insertSupportTicketSchema, insertWaitlistEntrySchema, insertMessageSchema } from "@shared/schema";
 import { setupWebSocketServer } from "./websocket";
 import { isAuthenticated } from "./auth";
 import { registerStripeRoutes } from "./stripe";
@@ -9,6 +9,13 @@ import { supabaseAdmin } from "./supabase";
 import { db } from "./db";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
+import { notifyAdminWaitlistSignup, notifyAdminSupportMessage, sendAnnouncementEmail } from "./email";
+
+const ADMIN_EMAIL = "clinicalplayapp@gmail.com";
+
+function isAdmin(req: any): boolean {
+  return req.authUser?.email?.toLowerCase() === ADMIN_EMAIL;
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -178,6 +185,135 @@ export async function registerRoutes(
     } catch (e: any) {
       res.status(400).json({ message: e.message });
     }
+  });
+
+  // --- Waitlist Routes (public) ---
+
+  app.post("/api/waitlist", async (req, res) => {
+    try {
+      const data = insertWaitlistEntrySchema.parse(req.body);
+      data.email = data.email.toLowerCase().trim();
+      const entry = await storage.addWaitlistEntry(data);
+      notifyAdminWaitlistSignup(data.email, data.name);
+      res.json(entry);
+    } catch (e: any) {
+      if (e.code === "23505") {
+        return res.status(409).json({ message: "You're already on the waitlist!" });
+      }
+      res.status(400).json({ message: e.message });
+    }
+  });
+
+  // --- Messages / Inbox Routes ---
+
+  app.get("/api/messages", isAuthenticated, async (req: any, res) => {
+    const userId = req.authUser.id;
+    const msgs = await storage.getMessagesForUser(userId);
+    res.json(msgs);
+  });
+
+  app.get("/api/messages/unread-count", isAuthenticated, async (req: any, res) => {
+    const userId = req.authUser.id;
+    const count = await storage.getUnreadCount(userId);
+    res.json({ count });
+  });
+
+  app.patch("/api/messages/:id/read", isAuthenticated, async (req: any, res) => {
+    await storage.markMessageRead(req.params.id, req.authUser.id);
+    res.json({ ok: true });
+  });
+
+  app.post("/api/messages/support", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authUser.id;
+      const { subject, body } = req.body;
+      if (!subject || !body) return res.status(400).json({ message: "Subject and message are required" });
+      const msg = await storage.createMessage({
+        fromUserId: userId,
+        toUserId: null,
+        subject,
+        body,
+        isAnnouncement: false,
+      });
+      notifyAdminSupportMessage(req.authUser.email, subject, body);
+      res.json(msg);
+    } catch (e: any) {
+      res.status(400).json({ message: e.message });
+    }
+  });
+
+  // --- Admin Routes (protected: admin only) ---
+
+  app.get("/api/admin/users", isAuthenticated, async (req: any, res) => {
+    if (!isAdmin(req)) return res.status(403).json({ message: "Forbidden" });
+    const allUsers = await storage.getAllUsers();
+    res.json(allUsers);
+  });
+
+  app.patch("/api/admin/users/:id", isAuthenticated, async (req: any, res) => {
+    if (!isAdmin(req)) return res.status(403).json({ message: "Forbidden" });
+    try {
+      const user = await storage.updateUser(req.params.id, req.body);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      res.json(user);
+    } catch (e: any) {
+      res.status(400).json({ message: e.message });
+    }
+  });
+
+  app.delete("/api/admin/users/:id", isAuthenticated, async (req: any, res) => {
+    if (!isAdmin(req)) return res.status(403).json({ message: "Forbidden" });
+    try {
+      await storage.deleteUser(req.params.id);
+      res.json({ ok: true });
+    } catch (e: any) {
+      res.status(400).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/admin/waitlist", isAuthenticated, async (req: any, res) => {
+    if (!isAdmin(req)) return res.status(403).json({ message: "Forbidden" });
+    const entries = await storage.getWaitlistEntries();
+    res.json(entries);
+  });
+
+  app.delete("/api/admin/waitlist/:id", isAuthenticated, async (req: any, res) => {
+    if (!isAdmin(req)) return res.status(403).json({ message: "Forbidden" });
+    await storage.removeWaitlistEntry(req.params.id);
+    res.json({ ok: true });
+  });
+
+  app.post("/api/admin/announcements", isAuthenticated, async (req: any, res) => {
+    if (!isAdmin(req)) return res.status(403).json({ message: "Forbidden" });
+    try {
+      const { subject, body, sendEmail } = req.body;
+      if (!subject || !body) return res.status(400).json({ message: "Subject and body required" });
+
+      const msg = await storage.createMessage({
+        fromUserId: req.authUser.id,
+        toUserId: null,
+        subject,
+        body,
+        isAnnouncement: true,
+      });
+
+      if (sendEmail) {
+        const allUsers = await storage.getAllUsers();
+        for (const user of allUsers) {
+          if (user.email) {
+            await sendAnnouncementEmail(user.email, subject, body);
+          }
+        }
+      }
+
+      res.json(msg);
+    } catch (e: any) {
+      res.status(400).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/admin/check", isAuthenticated, async (req: any, res) => {
+    res.json({ isAdmin: isAdmin(req) });
   });
 
   // --- Stripe Billing Routes ---

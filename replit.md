@@ -15,6 +15,9 @@ Key features include:
 - **Presence system** — activity pulse animations on participants when interacting with the canvas
 - **Mobile-first design** with bottom navigation bar on mobile, bottom dock asset library, glassmorphism throughout
 - **Pre-launch mode** — access restricted to allowlist (currently only clinicalplayapp@gmail.com); pricing section replaced with "Coming Soon" card; pre-launch banner at top of site
+- **Waitlist** — email signup on landing page (in pricing section); submits to DB and notifies admin via Resend
+- **Inbox system** — all authenticated users have an inbox (/inbox) for announcements and support messages; unread badge in navbar
+- **Admin panel** — admin-only (/admin) panel for clinicalplayapp@gmail.com; manage users (upgrade/remove), view waitlist, send mass announcements (in-app + optional email via Resend)
 
 ## User Preferences
 
@@ -67,7 +70,7 @@ Preferred communication style: Simple, everyday language.
 - **Migrations**: Generated via `drizzle-kit push` (stored in `migrations/`)
 - **Connection**: node-postgres (`pg`) Pool
 
-### Database Schema (8 tables)
+### Database Schema (10 tables)
 1. **users** — id, email, firstName, lastName, profileImageUrl, isPro, subscriptionType, stripeCustomerId, stripeSubscriptionId, createdAt, updatedAt
 2. **sessions** — Legacy session store (sid, sess, expire) — retained for schema compatibility
 3. **therapy_sessions** — id, name, clinicianId (FK to users), inviteCode (unique), status, isCanvasLocked, isAnonymous, activeTool, createdAt
@@ -76,6 +79,8 @@ Preferred communication style: Simple, everyday language.
 6. **feeling_wheel_selections** — id, sessionId (FK), selectedBy, primaryEmotion, secondaryEmotion, tertiaryEmotion, createdAt
 7. **timeline_events** — id, sessionId (FK), placedBy, label, description, position, color, createdAt
 8. **values_card_placements** — id, sessionId (FK), placedBy, cardId, label, column, orderIndex
+9. **waitlist_entries** — id, email (unique), name, createdAt
+10. **messages** — id, fromUserId (FK), toUserId (FK), subject, body, isAnnouncement, isRead, createdAt
 
 ### Authentication
 - **Supabase Auth** — email/password authentication via `@supabase/supabase-js`

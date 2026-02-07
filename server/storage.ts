@@ -1,8 +1,9 @@
-import { eq } from "drizzle-orm";
+import { eq, desc, or, isNull } from "drizzle-orm";
 import { db } from "./db";
 import {
   therapySessions, participants, sandtrayItems, toolSuggestions,
   feelingWheelSelections, timelineEvents, valuesCardPlacements, supportTickets,
+  waitlistEntries, messages,
   type TherapySession, type InsertTherapySession,
   type Participant, type InsertParticipant,
   type SandtrayItem, type InsertSandtrayItem,
@@ -11,7 +12,10 @@ import {
   type TimelineEvent, type InsertTimelineEvent,
   type ValuesCardPlacement, type InsertValuesCardPlacement,
   type SupportTicket, type InsertSupportTicket,
+  type WaitlistEntry, type InsertWaitlistEntry,
+  type Message, type InsertMessage,
 } from "@shared/schema";
+import { users } from "@shared/models/auth";
 
 function generateInviteCode(): string {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -57,6 +61,19 @@ export interface IStorage {
   clearValuesCardPlacements(sessionId: string): Promise<void>;
 
   addSupportTicket(data: InsertSupportTicket): Promise<SupportTicket>;
+
+  addWaitlistEntry(data: InsertWaitlistEntry): Promise<WaitlistEntry>;
+  getWaitlistEntries(): Promise<WaitlistEntry[]>;
+  removeWaitlistEntry(id: string): Promise<void>;
+
+  getAllUsers(): Promise<any[]>;
+  updateUser(id: string, data: Record<string, any>): Promise<any>;
+  deleteUser(id: string): Promise<void>;
+
+  createMessage(data: InsertMessage): Promise<Message>;
+  getMessagesForUser(userId: string): Promise<Message[]>;
+  markMessageRead(id: string, userId: string): Promise<void>;
+  getUnreadCount(userId: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -206,6 +223,54 @@ export class DatabaseStorage implements IStorage {
   async addSupportTicket(data: InsertSupportTicket): Promise<SupportTicket> {
     const [ticket] = await db.insert(supportTickets).values(data).returning();
     return ticket;
+  }
+
+  async addWaitlistEntry(data: InsertWaitlistEntry): Promise<WaitlistEntry> {
+    const [entry] = await db.insert(waitlistEntries).values(data).returning();
+    return entry;
+  }
+
+  async getWaitlistEntries(): Promise<WaitlistEntry[]> {
+    return db.select().from(waitlistEntries).orderBy(desc(waitlistEntries.createdAt));
+  }
+
+  async removeWaitlistEntry(id: string): Promise<void> {
+    await db.delete(waitlistEntries).where(eq(waitlistEntries.id, id));
+  }
+
+  async getAllUsers(): Promise<any[]> {
+    return db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async updateUser(id: string, data: Record<string, any>): Promise<any> {
+    const [user] = await db.update(users).set({ ...data, updatedAt: new Date() }).where(eq(users.id, id)).returning();
+    return user;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
+  }
+
+  async createMessage(data: InsertMessage): Promise<Message> {
+    const [msg] = await db.insert(messages).values(data).returning();
+    return msg;
+  }
+
+  async getMessagesForUser(userId: string): Promise<Message[]> {
+    return db.select().from(messages)
+      .where(or(eq(messages.toUserId, userId), eq(messages.isAnnouncement, true)))
+      .orderBy(desc(messages.createdAt));
+  }
+
+  async markMessageRead(id: string, userId: string): Promise<void> {
+    await db.update(messages).set({ isRead: true })
+      .where(eq(messages.id, id));
+  }
+
+  async getUnreadCount(userId: string): Promise<number> {
+    const rows = await db.select().from(messages)
+      .where(or(eq(messages.toUserId, userId), eq(messages.isAnnouncement, true)));
+    return rows.filter(m => !m.isRead).length;
   }
 }
 

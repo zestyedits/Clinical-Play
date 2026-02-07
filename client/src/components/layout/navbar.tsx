@@ -1,9 +1,10 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Home, LayoutDashboard, Library, UserCircle, LogOut, Menu, X, Sparkles, Rocket } from "lucide-react";
+import { Home, LayoutDashboard, Library, UserCircle, LogOut, Menu, X, Sparkles, Rocket, Inbox, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth, useAuthFetch } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
 import { LogoMark } from "@/components/shared/logo-mark";
 
 function PreLaunchBanner({ onDismiss, visible }: { onDismiss: () => void; visible: boolean }) {
@@ -87,6 +88,31 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuth();
+  const authFetch = useAuthFetch();
+
+  const { data: unreadData } = useQuery<{ count: number }>({
+    queryKey: ["/api/messages/unread-count"],
+    queryFn: async () => {
+      const res = await authFetch("/api/messages/unread-count");
+      if (!res.ok) return { count: 0 };
+      return res.json();
+    },
+    enabled: isAuthenticated,
+    refetchInterval: 30000,
+  });
+  const unreadCount = unreadData?.count ?? 0;
+
+  const { data: adminCheck } = useQuery<{ isAdmin: boolean }>({
+    queryKey: ["/api/admin/check"],
+    queryFn: async () => {
+      const res = await authFetch("/api/admin/check");
+      if (!res.ok) return { isAdmin: false };
+      return res.json();
+    },
+    enabled: isAuthenticated,
+  });
+  const isAdminUser = adminCheck?.isAdmin === true;
+
   const [bannerVisible, setBannerVisible] = useState(() => {
     try { return sessionStorage.getItem("cp_banner_dismissed") !== "1"; } catch { return true; }
   });
@@ -177,6 +203,35 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
+              {isAdminUser && (
+                <Link
+                  href="/admin"
+                  className={cn(
+                    "text-sm font-medium transition-colors hover:text-accent no-underline flex items-center gap-1.5",
+                    location === "/admin" ? "text-primary font-semibold" : "text-muted-foreground"
+                  )}
+                  data-testid="link-nav-admin"
+                >
+                  <Shield size={16} />
+                  Admin
+                </Link>
+              )}
+              <Link
+                href="/inbox"
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-accent no-underline flex items-center gap-1.5 relative",
+                  location === "/inbox" ? "text-primary font-semibold" : "text-muted-foreground"
+                )}
+                data-testid="link-nav-inbox"
+              >
+                <Inbox size={16} />
+                Inbox
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-2.5 w-4 h-4 rounded-full bg-accent text-[10px] font-bold text-white flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Link>
               <button
                 onClick={() => logout()}
                 className="text-sm font-medium text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95"
@@ -279,6 +334,35 @@ export function Navbar() {
                         {item.label}
                       </Link>
                     ))}
+                    {isAdminUser && (
+                      <Link
+                        href="/admin"
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors no-underline active:scale-[0.98]",
+                          location === "/admin" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary/50"
+                        )}
+                        data-testid="link-mobile-admin"
+                      >
+                        <Shield size={18} />
+                        Admin
+                      </Link>
+                    )}
+                    <Link
+                      href="/inbox"
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors no-underline active:scale-[0.98] relative",
+                        location === "/inbox" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary/50"
+                      )}
+                      data-testid="link-mobile-inbox"
+                    >
+                      <Inbox size={18} />
+                      Inbox
+                      {unreadCount > 0 && (
+                        <span className="ml-auto w-5 h-5 rounded-full bg-accent text-[10px] font-bold text-white flex items-center justify-center">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </Link>
                     <button
                       onClick={() => logout()}
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors cursor-pointer active:scale-[0.98]"

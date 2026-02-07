@@ -3,12 +3,12 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { LegalDisclaimer } from "@/components/shared/legal-disclaimer";
 import { LogoMark } from "@/components/shared/logo-mark";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Lock, CheckCircle2, Star, Shield, FileText, Crown, Zap, Flame, Heart, Cookie, Sparkles } from "lucide-react";
+import { ArrowRight, Lock, CheckCircle2, Star, Shield, FileText, Crown, Zap, Flame, Heart, Cookie, Sparkles, Mail, ArrowUp } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { useEffect, useState } from "react";
-import { ArrowUp } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 function ZenCircleIcon() {
   return (
@@ -126,8 +126,33 @@ function PuppetTheaterIcon() {
 export default function LandingPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const [, navigate] = useLocation();
+  const { toast } = useToast();
 
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
+
+  const waitlistMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (res.status === 409) {
+        throw new Error("You're already on the waitlist!");
+      }
+      if (!res.ok) throw new Error("Failed to join waitlist");
+      return res.json();
+    },
+    onSuccess: () => {
+      setWaitlistSubmitted(true);
+      setWaitlistEmail("");
+    },
+    onError: (err: Error) => {
+      toast({ title: err.message, variant: "destructive" });
+    },
+  });
 
   const { data: foundingSlots } = useQuery<{ total: number; remaining: number }>({
     queryKey: ["/api/billing/founding-slots"],
@@ -467,9 +492,51 @@ export default function LandingPage() {
                   </span>
                 ))}
               </div>
-              <p className="text-sm text-muted-foreground/80">
-                Sign up to be notified when we launch.
-              </p>
+              <div className="mt-8 max-w-sm mx-auto" id="waitlist">
+                {waitlistSubmitted ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex items-center gap-2 justify-center text-emerald-600 bg-emerald-50 px-4 py-3 rounded-full text-sm font-medium"
+                  >
+                    <CheckCircle2 size={16} />
+                    You're on the list! We'll be in touch.
+                  </motion.div>
+                ) : (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (waitlistEmail.trim()) waitlistMutation.mutate(waitlistEmail.trim());
+                    }}
+                    className="flex gap-2"
+                    data-testid="form-waitlist"
+                  >
+                    <div className="relative flex-1">
+                      <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
+                      <input
+                        type="email"
+                        required
+                        placeholder="your@email.com"
+                        value={waitlistEmail}
+                        onChange={(e) => setWaitlistEmail(e.target.value)}
+                        className="w-full h-11 pl-10 pr-4 rounded-full border border-white/40 bg-white/60 backdrop-blur-sm text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 transition-all"
+                        data-testid="input-waitlist-email"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={waitlistMutation.isPending}
+                      className="h-11 px-5 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:scale-105 transition-transform active:scale-95 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+                      data-testid="button-waitlist-submit"
+                    >
+                      {waitlistMutation.isPending ? "Joining..." : "Join Waitlist"}
+                    </button>
+                  </form>
+                )}
+                <p className="text-xs text-muted-foreground/60 mt-2 text-center">
+                  No spam. Just launch updates.
+                </p>
+              </div>
             </GlassCard>
           </motion.div>
         </div>
