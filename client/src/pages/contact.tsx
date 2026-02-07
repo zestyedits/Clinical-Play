@@ -44,7 +44,7 @@ export default function Contact() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-24 md:pb-10 pt-24 md:pt-32 px-4 md:px-8">
+      <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-24 md:pb-10 pt-28 md:pt-36 px-4 md:px-8">
         <Navbar />
         <div className="max-w-lg mx-auto text-center">
           <motion.div
@@ -75,7 +75,7 @@ export default function Contact() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-24 md:pb-10 pt-24 md:pt-32 px-4 md:px-8">
+    <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-24 md:pb-10 pt-28 md:pt-36 px-4 md:px-8">
       <Navbar />
 
       <div className="max-w-lg mx-auto">
@@ -104,7 +104,7 @@ export default function Contact() {
           <GlassCard className="p-6 md:p-8" hoverEffect={false}>
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-primary mb-1.5">
+                <label htmlFor="name" className="block text-xs font-semibold text-foreground/70 uppercase tracking-[0.15em] mb-2">
                   Name
                 </label>
                 <input
@@ -118,7 +118,7 @@ export default function Contact() {
                 />
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-primary mb-1.5">
+                <label htmlFor="email" className="block text-xs font-semibold text-foreground/70 uppercase tracking-[0.15em] mb-2">
                   Email
                 </label>
                 <input
@@ -132,7 +132,7 @@ export default function Contact() {
                 />
               </div>
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-primary mb-1.5">
+                <label htmlFor="message" className="block text-xs font-semibold text-foreground/70 uppercase tracking-[0.15em] mb-2">
                   Message
                 </label>
                 <textarea
@@ -148,7 +148,7 @@ export default function Contact() {
               <button
                 type="submit"
                 disabled={submitTicket.isPending}
-                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-[0.98]"
+                className="w-full py-3 rounded-2xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 btn-luxury flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 data-testid="button-contact-submit"
               >
                 <Send size={16} />

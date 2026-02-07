@@ -190,10 +190,10 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FDFBF7] via-[#F8F6F1] to-secondary/20 pb-20 md:pb-0">
+    <div className="min-h-screen bg-gradient-to-b from-[#FDFBF7] via-[#F8F6F1] to-secondary/20 pb-0">
       <Navbar />
 
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6 overflow-hidden">
+      <section className="relative pt-36 pb-24 md:pt-52 md:pb-36 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="relative z-10">
             <motion.div
@@ -205,7 +205,7 @@ export default function LandingPage() {
                 <Star size={13} className="fill-accent text-accent" />
                 Trusted by 2,000+ Clinicians
               </div>
-              <h1 className="text-5xl md:text-7xl font-serif font-medium leading-[1.1] text-primary mb-6">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif font-medium leading-[1.1] text-primary mb-6">
                 Therapy, <br />
                 <span className="italic text-accent">Reimagined.</span>
               </h1>
@@ -215,7 +215,7 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/signup">
-                  <button className="h-14 px-8 rounded-full bg-primary text-primary-foreground font-medium text-lg shadow-xl shadow-primary/20 hover:scale-105 transition-transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto" data-testid="button-get-started">
+                  <button className="h-14 px-8 rounded-full bg-primary text-primary-foreground font-medium text-lg shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 btn-luxury flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto" data-testid="button-get-started">
                     Get Started <ArrowRight size={18} />
                   </button>
                 </Link>
@@ -265,7 +265,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-20 md:py-28 px-6 relative overflow-hidden" id="features">
+      <section className="py-24 md:py-32 px-6 relative overflow-hidden" id="features">
         <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
           <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-emerald-200/20 blur-3xl" style={{ animation: "parallax-float 12s ease-in-out infinite" }} />
           <div className="absolute top-1/3 -right-16 w-64 h-64 rounded-full bg-purple-200/15 blur-3xl" style={{ animation: "parallax-float-slow 10s ease-in-out infinite" }} />
@@ -378,7 +378,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-20 md:py-28 px-6 bg-gradient-to-b from-white/30 via-white/20 to-transparent relative overflow-hidden">
+      <section className="py-24 md:py-32 px-6 bg-gradient-to-b from-white/30 via-white/20 to-transparent relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
           <div className="absolute -bottom-10 -right-20 w-60 h-60 rounded-full bg-orange-100/25 blur-3xl" style={{ animation: "parallax-float 16s ease-in-out infinite" }} />
           <div className="absolute top-20 -left-10 w-40 h-40 rounded-full bg-blue-100/20 blur-3xl" style={{ animation: "parallax-float-slow 11s ease-in-out infinite 3s" }} />
@@ -468,7 +468,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-20 px-6" id="pricing">
+      <section className="py-24 md:py-32 px-6" id="pricing">
         <div className="max-w-2xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -542,7 +542,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-16 px-6" id="founding">
+      <section className="py-20 md:py-28 px-6" id="founding">
         <div className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -609,7 +609,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-16 px-6">
+      <section className="py-20 md:py-28 px-6">
         <div className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -633,66 +633,66 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-white/30 bg-white/20 backdrop-blur-sm py-12 px-6">
+      <footer className="border-t border-white/30 bg-white/20 backdrop-blur-sm py-16 md:py-20 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
+          <div className="grid md:grid-cols-3 gap-10 md:gap-12 mb-10">
             <div>
-              <div className="mb-4">
+              <div className="mb-5">
                 <LogoMark size="md" />
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
                 A premium telehealth platform for evidence-based therapeutic engagement.
               </p>
             </div>
 
             <div>
-              <h4 className="font-serif text-primary font-medium mb-4">Legal</h4>
-              <div className="space-y-3">
-                <Link href="/privacy" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-privacy">
-                  <Shield size={14} />
+              <h4 className="text-xs font-semibold tracking-[0.15em] uppercase text-muted-foreground mb-5">Legal</h4>
+              <div className="space-y-3.5">
+                <Link href="/privacy" className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-privacy">
+                  <Shield size={14} className="shrink-0" />
                   Privacy Policy
                 </Link>
-                <Link href="/terms" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-terms">
-                  <FileText size={14} />
+                <Link href="/terms" className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-terms">
+                  <FileText size={14} className="shrink-0" />
                   Terms of Service
                 </Link>
-                <Link href="/cookies" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-cookies">
-                  <Cookie size={14} />
+                <Link href="/cookies" className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-cookies">
+                  <Cookie size={14} className="shrink-0" />
                   Cookie Policy
                 </Link>
               </div>
             </div>
 
             <div>
-              <h4 className="font-serif text-primary font-medium mb-4">Platform</h4>
-              <div className="space-y-3">
-                <Link href="/login" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-signin">
+              <h4 className="text-xs font-semibold tracking-[0.15em] uppercase text-muted-foreground mb-5">Platform</h4>
+              <div className="space-y-3.5">
+                <Link href="/login" className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-primary transition-colors no-underline" data-testid="link-footer-signin">
                   Clinician Sign In
                 </Link>
-                <p className="text-sm text-muted-foreground">
+                <p className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                  <Lock size={14} className="shrink-0 text-muted-foreground/50" />
                   No PHI Collected
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                  <Shield size={14} className="shrink-0 text-muted-foreground/50" />
                   256-bit TLS Encryption
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-white/30 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-muted-foreground">
+          <div className="border-t border-white/30 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-muted-foreground/70">
               &copy; {new Date().getFullYear()} ClinicalPlay. All rights reserved.
             </p>
-            <div className="flex items-center gap-4">
-              <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors no-underline">
+            <div className="flex items-center gap-5">
+              <Link href="/privacy" className="text-xs text-muted-foreground/70 hover:text-primary transition-colors no-underline">
                 Privacy
               </Link>
-              <span className="text-muted-foreground/30">|</span>
-              <Link href="/terms" className="text-xs text-muted-foreground hover:text-primary transition-colors no-underline">
+              <Link href="/terms" className="text-xs text-muted-foreground/70 hover:text-primary transition-colors no-underline">
                 Terms
               </Link>
-              <span className="text-muted-foreground/30">|</span>
-              <Link href="/cookies" className="text-xs text-muted-foreground hover:text-primary transition-colors no-underline">
+              <Link href="/cookies" className="text-xs text-muted-foreground/70 hover:text-primary transition-colors no-underline">
                 Cookies
               </Link>
             </div>
@@ -709,7 +709,7 @@ export default function LandingPage() {
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.2 }}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 w-12 h-12 rounded-full bg-primary/90 text-primary-foreground shadow-lg shadow-primary/30 backdrop-blur-sm flex items-center justify-center hover:bg-primary transition-colors cursor-pointer active:scale-90"
+            className="fixed bottom-20 right-5 md:bottom-8 md:right-8 z-40 w-11 h-11 md:w-12 md:h-12 rounded-full bg-primary/90 text-primary-foreground shadow-lg shadow-primary/30 backdrop-blur-sm flex items-center justify-center hover:bg-primary transition-colors cursor-pointer active:scale-90"
             data-testid="button-back-to-top"
           >
             <ArrowUp size={20} />

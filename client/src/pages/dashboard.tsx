@@ -77,7 +77,7 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed inset-x-4 top-[15%] md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[460px] z-50 bg-white/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/40 overflow-hidden"
+            className="fixed inset-x-4 top-[10%] bottom-auto max-h-[85vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[460px] md:max-h-[90vh] z-50 bg-white/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/40"
           >
             <div className="p-6 pb-4">
               <div className="flex items-center justify-between mb-6">
@@ -89,7 +89,7 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
 
               <div className="space-y-5">
                 <div>
-                  <label className="text-xs font-medium text-primary/70 uppercase tracking-wider block mb-2">Session Name</label>
+                  <label className="text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-2">Session Name</label>
                   <input
                     type="text"
                     value={name}
@@ -102,7 +102,7 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-primary/70 uppercase tracking-wider block mb-2">Session Type</label>
+                  <label className="text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-2">Session Type</label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => setMode("solo")}
@@ -171,7 +171,7 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 30 }}
             transition={{ type: "spring", stiffness: 280, damping: 24 }}
-            className="fixed inset-x-4 top-[10%] md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[500px] z-50 bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/40 overflow-hidden"
+            className="fixed inset-x-4 top-[8%] bottom-auto max-h-[88vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[500px] md:max-h-[90vh] z-50 bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/40"
           >
             <div className="relative">
               <div className="flex justify-center gap-2 pt-6 pb-2">
@@ -566,17 +566,17 @@ export default function Dashboard() {
                   <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">active</span>
                 </div>
               </div>
-              <div className="flex gap-2 w-full md:w-auto">
+              <div className="flex gap-2 w-full md:w-auto flex-col sm:flex-row">
                 <button
                   onClick={() => copyInvite(sess.inviteCode)}
-                  className="min-h-[44px] px-4 py-3 bg-white/80 backdrop-blur-sm border border-white/40 text-foreground rounded-2xl text-sm font-medium hover:bg-white transition-colors flex items-center gap-2 cursor-pointer font-mono tracking-wider"
+                  className="min-h-[48px] px-4 py-3 bg-white/80 backdrop-blur-sm border border-white/40 text-foreground rounded-2xl text-sm font-medium hover:bg-white transition-colors flex items-center justify-center gap-2 cursor-pointer font-mono tracking-wider"
                   data-testid={`button-copy-invite-${sess.id}`}
                 >
                   {copied === sess.inviteCode ? <CheckCircle2 size={16} className="text-green-600" /> : <Copy size={16} />}
                   {copied === sess.inviteCode ? "Copied!" : sess.inviteCode}
                 </button>
-                <Link href={`/playroom/${sess.id}`} className="flex-1 md:flex-initial no-underline">
-                  <button className="w-full min-h-[44px] px-5 py-3 bg-accent text-white rounded-2xl text-sm font-medium shadow-md shadow-accent/20 hover:brightness-110 transition-all flex items-center justify-center gap-2 cursor-pointer" data-testid={`button-join-${sess.id}`}>
+                <Link href={`/playroom/${sess.id}`} className="flex-1 no-underline">
+                  <button className="w-full min-h-[48px] px-5 py-3 bg-accent text-white rounded-2xl text-sm font-medium shadow-md shadow-accent/20 hover:brightness-110 transition-all flex items-center justify-center gap-2 cursor-pointer" data-testid={`button-join-${sess.id}`}>
                     Enter <ArrowRight size={16} />
                   </button>
                 </Link>
@@ -862,11 +862,11 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 gap-3">
           <div className="text-center p-3 rounded-2xl bg-secondary/30">
             <p className="text-2xl font-serif text-primary" data-testid="text-session-count">{sessions.length}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Sessions</p>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Total Sessions</p>
           </div>
           <div className="text-center p-3 rounded-2xl bg-secondary/30">
             <p className="text-2xl font-serif text-primary" data-testid="text-active-count">{activeSessions.length}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Active</p>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Active</p>
           </div>
         </div>
       </GlassCard>
@@ -874,7 +874,7 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 pb-24 md:pb-10 pt-24 md:pt-32 px-4 md:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 pb-28 md:pb-10 pt-24 md:pt-32 px-4 md:px-8">
       <Navbar />
 
       {isAuthenticated && !emailConfirmed && (
@@ -933,9 +933,9 @@ export default function Dashboard() {
           <motion.button
             onClick={() => setShowNewSession(true)}
             disabled={createSession.isPending}
-            className="bg-primary text-primary-foreground px-7 py-3.5 rounded-2xl flex items-center gap-2.5 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all cursor-pointer w-full md:w-auto justify-center disabled:opacity-50"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
+            className="bg-primary text-primary-foreground px-7 py-3.5 rounded-2xl flex items-center gap-2.5 shadow-lg shadow-primary/20 btn-luxury cursor-pointer w-full md:w-auto justify-center disabled:opacity-50"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
             data-testid="button-new-session"
           >
             <Plus size={20} /> Start New Session

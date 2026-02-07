@@ -77,7 +77,7 @@ export default function InboxPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background via-background to-sage/5">
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
         <Navbar />
         <div className="flex items-center justify-center pt-32">
           <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -88,7 +88,7 @@ export default function InboxPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background via-background to-sage/5">
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
         <Navbar />
         <div className="max-w-md mx-auto pt-32 px-6 text-center">
           <GlassCard className="p-8">
@@ -106,9 +106,9 @@ export default function InboxPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-sage/5">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 pb-24 md:pb-10">
       <Navbar />
-      <div className="max-w-3xl mx-auto pt-24 pb-16 px-6">
+      <div className="max-w-3xl mx-auto pt-28 md:pt-36 pb-16 px-4 md:px-6">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-serif text-primary" data-testid="text-inbox-title">Inbox</h1>

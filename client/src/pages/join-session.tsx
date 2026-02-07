@@ -31,7 +31,7 @@ export default function JoinSession() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 flex items-center justify-center px-6">
+    <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 flex items-center justify-center px-6 pt-24 pb-12">
       <Navbar />
       <motion.div
         className="max-w-md w-full bg-white/60 backdrop-blur-md border border-white/40 rounded-3xl shadow-lg p-10 text-center"
@@ -56,7 +56,7 @@ export default function JoinSession() {
             <p className="text-muted-foreground mb-6">You've been invited to a therapy session</p>
             <button
               onClick={joinRoom}
-              className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg hover:shadow-xl hover:bg-primary/90 transition-all cursor-pointer"
+              className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-medium text-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 btn-luxury cursor-pointer flex items-center justify-center gap-2"
               data-testid="button-join-session"
             >
               Enter Session Room

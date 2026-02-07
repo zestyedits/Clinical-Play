@@ -8,7 +8,7 @@ export default function NotFound() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 flex items-center justify-center px-4 pt-24 pb-12">
       <Navbar />
 
       <motion.div
@@ -38,7 +38,7 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href={isAuthenticated ? "/dashboard" : "/"}
-            className="bg-primary text-primary-foreground px-8 py-3 rounded-full text-sm font-medium shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity no-underline active:scale-95"
+            className="bg-primary text-primary-foreground px-8 py-3 rounded-full text-sm font-medium shadow-lg shadow-primary/20 btn-luxury no-underline"
             data-testid="link-404-home"
           >
             {isAuthenticated ? "Back to Dashboard" : "Back to Home"}

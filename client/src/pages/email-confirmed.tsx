@@ -7,7 +7,7 @@ export default function EmailConfirmed() {
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-secondary/20">
       <Navbar />
-      <div className="flex items-center justify-center min-h-screen px-4 pt-20">
+      <div className="flex items-center justify-center min-h-screen px-4 pt-24 pb-12">
         <motion.div
           className="w-full max-w-md"
           initial={{ opacity: 0, y: 20 }}
@@ -24,7 +24,7 @@ export default function EmailConfirmed() {
             </p>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-2xl font-medium shadow-lg shadow-primary/20 hover:brightness-110 transition-all no-underline"
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-2xl font-medium shadow-lg shadow-primary/20 btn-luxury no-underline"
               data-testid="link-go-to-dashboard"
             >
               Go to Dashboard <ArrowRight size={16} />

@@ -161,13 +161,13 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-sage/5">
       <Navbar />
-      <div className="max-w-4xl mx-auto pt-24 pb-16 px-6">
+      <div className="max-w-4xl mx-auto pt-28 md:pt-36 pb-16 px-6">
         <div className="mb-8">
           <h1 className="text-2xl md:text-3xl font-serif text-primary" data-testid="text-admin-title">Admin</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage users, waitlist, and announcements</p>
         </div>
 
-        <div className="flex gap-1 mb-6 bg-white/30 backdrop-blur-sm rounded-full p-1 border border-white/40 w-fit">
+        <div className="flex gap-1 mb-8 bg-white/30 backdrop-blur-sm rounded-full p-1 border border-white/40 w-fit overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}

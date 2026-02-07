@@ -49,8 +49,8 @@ function MobileBottomNav({ items }: { items: { label: string; icon: React.Elemen
   }, []);
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-border/50 pb-safe">
-      <div className="flex justify-around items-center h-16 px-2">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-border/40 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]" aria-label="Mobile navigation" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+      <div className="flex justify-around items-center h-[68px] px-2" role="tablist">
         {items.map((item) => {
           const isActive = activeTab === item.tab;
           return (
@@ -79,7 +79,7 @@ function MobileBottomNav({ items }: { items: { label: string; icon: React.Elemen
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }
 
@@ -168,6 +168,7 @@ export function Navbar() {
         <PreLaunchBanner onDismiss={dismissBanner} visible={bannerVisible} />
       </div>
       <motion.nav
+        aria-label="Main navigation"
         style={{ top: bannerHeight }}
         className={cn(
           "fixed left-0 right-0 z-50 hidden md:flex items-center justify-between px-8 py-4 transition-all duration-300",
@@ -192,9 +193,9 @@ export function Navbar() {
                   href={item.path}
                   onClick={(e) => handleAnchorClick(item.path, e)}
                   className={cn(
-                    "text-sm font-medium transition-colors hover:text-accent no-underline flex items-center gap-1.5",
+                    "text-sm font-medium transition-colors hover:text-accent no-underline flex items-center gap-1.5 nav-link-premium",
                     location === item.path.split("#")[0] && !item.path.includes("#")
-                      ? "text-primary font-semibold"
+                      ? "text-primary font-semibold active"
                       : "text-muted-foreground"
                   )}
                   data-testid={`link-nav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
@@ -207,8 +208,8 @@ export function Navbar() {
                 <Link
                   href="/admin"
                   className={cn(
-                    "text-sm font-medium transition-colors hover:text-accent no-underline flex items-center gap-1.5",
-                    location === "/admin" ? "text-primary font-semibold" : "text-muted-foreground"
+                    "text-sm font-medium transition-colors hover:text-accent no-underline flex items-center gap-1.5 nav-link-premium",
+                    location === "/admin" ? "text-primary font-semibold active" : "text-muted-foreground"
                   )}
                   data-testid="link-nav-admin"
                 >
@@ -219,8 +220,8 @@ export function Navbar() {
               <Link
                 href="/inbox"
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-accent no-underline flex items-center gap-1.5 relative",
-                  location === "/inbox" ? "text-primary font-semibold" : "text-muted-foreground"
+                  "text-sm font-medium transition-colors hover:text-accent no-underline flex items-center gap-1.5 relative nav-link-premium",
+                  location === "/inbox" ? "text-primary font-semibold active" : "text-muted-foreground"
                 )}
                 data-testid="link-nav-inbox"
               >
@@ -249,8 +250,8 @@ export function Navbar() {
                   href={item.path}
                   onClick={(e) => handleAnchorClick(item.path, e)}
                   className={cn(
-                    "text-sm font-medium transition-colors hover:text-accent no-underline",
-                    location === item.path ? "text-primary font-semibold" : "text-muted-foreground"
+                    "text-sm font-medium transition-colors hover:text-accent no-underline nav-link-premium",
+                    location === item.path ? "text-primary font-semibold active" : "text-muted-foreground"
                   )}
                   data-testid={`link-nav-${item.label.toLowerCase()}`}
                 >

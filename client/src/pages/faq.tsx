@@ -143,7 +143,7 @@ export default function FAQ() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-24 md:pb-10 pt-24 md:pt-32 px-4 md:px-8">
+    <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-24 md:pb-10 pt-28 md:pt-36 px-4 md:px-8">
       <Navbar />
 
       <div className="max-w-3xl mx-auto">
@@ -201,7 +201,7 @@ export default function FAQ() {
           <p className="text-muted-foreground mb-4">Still have questions?</p>
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 no-underline active:scale-95"
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full text-sm font-medium shadow-lg shadow-primary/20 btn-luxury no-underline"
             data-testid="link-faq-contact"
           >
             Get in Touch

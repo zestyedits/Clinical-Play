@@ -36,7 +36,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-secondary/20">
       <Navbar />
-      <div className="flex items-center justify-center min-h-screen px-4 pt-20">
+      <div className="flex items-center justify-center min-h-screen px-4 pt-24 pb-12">
         <motion.div
           className="w-full max-w-md"
           initial={{ opacity: 0, y: 20 }}
@@ -45,14 +45,14 @@ export default function Login() {
         >
           <div className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl shadow-primary/5 p-8 md:p-10">
             <div className="text-center mb-8">
-              <img src="/images/logo-icon.png" alt="ClinicalPlay" className="w-18 h-18 mx-auto mb-4 object-contain" />
+              <img src="/images/logo-icon.png" alt="ClinicalPlay" className="w-18 h-18 mx-auto mb-5 object-contain" />
               <h1 className="text-3xl font-serif text-primary mb-2" data-testid="text-login-title">Welcome Back</h1>
-              <p className="text-muted-foreground">Sign in to your ClinicalPlay account</p>
+              <p className="text-muted-foreground text-sm">Sign in to your ClinicalPlay account</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+                <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-[0.15em] mb-2">Email</label>
                 <div className="relative">
                   <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <input
@@ -68,7 +68,7 @@ export default function Login() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Password</label>
+                <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-[0.15em] mb-2">Password</label>
                 <div className="relative">
                   <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <input
@@ -105,7 +105,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 btn-luxury cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 data-testid="button-login"
               >
                 {loading ? (

@@ -413,11 +413,17 @@ export default function Playroom() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 md:gap-2">
           {session?.inviteCode && (
-            <div className="hidden lg:flex items-center gap-2 bg-accent/10 text-accent px-3 py-1.5 rounded-full text-xs font-mono font-bold border border-accent/20">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/join/${session.inviteCode}`);
+              }}
+              className="flex items-center gap-2 bg-accent/10 text-accent px-3 py-1.5 rounded-full text-xs font-mono font-bold border border-accent/20 cursor-pointer hover:bg-accent/15 transition-colors active:scale-95"
+              title="Copy invite link"
+            >
               {session.inviteCode}
-            </div>
+            </button>
           )}
 
           {isClinician && (
@@ -435,7 +441,7 @@ export default function Playroom() {
 
               <button
                 onClick={handleSnapshot}
-                className="p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary/50 transition-colors cursor-pointer"
+                className="p-2.5 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary/50 transition-colors cursor-pointer active:scale-95"
                 data-testid="button-snapshot"
                 title="Export Session Summary"
               >
@@ -444,7 +450,7 @@ export default function Playroom() {
 
               <button
                 onClick={() => setToolSelectorOpen(true)}
-                className="p-2 rounded-xl text-primary hover:bg-secondary/50 transition-colors cursor-pointer"
+                className="p-2.5 rounded-xl text-primary hover:bg-secondary/50 transition-colors cursor-pointer active:scale-95"
                 data-testid="button-open-tool-selector"
                 title="Clinical Tools"
               >
