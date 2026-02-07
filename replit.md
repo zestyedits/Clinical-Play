@@ -1,164 +1,72 @@
 # ClinicalPlay.app
 
 ## Overview
-
-ClinicalPlay is a premium telehealth SaaS platform for interactive therapy games. It provides clinicians with a real-time, collaborative "Playroom" environment where they can conduct therapeutic sessions with clients using tools like a Digital Sandtray. The platform emphasizes a luxury, glassmorphic UI aesthetic with mobile-first responsive design. Clients join sessions anonymously via 6-character invite codes, while clinicians manage sessions from a dashboard.
-
-Key features include:
-- **Real-time collaboration** via WebSockets for synchronized canvas/game state
-- **Digital Sandtray** — a physics-based shared canvas with drag momentum/friction, lift shadow effects, soft collision nudging between items, and sand dust particle effects on placement
-- **Calm Breathing Guide** — a synchronized breathing bubble (SVG with Soft Sage → Deep Navy gradient, 4-phase: inhale 4s, hold 4s, exhale 6s, rest 2s) that clinicians control and syncs to all participants
-- **Tool Selector** — modal for switching between clinical tools (Sandtray, Breathing active; CBT, Feeling Wheel coming soon)
-- **Clinical Insights** — private clinician-only panel with context-aware therapeutic prompts; dynamically responds to session state (e.g., emotion-specific prompts when Feeling Wheel selections are made, item-count awareness for Sandtray, event-count notes for Timeline)
-- **Session management** — clinicians create sessions, generate invite codes, and moderate (lock canvas, toggle anonymity, clear items)
-- **Moderator controls** — clinician-only tools for managing the session experience
-- **Presence system** — activity pulse animations on participants when interacting with the canvas; WebSocket heartbeat/ping-pong monitors connection health, auto-detects and displays "Disconnected" status after 15s timeout
-- **Mobile-first design** with bottom navigation bar on mobile, bottom dock asset library, glassmorphism throughout
-- **Pre-launch mode** — access restricted to allowlist (currently only clinicalplayapp@gmail.com); pricing section replaced with "Coming Soon" card; pre-launch banner at top of site
-- **Waitlist** — email signup on landing page (in pricing section); submits to DB and notifies admin via Resend
-- **Inbox system** — all authenticated users have an inbox (/inbox) for announcements and support messages; unread badge in navbar
-- **Admin panel** — admin-only (/admin) panel for clinicalplayapp@gmail.com; manage users (upgrade/remove), view waitlist, send mass announcements (in-app + optional email via Resend)
-- **Session lifecycle** — clinicians can end sessions via End Session button with confirmation dialog; all participants receive "session-ended" WebSocket message; rich Session Summary screen shows session name, date, tools used, peak participants, snapshot export CTA, and EHR reminder; ended sessions can't be rejoined; `endedAt` timestamp tracked in DB
-- **PHI safety** — New Session Dialog includes regex-based name detection (warns on potential client names like "John Smith") and persistent HIPAA reminder text
-- **Snapshot watermarking** — exported session PNGs include metadata footer bar with "ClinicalPlay.app | Session: [name] | Date | Tool: [name]" for easy identification
-- **Demo mode** — clinicians can "Try a Demo" from Dashboard to explore all tools in a local-only sandbox session (no DB writes, no WebSocket) with demo banner
-- **Payment failure handling** — Stripe `invoice.payment_failed` webhook updates payment status; Dashboard shows red warning banner with "Update Payment" CTA when subscription is past_due; Stripe status cached for 5 minutes to avoid API overhead
-- **Guided tours** — interactive spotlight-based guided tours for new users on Dashboard (4 steps: new session, sessions area, tool library, account) and Playroom (5 steps: invite code, tool selector, asset library, snapshot, end session); uses SVG mask overlay with positioned tooltips, step progress dots, skip/back/next controls; completion tracked via localStorage; clinician-only for playroom tour
-- **Sandtray transform handles** — click-to-select items shows Champagne Gold bounding box with 4 corner resize handles (0.4-3.0 scale), top rotation handle (atan2-based), and delete button; real-time sync via `item-transformed` WebSocket message
-- **Profile page** — /profile page with professional title (credential), clinical specialty selector, and default session settings (anonymous mode toggle); linked from navbar and dashboard account sidebar
-- **Dashboard jewel-tone palette** — 60-30-10 color rule: Deep Emerald (#2E8B57) action buttons with gold borders, Sapphire Blue (#0F52BA) PRO badges, masonry-style tool library grid, animated pill slider on mobile bottom nav
+ClinicalPlay is a premium telehealth SaaS platform designed for interactive therapy games, targeting clinicians to facilitate therapeutic sessions. Its core offering is a real-time, collaborative "Playroom" environment featuring a Digital Sandtray. The platform prioritizes a luxury, glassmorphic UI with a mobile-first responsive design. Clients join anonymously via invite codes, while clinicians manage sessions and access private clinical insights. The project aims to provide innovative tools for mental health professionals, enhancing client engagement and therapeutic outcomes through digital interaction.
 
 ## User Preferences
-
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture
-- **Framework**: React 18 with TypeScript (not Next.js despite early design docs — uses Vite)
-- **Routing**: Wouter (lightweight client-side router)
-- **State/Data Fetching**: TanStack React Query for server state, local React state for UI
-- **Styling**: Tailwind CSS v4 (using `@tailwindcss/vite` plugin), with CSS variables for theming
-- **UI Components**: shadcn/ui (new-york style) with Radix UI primitives — extensive component library in `client/src/components/ui/`
-- **Custom Components**: GlassCard (glassmorphic cards), ZenCanvas (sandtray), AssetLibrary (drag-and-drop assets), ModeratorBar (clinician controls), BreathingGuide (SVG breathing bubble), ToolSelector (clinical tool modal), ClinicalInsights (private clinician prompts), GuidedTour (spotlight-based onboarding tours)
-- **Animations**: Framer Motion for page transitions and UI interactions
-- **Typography**: Lora (serif headings), Inter (sans-serif body), Playfair Display (display text) — loaded via Google Fonts
-- **Color Palette**: Deep Navy primary, Champagne Gold accent, Soft Sage background — defined as CSS custom properties
+### Frontend
+- **Framework**: React 18 with TypeScript (Vite)
+- **Routing**: Wouter
+- **State/Data Management**: TanStack React Query for server state, local React state for UI
+- **Styling**: Tailwind CSS v4, utilizing CSS variables for dynamic theming, glassmorphism design system
+- **UI Components**: shadcn/ui (New York style) built on Radix UI primitives, supplemented with custom components like GlassCard, ZenCanvas (Digital Sandtray), AssetLibrary, ModeratorBar, BreathingGuide, ToolSelector, ClinicalInsights, and GuidedTour.
+- **Animations**: Framer Motion for interactive UI and transitions.
+- **Typography**: Lora (serif headings), Inter (sans-serif body), Playfair Display (display text).
+- **Theming**: User-configurable light/dark/system modes and 6 accent color presets (Classic Navy & Gold, Emerald & Gold, Sapphire & Silver, Rose & Champagne, Amethyst & Copper, Ocean Teal & Sand), persisted via localStorage. ThemeProvider context wraps entire app. Toggle in navbar + full settings in Profile page.
 
-### Backend Architecture
+### Backend
 - **Runtime**: Node.js with Express 5
-- **Language**: TypeScript, transpiled with tsx (dev) and esbuild (production)
-- **API Pattern**: RESTful JSON API under `/api/` prefix
-- **Real-time**: WebSocket server (ws library) on `/ws` path, with room-based broadcasting for session collaboration
-- **Build**: Vite for client bundle, esbuild for server bundle; production output in `dist/`
+- **Language**: TypeScript
+- **API Pattern**: RESTful JSON API.
+- **Real-time Communication**: WebSocket server (`ws` library) for synchronized session states and participant interactions.
+- **Build**: Vite for client, esbuild for server.
 
-### Key API Routes
-- `POST /api/therapy-sessions` — create a new session
-- `GET /api/therapy-sessions/:id` — get session by ID
-- `GET /api/therapy-sessions/invite/:code` — lookup session by invite code
-- `PATCH /api/therapy-sessions/:id` — update session settings
-- `GET /api/therapy-sessions/mine` — list clinician's sessions
-- `POST /api/billing/create-checkout` — create Stripe checkout (plan: monthly/annual/founding)
-- `GET /api/billing/status` — get user's billing status (isPro, subscriptionType)
-- `GET /api/billing/founding-slots` — get founding member slot counts
-- `POST /api/billing/webhook` — Stripe webhook for checkout.session.completed
-- `POST /api/billing/portal` — create Stripe billing portal session
-- Participant and sandtray item CRUD routes also exist
-
-### WebSocket Protocol
-- Clients connect to `/ws` and send a `join` message with sessionId, participantId, displayName
-- Messages include: `join`, `item-placed`, `item-moved`, `item-removed`, `clear-canvas`, `cursor-move`, `session-update`, `tool-change`, `breathing-toggle`, `activity-pulse`
-- Room-based broadcasting ensures only participants in the same session receive updates
-- Server maintains per-room state (activeTool, breathingActive, breathingStartTime) for late-joiner synchronization
-- Init payload includes room state so new participants sync to current tool and breathing exercise status
+### Key Features & Implementations
+- **Real-time Collaboration**: WebSockets synchronize canvas states, participant cursors, and tool usage across all session members.
+- **Digital Sandtray**: Physics-based shared canvas with drag momentum, friction, lift shadows, soft collision, and sand particle effects. Includes interactive transform handles for scaling and rotation.
+- **Calm Breathing Guide**: Synchronized SVG breathing bubble with clinician controls.
+- **Clinical Insights**: Context-aware, clinician-only prompts that adapt to session activities.
+- **Session Management**: Clinician dashboard for creating, managing, and moderating sessions, including lock canvas, anonymity toggles, and clearing items.
+- **User Authentication**: Supabase Auth for email/password, with JWT validation for secure access.
+- **Moderator Controls**: Clinician-only tools for managing the session experience.
+- **Presence System**: Activity pulse animations and WebSocket heartbeat monitoring for connection status.
+- **Mobile-first Design**: Responsive layouts with bottom navigation and asset library.
+- **Pre-launch & Waitlist**: Restricted access, waitlist signup, and admin panel for user/waitlist management.
+- **Session Lifecycle**: End session functionality with confirmation, session summary, and PHI safety warnings for new session names.
+- **Snapshot Watermarking**: Exported session PNGs include metadata footer.
+- **Demo Mode**: Local-only sandbox sessions for clinicians to explore tools without data persistence.
+- **Guided Tours**: Interactive, spotlight-based onboarding tours for new users.
 
 ### Data Storage
-- **Database**: PostgreSQL (required via `DATABASE_URL` environment variable)
-- **ORM**: Drizzle ORM with drizzle-zod for validation schema generation
-- **Schema location**: `shared/schema.ts` — shared between client and server
-- **Migrations**: Generated via `drizzle-kit push` (stored in `migrations/`)
-- **Connection**: node-postgres (`pg`) Pool
+- **Database**: PostgreSQL
+- **ORM**: Drizzle ORM with `drizzle-zod` for schema validation.
+- **Schema**: Shared `shared/schema.ts` defining 10 tables including `users`, `therapy_sessions`, `participants`, `sandtrayItems`, `waitlist_entries`, and tables for other therapeutic tools (e.g., `feeling_wheel_selections`).
 
-### Database Schema (10 tables)
-1. **users** — id, email, firstName, lastName, profileImageUrl, isPro, subscriptionType, stripeCustomerId, stripeSubscriptionId, createdAt, updatedAt
-2. **sessions** — Legacy session store (sid, sess, expire) — retained for schema compatibility
-3. **therapy_sessions** — id, name, clinicianId (FK to users), inviteCode (unique), status, isCanvasLocked, isAnonymous, activeTool, createdAt
-4. **participants** — id, sessionId (FK), userId (FK, optional), displayName, role, color
-5. **sandtrayItems** — id, sessionId (FK), placedBy, icon, category, x, y, scale, rotation
-6. **feeling_wheel_selections** — id, sessionId (FK), selectedBy, primaryEmotion, secondaryEmotion, tertiaryEmotion, createdAt
-7. **timeline_events** — id, sessionId (FK), placedBy, label, description, position, color, createdAt
-8. **values_card_placements** — id, sessionId (FK), placedBy, cardId, label, column, orderIndex
-9. **waitlist_entries** — id, email (unique), name, createdAt
-10. **messages** — id, fromUserId (FK), toUserId (FK), subject, body, isAnnouncement, isRead, createdAt
-
-### Authentication
-- **Supabase Auth** — email/password authentication via `@supabase/supabase-js`
-- Frontend uses Supabase client to sign in/up, stores JWT in browser; sends Bearer token in Authorization header
-- Backend validates JWT via `supabaseAdmin.auth.getUser(token)` in `server/auth.ts`
-- Auth routes: `GET /api/auth/config` (returns Supabase URL + anon key for frontend), `GET /api/auth/user` (returns authenticated user)
-- Custom `/login` and `/signup` pages with luxury glassmorphic design
-- Protected routes use `isAuthenticated` middleware (`server/auth.ts`) to restrict session creation/management to authenticated clinicians
-- User upsert on auth: Supabase user synced to local PostgreSQL `users` table on each authenticated request
-- Auth state managed client-side via `useAuth` hook (`client/src/hooks/use-auth.ts`) with Supabase session listener
-
-### Project Structure
-```
-├── client/              # Frontend (Vite + React)
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ui/              # shadcn/ui + GlassCard
-│   │   │   ├── layout/          # Navbar
-│   │   │   ├── sandtray/        # ZenCanvas, AssetLibrary, ModeratorBar
-│   │   │   └── tools/           # BreathingGuide, ToolSelector, ClinicalInsights
-│   │   ├── hooks/               # useSessionSocket, useAuth, useMobile, useToast
-│   │   ├── lib/                 # Utilities, query client, sandtray assets
-│   │   └── pages/               # landing-page, dashboard, playroom, join-session
-│   └── index.html
-├── server/              # Backend (Express)
-│   ├── index.ts         # Entry point, middleware setup
-│   ├── routes.ts        # API route registration
-│   ├── storage.ts       # Database storage layer (IStorage interface + DatabaseStorage)
-│   ├── stripe.ts        # Stripe billing routes (checkout, webhook, portal)
-│   ├── websocket.ts     # WebSocket server for real-time sync + room state
-│   ├── db.ts            # Drizzle + pg pool setup
-│   ├── vite.ts          # Vite dev server middleware
-│   ├── static.ts        # Production static file serving
-│   ├── auth.ts          # Supabase JWT auth middleware
-│   └── supabase.ts      # Supabase admin client
-├── shared/              # Shared between client and server
-│   └── schema.ts        # Drizzle schema + Zod validation schemas
-├── script/
-│   └── build.ts         # Production build script
-└── migrations/          # Drizzle migration files
-```
-
-### Development vs Production
-- **Dev**: `tsx server/index.ts` runs the Express server with Vite middleware for HMR
-- **Production**: `script/build.ts` builds client with Vite and server with esbuild into `dist/`, served with `node dist/index.cjs`
-- Schema changes: `npm run db:push` uses drizzle-kit to push schema to PostgreSQL
+### Project Structure Highlights
+- **`client/`**: Frontend React application.
+- **`server/`**: Express backend, including API routes, WebSocket handling, and database interaction.
+- **`shared/`**: Common code like database schemas and validation.
 
 ## External Dependencies
 
 ### Required Services
-- **PostgreSQL Database** — Required. Connection via `DATABASE_URL` environment variable. Used for all persistent data (users, sessions, participants, sandtray items).
-- **Supabase** — Authentication provider. Requires `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
-- **Stripe** — Payment processing for subscriptions and one-time purchases. Requires `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY`. Supports monthly ($7), annual ($67), and founding member ($99) plans.
+- **PostgreSQL Database**: Essential for all persistent data storage.
+- **Supabase**: Primary authentication provider.
+- **Stripe**: Payment gateway for subscription management (monthly, annual, founding member plans).
 
 ### Key NPM Packages
-- **drizzle-orm** + **drizzle-kit** + **drizzle-zod** — ORM, migrations, and schema validation
-- **express** v5 — HTTP server
-- **ws** — WebSocket server for real-time collaboration
-- **pg** — PostgreSQL client
-- **@supabase/supabase-js** — Supabase Auth (frontend + backend)
-- **@tanstack/react-query** — Server state management
-- **framer-motion** — Animations
-- **wouter** — Client-side routing
-- **zod** — Runtime validation
-- **nanoid** — Unique ID generation
-- Full shadcn/ui component library (Radix UI primitives, cmdk, vaul, embla-carousel, react-day-picker, input-otp, recharts)
-
-### Replit-Specific Integrations
-- **@replit/vite-plugin-runtime-error-modal** — Runtime error overlay in dev
-- **@replit/vite-plugin-cartographer** — Dev tooling (conditional, dev only)
-- **@replit/vite-plugin-dev-banner** — Dev banner (conditional, dev only)
-- **vite-plugin-meta-images** — Custom plugin for OpenGraph meta tag management in deployments
+- **drizzle-orm**, **drizzle-kit**, **drizzle-zod**: Database ORM and schema tooling.
+- **express**: Backend HTTP server.
+- **ws**: WebSocket server implementation.
+- **pg**: PostgreSQL client.
+- **@supabase/supabase-js**: Supabase client library for authentication.
+- **@tanstack/react-query**: Frontend server state management.
+- **framer-motion**: Animation library.
+- **wouter**: Lightweight client-side router.
+- **zod**: Runtime schema validation.
+- **nanoid**: Unique ID generation.
+- **shadcn/ui** and associated Radix UI primitives.

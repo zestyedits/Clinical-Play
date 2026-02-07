@@ -1,11 +1,60 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Home, LayoutDashboard, Library, UserCircle, LogOut, Menu, X, Sparkles, Rocket, Inbox, Shield } from "lucide-react";
+import { Home, LayoutDashboard, Library, UserCircle, LogOut, Menu, X, Sparkles, Rocket, Inbox, Shield, Sun, Moon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth, useAuthFetch } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { LogoMark } from "@/components/shared/logo-mark";
+import { useTheme } from "@/hooks/use-theme";
+
+function ThemeToggle() {
+  const { mode, setMode, resolvedMode } = useTheme();
+  const isDark = resolvedMode === "dark";
+
+  const cycleMode = () => {
+    if (mode === "light") setMode("dark");
+    else if (mode === "dark") setMode("system");
+    else setMode("light");
+  };
+
+  return (
+    <button
+      onClick={cycleMode}
+      className="relative p-2 rounded-xl transition-colors cursor-pointer active:scale-95 hover:bg-primary/10 text-muted-foreground hover:text-primary"
+      aria-label={`Current theme: ${mode}. Click to change.`}
+      title={mode === "system" ? "Theme: System" : mode === "dark" ? "Theme: Dark" : "Theme: Light"}
+      data-testid="button-theme-toggle"
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        {isDark ? (
+          <motion.div
+            key="moon"
+            initial={{ rotate: -90, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            exit={{ rotate: 90, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Moon size={18} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="sun"
+            initial={{ rotate: 90, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            exit={{ rotate: -90, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Sun size={18} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {mode === "system" && (
+        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
+      )}
+    </button>
+  );
+}
 
 function PreLaunchBanner({ onDismiss, visible }: { onDismiss: () => void; visible: boolean }) {
   if (!visible) return null;
@@ -50,7 +99,7 @@ function MobileBottomNav({ items }: { items: { label: string; icon: React.Elemen
   }, []);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-border/40 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]" aria-label="Mobile navigation" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-t border-border/40 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]" aria-label="Mobile navigation" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div className="relative flex justify-around items-center h-[68px] px-2" role="tablist">
         <motion.div
           className="absolute top-2 rounded-2xl"
@@ -191,8 +240,8 @@ export function Navbar() {
         className={cn(
           "fixed left-0 right-0 z-50 hidden md:flex items-center justify-between px-8 py-4 transition-all duration-300",
           scrolled
-            ? "bg-white/70 backdrop-blur-xl border-b border-white/30 shadow-sm py-3"
-            : "bg-white/40 backdrop-blur-md py-6"
+            ? "bg-background/70 backdrop-blur-xl border-b border-border/30 shadow-sm py-3"
+            : "bg-background/40 backdrop-blur-md py-6"
         )}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -262,6 +311,7 @@ export function Navbar() {
                 <UserCircle size={16} />
                 Profile
               </Link>
+              <ThemeToggle />
               <button
                 onClick={() => logout()}
                 className="text-sm font-medium text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95"
@@ -287,6 +337,7 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
+              <ThemeToggle />
               <Link
                 href="/login"
                 className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors no-underline"
@@ -313,8 +364,8 @@ export function Navbar() {
         <div className={cn(
           "flex justify-between items-center p-4 transition-all duration-300",
           scrolled || mobileMenuOpen
-            ? "bg-white/80 backdrop-blur-xl border-b border-white/30 shadow-sm"
-            : "bg-white/40 backdrop-blur-md"
+            ? "bg-background/80 backdrop-blur-xl border-b border-border/30 shadow-sm"
+            : "bg-background/40 backdrop-blur-md"
         )}>
           <Link href="/" className="no-underline">
             <LogoMark size="sm" />
@@ -325,6 +376,7 @@ export function Navbar() {
                 Sign In
               </Link>
             )}
+            <ThemeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-xl text-primary hover:bg-primary/10 transition-colors cursor-pointer active:scale-95"
@@ -342,7 +394,7 @@ export function Navbar() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="bg-white/90 backdrop-blur-xl border-b border-white/30 overflow-hidden"
+              className="bg-background/90 backdrop-blur-xl border-b border-border/30 overflow-hidden"
             >
               <div className="p-4 space-y-1">
                 {isAuthenticated ? (

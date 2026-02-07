@@ -5,8 +5,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Save, User, Briefcase, Shield, Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Save, User, Briefcase, Shield, Eye, EyeOff, CheckCircle2, Palette, Sun, Moon, Monitor, Check } from "lucide-react";
 import { Link } from "wouter";
+import { useTheme, accentPresets, type ThemeMode } from "@/hooks/use-theme";
 
 const SPECIALTY_OPTIONS = [
   "General Practice",
@@ -33,6 +34,87 @@ interface ProfileData {
   clinicalSpecialty: string | null;
   defaultAnonymous: boolean;
   profileImageUrl: string | null;
+}
+
+function ThemeSection() {
+  const { mode, setMode, resolvedMode, accentId, setAccentId } = useTheme();
+
+  const modeOptions: { value: ThemeMode; label: string; icon: React.ElementType }[] = [
+    { value: "light", label: "Light", icon: Sun },
+    { value: "dark", label: "Dark", icon: Moon },
+    { value: "system", label: "System", icon: Monitor },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <label className="text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-3">Mode</label>
+        <div className="grid grid-cols-3 gap-3">
+          {modeOptions.map((opt) => {
+            const isActive = mode === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => setMode(opt.value)}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all cursor-pointer active:scale-95 ${
+                  isActive
+                    ? "border-accent bg-accent/10 shadow-sm"
+                    : "border-border/40 bg-secondary/20 hover:bg-secondary/40"
+                }`}
+                data-testid={`button-theme-${opt.value}`}
+              >
+                <opt.icon size={20} className={isActive ? "text-accent" : "text-muted-foreground"} />
+                <span className={`text-sm font-medium ${isActive ? "text-primary" : "text-muted-foreground"}`}>{opt.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        <label className="text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-3">Color Palette</label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {accentPresets.map((preset) => {
+            const isActive = accentId === preset.id;
+            return (
+              <button
+                key={preset.id}
+                onClick={() => setAccentId(preset.id)}
+                className={`relative flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer active:scale-95 ${
+                  isActive
+                    ? "border-accent bg-accent/8 shadow-sm ring-1 ring-accent/20"
+                    : "border-border/40 bg-secondary/20 hover:bg-secondary/40"
+                }`}
+                data-testid={`button-accent-${preset.id}`}
+              >
+                <div className="flex -space-x-1.5 shrink-0">
+                  <div
+                    className="w-6 h-6 rounded-full border-2 border-background shadow-sm"
+                    style={{ backgroundColor: preset.swatch }}
+                  />
+                  <div
+                    className="w-6 h-6 rounded-full border-2 border-background shadow-sm"
+                    style={{ backgroundColor: preset.swatchSecondary }}
+                  />
+                </div>
+                <span className={`text-xs font-medium leading-tight ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+                  {preset.name}
+                </span>
+                {isActive && (
+                  <div className="absolute top-1.5 right-1.5">
+                    <Check size={12} className="text-accent" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-[11px] text-muted-foreground/60 mt-2 px-1">
+          Your theme preference is saved locally on this device
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export default function ProfilePage() {
@@ -160,7 +242,7 @@ export default function ProfilePage() {
                     type="text"
                     value={firstName}
                     onChange={(e) => { setFirstName(e.target.value); handleChange(); }}
-                    className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-white/40 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-border/40 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all"
                     data-testid="input-first-name"
                   />
                 </div>
@@ -170,7 +252,7 @@ export default function ProfilePage() {
                     type="text"
                     value={lastName}
                     onChange={(e) => { setLastName(e.target.value); handleChange(); }}
-                    className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-white/40 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-border/40 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all"
                     data-testid="input-last-name"
                   />
                 </div>
@@ -178,7 +260,7 @@ export default function ProfilePage() {
 
               <div className="mt-4">
                 <label className="text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-2">Email</label>
-                <div className="w-full px-4 py-3 rounded-xl bg-secondary/20 border border-white/30 text-muted-foreground text-sm">
+                <div className="w-full px-4 py-3 rounded-xl bg-secondary/20 border border-border/30 text-muted-foreground text-sm">
                   {profile?.email || user?.email || "—"}
                 </div>
                 <p className="text-[11px] text-muted-foreground/60 mt-1">Email cannot be changed here</p>
@@ -201,7 +283,7 @@ export default function ProfilePage() {
                     value={professionalTitle}
                     onChange={(e) => { setProfessionalTitle(e.target.value); handleChange(); }}
                     placeholder="e.g., LCSW, LMFT, PhD, PsyD"
-                    className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-white/40 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all placeholder:text-muted-foreground/40"
+                    className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-border/40 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all placeholder:text-muted-foreground/40"
                     data-testid="input-professional-title"
                   />
                   <p className="text-[11px] text-muted-foreground/60 mt-1">Your professional credential or license type</p>
@@ -212,7 +294,7 @@ export default function ProfilePage() {
                   <select
                     value={clinicalSpecialty}
                     onChange={(e) => { setClinicalSpecialty(e.target.value); handleChange(); }}
-                    className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-white/40 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all appearance-none cursor-pointer"
+                    className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-border/40 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all appearance-none cursor-pointer"
                     data-testid="select-clinical-specialty"
                   >
                     <option value="">Select your specialty...</option>
@@ -226,6 +308,17 @@ export default function ProfilePage() {
 
             <GlassCard className="p-6 md:p-8" hoverEffect={false}>
               <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(212,175,55,0.1), rgba(139,92,246,0.1))" }}>
+                  <Palette size={18} style={{ color: "#D4AF37" }} />
+                </div>
+                <h2 className="font-serif text-lg text-primary">Theme & Appearance</h2>
+              </div>
+
+              <ThemeSection />
+            </GlassCard>
+
+            <GlassCard className="p-6 md:p-8" hoverEffect={false}>
+              <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(15,82,186,0.1), rgba(212,175,55,0.1))" }}>
                   <Shield size={18} style={{ color: "#0F52BA" }} />
                 </div>
@@ -233,7 +326,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/20 border border-white/30">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/20 border border-border/30">
                   <div className="flex items-center gap-3">
                     {defaultAnonymous ? (
                       <EyeOff size={18} className="text-purple-500" />
@@ -253,7 +346,7 @@ export default function ProfilePage() {
                     data-testid="toggle-default-anonymous"
                   >
                     <motion.div
-                      className="absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md"
+                      className="absolute top-0.5 w-6 h-6 rounded-full bg-background shadow-md"
                       animate={{ left: defaultAnonymous ? 22 : 2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     />
