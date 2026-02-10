@@ -33,7 +33,7 @@ const ALL_TOOLS: DashboardTool[] = [
   { id: "values-sort", label: "Values Card Sort", desc: "Interactive values prioritization", icon: Layers, tier: "pro", emoji: "🃏" },
   { id: "garden", label: "Growth Garden", desc: "Collaborative planting for rapport building", icon: TreePine, tier: "pro", emoji: "🌱" },
   { id: "fidgets", label: "Fidget Tools", desc: "Calming sensory interactions", icon: Gamepad2, tier: "pro", emoji: "🔮" },
-  { id: "parts-theater", label: "Parts Theater", desc: "IFS-inspired role exploration stage", icon: Theater, tier: "pro", emoji: "🎭" },
+  { id: "parts-theater", label: "Parts Theater", desc: "IFS-inspired internal parts mapping and exploration", icon: Theater, tier: "free", emoji: "🎭" },
 ];
 
 const CLINICAL_TIPS = [
@@ -880,10 +880,10 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="space-y-2">
-            <Link href="/profile" className="no-underline">
-              <button className="w-full py-2.5 rounded-xl bg-secondary/50 text-primary text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2" data-testid="button-edit-profile">
+            <Link href="/workspace" className="no-underline">
+              <button className="w-full py-2.5 rounded-xl bg-secondary/50 text-primary text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2" data-testid="button-workspace">
                 <User size={14} />
-                Edit Profile
+                Workspace
               </button>
             </Link>
             {isPro && (subscriptionType === "community" || subscriptionType === "annual") && (

@@ -133,6 +133,57 @@ export async function registerRoutes(
     }
   });
 
+  // Workspace aliases (same handlers as /api/profile, for privacy-first rename)
+  app.get("/api/workspace", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authUser.id;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user) return res.status(404).json({ message: "User not found" });
+      res.json({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        professionalTitle: user.professionalTitle,
+        clinicalSpecialty: user.clinicalSpecialty,
+        defaultAnonymous: user.defaultAnonymous,
+        profileImageUrl: user.profileImageUrl,
+      });
+    } catch (error) {
+      console.error("Error fetching workspace:", error);
+      res.status(500).json({ message: "Failed to fetch workspace" });
+    }
+  });
+
+  app.patch("/api/workspace", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authUser.id;
+      const { firstName, lastName, professionalTitle, clinicalSpecialty, defaultAnonymous } = req.body;
+      const [updated] = await db
+        .update(users)
+        .set({
+          ...(firstName !== undefined && { firstName }),
+          ...(lastName !== undefined && { lastName }),
+          ...(professionalTitle !== undefined && { professionalTitle }),
+          ...(clinicalSpecialty !== undefined && { clinicalSpecialty }),
+          ...(defaultAnonymous !== undefined && { defaultAnonymous }),
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      if (!updated) return res.status(404).json({ message: "User not found" });
+      res.json({
+        firstName: updated.firstName,
+        lastName: updated.lastName,
+        professionalTitle: updated.professionalTitle,
+        clinicalSpecialty: updated.clinicalSpecialty,
+        defaultAnonymous: updated.defaultAnonymous,
+      });
+    } catch (error) {
+      console.error("Error updating workspace:", error);
+      res.status(500).json({ message: "Failed to update workspace" });
+    }
+  });
+
   app.post("/api/auth/resend-verification", isAuthenticated, async (req: any, res) => {
     try {
       const email = req.authUser.email;

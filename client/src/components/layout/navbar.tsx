@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Home, LayoutDashboard, Library, UserCircle, LogOut, Menu, X, Sparkles, Rocket, Inbox, Shield } from "lucide-react";
+import { Home, LayoutDashboard, Library, UserCircle, LogOut, Menu, X, Sparkles, Rocket, Inbox, Shield, SlidersHorizontal } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth, useAuthFetch } from "@/hooks/use-auth";
@@ -234,15 +234,15 @@ export function Navbar() {
                 )}
               </Link>
               <Link
-                href="/profile"
+                href="/workspace"
                 className={cn(
                   "text-sm font-medium transition-colors hover:text-accent no-underline flex items-center gap-1.5 nav-link-premium",
-                  location === "/profile" ? "text-primary font-semibold active" : "text-muted-foreground"
+                  location === "/workspace" ? "text-primary font-semibold active" : "text-muted-foreground"
                 )}
-                data-testid="link-nav-profile"
+                data-testid="link-nav-workspace"
               >
-                <UserCircle size={16} />
-                Profile
+                <SlidersHorizontal size={16} />
+                Workspace
               </Link>
               <button
                 onClick={() => logout()}
@@ -376,15 +376,15 @@ export function Navbar() {
                       )}
                     </Link>
                     <Link
-                      href="/profile"
+                      href="/workspace"
                       className={cn(
                         "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors no-underline active:scale-[0.98]",
-                        location === "/profile" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary/50"
+                        location === "/workspace" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary/50"
                       )}
-                      data-testid="link-mobile-profile"
+                      data-testid="link-mobile-workspace"
                     >
-                      <UserCircle size={18} />
-                      Profile
+                      <SlidersHorizontal size={18} />
+                      Workspace
                     </Link>
                     <button
                       onClick={() => logout()}

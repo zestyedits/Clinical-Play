@@ -15,6 +15,7 @@ import { ClinicalInsights } from "@/components/tools/clinical-insights";
 import { FeelingWheelSVG, type FeelingSelection } from "@/components/tools/feeling-wheel-svg";
 import { NarrativeTimeline, type TimelineEventData } from "@/components/tools/narrative-timeline";
 import { ValuesCardSort, type CardPlacement } from "@/components/tools/values-card-sort";
+import { PartsTheater, type TheaterPartData, type TheaterConnectionData, type TheaterSettings } from "@/components/tools/parts-theater";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -63,6 +64,11 @@ export default function Playroom() {
   const [feelingSelections, setFeelingSelections] = useState<FeelingSelection[]>([]);
   const [timelineEvents, setTimelineEvents] = useState<TimelineEventData[]>([]);
   const [valuesCards, setValuesCards] = useState<CardPlacement[]>([]);
+  const [theaterParts, setTheaterParts] = useState<TheaterPartData[]>([]);
+  const [theaterConnections, setTheaterConnections] = useState<TheaterConnectionData[]>([]);
+  const [theaterSettings, setTheaterSettings] = useState<TheaterSettings>({
+    frozen: false, dimInactive: false, metaphor: "parts", partLimit: 0,
+  });
   const [subscriptionType, setSubscriptionType] = useState<string>("free");
   const [sessionEnded, setSessionEnded] = useState(false);
   const [endingSession, setEndingSession] = useState(false);
@@ -167,6 +173,22 @@ export default function Playroom() {
           orderIndex: c.orderIndex,
           placedBy: c.placedBy,
         })));
+        if (msg.theaterParts) setTheaterParts(msg.theaterParts.map((p: any) => ({
+          id: p.id, name: p.name, x: p.x, y: p.y, size: p.size,
+          color: p.color, note: p.note, isContained: p.isContained, placedBy: p.placedBy,
+        })));
+        if (msg.theaterConnections) setTheaterConnections(msg.theaterConnections.map((c: any) => ({
+          id: c.id, fromPartId: c.fromPartId, toPartId: c.toPartId,
+          style: c.style, createdBy: c.createdBy,
+        })));
+        if (msg.theaterFrozen !== undefined || msg.theaterMetaphor !== undefined) {
+          setTheaterSettings({
+            frozen: msg.theaterFrozen ?? false,
+            dimInactive: msg.theaterDimInactive ?? false,
+            metaphor: msg.theaterMetaphor ?? "parts",
+            partLimit: msg.theaterPartLimit ?? 0,
+          });
+        }
         break;
       case "item-placed":
         setItems(prev => [...prev, {
@@ -318,6 +340,51 @@ export default function Playroom() {
       case "values-cleared":
         setValuesCards([]);
         break;
+
+      // Parts Theater
+      case "theater-part-added":
+        setTheaterParts(prev => [...prev, {
+          id: msg.part.id, name: msg.part.name, x: msg.part.x, y: msg.part.y,
+          size: msg.part.size, color: msg.part.color, note: msg.part.note,
+          isContained: msg.part.isContained, placedBy: msg.part.placedBy,
+        }]);
+        break;
+      case "theater-part-moved":
+        setTheaterParts(prev => prev.map(p =>
+          p.id === msg.partId ? { ...p, x: msg.x, y: msg.y } : p
+        ));
+        break;
+      case "theater-part-updated":
+        setTheaterParts(prev => prev.map(p =>
+          p.id === msg.part.id ? { ...p, ...msg.part } : p
+        ));
+        break;
+      case "theater-part-removed":
+        setTheaterParts(prev => prev.filter(p => p.id !== msg.partId));
+        setTheaterConnections(prev => prev.filter(c => c.fromPartId !== msg.partId && c.toPartId !== msg.partId));
+        break;
+      case "theater-connection-added":
+        setTheaterConnections(prev => [...prev, {
+          id: msg.connection.id, fromPartId: msg.connection.fromPartId,
+          toPartId: msg.connection.toPartId, style: msg.connection.style,
+          createdBy: msg.connection.createdBy,
+        }]);
+        break;
+      case "theater-connection-removed":
+        setTheaterConnections(prev => prev.filter(c => c.id !== msg.connectionId));
+        break;
+      case "theater-cleared":
+        setTheaterParts([]);
+        setTheaterConnections([]);
+        break;
+      case "theater-settings-updated":
+        setTheaterSettings({
+          frozen: msg.frozen,
+          dimInactive: msg.dimInactive,
+          metaphor: msg.metaphor,
+          partLimit: msg.partLimit,
+        });
+        break;
     }
   }, []);
 
@@ -447,6 +514,50 @@ export default function Playroom() {
         case "zen-mode-toggle":
           setZenMode(msg.enabled);
           break;
+        case "theater-part-add": {
+          const newPart: TheaterPartData = {
+            id: `demo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            name: msg.name || null, x: msg.x, y: msg.y, size: msg.size || "medium",
+            color: msg.color || "#1B2A4A", note: null, isContained: false, placedBy: pid,
+          };
+          setTheaterParts(prev => [...prev, newPart]);
+          break;
+        }
+        case "theater-part-move":
+          setTheaterParts(prev => prev.map(p => p.id === msg.partId ? { ...p, x: msg.x, y: msg.y } : p));
+          break;
+        case "theater-part-update":
+          setTheaterParts(prev => prev.map(p => p.id === msg.partId ? { ...p, ...msg.fields } : p));
+          break;
+        case "theater-part-remove":
+          setTheaterParts(prev => prev.filter(p => p.id !== msg.partId));
+          setTheaterConnections(prev => prev.filter(c => c.fromPartId !== msg.partId && c.toPartId !== msg.partId));
+          break;
+        case "theater-connection-add": {
+          const newConn: TheaterConnectionData = {
+            id: `demo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            fromPartId: msg.fromPartId, toPartId: msg.toPartId,
+            style: msg.style || "solid", createdBy: pid,
+          };
+          setTheaterConnections(prev => [...prev, newConn]);
+          break;
+        }
+        case "theater-connection-remove":
+          setTheaterConnections(prev => prev.filter(c => c.id !== msg.connectionId));
+          break;
+        case "theater-clear":
+          setTheaterParts([]);
+          setTheaterConnections([]);
+          break;
+        case "theater-settings-update":
+          setTheaterSettings(prev => ({
+            ...prev,
+            ...(msg.frozen !== undefined && { frozen: msg.frozen }),
+            ...(msg.dimInactive !== undefined && { dimInactive: msg.dimInactive }),
+            ...(msg.metaphor !== undefined && { metaphor: msg.metaphor }),
+            ...(msg.partLimit !== undefined && { partLimit: msg.partLimit }),
+          }));
+          break;
       }
       return;
     }
@@ -524,6 +635,7 @@ export default function Playroom() {
       case "feelings": return "Feeling Wheel";
       case "narrative": return "Narrative Timeline";
       case "values-sort": return "Values Card Sort";
+      case "parts-theater": return "Parts Theater";
       default: return tool;
     }
   };
@@ -638,6 +750,53 @@ export default function Playroom() {
     send({ type: "values-clear" });
     if (!isDemo) setValuesCards([]);
   }, [send, isDemo]);
+
+  // Parts Theater handlers
+  const handleTheaterAddPart = useCallback((name: string | null, color: string, size: string, x: number, y: number) => {
+    send({ type: "theater-part-add", name, color, size, x, y });
+    send({ type: "activity-pulse" });
+  }, [send]);
+
+  const handleTheaterMovePart = useCallback((partId: string, x: number, y: number) => {
+    if (!isDemo) setTheaterParts(prev => prev.map(p => p.id === partId ? { ...p, x, y } : p));
+    send({ type: "theater-part-move", partId, x, y });
+    send({ type: "activity-pulse" });
+  }, [send, isDemo]);
+
+  const handleTheaterUpdatePart = useCallback((partId: string, fields: Record<string, any>) => {
+    if (!isDemo) setTheaterParts(prev => prev.map(p => p.id === partId ? { ...p, ...fields } : p));
+    send({ type: "theater-part-update", partId, ...fields });
+  }, [send, isDemo]);
+
+  const handleTheaterRemovePart = useCallback((partId: string) => {
+    if (!isDemo) {
+      setTheaterParts(prev => prev.filter(p => p.id !== partId));
+      setTheaterConnections(prev => prev.filter(c => c.fromPartId !== partId && c.toPartId !== partId));
+    }
+    send({ type: "theater-part-remove", partId });
+  }, [send, isDemo]);
+
+  const handleTheaterAddConnection = useCallback((fromPartId: string, toPartId: string, style: string) => {
+    send({ type: "theater-connection-add", fromPartId, toPartId, style });
+    send({ type: "activity-pulse" });
+  }, [send]);
+
+  const handleTheaterRemoveConnection = useCallback((connectionId: string) => {
+    if (!isDemo) setTheaterConnections(prev => prev.filter(c => c.id !== connectionId));
+    send({ type: "theater-connection-remove", connectionId });
+  }, [send, isDemo]);
+
+  const handleTheaterClear = useCallback(() => {
+    send({ type: "theater-clear" });
+    if (!isDemo) {
+      setTheaterParts([]);
+      setTheaterConnections([]);
+    }
+  }, [send, isDemo]);
+
+  const handleTheaterSettingsUpdate = useCallback((updates: Partial<TheaterSettings>) => {
+    send({ type: "theater-settings-update", ...updates });
+  }, [send]);
 
   // Ambient / Zen handlers
   const handleLightSourceUpdate = useCallback((ls: LightSource) => {
@@ -1117,6 +1276,32 @@ export default function Playroom() {
                   onRemoveCard={handleValuesRemove}
                   onClear={handleValuesClear}
                   isClinician={isClinician}
+                />
+              </motion.div>
+            )}
+
+            {activeTool === "parts-theater" && (
+              <motion.div
+                key="parts-theater"
+                className="absolute inset-0"
+                initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <PartsTheater
+                  parts={theaterParts}
+                  connections={theaterConnections}
+                  theaterSettings={theaterSettings}
+                  isClinician={isClinician}
+                  onAddPart={handleTheaterAddPart}
+                  onMovePart={handleTheaterMovePart}
+                  onUpdatePart={handleTheaterUpdatePart}
+                  onRemovePart={handleTheaterRemovePart}
+                  onAddConnection={handleTheaterAddConnection}
+                  onRemoveConnection={handleTheaterRemoveConnection}
+                  onClear={handleTheaterClear}
+                  onUpdateSettings={handleTheaterSettingsUpdate}
                 />
               </motion.div>
             )}

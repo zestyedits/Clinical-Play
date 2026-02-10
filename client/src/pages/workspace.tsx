@@ -7,8 +7,8 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Save, User, Briefcase, Shield, Eye, EyeOff, CheckCircle2,
-  Palette, Check, MapPin, Building2, Heart, Sparkles, SlidersHorizontal,
-  FileText, Tag, ExternalLink, ChevronDown, X
+  Palette, Check, Heart, Sparkles, SlidersHorizontal,
+  FileText, Tag, ExternalLink, ChevronDown, ShieldAlert, ChevronRight
 } from "lucide-react";
 import { Link } from "wouter";
 import { useTheme, accentPresets } from "@/hooks/use-theme";
@@ -80,7 +80,6 @@ interface LocalProfileData {
 
 interface SavedArtifact {
   id: string;
-  sessionName: string;
   toolName: string;
   date: string;
   tags: string[];
@@ -103,11 +102,11 @@ const DEFAULT_LOCAL_PROFILE: LocalProfileData = {
 };
 
 const MOCK_ARTIFACTS: SavedArtifact[] = [
-  { id: "a1", sessionName: "Tuesday Check-in", toolName: "Zen Sandtray", date: "2026-02-08T14:30:00Z", tags: ["attachment", "family"], type: "sandtray" },
-  { id: "a2", sessionName: "Coping Skills Review", toolName: "Feeling Wheel", date: "2026-02-06T10:00:00Z", tags: ["emotional-regulation", "progress"], type: "feelings" },
-  { id: "a3", sessionName: "Life Story Mapping", toolName: "Narrative Timeline", date: "2026-02-04T15:00:00Z", tags: ["trauma", "resilience"], type: "narrative" },
-  { id: "a4", sessionName: "Values Exploration", toolName: "Values Card Sort", date: "2026-02-01T11:00:00Z", tags: ["identity", "transitions"], type: "values" },
-  { id: "a5", sessionName: "Grounding Session", toolName: "Calm Breathing", date: "2026-01-28T09:00:00Z", tags: ["anxiety", "grounding"], type: "breathing" },
+  { id: "a1", toolName: "Zen Sandtray", date: "2026-02-08T14:30:00Z", tags: ["attachment", "family"], type: "sandtray" },
+  { id: "a2", toolName: "Feeling Wheel", date: "2026-02-06T10:00:00Z", tags: ["emotional-regulation", "progress"], type: "feelings" },
+  { id: "a3", toolName: "Narrative Timeline", date: "2026-02-04T15:00:00Z", tags: ["trauma", "resilience"], type: "narrative" },
+  { id: "a4", toolName: "Values Card Sort", date: "2026-02-01T11:00:00Z", tags: ["identity", "transitions"], type: "values" },
+  { id: "a5", toolName: "Calm Breathing", date: "2026-01-28T09:00:00Z", tags: ["anxiety", "grounding"], type: "breathing" },
 ];
 
 const TOOL_COLORS: Record<string, string> = {
@@ -130,6 +129,17 @@ function saveLocalProfile(data: LocalProfileData) {
   try { localStorage.setItem("cp-local-profile", JSON.stringify(data)); } catch {}
 }
 
+function getShowCredentials(): boolean {
+  try {
+    return localStorage.getItem("cp-show-credentials") === "true";
+  } catch {}
+  return false;
+}
+
+function setShowCredentialsStorage(value: boolean) {
+  try { localStorage.setItem("cp-show-credentials", value ? "true" : "false"); } catch {}
+}
+
 const STYLE_LABELS: Record<string, string[]> = {
   tone: ["Warm & Gentle", "Balanced", "Direct & Structured"],
   immersion: ["Minimal", "Moderate", "Fully Immersive"],
@@ -138,6 +148,15 @@ const STYLE_LABELS: Record<string, string[]> = {
 
 const inputClass = "w-full px-4 py-3 rounded-xl bg-secondary/30 border border-border/40 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all";
 const labelClass = "text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-2";
+
+function PhiWarning({ text }: { text: string }) {
+  return (
+    <p className="flex items-start gap-1.5 mt-1.5 text-[11px] text-amber-600/70 leading-relaxed">
+      <ShieldAlert size={11} className="shrink-0 mt-0.5" />
+      <span>{text}</span>
+    </p>
+  );
+}
 
 function ThemeSection() {
   const { accentId, setAccentId } = useTheme();
@@ -244,50 +263,7 @@ function MultiSelectChips({ options, selected, onToggle }: { options: string[]; 
   );
 }
 
-function ProfilePreviewCard({ firstName, lastName, professionalTitle, clinicalSpecialty, pronouns, location, practiceName, modalities }: {
-  firstName: string; lastName: string; professionalTitle: string; clinicalSpecialty: string;
-  pronouns: string; location: string; practiceName: string; modalities: string[];
-}) {
-  const initials = `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase() || "?";
-  return (
-    <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/5 to-accent/5 border border-border/30">
-      <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, rgba(27,42,74,0.15), rgba(212,175,55,0.15))" }}>
-          <span className="text-lg font-serif text-primary font-bold">{initials}</span>
-        </div>
-        <div className="min-w-0">
-          <p className="text-base font-serif text-primary font-semibold truncate">
-            {firstName || "First"} {lastName || "Last"}
-            {professionalTitle && <span className="text-muted-foreground font-sans text-xs ml-1.5">{professionalTitle}</span>}
-          </p>
-          {pronouns && <p className="text-xs text-muted-foreground/70">{pronouns}</p>}
-          {(practiceName || clinicalSpecialty) && (
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {practiceName}{practiceName && clinicalSpecialty ? " · " : ""}{clinicalSpecialty}
-            </p>
-          )}
-          {location && (
-            <p className="text-xs text-muted-foreground/60 flex items-center gap-1 mt-0.5">
-              <MapPin size={10} /> {location}
-            </p>
-          )}
-          {modalities.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {modalities.slice(0, 4).map(m => (
-                <span key={m} className="px-2 py-0.5 rounded-full text-[10px] bg-accent/10 text-accent font-medium">{m}</span>
-              ))}
-              {modalities.length > 4 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] bg-secondary/40 text-muted-foreground">+{modalities.length - 4}</span>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function ProfilePage() {
+export default function WorkspacePage() {
   const { user, isLoading: authLoading, isAuthenticated, session } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -305,18 +281,19 @@ export default function ProfilePage() {
   const [localProfile, setLocalProfile] = useState<LocalProfileData>(getLocalProfile);
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
   const [expandedArtifact, setExpandedArtifact] = useState<string | null>(null);
+  const [showCredentials, setShowCredentials] = useState(getShowCredentials);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      toast({ title: "Please sign in", description: "Please sign in to access your profile.", variant: "destructive" });
+      toast({ title: "Please sign in", description: "Please sign in to access your workspace.", variant: "destructive" });
       setTimeout(() => { window.location.href = "/login"; }, 500);
     }
   }, [authLoading, isAuthenticated]);
 
   const { data: profile, isLoading: profileLoading } = useQuery<ProfileData>({
-    queryKey: ["/api/profile"],
+    queryKey: ["/api/workspace"],
     queryFn: async () => {
-      const res = await authFetch("/api/profile");
+      const res = await authFetch("/api/workspace");
       if (!res.ok) throw new Error("Failed to fetch profile");
       return res.json();
     },
@@ -336,7 +313,7 @@ export default function ProfilePage() {
 
   const updateProfile = useMutation({
     mutationFn: async (data: Partial<ProfileData>) => {
-      const res = await authFetch("/api/profile", {
+      const res = await authFetch("/api/workspace", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -345,7 +322,7 @@ export default function ProfilePage() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/workspace"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       setHasChanges(false);
     },
@@ -366,7 +343,7 @@ export default function ProfilePage() {
       saveLocalProfile(localProfile);
       setHasLocalChanges(false);
     }
-    toast({ title: "Profile updated", description: "Your changes have been saved." });
+    toast({ title: "Workspace updated", description: "Your changes have been saved." });
   };
 
   const handleChange = () => setHasChanges(true);
@@ -396,6 +373,12 @@ export default function ProfilePage() {
     setHasLocalChanges(true);
   }, []);
 
+  const handleToggleCredentials = useCallback(() => {
+    const next = !showCredentials;
+    setShowCredentials(next);
+    setShowCredentialsStorage(next);
+  }, [showCredentials]);
+
   const anyChanges = hasChanges || hasLocalChanges;
 
   if (authLoading || profileLoading) {
@@ -403,9 +386,9 @@ export default function ProfilePage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20">
         <div className="text-center">
           <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-accent/10 flex items-center justify-center animate-pulse">
-            <User size={24} className="text-accent" />
+            <SlidersHorizontal size={24} className="text-accent" />
           </div>
-          <p className="text-muted-foreground font-medium">Loading profile...</p>
+          <p className="text-muted-foreground font-medium">Loading workspace...</p>
         </div>
       </div>
     );
@@ -428,32 +411,10 @@ export default function ProfilePage() {
               </button>
             </Link>
             <div className="flex-1">
-              <h1 className="text-2xl md:text-3xl font-serif text-primary">Your Profile</h1>
-              <p className="text-sm text-muted-foreground">Manage your clinician information, preferences, and style</p>
+              <h1 className="text-2xl md:text-3xl font-serif text-primary">Workspace</h1>
+              <p className="text-sm text-muted-foreground">Manage your preferences, credentials, and session settings</p>
             </div>
           </div>
-
-          {/* Profile Preview Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-6"
-          >
-            <p className="text-xs font-semibold text-primary/50 uppercase tracking-[0.15em] mb-2 flex items-center gap-1.5">
-              <Eye size={12} /> Public Preview
-            </p>
-            <ProfilePreviewCard
-              firstName={firstName}
-              lastName={lastName}
-              professionalTitle={professionalTitle}
-              clinicalSpecialty={clinicalSpecialty}
-              pronouns={localProfile.pronouns}
-              location={localProfile.location}
-              practiceName={localProfile.practiceName}
-              modalities={localProfile.modalities}
-            />
-          </motion.div>
 
           <div className="space-y-6">
             {/* Section 1: Personal Information */}
@@ -507,6 +468,7 @@ export default function ProfilePage() {
                     placeholder="e.g., Portland, OR"
                     className={`${inputClass} placeholder:text-muted-foreground/40`}
                   />
+                  <PhiWarning text="This is your practice location, not a client's." />
                 </div>
               </div>
 
@@ -519,6 +481,7 @@ export default function ProfilePage() {
                   placeholder="e.g., Willow Creek Counseling"
                   className={`${inputClass} placeholder:text-muted-foreground/40`}
                 />
+                <PhiWarning text="Do not enter client names or protected health information." />
               </div>
 
               <div className="mt-4">
@@ -539,65 +502,102 @@ export default function ProfilePage() {
                   maxLength={300}
                   className={`${inputClass} resize-none placeholder:text-muted-foreground/40`}
                 />
-                <p className="text-[11px] text-muted-foreground/60 mt-1 text-right">{localProfile.bio.length}/300</p>
+                <div className="flex items-center justify-between mt-1">
+                  <PhiWarning text="Do not include client names, case details, or protected health information." />
+                  <p className="text-[11px] text-muted-foreground/60 shrink-0 ml-3">{localProfile.bio.length}/300</p>
+                </div>
               </div>
             </GlassCard>
 
-            {/* Section 2: Professional Details */}
+            {/* Section 2: Professional Details — behind credentials toggle */}
             <GlassCard className="p-6 md:p-8" hoverEffect={false}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(46,139,87,0.1), rgba(212,175,55,0.1))" }}>
-                  <Briefcase size={18} style={{ color: "#2E8B57" }} />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(46,139,87,0.1), rgba(212,175,55,0.1))" }}>
+                    <Briefcase size={18} style={{ color: "#2E8B57" }} />
+                  </div>
+                  <div>
+                    <h2 className="font-serif text-lg text-primary">Professional Details</h2>
+                    <p className="text-xs text-muted-foreground">Credentials for organization and peer verification</p>
+                  </div>
                 </div>
-                <h2 className="font-serif text-lg text-primary">Professional Details</h2>
+                <ToggleSwitch
+                  enabled={showCredentials}
+                  onToggle={handleToggleCredentials}
+                  color="bg-[#2E8B57]"
+                />
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className={labelClass}>Professional Title</label>
-                  <input
-                    type="text"
-                    value={professionalTitle}
-                    onChange={(e) => { setProfessionalTitle(e.target.value); handleChange(); }}
-                    placeholder="e.g., LCSW, LMFT, PhD, PsyD"
-                    className={`${inputClass} placeholder:text-muted-foreground/40`}
-                  />
-                  <p className="text-[11px] text-muted-foreground/60 mt-1">Your professional credential or license type</p>
-                </div>
+              {!showCredentials && (
+                <button
+                  onClick={handleToggleCredentials}
+                  className="mt-4 w-full flex items-center justify-between p-3 rounded-xl bg-secondary/15 border border-border/25 hover:bg-secondary/30 transition-all cursor-pointer text-left"
+                >
+                  <span className="text-sm text-muted-foreground">
+                    Enable to display professional credentials
+                  </span>
+                  <ChevronRight size={16} className="text-muted-foreground/40" />
+                </button>
+              )}
 
-                <div>
-                  <label className={labelClass}>Clinical Specialty</label>
-                  <select
-                    value={clinicalSpecialty}
-                    onChange={(e) => { setClinicalSpecialty(e.target.value); handleChange(); }}
-                    className={`${inputClass} appearance-none cursor-pointer`}
+              <AnimatePresence>
+                {showCredentials && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
                   >
-                    <option value="">Select your specialty...</option>
-                    {SPECIALTY_OPTIONS.map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </div>
+                    <div className="space-y-4 mt-6">
+                      <div>
+                        <label className={labelClass}>Professional Title</label>
+                        <input
+                          type="text"
+                          value={professionalTitle}
+                          onChange={(e) => { setProfessionalTitle(e.target.value); handleChange(); }}
+                          placeholder="e.g., LCSW, LMFT, PhD, PsyD"
+                          className={`${inputClass} placeholder:text-muted-foreground/40`}
+                        />
+                        <PhiWarning text="Your credential or license type only. No client information." />
+                      </div>
 
-                <div>
-                  <label className={labelClass}>Therapeutic Modalities</label>
-                  <MultiSelectChips
-                    options={MODALITY_OPTIONS}
-                    selected={localProfile.modalities}
-                    onToggle={(item) => toggleArrayItem("modalities", item)}
-                  />
-                  <p className="text-[11px] text-muted-foreground/60 mt-2">Select all modalities you practice</p>
-                </div>
+                      <div>
+                        <label className={labelClass}>Clinical Specialty</label>
+                        <select
+                          value={clinicalSpecialty}
+                          onChange={(e) => { setClinicalSpecialty(e.target.value); handleChange(); }}
+                          className={`${inputClass} appearance-none cursor-pointer`}
+                        >
+                          <option value="">Select your specialty...</option>
+                          {SPECIALTY_OPTIONS.map(opt => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
 
-                <div>
-                  <label className={labelClass}>Populations Served</label>
-                  <MultiSelectChips
-                    options={POPULATION_OPTIONS}
-                    selected={localProfile.populations}
-                    onToggle={(item) => toggleArrayItem("populations", item)}
-                  />
-                </div>
-              </div>
+                      <div>
+                        <label className={labelClass}>Therapeutic Modalities</label>
+                        <MultiSelectChips
+                          options={MODALITY_OPTIONS}
+                          selected={localProfile.modalities}
+                          onToggle={(item) => toggleArrayItem("modalities", item)}
+                        />
+                        <p className="text-[11px] text-muted-foreground/60 mt-2">Select all modalities you practice</p>
+                      </div>
+
+                      <div>
+                        <label className={labelClass}>Populations Served</label>
+                        <MultiSelectChips
+                          options={POPULATION_OPTIONS}
+                          selected={localProfile.populations}
+                          onToggle={(item) => toggleArrayItem("populations", item)}
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </GlassCard>
 
             {/* Section 3: Clinician Style */}
@@ -697,87 +697,97 @@ export default function ProfilePage() {
               </div>
             </GlassCard>
 
-            {/* Section 6: Saved Artifacts */}
+            {/* Section 6: Session Exports (renamed from Saved Artifacts) */}
             <GlassCard className="p-6 md:p-8" hoverEffect={false}>
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(232,108,93,0.1), rgba(212,175,55,0.1))" }}>
                   <FileText size={18} style={{ color: "#E86C5D" }} />
                 </div>
                 <div>
-                  <h2 className="font-serif text-lg text-primary">Saved Artifacts</h2>
+                  <h2 className="font-serif text-lg text-primary">Session Exports</h2>
                   <p className="text-xs text-muted-foreground">Recent session outputs and exports</p>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                {MOCK_ARTIFACTS.map((artifact, i) => (
-                  <motion.div
-                    key={artifact.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                  >
-                    <button
-                      onClick={() => setExpandedArtifact(expandedArtifact === artifact.id ? null : artifact.id)}
-                      className="w-full text-left p-3 rounded-xl bg-secondary/15 border border-border/25 hover:bg-secondary/30 transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: `${TOOL_COLORS[artifact.type]}15` }}
-                        >
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TOOL_COLORS[artifact.type] }} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-primary truncate">{artifact.sessionName}</span>
-                            <span className="text-[10px] text-muted-foreground/60 shrink-0">{artifact.toolName}</span>
-                          </div>
-                          <p className="text-xs text-muted-foreground/60">
-                            {new Date(artifact.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                          </p>
-                        </div>
-                        <motion.div
-                          animate={{ rotate: expandedArtifact === artifact.id ? 180 : 0 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <ChevronDown size={16} className="text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
-                        </motion.div>
-                      </div>
-                    </button>
+              <div className="mb-4 p-3 rounded-xl bg-amber-50/60 border border-amber-200/40">
+                <p className="text-[11px] text-amber-700/70 flex items-start gap-1.5">
+                  <ShieldAlert size={12} className="shrink-0 mt-0.5" />
+                  <span>Exports are stored locally on this device. No client-identifying information is included.</span>
+                </p>
+              </div>
 
-                    <AnimatePresence>
-                      {expandedArtifact === artifact.id && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-3 pt-2 pb-3 ml-11">
-                            <div className="flex flex-wrap gap-1.5 mb-2">
-                              {artifact.tags.map(tag => (
-                                <span key={tag} className="px-2 py-0.5 rounded-full text-[10px] bg-primary/5 text-primary/60 flex items-center gap-1">
-                                  <Tag size={8} /> {tag}
-                                </span>
-                              ))}
-                            </div>
-                            <button className="text-xs text-accent hover:text-accent/80 transition-colors flex items-center gap-1 cursor-pointer">
-                              <ExternalLink size={11} /> View Full Artifact
-                            </button>
+              <div className="space-y-2">
+                {MOCK_ARTIFACTS.map((artifact, i) => {
+                  const exportLabel = `Export #${i + 1}`;
+                  return (
+                    <motion.div
+                      key={artifact.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.06 }}
+                    >
+                      <button
+                        onClick={() => setExpandedArtifact(expandedArtifact === artifact.id ? null : artifact.id)}
+                        className="w-full text-left p-3 rounded-xl bg-secondary/15 border border-border/25 hover:bg-secondary/30 transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                            style={{ backgroundColor: `${TOOL_COLORS[artifact.type]}15` }}
+                          >
+                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TOOL_COLORS[artifact.type] }} />
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                ))}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-primary truncate">{exportLabel}</span>
+                              <span className="text-[10px] text-muted-foreground/60 shrink-0">{artifact.toolName}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground/60">
+                              {new Date(artifact.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            </p>
+                          </div>
+                          <motion.div
+                            animate={{ rotate: expandedArtifact === artifact.id ? 180 : 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <ChevronDown size={16} className="text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
+                          </motion.div>
+                        </div>
+                      </button>
+
+                      <AnimatePresence>
+                        {expandedArtifact === artifact.id && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="px-3 pt-2 pb-3 ml-11">
+                              <div className="flex flex-wrap gap-1.5 mb-2">
+                                {artifact.tags.map(tag => (
+                                  <span key={tag} className="px-2 py-0.5 rounded-full text-[10px] bg-primary/5 text-primary/60 flex items-center gap-1">
+                                    <Tag size={8} /> {tag}
+                                  </span>
+                                ))}
+                              </div>
+                              <button className="text-xs text-accent hover:text-accent/80 transition-colors flex items-center gap-1 cursor-pointer">
+                                <ExternalLink size={11} /> View Full Export
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  );
+                })}
               </div>
 
               {MOCK_ARTIFACTS.length === 0 && (
                 <div className="text-center py-8">
                   <FileText size={28} className="text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground/60">No saved artifacts yet</p>
+                  <p className="text-sm text-muted-foreground/60">No session exports yet</p>
                   <p className="text-xs text-muted-foreground/40 mt-1">Session outputs will appear here as you use tools</p>
                 </div>
               )}

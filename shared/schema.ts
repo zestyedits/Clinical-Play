@@ -80,6 +80,30 @@ export const valuesCardPlacements = pgTable("values_card_placements", {
   orderIndex: integer("order_index").notNull().default(0),
 });
 
+export const theaterParts = pgTable("theater_parts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => therapySessions.id),
+  placedBy: varchar("placed_by"),
+  name: text("name"),
+  x: real("x").notNull(),
+  y: real("y").notNull(),
+  size: text("size").notNull().default("medium"),
+  color: text("color").notNull().default("#1B2A4A"),
+  note: text("note"),
+  isContained: boolean("is_contained").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const theaterConnections = pgTable("theater_connections", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => therapySessions.id),
+  fromPartId: varchar("from_part_id").notNull().references(() => theaterParts.id, { onDelete: "cascade" }),
+  toPartId: varchar("to_part_id").notNull().references(() => theaterParts.id, { onDelete: "cascade" }),
+  style: text("style").notNull().default("solid"),
+  createdBy: varchar("created_by"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const supportTickets = pgTable("support_tickets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -166,6 +190,26 @@ export const insertValuesCardPlacementSchema = createInsertSchema(valuesCardPlac
   orderIndex: true,
 });
 
+export const insertTheaterPartSchema = createInsertSchema(theaterParts).pick({
+  sessionId: true,
+  placedBy: true,
+  name: true,
+  x: true,
+  y: true,
+  size: true,
+  color: true,
+  note: true,
+  isContained: true,
+});
+
+export const insertTheaterConnectionSchema = createInsertSchema(theaterConnections).pick({
+  sessionId: true,
+  fromPartId: true,
+  toPartId: true,
+  style: true,
+  createdBy: true,
+});
+
 export const insertSupportTicketSchema = createInsertSchema(supportTickets).pick({
   name: true,
   email: true,
@@ -201,6 +245,10 @@ export type InsertTimelineEvent = z.infer<typeof insertTimelineEventSchema>;
 export type TimelineEvent = typeof timelineEvents.$inferSelect;
 export type InsertValuesCardPlacement = z.infer<typeof insertValuesCardPlacementSchema>;
 export type ValuesCardPlacement = typeof valuesCardPlacements.$inferSelect;
+export type InsertTheaterPart = z.infer<typeof insertTheaterPartSchema>;
+export type TheaterPart = typeof theaterParts.$inferSelect;
+export type InsertTheaterConnection = z.infer<typeof insertTheaterConnectionSchema>;
+export type TheaterConnection = typeof theaterConnections.$inferSelect;
 export type InsertSupportTicket = z.infer<typeof insertSupportTicketSchema>;
 export type SupportTicket = typeof supportTickets.$inferSelect;
 export type InsertWaitlistEntry = z.infer<typeof insertWaitlistEntrySchema>;

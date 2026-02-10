@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route, useLocation, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -20,7 +20,7 @@ import Signup from "@/pages/signup";
 import EmailConfirmed from "@/pages/email-confirmed";
 import InboxPage from "@/pages/inbox";
 import AdminPanel from "@/pages/admin";
-import ProfilePage from "@/pages/profile";
+import WorkspacePage from "@/pages/workspace";
 import LibraryPage from "@/pages/library";
 import AccountPage from "@/pages/account";
 
@@ -57,7 +57,8 @@ function Router() {
         <Route path="/email-confirmed">{() => <PageTransition><EmailConfirmed /></PageTransition>}</Route>
         <Route path="/inbox">{() => <PageTransition><InboxPage /></PageTransition>}</Route>
         <Route path="/admin">{() => <PageTransition><AdminPanel /></PageTransition>}</Route>
-        <Route path="/profile">{() => <PageTransition><ProfilePage /></PageTransition>}</Route>
+        <Route path="/workspace">{() => <PageTransition><WorkspacePage /></PageTransition>}</Route>
+        <Route path="/profile">{() => <Redirect to="/workspace" />}</Route>
         <Route path="/library">{() => <PageTransition><LibraryPage /></PageTransition>}</Route>
         <Route path="/account">{() => <PageTransition><AccountPage /></PageTransition>}</Route>
         <Route>{() => <PageTransition><NotFound /></PageTransition>}</Route>

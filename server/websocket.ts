@@ -34,6 +34,10 @@ interface RoomState {
   lightSource: LightSource;
   rakePaths: RakePath[];
   zenMode: boolean;
+  theaterFrozen: boolean;
+  theaterDimInactive: boolean;
+  theaterMetaphor: string;
+  theaterPartLimit: number;
 }
 
 const roomStates = new Map<string, RoomState>();
@@ -47,6 +51,10 @@ function getRoomState(sessionId: string): RoomState {
       lightSource: { x: 0.3, y: 0.2, temperature: 0.5 },
       rakePaths: [],
       zenMode: false,
+      theaterFrozen: false,
+      theaterDimInactive: false,
+      theaterMetaphor: "parts",
+      theaterPartLimit: 0,
     });
   }
   return roomStates.get(sessionId)!;
@@ -97,13 +105,15 @@ export function setupWebSocketServer(server: Server) {
             }
             rooms.get(sessionId)!.add(client);
 
-            const [items, participants, session, feelingSelections, timelineEvts, valuesCards] = await Promise.all([
+            const [items, participants, session, feelingSelections, timelineEvts, valuesCards, theaterPartsData, theaterConnsData] = await Promise.all([
               storage.getSandtrayItems(sessionId),
               storage.getParticipantsBySession(sessionId),
               storage.getSession(sessionId),
               storage.getFeelingSelections(sessionId),
               storage.getTimelineEvents(sessionId),
               storage.getValuesCardPlacements(sessionId),
+              storage.getTheaterParts(sessionId),
+              storage.getTheaterConnections(sessionId),
             ]);
             const state = getRoomState(sessionId);
 
@@ -125,6 +135,12 @@ export function setupWebSocketServer(server: Server) {
               feelingSelections,
               timelineEvents: timelineEvts,
               valuesCards,
+              theaterParts: theaterPartsData,
+              theaterConnections: theaterConnsData,
+              theaterFrozen: state.theaterFrozen,
+              theaterDimInactive: state.theaterDimInactive,
+              theaterMetaphor: state.theaterMetaphor,
+              theaterPartLimit: state.theaterPartLimit,
             }));
 
             broadcast(sessionId, {
@@ -392,6 +408,118 @@ export function setupWebSocketServer(server: Server) {
             if (!client) return;
             await storage.clearValuesCardPlacements(client.sessionId);
             broadcast(client.sessionId, { type: "values-cleared" });
+            break;
+          }
+
+          // --- Parts Theater ---
+          case "theater-part-add": {
+            if (!client) return;
+            const part = await storage.addTheaterPart({
+              sessionId: client.sessionId,
+              placedBy: client.participantId,
+              name: msg.name || null,
+              x: msg.x,
+              y: msg.y,
+              size: msg.size || "medium",
+              color: msg.color || "#1B2A4A",
+              note: null,
+              isContained: false,
+            });
+            broadcast(client.sessionId, {
+              type: "theater-part-added",
+              part,
+              placedBy: client.participantId,
+              displayName: client.displayName,
+            });
+            break;
+          }
+
+          case "theater-part-move": {
+            if (!client) return;
+            await storage.updateTheaterPart(msg.partId, { x: msg.x, y: msg.y });
+            broadcast(client.sessionId, {
+              type: "theater-part-moved",
+              partId: msg.partId,
+              x: msg.x,
+              y: msg.y,
+              movedBy: client.participantId,
+            }, ws);
+            break;
+          }
+
+          case "theater-part-update": {
+            if (!client) return;
+            const fields: Record<string, any> = {};
+            if (msg.name !== undefined) fields.name = msg.name;
+            if (msg.color !== undefined) fields.color = msg.color;
+            if (msg.size !== undefined) fields.size = msg.size;
+            if (msg.note !== undefined) fields.note = msg.note;
+            if (msg.isContained !== undefined) fields.isContained = msg.isContained;
+            const updatedPart = await storage.updateTheaterPart(msg.partId, fields);
+            broadcast(client.sessionId, {
+              type: "theater-part-updated",
+              part: updatedPart,
+            });
+            break;
+          }
+
+          case "theater-part-remove": {
+            if (!client) return;
+            await storage.removeTheaterPart(msg.partId);
+            broadcast(client.sessionId, {
+              type: "theater-part-removed",
+              partId: msg.partId,
+            });
+            break;
+          }
+
+          case "theater-connection-add": {
+            if (!client) return;
+            const conn = await storage.addTheaterConnection({
+              sessionId: client.sessionId,
+              fromPartId: msg.fromPartId,
+              toPartId: msg.toPartId,
+              style: msg.style || "solid",
+              createdBy: client.participantId,
+            });
+            broadcast(client.sessionId, {
+              type: "theater-connection-added",
+              connection: conn,
+            });
+            break;
+          }
+
+          case "theater-connection-remove": {
+            if (!client) return;
+            await storage.removeTheaterConnection(msg.connectionId);
+            broadcast(client.sessionId, {
+              type: "theater-connection-removed",
+              connectionId: msg.connectionId,
+            });
+            break;
+          }
+
+          case "theater-clear": {
+            if (!client) return;
+            await storage.clearTheaterParts(client.sessionId);
+            broadcast(client.sessionId, { type: "theater-cleared" });
+            break;
+          }
+
+          case "theater-settings-update": {
+            if (!client) return;
+            const tState = getRoomState(client.sessionId);
+            if (msg.frozen !== undefined) tState.theaterFrozen = msg.frozen;
+            if (msg.dimInactive !== undefined) tState.theaterDimInactive = msg.dimInactive;
+            if (msg.metaphor !== undefined) tState.theaterMetaphor = msg.metaphor;
+            if (msg.partLimit !== undefined) tState.theaterPartLimit = msg.partLimit;
+            broadcast(client.sessionId, {
+              type: "theater-settings-updated",
+              frozen: tState.theaterFrozen,
+              dimInactive: tState.theaterDimInactive,
+              metaphor: tState.theaterMetaphor,
+              partLimit: tState.theaterPartLimit,
+            });
             break;
           }
 

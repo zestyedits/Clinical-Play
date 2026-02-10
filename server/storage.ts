@@ -2,8 +2,9 @@ import { eq, desc, or, isNull } from "drizzle-orm";
 import { db } from "./db";
 import {
   therapySessions, participants, sandtrayItems, toolSuggestions,
-  feelingWheelSelections, timelineEvents, valuesCardPlacements, supportTickets,
-  waitlistEntries, messages,
+  feelingWheelSelections, timelineEvents, valuesCardPlacements,
+  theaterParts, theaterConnections,
+  supportTickets, waitlistEntries, messages,
   type TherapySession, type InsertTherapySession,
   type Participant, type InsertParticipant,
   type SandtrayItem, type InsertSandtrayItem,
@@ -11,6 +12,8 @@ import {
   type FeelingWheelSelection, type InsertFeelingWheelSelection,
   type TimelineEvent, type InsertTimelineEvent,
   type ValuesCardPlacement, type InsertValuesCardPlacement,
+  type TheaterPart, type InsertTheaterPart,
+  type TheaterConnection, type InsertTheaterConnection,
   type SupportTicket, type InsertSupportTicket,
   type WaitlistEntry, type InsertWaitlistEntry,
   type Message, type InsertMessage,
@@ -60,6 +63,17 @@ export interface IStorage {
   updateValuesCardPlacement(id: string, data: Partial<ValuesCardPlacement>): Promise<ValuesCardPlacement | undefined>;
   removeValuesCardPlacement(id: string): Promise<void>;
   clearValuesCardPlacements(sessionId: string): Promise<void>;
+
+  addTheaterPart(data: InsertTheaterPart): Promise<TheaterPart>;
+  getTheaterParts(sessionId: string): Promise<TheaterPart[]>;
+  updateTheaterPart(id: string, data: Partial<TheaterPart>): Promise<TheaterPart | undefined>;
+  removeTheaterPart(id: string): Promise<void>;
+  clearTheaterParts(sessionId: string): Promise<void>;
+
+  addTheaterConnection(data: InsertTheaterConnection): Promise<TheaterConnection>;
+  getTheaterConnections(sessionId: string): Promise<TheaterConnection[]>;
+  removeTheaterConnection(id: string): Promise<void>;
+  clearTheaterConnections(sessionId: string): Promise<void>;
 
   addSupportTicket(data: InsertSupportTicket): Promise<SupportTicket>;
 
@@ -227,6 +241,46 @@ export class DatabaseStorage implements IStorage {
 
   async clearValuesCardPlacements(sessionId: string): Promise<void> {
     await db.delete(valuesCardPlacements).where(eq(valuesCardPlacements.sessionId, sessionId));
+  }
+
+  async addTheaterPart(data: InsertTheaterPart): Promise<TheaterPart> {
+    const [part] = await db.insert(theaterParts).values(data).returning();
+    return part;
+  }
+
+  async getTheaterParts(sessionId: string): Promise<TheaterPart[]> {
+    return db.select().from(theaterParts).where(eq(theaterParts.sessionId, sessionId));
+  }
+
+  async updateTheaterPart(id: string, data: Partial<TheaterPart>): Promise<TheaterPart | undefined> {
+    const [part] = await db.update(theaterParts).set(data).where(eq(theaterParts.id, id)).returning();
+    return part;
+  }
+
+  async removeTheaterPart(id: string): Promise<void> {
+    await db.delete(theaterParts).where(eq(theaterParts.id, id));
+  }
+
+  async clearTheaterParts(sessionId: string): Promise<void> {
+    await db.delete(theaterConnections).where(eq(theaterConnections.sessionId, sessionId));
+    await db.delete(theaterParts).where(eq(theaterParts.sessionId, sessionId));
+  }
+
+  async addTheaterConnection(data: InsertTheaterConnection): Promise<TheaterConnection> {
+    const [conn] = await db.insert(theaterConnections).values(data).returning();
+    return conn;
+  }
+
+  async getTheaterConnections(sessionId: string): Promise<TheaterConnection[]> {
+    return db.select().from(theaterConnections).where(eq(theaterConnections.sessionId, sessionId));
+  }
+
+  async removeTheaterConnection(id: string): Promise<void> {
+    await db.delete(theaterConnections).where(eq(theaterConnections.id, id));
+  }
+
+  async clearTheaterConnections(sessionId: string): Promise<void> {
+    await db.delete(theaterConnections).where(eq(theaterConnections.sessionId, sessionId));
   }
 
   async addSupportTicket(data: InsertSupportTicket): Promise<SupportTicket> {
