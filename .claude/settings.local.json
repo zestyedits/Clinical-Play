@@ -4,7 +4,8 @@
       "Bash(npx tsc:*)",
       "Bash(tree:*)",
       "Bash(xargs:*)",
-      "Bash(npx vite build:*)"
+      "Bash(npx vite build:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

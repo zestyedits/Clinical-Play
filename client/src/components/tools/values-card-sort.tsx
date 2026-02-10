@@ -69,7 +69,12 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between px-4 md:px-6 pt-4 md:pt-6 pb-2 shrink-0 relative z-10">
+      <motion.div
+        className="flex items-center justify-between px-4 md:px-6 pt-4 md:pt-6 pb-2 shrink-0 relative z-10"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
         <div>
           <h2 className="font-serif text-xl md:text-3xl text-primary">Values Card Sort</h2>
           <p className="text-xs md:text-sm text-muted-foreground">Drag cards to sort what matters most</p>
@@ -86,18 +91,21 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
             </button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Sorting Columns */}
       <div className="flex-1 flex flex-col md:flex-row gap-3 px-4 md:px-6 pb-2 overflow-hidden relative z-10">
-        {VALUE_COLUMNS.map(col => {
+        {VALUE_COLUMNS.map((col, colIdx) => {
           const colCards = getColumnCards(col.id);
           return (
-            <div
+            <motion.div
               key={col.id}
               className="flex-1 flex flex-col min-h-0"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 + colIdx * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              onDragOver={(e: React.DragEvent) => e.preventDefault()}
+              onDrop={(e: React.DragEvent) => {
                 e.preventDefault();
                 const cardId = e.dataTransfer.getData("cardId");
                 if (cardId) handleDrop(col.id, cardId);
@@ -160,7 +168,7 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
                   <p className="text-xs text-muted-foreground/40 text-center py-4">Drop cards here</p>
                 )}
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>

@@ -68,7 +68,12 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between px-6 pt-6 pb-2 shrink-0 relative z-10">
+      <motion.div
+        className="flex items-center justify-between px-6 pt-6 pb-2 shrink-0 relative z-10"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
         <div>
           <h2 className="font-serif text-xl md:text-2xl text-primary">Narrative Timeline</h2>
           <p className="text-sm text-muted-foreground">Click the river to drop a stone. Tell your story.</p>
@@ -83,10 +88,15 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
             <RotateCcw size={18} />
           </button>
         )}
-      </div>
+      </motion.div>
 
       {/* Timeline Area */}
-      <div className="flex-1 flex items-center px-6 relative z-10">
+      <motion.div
+        className="flex-1 flex items-center px-6 relative z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+      >
         <div
           ref={timelineRef}
           className="w-full overflow-x-auto cursor-pointer relative py-20"
@@ -223,7 +233,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
             })}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Empty State */}
       {events.length === 0 && !showAddForm && (
@@ -243,10 +253,10 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
       <AnimatePresence>
         {showAddForm && (
           <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            initial={{ y: 100, opacity: 0, filter: "blur(4px)" }}
+            animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+            exit={{ y: 100, opacity: 0, filter: "blur(4px)" }}
+            transition={{ type: "spring", stiffness: 300, damping: 28 }}
             className="absolute bottom-0 inset-x-0 z-30"
           >
             <div className="bg-white/90 backdrop-blur-2xl border-t border-white/30 p-6 shadow-2xl">

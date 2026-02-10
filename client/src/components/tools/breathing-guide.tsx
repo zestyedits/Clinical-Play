@@ -71,12 +71,17 @@ export function BreathingGuide({ isActive, isClinician, onToggle, startTime }: B
       <div className="relative z-10 flex flex-col items-center gap-8">
         <motion.div
           className="relative"
+          initial={{ opacity: 0, scale: 0.8 }}
           animate={{
+            opacity: 1,
             scale: isActive ? currentPhase.scale : 1,
           }}
           transition={{
-            duration: currentPhase.duration / 1000,
-            ease: "easeInOut",
+            opacity: { duration: 0.6, delay: 0.1 },
+            scale: {
+              duration: currentPhase.duration / 1000,
+              ease: "easeInOut",
+            },
           }}
         >
           <svg width="200" height="200" viewBox="0 0 200 200" className="drop-shadow-2xl">
@@ -143,6 +148,7 @@ export function BreathingGuide({ isActive, isClinician, onToggle, startTime }: B
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
+            transition={{ delay: 0.2 }}
             className="text-center"
           >
             <h2 className="font-serif text-3xl md:text-4xl text-primary mb-2">
@@ -160,6 +166,9 @@ export function BreathingGuide({ isActive, isClinician, onToggle, startTime }: B
         {isClinician && (
           <motion.button
             onClick={onToggle}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className={cn(
               "px-8 py-4 rounded-2xl font-medium text-sm flex items-center gap-3 shadow-xl transition-all cursor-pointer",
               isActive
@@ -176,9 +185,14 @@ export function BreathingGuide({ isActive, isClinician, onToggle, startTime }: B
         )}
 
         {!isClinician && !isActive && (
-          <p className="text-sm text-muted-foreground/70 italic">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-sm text-muted-foreground/70 italic"
+          >
             Waiting for your clinician to start the exercise...
-          </p>
+          </motion.p>
         )}
       </div>
     </div>

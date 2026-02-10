@@ -301,18 +301,33 @@ export default function LandingPage() {
                 A premium telehealth hub designed for evidence-based engagement. 
                 Experience the intersection of clinical sophistication and interactive play.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <motion.div
+                className="flex flex-col sm:flex-row gap-4"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              >
                 <Link href="/signup">
-                  <button className="h-14 px-8 rounded-full bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white border border-[#D4AF37]/40 shadow-xl shadow-[#2E8B57]/20 hover:shadow-2xl hover:shadow-[#2E8B57]/30 font-medium text-lg btn-luxury flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto" data-testid="button-get-started">
+                  <motion.button
+                    className="h-14 px-8 rounded-full bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white border border-[#D4AF37]/40 shadow-xl shadow-[#2E8B57]/20 hover:shadow-2xl hover:shadow-[#2E8B57]/30 font-medium text-lg btn-luxury flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
+                    whileHover={{ scale: 1.03, y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                    data-testid="button-get-started"
+                  >
                     Get Started <ArrowRight size={18} />
-                  </button>
+                  </motion.button>
                 </Link>
                 <Link href="/login">
-                  <button className="h-14 px-8 rounded-full bg-white/80 backdrop-blur-sm border border-white/40 text-foreground font-medium text-lg hover:bg-white transition-colors cursor-pointer w-full sm:w-auto" data-testid="button-sign-in">
+                  <motion.button
+                    className="h-14 px-8 rounded-full bg-white/80 backdrop-blur-sm border border-white/40 text-foreground font-medium text-lg hover:bg-white transition-colors cursor-pointer w-full sm:w-auto"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    data-testid="button-sign-in"
+                  >
                     Sign In
-                  </button>
+                  </motion.button>
                 </Link>
-              </div>
+              </motion.div>
             </motion.div>
           </div>
 

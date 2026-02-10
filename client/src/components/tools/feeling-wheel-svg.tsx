@@ -155,13 +155,21 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
   return (
     <div className="h-full flex flex-col items-center justify-center p-4 bg-gradient-to-b from-background/50 to-background overflow-auto">
       <div className="w-full max-w-[420px] mx-auto">
-        <div className="text-center mb-4">
+        <motion.div
+          className="text-center mb-4"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
           <h2 className="font-serif text-xl text-primary mb-1">How are you feeling?</h2>
           <p className="text-xs text-muted-foreground">Tap to explore your emotions from core to specific</p>
-        </div>
+        </motion.div>
 
-        <div
+        <motion.div
           className="relative mx-auto"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           style={{
             maxWidth: 400,
             maxHeight: 400,
@@ -374,7 +382,7 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
               feel?
             </text>
           </svg>
-        </div>
+        </motion.div>
 
         {/* Selection display */}
         {latestSelection && (

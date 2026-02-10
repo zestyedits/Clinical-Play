@@ -1,5 +1,5 @@
 import { Link, useParams, useLocation } from "wouter";
-import { ChevronRight, PanelRightClose, LogOut, Users, Ghost, Shield, Wrench, Camera, Crown, Square, Clock, CheckCircle2, Download } from "lucide-react";
+import { ChevronRight, PanelRightClose, LogOut, Users, Ghost, Shield, Wrench, Camera, Crown, Square, Clock, CheckCircle2, Download, Check, Copy } from "lucide-react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -66,6 +66,8 @@ export default function Playroom() {
   const [subscriptionType, setSubscriptionType] = useState<string>("free");
   const [sessionEnded, setSessionEnded] = useState(false);
   const [endingSession, setEndingSession] = useState(false);
+  const [toolTransitionLabel, setToolTransitionLabel] = useState<string | null>(null);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   // Ambient / Zen state
   const [lightSource, setLightSource] = useState<LightSource>(DEFAULT_LIGHT_SOURCE);
@@ -515,6 +517,17 @@ export default function Playroom() {
     }
   }, [activeTool]);
 
+  const toolDisplayName = (tool: string) => {
+    switch (tool) {
+      case "sandtray": return "Zen Sandtray";
+      case "breathing": return "Calm Breathing";
+      case "feelings": return "Feeling Wheel";
+      case "narrative": return "Narrative Timeline";
+      case "values-sort": return "Values Card Sort";
+      default: return tool;
+    }
+  };
+
   // Sandtray handlers
   const handleItemDrop = useCallback((icon: string, category: string, x: number, y: number) => {
     send({ type: "item-placed", icon, category, x, y, scale: 1, rotation: 0 });
@@ -560,9 +573,13 @@ export default function Playroom() {
   }, [send, isDemo]);
 
   const handleSelectTool = useCallback((toolId: string) => {
+    if (toolId === activeTool) return;
+    const label = toolDisplayName(toolId);
+    setToolTransitionLabel(label);
+    setTimeout(() => setToolTransitionLabel(null), 900);
     if (!isDemo) setActiveTool(toolId);
     send({ type: "tool-change", tool: toolId });
-  }, [send, isDemo]);
+  }, [send, isDemo, activeTool]);
 
   const handleToggleBreathing = useCallback(() => {
     const next = !breathingActive;
@@ -733,16 +750,6 @@ export default function Playroom() {
     }
   }, [activeTool, session]);
 
-  const toolDisplayName = (tool: string) => {
-    switch (tool) {
-      case "sandtray": return "Zen Sandtray";
-      case "breathing": return "Calm Breathing";
-      case "feelings": return "Feeling Wheel";
-      case "narrative": return "Narrative Timeline";
-      case "values-sort": return "Values Card Sort";
-      default: return tool;
-    }
-  };
 
   return (
     <div className="h-screen w-full bg-background overflow-hidden flex flex-col font-sans">
@@ -783,16 +790,45 @@ export default function Playroom() {
 
         <div className="flex items-center gap-1.5 md:gap-2">
           {session?.inviteCode && (
-            <button
+            <motion.button
               onClick={() => {
                 navigator.clipboard.writeText(`${window.location.origin}/join/${session.inviteCode}`);
+                setInviteCopied(true);
+                setTimeout(() => setInviteCopied(false), 2000);
               }}
-              className="flex items-center gap-2 bg-accent/10 text-accent px-3 py-1.5 rounded-full text-xs font-mono font-bold border border-accent/20 cursor-pointer hover:bg-accent/15 transition-colors active:scale-95"
+              className="flex items-center gap-2 bg-accent/10 text-accent px-3 py-1.5 rounded-full text-xs font-mono font-bold border border-accent/20 cursor-pointer hover:bg-accent/15 transition-colors"
+              whileTap={{ scale: 0.95 }}
               title="Copy invite link"
               data-tour="playroom-invite-code"
             >
-              {session.inviteCode}
-            </button>
+              <AnimatePresence mode="wait">
+                {inviteCopied ? (
+                  <motion.span
+                    key="copied"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center gap-1.5"
+                  >
+                    <Check size={12} className="text-green-600" />
+                    <span className="text-green-600">Copied</span>
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="code"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center gap-1.5"
+                  >
+                    <Copy size={11} />
+                    {session.inviteCode}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
           )}
 
           {isClinician && (
@@ -808,23 +844,27 @@ export default function Playroom() {
                 </div>
               )}
 
-              <button
+              <motion.button
                 onClick={handleSnapshot}
-                className="p-2.5 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary/50 transition-colors cursor-pointer active:scale-95"
+                className="p-2.5 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary/50 transition-colors cursor-pointer"
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
                 data-testid="button-snapshot"
                 title="Export Session Summary"
               >
                 <Camera size={20} />
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
                 onClick={() => setToolSelectorOpen(true)}
-                className="p-2.5 rounded-xl text-primary hover:bg-secondary/50 transition-colors cursor-pointer active:scale-95"
+                className="p-2.5 rounded-xl text-primary hover:bg-secondary/50 transition-colors cursor-pointer"
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
                 data-testid="button-open-tool-selector"
                 title="Clinical Tools"
               >
                 <Wrench size={20} />
-              </button>
+              </motion.button>
             </>
           )}
 
@@ -832,9 +872,20 @@ export default function Playroom() {
             <SheetTrigger asChild>
               <button className="md:hidden p-2 text-primary hover:bg-secondary rounded-xl transition-colors relative cursor-pointer" data-testid="button-mobile-participants">
                 <Users size={20} />
-                {onlineUsers.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-accent text-white text-[9px] font-bold rounded-full flex items-center justify-center">{onlineUsers.length}</span>
-                )}
+                <AnimatePresence>
+                  {onlineUsers.length > 0 && (
+                    <motion.span
+                      key={onlineUsers.length}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                      className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-accent text-white text-[9px] font-bold rounded-full flex items-center justify-center"
+                    >
+                      {onlineUsers.length}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </button>
             </SheetTrigger>
             <SheetContent side="bottom" className="h-[60vh] rounded-t-3xl">
@@ -877,13 +928,20 @@ export default function Playroom() {
             </SheetContent>
           </Sheet>
 
-          <button
+          <motion.button
             onClick={() => setToolsOpen(!toolsOpen)}
             className={cn("p-2 rounded-xl transition-colors cursor-pointer hidden md:block", toolsOpen ? "bg-primary text-white" : "text-muted-foreground hover:bg-secondary")}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
             data-testid="button-toggle-tools"
           >
-            <PanelRightClose size={20} />
-          </button>
+            <motion.div
+              animate={{ rotate: toolsOpen ? 180 : 0 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <PanelRightClose size={20} />
+            </motion.div>
+          </motion.button>
           {isClinician && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -918,9 +976,14 @@ export default function Playroom() {
             </AlertDialog>
           )}
           <Link href="/dashboard">
-            <button className="p-2 text-muted-foreground hover:bg-secondary rounded-xl transition-colors cursor-pointer" data-testid="button-leave">
+            <motion.button
+              className="p-2 text-muted-foreground hover:bg-secondary rounded-xl transition-colors cursor-pointer"
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              data-testid="button-leave"
+            >
               <LogOut size={18} />
-            </button>
+            </motion.button>
           </Link>
         </div>
       </motion.header>
@@ -944,16 +1007,16 @@ export default function Playroom() {
       <div className="flex-1 flex overflow-hidden relative">
 
         {/* Tool Area */}
-        <div className="flex-1 relative" ref={toolAreaRef}>
+        <div className="flex-1 relative overflow-hidden" ref={toolAreaRef}>
           <AnimatePresence mode="wait">
             {activeTool === "sandtray" && (
               <motion.div
                 key="sandtray"
                 className="absolute inset-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
+                initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               >
                 <ZenCanvas
                   items={items}
@@ -986,10 +1049,10 @@ export default function Playroom() {
               <motion.div
                 key="breathing"
                 className="absolute inset-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
+                initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               >
                 <BreathingGuide
                   isActive={breathingActive}
@@ -1004,10 +1067,10 @@ export default function Playroom() {
               <motion.div
                 key="feelings"
                 className="absolute inset-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
+                initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               >
                 <FeelingWheelSVG
                   selections={feelingSelections}
@@ -1022,10 +1085,10 @@ export default function Playroom() {
               <motion.div
                 key="narrative"
                 className="absolute inset-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
+                initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               >
                 <NarrativeTimeline
                   events={timelineEvents}
@@ -1042,10 +1105,10 @@ export default function Playroom() {
               <motion.div
                 key="values-sort"
                 className="absolute inset-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
+                initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               >
                 <ValuesCardSort
                   placements={valuesCards}
@@ -1055,6 +1118,23 @@ export default function Playroom() {
                   onClear={handleValuesClear}
                   isClinician={isClinician}
                 />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Tool Transition Label */}
+          <AnimatePresence>
+            {toolTransitionLabel && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
+              >
+                <div className="bg-white/70 backdrop-blur-xl px-8 py-4 rounded-2xl shadow-xl border border-white/30">
+                  <p className="font-serif text-lg text-primary tracking-tight">{toolTransitionLabel}</p>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1211,19 +1291,25 @@ export default function Playroom() {
       <AnimatePresence>
         {sessionEnded && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex items-center justify-center"
+            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(20px)" }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-[100] bg-background/95 flex items-center justify-center"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.15, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ scale: 0.92, opacity: 0, y: 20, filter: "blur(6px)" }}
+              animate={{ scale: 1, opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ delay: 0.2, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               className="text-center max-w-lg mx-auto px-6 w-full"
             >
-              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[#2E8B57]/5 border border-[#2E8B57]/10 flex items-center justify-center">
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.4, type: "spring", stiffness: 300, damping: 20 }}
+                className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[#2E8B57]/5 border border-[#2E8B57]/10 flex items-center justify-center"
+              >
                 <CheckCircle2 size={32} className="text-[#2E8B57]" />
-              </div>
+              </motion.div>
               <h2 className="font-serif text-2xl text-primary mb-2" data-testid="text-session-complete">Session Complete</h2>
               <p className="text-muted-foreground text-sm leading-relaxed mb-6">
                 {isClinician

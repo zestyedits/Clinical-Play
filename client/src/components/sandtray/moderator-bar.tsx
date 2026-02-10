@@ -33,9 +33,10 @@ export function ModeratorBar({
 }: ModeratorBarProps) {
   return (
     <motion.div
-      initial={{ x: 60, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 60, opacity: 0 }}
+      initial={{ x: 60, opacity: 0, filter: "blur(4px)" }}
+      animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
+      exit={{ x: 60, opacity: 0, filter: "blur(4px)" }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className="absolute top-1/2 -translate-y-1/2 right-3 md:right-5 z-40"
     >
       <div className="bg-primary/90 backdrop-blur-xl text-primary-foreground p-1.5 rounded-2xl shadow-2xl border border-white/10 flex flex-col items-center gap-1 ring-1 ring-black/5">
