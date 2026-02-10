@@ -10,7 +10,7 @@ import {
   Palette, Check, Heart, Sparkles, SlidersHorizontal,
   FileText, Tag, ExternalLink, ChevronDown, ShieldAlert, ChevronRight
 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useTheme, accentPresets } from "@/hooks/use-theme";
 
 const SPECIALTY_OPTIONS = [
@@ -266,6 +266,7 @@ function MultiSelectChips({ options, selected, onToggle }: { options: string[]; 
 export default function WorkspacePage() {
   const { user, isLoading: authLoading, isAuthenticated, session } = useAuth();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const queryClient = useQueryClient();
   const authFetch = createAuthFetch(session?.access_token);
 
@@ -285,8 +286,7 @@ export default function WorkspacePage() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      toast({ title: "Please sign in", description: "Please sign in to access your workspace.", variant: "destructive" });
-      setTimeout(() => { window.location.href = "/login"; }, 500);
+      navigate("/login");
     }
   }, [authLoading, isAuthenticated]);
 

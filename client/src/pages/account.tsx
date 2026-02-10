@@ -11,7 +11,7 @@ import {
   ChevronDown, ChevronRight, Check, X, Copy, Volume2, VolumeX,
   Zap, Sparkles, AlertTriangle, Mail, Clock
 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   MOCK_INVOICES, MOCK_PAYMENT_METHODS, MOCK_ORG_MEMBERS, MOCK_DEVICES,
   ROLE_PERMISSIONS,
@@ -713,13 +713,12 @@ const SECTIONS = [
 
 export default function AccountPage() {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
-  const { toast } = useToast();
+  const [, navigate] = useLocation();
   const [activeSection, setActiveSection] = useState("plan");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      toast({ title: "Please sign in", description: "Please sign in to access your account.", variant: "destructive" });
-      setTimeout(() => { window.location.href = "/login"; }, 500);
+      navigate("/login");
     }
   }, [authLoading, isAuthenticated]);
 

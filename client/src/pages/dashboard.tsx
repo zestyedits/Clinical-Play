@@ -5,7 +5,7 @@ import {
   Plus, Users, Calendar, ArrowRight, Copy, CheckCircle2, Crown, Flame,
   CreditCard, Star, Lock, Sparkles, Lightbulb, ExternalLink, HelpCircle, AlertTriangle,
   Palette, Wind, Target, Clock, Layers, House, Brain, Gamepad2, TreePine, Theater,
-  X, UserPlus, Mail, RefreshCw, User
+  X, UserPlus, Mail, RefreshCw, User, Square
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -414,8 +414,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      toast({ title: "Please sign in", description: "Please sign in to access your clinical tools.", variant: "destructive" });
-      setTimeout(() => { window.location.href = "/login"; }, 500);
+      navigate("/login");
     }
   }, [authLoading, isAuthenticated]);
 
@@ -518,6 +517,27 @@ export default function Dashboard() {
       setShowNewSession(false);
       queryClient.invalidateQueries({ queryKey: ["/api/therapy-sessions/mine"] });
       navigate(`/playroom/${session.id}?tool=${pendingTool}`);
+    },
+  });
+
+  const [endingSessionId, setEndingSessionId] = useState<string | null>(null);
+
+  const endSession = useMutation({
+    mutationFn: async (sessionId: string) => {
+      const res = await authFetch(`/api/therapy-sessions/${sessionId}/end`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed to end session");
+      return res.json();
+    },
+    onSuccess: () => {
+      setEndingSessionId(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/therapy-sessions/mine"] });
+      toast({ title: "Session ended", description: "The session has been ended for all participants." });
+    },
+    onError: () => {
+      setEndingSessionId(null);
+      toast({ title: "Error", description: "Could not end the session. Please try again.", variant: "destructive" });
     },
   });
 
@@ -703,7 +723,7 @@ export default function Dashboard() {
                   <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "rgba(46,139,87,0.12)", color: "#2E8B57" }}>active</span>
                 </div>
               </div>
-              <div className="flex gap-2 w-full md:w-auto flex-col sm:flex-row">
+              <div className="flex gap-2 w-full md:w-auto flex-col sm:flex-row items-center">
                 <button
                   onClick={() => copyInvite(sess.inviteCode)}
                   className="min-h-[48px] px-4 py-3 bg-white/80 backdrop-blur-sm border border-white/40 text-foreground rounded-2xl text-sm font-medium hover:bg-white transition-colors flex items-center justify-center gap-2 cursor-pointer font-mono tracking-wider"
@@ -725,6 +745,33 @@ export default function Dashboard() {
                     Enter <ArrowRight size={16} />
                   </button>
                 </Link>
+                {endingSessionId === sess.id ? (
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={() => setEndingSessionId(null)}
+                      className="min-h-[48px] px-3 py-3 bg-white/80 border border-white/40 text-muted-foreground rounded-2xl text-xs font-medium cursor-pointer hover:bg-white transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => endSession.mutate(sess.id)}
+                      disabled={endSession.isPending}
+                      className="min-h-[48px] px-3 py-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-2xl text-xs font-medium cursor-pointer hover:bg-destructive/20 transition-colors disabled:opacity-50"
+                      data-testid={`button-confirm-end-${sess.id}`}
+                    >
+                      {endSession.isPending ? "Ending..." : "End"}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setEndingSessionId(sess.id)}
+                    className="min-h-[48px] px-3 py-3 text-destructive/60 hover:text-destructive hover:bg-destructive/5 rounded-2xl transition-colors cursor-pointer"
+                    title="End Session"
+                    data-testid={`button-end-${sess.id}`}
+                  >
+                    <Square size={16} className="fill-destructive/20" />
+                  </button>
+                )}
               </div>
             </GlassCard>
           </motion.div>
