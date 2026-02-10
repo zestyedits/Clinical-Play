@@ -381,7 +381,7 @@ export default function WorkspacePage() {
 
   const anyChanges = hasChanges || hasLocalChanges;
 
-  if (authLoading || profileLoading) {
+  if (authLoading || !isAuthenticated || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20">
         <div className="text-center">

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSupabase } from "@/lib/supabase";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import type { User } from "@shared/models/auth";
 
@@ -27,7 +27,20 @@ async function fetchUser(session: Session | null): Promise<AuthResult> {
   return { user, accessDenied: false, emailConfirmed: !!emailConfirmed };
 }
 
-export function useAuth() {
+// Shared session context — single source of truth for Supabase session
+interface SessionContextValue {
+  session: Session | null;
+  sessionLoading: boolean;
+  setSession: (s: Session | null) => void;
+}
+
+const SessionContext = createContext<SessionContextValue>({
+  session: null,
+  sessionLoading: true,
+  setSession: () => {},
+});
+
+export function SessionProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [session, setSession] = useState<Session | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
@@ -62,6 +75,40 @@ export function useAuth() {
       unsubscribe?.();
     };
   }, [queryClient]);
+
+  // Pre-fetch user data so it's cached before any page renders
+  const { isLoading: userLoading } = useQuery({
+    queryKey: ["/api/auth/user", session?.access_token],
+    queryFn: () => fetchUser(session),
+    enabled: !sessionLoading && !!session,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // Gate rendering until session is resolved AND user is fetched (if session exists)
+  const isReady = !sessionLoading && (!session || !userLoading);
+
+  if (!isReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#faf9f7] to-[#f0ede8]">
+        <div className="text-center">
+          <img src="/images/logo-icon.png" alt="" className="w-14 h-14 mx-auto mb-3 object-contain animate-pulse" />
+          <p className="text-sm text-[#1B2A4A]/40 font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <SessionContext.Provider value={{ session, sessionLoading, setSession }}>
+      {children}
+    </SessionContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const queryClient = useQueryClient();
+  const { session, sessionLoading, setSession } = useContext(SessionContext);
 
   const { data: authResult, isLoading: userLoading } = useQuery({
     queryKey: ["/api/auth/user", session?.access_token],

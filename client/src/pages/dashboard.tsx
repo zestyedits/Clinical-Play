@@ -605,7 +605,7 @@ export default function Dashboard() {
   const pastSessions = sessions.filter(s => s.status !== "active");
   const favoritedTools = ALL_TOOLS.filter(t => favorites.includes(t.id));
 
-  if (authLoading) {
+  if (authLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20">
         <div className="text-center">

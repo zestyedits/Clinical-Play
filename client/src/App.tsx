@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/hooks/use-theme";
+import { SessionProvider } from "@/hooks/use-auth";
 import { AnimatePresence, motion } from "framer-motion";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing-page";
@@ -73,7 +74,9 @@ function App() {
       <ThemeProvider>
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <SessionProvider>
+            <Router />
+          </SessionProvider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
