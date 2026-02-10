@@ -46,14 +46,19 @@ const CLINICAL_TIPS = [
   { tip: "Values Card Sort is powerful for clients navigating major life transitions.", tool: "Values Card Sort" },
 ];
 
+const ACTIVE_TOOLS = ALL_TOOLS.filter(t =>
+  ["sandtray", "breathing", "feelings", "narrative", "values-sort", "parts-theater"].includes(t.id)
+);
+
 function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (name: string, mode: "solo" | "group") => void;
+  onSubmit: (name: string, mode: "solo" | "group", tool: string) => void;
   isPending: boolean;
 }) {
   const [name, setName] = useState("");
   const [mode, setMode] = useState<"solo" | "group">("solo");
+  const [selectedTool, setSelectedTool] = useState("sandtray");
 
   const containsPotentialName = useMemo(() => {
     return /\b[A-Z][a-z]+\s+[A-Z][a-z]+/.test(name);
@@ -63,6 +68,7 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
     if (isOpen) {
       setName("");
       setMode("solo");
+      setSelectedTool("sandtray");
     }
   }, [isOpen]);
 
@@ -158,12 +164,33 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
                     </button>
                   </div>
                 </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-2">Starting Tool</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {ACTIVE_TOOLS.map((tool) => (
+                      <button
+                        key={tool.id}
+                        onClick={() => setSelectedTool(tool.id)}
+                        className={`p-3 rounded-2xl border-2 transition-all cursor-pointer text-center ${
+                          selectedTool === tool.id
+                            ? "border-[#2E8B57] bg-[#2E8B57]/5 shadow-md"
+                            : "border-white/40 bg-white/40 hover:border-primary/30"
+                        }`}
+                        data-testid={`button-tool-${tool.id}`}
+                      >
+                        <span className="text-xl block mb-1">{tool.emoji}</span>
+                        <div className="text-[11px] font-medium text-primary leading-tight">{tool.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="p-6 pt-2">
               <button
-                onClick={() => onSubmit(name || `Session — ${new Date().toLocaleDateString()}`, mode)}
+                onClick={() => onSubmit(name || `Session — ${new Date().toLocaleDateString()}`, mode, selectedTool)}
                 disabled={isPending}
                 className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                 data-testid="button-create-session-submit"
@@ -475,8 +502,11 @@ export default function Dashboard() {
     staleTime: 5 * 60_000,
   });
 
+  const [pendingTool, setPendingTool] = useState("sandtray");
+
   const createSession = useMutation({
-    mutationFn: async ({ name, mode }: { name: string; mode: string }) => {
+    mutationFn: async ({ name, mode, tool }: { name: string; mode: string; tool: string }) => {
+      setPendingTool(tool);
       const res = await authFetch("/api/therapy-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -487,7 +517,7 @@ export default function Dashboard() {
     onSuccess: (session: TherapySession) => {
       setShowNewSession(false);
       queryClient.invalidateQueries({ queryKey: ["/api/therapy-sessions/mine"] });
-      navigate(`/playroom/${session.id}`);
+      navigate(`/playroom/${session.id}?tool=${pendingTool}`);
     },
   });
 
@@ -1143,7 +1173,7 @@ export default function Dashboard() {
       <NewSessionModal
         isOpen={showNewSession}
         onClose={() => setShowNewSession(false)}
-        onSubmit={(name, mode) => createSession.mutate({ name, mode })}
+        onSubmit={(name, mode, tool) => createSession.mutate({ name, mode, tool })}
         isPending={createSession.isPending}
       />
 

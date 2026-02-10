@@ -604,6 +604,21 @@ export default function Playroom() {
       .catch(() => {});
   }, [sessionId, isDemo]);
 
+  // Read ?tool= param and switch tool on first connect (real sessions)
+  const initialToolApplied = useRef(false);
+  useEffect(() => {
+    if (isDemo || !connected || initialToolApplied.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const toolParam = params.get("tool");
+    if (toolParam && toolParam !== activeTool) {
+      initialToolApplied.current = true;
+      setActiveTool(toolParam);
+      send({ type: "tool-change", tool: toolParam });
+    } else {
+      initialToolApplied.current = true;
+    }
+  }, [connected, isDemo]);
+
   useEffect(() => {
     if (isClinician && session && connected && !playroomTour.hasCompleted() && !sessionEnded) {
       const timer = setTimeout(() => playroomTour.start(), 1200);
