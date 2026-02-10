@@ -21,6 +21,8 @@ import EmailConfirmed from "@/pages/email-confirmed";
 import InboxPage from "@/pages/inbox";
 import AdminPanel from "@/pages/admin";
 import ProfilePage from "@/pages/profile";
+import LibraryPage from "@/pages/library";
+import AccountPage from "@/pages/account";
 
 function PageTransition({ children }: { children: React.ReactNode }) {
   return (
@@ -56,6 +58,8 @@ function Router() {
         <Route path="/inbox">{() => <PageTransition><InboxPage /></PageTransition>}</Route>
         <Route path="/admin">{() => <PageTransition><AdminPanel /></PageTransition>}</Route>
         <Route path="/profile">{() => <PageTransition><ProfilePage /></PageTransition>}</Route>
+        <Route path="/library">{() => <PageTransition><LibraryPage /></PageTransition>}</Route>
+        <Route path="/account">{() => <PageTransition><AccountPage /></PageTransition>}</Route>
         <Route>{() => <PageTransition><NotFound /></PageTransition>}</Route>
       </Switch>
     </AnimatePresence>

@@ -30,24 +30,9 @@ function PreLaunchBanner({ onDismiss, visible }: { onDismiss: () => void; visibl
   );
 }
 
-function MobileBottomNav({ items }: { items: { label: string; icon: React.ElementType; tab: string }[] }) {
-  const [activeTab, setActiveTab] = useState("sessions");
-  const activeIndex = items.findIndex(i => i.tab === activeTab);
-
-  useEffect(() => {
-    const hash = window.location.hash.replace("#", "");
-    if (hash === "tools") setActiveTab("library");
-    else if (hash === "account") setActiveTab("account");
-    else setActiveTab("sessions");
-  }, []);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      setActiveTab((e as CustomEvent).detail);
-    };
-    window.addEventListener("dashboard-tab", handler);
-    return () => window.removeEventListener("dashboard-tab", handler);
-  }, []);
+function MobileBottomNav({ items, currentPath }: { items: { label: string; icon: React.ElementType; tab: string; path: string }[]; currentPath: string }) {
+  const [, navigate] = useLocation();
+  const activeIndex = items.findIndex(i => currentPath === i.path);
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-t border-border/40 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]" aria-label="Mobile navigation" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
@@ -59,18 +44,15 @@ function MobileBottomNav({ items }: { items: { label: string; icon: React.Elemen
             height: "calc(100% - 16px)",
             background: "linear-gradient(135deg, rgba(27,42,74,0.08), rgba(212,175,55,0.06))",
           }}
-          animate={{ left: `${(activeIndex / items.length) * 100}%` }}
+          animate={{ left: `${(Math.max(0, activeIndex) / items.length) * 100}%` }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
         />
         {items.map((item) => {
-          const isActive = activeTab === item.tab;
+          const isActive = currentPath === item.path;
           return (
             <button
               key={item.tab}
-              onClick={() => {
-                setActiveTab(item.tab);
-                window.dispatchEvent(new CustomEvent("dashboard-tab", { detail: item.tab }));
-              }}
+              onClick={() => navigate(item.path)}
               className="relative z-10 flex flex-col items-center justify-center w-full h-full gap-1 active:scale-95 transition-transform cursor-pointer bg-transparent border-none"
               data-testid={`link-bottomnav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
             >
@@ -161,8 +143,8 @@ export function Navbar() {
 
   const loggedInItems = [
     { label: "Sessions", path: "/dashboard", icon: LayoutDashboard, tab: "sessions" },
-    { label: "Library", path: "/dashboard#tools", icon: Library, tab: "library" },
-    { label: "Account", path: "/dashboard#account", icon: UserCircle, tab: "account" },
+    { label: "Library", path: "/library", icon: Library, tab: "library" },
+    { label: "Account", path: "/account", icon: UserCircle, tab: "account" },
   ];
 
   const handleAnchorClick = (path: string, e: React.MouseEvent) => {
@@ -212,7 +194,7 @@ export function Navbar() {
                   onClick={(e) => handleAnchorClick(item.path, e)}
                   className={cn(
                     "text-sm font-medium transition-colors hover:text-accent no-underline flex items-center gap-1.5 nav-link-premium",
-                    location === item.path.split("#")[0] && !item.path.includes("#")
+                    location === item.path
                       ? "text-primary font-semibold active"
                       : "text-muted-foreground"
                   )}
@@ -354,7 +336,7 @@ export function Navbar() {
                         onClick={(e) => handleAnchorClick(item.path, e)}
                         className={cn(
                           "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors no-underline active:scale-[0.98]",
-                          location === item.path.split("#")[0] && !item.path.includes("#")
+                          location === item.path
                             ? "bg-primary/10 text-primary"
                             : "text-muted-foreground hover:bg-secondary/50"
                         )}
@@ -442,8 +424,8 @@ export function Navbar() {
         </AnimatePresence>
       </div>
 
-      {isAuthenticated && location === "/dashboard" && (
-        <MobileBottomNav items={loggedInItems} />
+      {isAuthenticated && ["/dashboard", "/library", "/account"].includes(location) && (
+        <MobileBottomNav items={loggedInItems} currentPath={location} />
       )}
     </>
   );
