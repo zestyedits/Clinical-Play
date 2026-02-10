@@ -122,7 +122,7 @@ function ToolDetailDrawer({
           {/* Actions */}
           <div className="flex gap-2 mb-6">
             {tool.status === "active" && (
-              <Link href="/playroom/demo">
+              <Link href={`/playroom/demo?tool=${tool.id}`}>
                 <button className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer hover:opacity-90 transition-opacity">
                   <Play size={15} /> Launch in Demo
                 </button>
@@ -737,7 +737,7 @@ export default function Library() {
                         Details
                       </button>
                       {tool.status === "active" && (
-                        <Link href="/playroom/demo">
+                        <Link href={`/playroom/demo?tool=${tool.id}`}>
                           <button className="h-8 px-3 rounded-lg bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white text-xs font-medium cursor-pointer shadow-sm hover:opacity-90">
                             Launch
                           </button>

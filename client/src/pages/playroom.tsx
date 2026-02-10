@@ -566,6 +566,9 @@ export default function Playroom() {
 
   useEffect(() => {
     if (isDemo) {
+      const params = new URLSearchParams(window.location.search);
+      const toolParam = params.get("tool");
+      if (toolParam) setActiveTool(toolParam);
       setSession({
         id: "demo",
         name: "Demo Playroom",
@@ -575,7 +578,7 @@ export default function Playroom() {
         status: "active",
         clinicianId: "demo-clinician",
         createdAt: new Date(),
-        activeTool: "sandtray",
+        activeTool: toolParam || "sandtray",
         endedAt: null,
       } as TherapySession);
       setOnlineUsers([{
