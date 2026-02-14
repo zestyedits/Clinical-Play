@@ -59,6 +59,7 @@ export default function Playroom() {
   const [toolSelectorOpen, setToolSelectorOpen] = useState(false);
   const [breathingActive, setBreathingActive] = useState(false);
   const [breathingStartTime, setBreathingStartTime] = useState<number | null>(null);
+  const [breathingTechnique, setBreathingTechnique] = useState("ocean-waves");
   const [insightsOpen, setInsightsOpen] = useState(false);
 
   const [feelingSelections, setFeelingSelections] = useState<FeelingSelection[]>([]);
@@ -153,6 +154,7 @@ export default function Playroom() {
         if (msg.activeTool) setActiveTool(msg.activeTool);
         if (msg.breathingActive !== undefined) setBreathingActive(msg.breathingActive);
         if (msg.breathingStartTime !== undefined) setBreathingStartTime(msg.breathingStartTime);
+        if (msg.breathingTechnique) setBreathingTechnique(msg.breathingTechnique);
         if (msg.lightSource) setLightSource(msg.lightSource);
         if (msg.rakePaths) setRakePaths(msg.rakePaths);
         if (msg.zenMode !== undefined) setZenMode(msg.zenMode);
@@ -262,6 +264,9 @@ export default function Playroom() {
       case "breathing-toggled":
         setBreathingActive(msg.isActive);
         setBreathingStartTime(msg.startTime ?? null);
+        break;
+      case "breathing-technique-changed":
+        setBreathingTechnique(msg.techniqueId);
         break;
       case "activity-pulse":
         setOnlineUsers(prev => prev.map(u =>
@@ -444,6 +449,9 @@ export default function Playroom() {
         case "breathing-toggle":
           setBreathingActive(msg.isActive);
           setBreathingStartTime(msg.isActive ? Date.now() : null);
+          break;
+        case "breathing-technique-change":
+          setBreathingTechnique(msg.techniqueId);
           break;
         case "feeling-select":
           setFeelingSelections(prev => [...prev, {
@@ -716,6 +724,11 @@ export default function Playroom() {
     if (!isDemo) setBreathingActive(next);
     send({ type: "breathing-toggle", isActive: next });
   }, [send, breathingActive, isDemo]);
+
+  const handleBreathingTechniqueChange = useCallback((techniqueId: string) => {
+    if (!isDemo) setBreathingTechnique(techniqueId);
+    send({ type: "breathing-technique-change", techniqueId });
+  }, [send, isDemo]);
 
   // Feeling Wheel handlers
   const handleFeelingSelect = useCallback((primary: string, secondary: string | null, tertiary: string | null) => {
@@ -1236,6 +1249,8 @@ export default function Playroom() {
                   isClinician={isClinician}
                   onToggle={handleToggleBreathing}
                   startTime={breathingStartTime}
+                  techniqueId={breathingTechnique}
+                  onTechniqueChange={handleBreathingTechniqueChange}
                 />
               </motion.div>
             )}

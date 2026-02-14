@@ -31,6 +31,7 @@ interface RoomState {
   activeTool: string;
   breathingActive: boolean;
   breathingStartTime: number | null;
+  breathingTechnique: string;
   lightSource: LightSource;
   rakePaths: RakePath[];
   zenMode: boolean;
@@ -48,6 +49,7 @@ function getRoomState(sessionId: string): RoomState {
       activeTool: "sandtray",
       breathingActive: false,
       breathingStartTime: null,
+      breathingTechnique: "ocean-waves",
       lightSource: { x: 0.3, y: 0.2, temperature: 0.5 },
       rakePaths: [],
       zenMode: false,
@@ -129,6 +131,7 @@ export function setupWebSocketServer(server: Server) {
               activeTool: state.activeTool,
               breathingActive: state.breathingActive,
               breathingStartTime: state.breathingStartTime,
+              breathingTechnique: state.breathingTechnique,
               lightSource: state.lightSource,
               rakePaths: state.rakePaths,
               zenMode: state.zenMode,
@@ -268,6 +271,17 @@ export function setupWebSocketServer(server: Server) {
               isActive: msg.isActive,
               startedBy: client.participantId,
               startTime: breathState.breathingStartTime,
+            });
+            break;
+          }
+
+          case "breathing-technique-change": {
+            if (!client) return;
+            const btState = getRoomState(client.sessionId);
+            btState.breathingTechnique = msg.techniqueId;
+            broadcast(client.sessionId, {
+              type: "breathing-technique-changed",
+              techniqueId: msg.techniqueId,
             });
             break;
           }
