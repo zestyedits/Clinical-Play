@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { motion } from "framer-motion";
 import { Send, Mail, CheckCircle2 } from "lucide-react";
@@ -45,7 +44,6 @@ export default function Contact() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-24 md:pb-10 pt-28 md:pt-36 px-4 md:px-8">
-        <Navbar />
         <div className="max-w-lg mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -76,8 +74,6 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-24 md:pb-10 pt-28 md:pt-36 px-4 md:px-8">
-      <Navbar />
-
       <div className="max-w-lg mx-auto">
         <motion.div
           className="text-center mb-10"

@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { useAuth, useAuthFetch } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -234,7 +233,6 @@ export default function InboxPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <div className="flex items-center justify-center pt-32">
           <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
         </div>
@@ -245,7 +243,6 @@ export default function InboxPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <div className="max-w-md mx-auto pt-32 px-6 text-center">
           <GlassCard className="p-8">
             <InboxIcon size={40} className="mx-auto text-muted-foreground/30 mb-4" />
@@ -261,7 +258,6 @@ export default function InboxPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-10">
-      <Navbar />
       <div className="max-w-4xl mx-auto pt-28 md:pt-36 pb-16 px-4 md:px-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-6">

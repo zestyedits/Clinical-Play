@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { LegalDisclaimer } from "@/components/shared/legal-disclaimer";
 import { LogoMark } from "@/components/shared/logo-mark";
@@ -279,8 +278,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FDFBF7] via-[#F8F6F1] to-secondary/20 pb-0">
-      <Navbar />
-
       <section className="relative pt-36 pb-24 md:pt-52 md:pb-36 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="relative z-10">

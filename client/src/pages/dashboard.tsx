@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { LegalDisclaimer } from "@/components/shared/legal-disclaimer";
 import {
@@ -621,7 +620,6 @@ export default function Dashboard() {
   if (accessDenied) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
-        <Navbar />
         <div className="flex items-center justify-center min-h-screen px-6">
           <GlassCard className="max-w-md w-full p-10 text-center" hoverEffect={false}>
             <div className="w-16 h-16 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
@@ -1078,8 +1076,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 pb-28 md:pb-10 pt-24 md:pt-32 px-4 md:px-8">
-      <Navbar />
-
       {isAuthenticated && !emailConfirmed && (
         <div className="max-w-7xl mx-auto mb-4">
           <motion.div

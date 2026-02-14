@@ -1,12 +1,10 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { Navbar } from "@/components/layout/navbar";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 
 export default function EmailConfirmed() {
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-secondary/20">
-      <Navbar />
       <div className="flex items-center justify-center min-h-screen px-4 pt-24 pb-12">
         <motion.div
           className="w-full max-w-md"

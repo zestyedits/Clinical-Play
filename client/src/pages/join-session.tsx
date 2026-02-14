@@ -1,7 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Navbar } from "@/components/layout/navbar";
 import type { TherapySession } from "@shared/schema";
 
 export default function JoinSession() {
@@ -32,7 +31,6 @@ export default function JoinSession() {
 
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 flex items-center justify-center px-6 pt-24 pb-12">
-      <Navbar />
       <motion.div
         className="max-w-md w-full bg-white/60 backdrop-blur-md border border-white/40 rounded-3xl shadow-lg p-10 text-center"
         initial={{ opacity: 0, y: 20 }}

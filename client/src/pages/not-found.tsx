@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
 import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
 import { Link } from "wouter";
@@ -9,8 +8,6 @@ export default function NotFound() {
 
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 flex items-center justify-center px-4 pt-24 pb-12">
-      <Navbar />
-
       <motion.div
         className="text-center max-w-md mx-auto"
         initial={{ opacity: 0, y: 20 }}

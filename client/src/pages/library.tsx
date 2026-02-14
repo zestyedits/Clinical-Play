@@ -366,9 +366,6 @@ export default function Library() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navbar spacer */}
-      <div className="h-16" />
-
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-6">

@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { SessionProvider } from "@/hooks/use-auth";
 import { AnimatePresence, motion } from "framer-motion";
+import { Navbar } from "@/components/layout/navbar";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing-page";
 import Dashboard from "@/pages/dashboard";
@@ -28,10 +29,10 @@ import AccountPage from "@/pages/account";
 function PageTransition({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.995, filter: "blur(4px)" }}
-      animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-      exit={{ opacity: 0, y: -6, scale: 0.998, filter: "blur(3px)" }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0, y: 8, filter: "blur(3px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      exit={{ opacity: 0, y: -4, filter: "blur(2px)" }}
+      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>
@@ -40,31 +41,35 @@ function PageTransition({ children }: { children: React.ReactNode }) {
 
 function Router() {
   const [location] = useLocation();
+  const isPlayroom = location.startsWith("/playroom/");
 
   return (
-    <AnimatePresence mode="wait">
-      <Switch key={location}>
-        <Route path="/">{() => <PageTransition><LandingPage /></PageTransition>}</Route>
-        <Route path="/dashboard">{() => <PageTransition><Dashboard /></PageTransition>}</Route>
-        <Route path="/playroom/:id">{(params) => <Playroom />}</Route>
-        <Route path="/join/:code">{() => <PageTransition><JoinSession /></PageTransition>}</Route>
-        <Route path="/privacy">{() => <PageTransition><Privacy /></PageTransition>}</Route>
-        <Route path="/terms">{() => <PageTransition><Terms /></PageTransition>}</Route>
-        <Route path="/cookies">{() => <PageTransition><Cookies /></PageTransition>}</Route>
-        <Route path="/faq">{() => <PageTransition><FAQ /></PageTransition>}</Route>
-        <Route path="/contact">{() => <PageTransition><Contact /></PageTransition>}</Route>
-        <Route path="/login">{() => <PageTransition><Login /></PageTransition>}</Route>
-        <Route path="/signup">{() => <PageTransition><Signup /></PageTransition>}</Route>
-        <Route path="/email-confirmed">{() => <PageTransition><EmailConfirmed /></PageTransition>}</Route>
-        <Route path="/inbox">{() => <PageTransition><InboxPage /></PageTransition>}</Route>
-        <Route path="/admin">{() => <PageTransition><AdminPanel /></PageTransition>}</Route>
-        <Route path="/workspace">{() => <PageTransition><WorkspacePage /></PageTransition>}</Route>
-        <Route path="/profile">{() => <Redirect to="/workspace" />}</Route>
-        <Route path="/library">{() => <PageTransition><LibraryPage /></PageTransition>}</Route>
-        <Route path="/account">{() => <PageTransition><AccountPage /></PageTransition>}</Route>
-        <Route>{() => <PageTransition><NotFound /></PageTransition>}</Route>
-      </Switch>
-    </AnimatePresence>
+    <>
+      {!isPlayroom && <Navbar />}
+      <AnimatePresence mode="wait">
+        <Switch key={location}>
+          <Route path="/">{() => <PageTransition><LandingPage /></PageTransition>}</Route>
+          <Route path="/dashboard">{() => <PageTransition><Dashboard /></PageTransition>}</Route>
+          <Route path="/playroom/:id">{(params) => <Playroom />}</Route>
+          <Route path="/join/:code">{() => <PageTransition><JoinSession /></PageTransition>}</Route>
+          <Route path="/privacy">{() => <PageTransition><Privacy /></PageTransition>}</Route>
+          <Route path="/terms">{() => <PageTransition><Terms /></PageTransition>}</Route>
+          <Route path="/cookies">{() => <PageTransition><Cookies /></PageTransition>}</Route>
+          <Route path="/faq">{() => <PageTransition><FAQ /></PageTransition>}</Route>
+          <Route path="/contact">{() => <PageTransition><Contact /></PageTransition>}</Route>
+          <Route path="/login">{() => <PageTransition><Login /></PageTransition>}</Route>
+          <Route path="/signup">{() => <PageTransition><Signup /></PageTransition>}</Route>
+          <Route path="/email-confirmed">{() => <PageTransition><EmailConfirmed /></PageTransition>}</Route>
+          <Route path="/inbox">{() => <PageTransition><InboxPage /></PageTransition>}</Route>
+          <Route path="/admin">{() => <PageTransition><AdminPanel /></PageTransition>}</Route>
+          <Route path="/workspace">{() => <PageTransition><WorkspacePage /></PageTransition>}</Route>
+          <Route path="/profile">{() => <Redirect to="/workspace" />}</Route>
+          <Route path="/library">{() => <PageTransition><LibraryPage /></PageTransition>}</Route>
+          <Route path="/account">{() => <PageTransition><AccountPage /></PageTransition>}</Route>
+          <Route>{() => <PageTransition><NotFound /></PageTransition>}</Route>
+        </Switch>
+      </AnimatePresence>
+    </>
   );
 }
 

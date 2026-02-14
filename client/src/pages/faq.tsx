@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { motion } from "framer-motion";
 import { ChevronDown, HelpCircle } from "lucide-react";
@@ -144,8 +143,6 @@ export default function FAQ() {
 
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-24 md:pb-10 pt-28 md:pt-36 px-4 md:px-8">
-      <Navbar />
-
       <div className="max-w-3xl mx-auto">
         <motion.div
           className="text-center mb-12"

@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { useAuth, createAuthFetch } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -396,8 +395,6 @@ export default function WorkspacePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 pb-10 pt-24 md:pt-32 px-4 md:px-8">
-      <Navbar />
-
       <div className="max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

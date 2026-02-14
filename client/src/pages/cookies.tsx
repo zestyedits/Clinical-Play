@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
 import { motion } from "framer-motion";
 import { Cookie, Shield, Settings, Trash2 } from "lucide-react";
 import { Link } from "wouter";
@@ -6,8 +5,6 @@ import { Link } from "wouter";
 export default function CookiePolicy() {
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 pb-24 md:pb-10">
-      <Navbar />
-
       <div className="max-w-3xl mx-auto px-6 pt-32 md:pt-40">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

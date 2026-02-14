@@ -424,7 +424,7 @@ export function Navbar() {
         </AnimatePresence>
       </div>
 
-      {isAuthenticated && ["/dashboard", "/library", "/account"].includes(location) && (
+      {isAuthenticated && !location.startsWith("/playroom/") && (
         <MobileBottomNav items={loggedInItems} currentPath={location} />
       )}
     </>

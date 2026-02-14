@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { useAuth, useAuthFetch } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -129,7 +128,6 @@ export default function AdminPanel() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background via-background to-sage/5">
-        <Navbar />
         <div className="flex items-center justify-center pt-32">
           <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
         </div>
@@ -140,7 +138,6 @@ export default function AdminPanel() {
   if (!isAuthenticated || !adminCheck?.isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background via-background to-sage/5">
-        <Navbar />
         <div className="max-w-md mx-auto pt-32 px-6 text-center">
           <GlassCard className="p-8">
             <Shield size={40} className="mx-auto text-muted-foreground/30 mb-4" />
@@ -160,7 +157,6 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-sage/5">
-      <Navbar />
       <div className="max-w-4xl mx-auto pt-28 md:pt-36 pb-16 px-6">
         <div className="mb-8">
           <h1 className="text-2xl md:text-3xl font-serif text-primary" data-testid="text-admin-title">Admin</h1>
