@@ -135,28 +135,53 @@ export function PartShape({
         zIndex: isDragging ? 50 : isSelected ? 40 : 10,
         cursor: canDrag ? "grab" : "pointer",
       }}
-      initial={{ scale: 0, opacity: 0 }}
+      initial={{ scale: 0, opacity: 0, rotate: -10 }}
       animate={{
         scale: isContained ? 0.75 : 1,
         opacity: shouldDim ? 0.3 : 1,
+        rotate: 0,
       }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      transition={{ type: "spring", stiffness: 350, damping: 22 }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
     >
-      {/* Selection ring */}
+      {/* Shadow underneath part */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 bottom-[-4px] rounded-[50%] pointer-events-none"
+        style={{
+          width: displaySize * 0.7,
+          height: displaySize * 0.15,
+          background: `radial-gradient(ellipse, ${color}25 0%, transparent 70%)`,
+          filter: "blur(3px)",
+          opacity: isDragging ? 0.8 : 0.4,
+          transition: "opacity 0.2s ease",
+        }}
+      />
+
+      {/* Selection ring with animated glow */}
       {isSelected && (
         <motion.div
-          className="absolute inset-[-6px] rounded-full"
+          className="absolute inset-[-6px]"
           style={{
             border: "2px solid rgba(212,175,55,0.6)",
             borderRadius: blobRadius,
-            boxShadow: "0 0 12px rgba(212,175,55,0.3)",
           }}
           initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.2 }}
+          animate={{
+            scale: 1,
+            opacity: 1,
+            boxShadow: [
+              "0 0 12px rgba(212,175,55,0.2)",
+              "0 0 20px rgba(212,175,55,0.35)",
+              "0 0 12px rgba(212,175,55,0.2)",
+            ],
+          }}
+          transition={{
+            scale: { duration: 0.2 },
+            opacity: { duration: 0.2 },
+            boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+          }}
         />
       )}
 
@@ -171,31 +196,43 @@ export function PartShape({
         />
       )}
 
-      {/* Blob shape */}
+      {/* Blob shape with enhanced 3D */}
       <div
         className="w-full h-full flex items-center justify-center relative"
         style={{
-          background: `radial-gradient(circle at 35% 30%, ${lightenColor(color, 25)} 0%, ${color} 50%, ${darkenColor(color, 15)} 100%)`,
+          background: `radial-gradient(circle at 32% 28%, ${lightenColor(color, 28)} 0%, ${color} 45%, ${darkenColor(color, 18)} 100%)`,
           borderRadius: blobRadius,
           boxShadow: isDragging
-            ? `0 12px 32px ${color}50, inset 0 2px 4px rgba(255,255,255,0.2)`
+            ? `0 14px 36px ${color}55, inset 0 2px 5px rgba(255,255,255,0.25), inset 0 -3px 6px rgba(0,0,0,0.08)`
             : isSelected
-              ? `0 4px 16px ${color}40, inset 0 1px 3px rgba(255,255,255,0.15)`
-              : `0 3px 10px ${color}30, inset 0 1px 2px rgba(255,255,255,0.1)`,
+              ? `0 6px 20px ${color}45, inset 0 2px 4px rgba(255,255,255,0.2), inset 0 -2px 4px rgba(0,0,0,0.06)`
+              : `0 3px 12px ${color}30, inset 0 1px 3px rgba(255,255,255,0.15), inset 0 -1px 3px rgba(0,0,0,0.05)`,
           transition: "box-shadow 0.2s ease",
         }}
       >
-        {/* Inner highlight */}
+        {/* Glass highlight */}
         <div
           className="absolute pointer-events-none"
           style={{
-            width: displaySize * 0.4,
-            height: displaySize * 0.2,
-            top: displaySize * 0.1,
-            left: displaySize * 0.15,
-            background: "rgba(255,255,255,0.15)",
+            width: displaySize * 0.45,
+            height: displaySize * 0.22,
+            top: displaySize * 0.08,
+            left: displaySize * 0.12,
+            background: "rgba(255,255,255,0.18)",
             borderRadius: "50%",
             filter: "blur(2px)",
+          }}
+        />
+        {/* Secondary highlight */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            width: displaySize * 0.15,
+            height: displaySize * 0.1,
+            top: displaySize * 0.15,
+            left: displaySize * 0.2,
+            background: "rgba(255,255,255,0.1)",
+            borderRadius: "50%",
           }}
         />
         {name && (
@@ -209,12 +246,29 @@ export function PartShape({
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
               display: "block",
+              textShadow: isLightColor(color) ? "none" : "0 1px 2px rgba(0,0,0,0.2)",
             }}
           >
             {name}
           </span>
         )}
       </div>
+
+      {/* Gentle idle breathing animation for non-selected parts */}
+      {!isSelected && !isDragging && !shouldDim && (
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          style={{ borderRadius: blobRadius }}
+          animate={{
+            scale: [1, 1.02, 1],
+          }}
+          transition={{
+            duration: 3 + (hashCode(id) % 20) * 0.1,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      )}
     </motion.div>
   );
 }

@@ -6,6 +6,7 @@ import { getAssetMass, DEFAULT_LIGHT_SOURCE } from "@/lib/ambient-types";
 import { AmbientFloor } from "./ambient-floor";
 import { SandCanvas } from "./sand-canvas";
 import { TransformRing } from "./transform-ring";
+import { playPlaceSound } from "@/lib/audio-feedback";
 
 export interface CanvasItem {
   id: string;
@@ -355,6 +356,7 @@ export function ZenCanvas({
     const pos = getRelativePosition(e.clientX, e.clientY);
     onItemDrop(icon, category, pos.x, pos.y);
     emitDust(pos.x, pos.y);
+    playPlaceSound();
   }, [isLocked, getRelativePosition, onItemDrop, emitDust]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
