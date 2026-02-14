@@ -64,7 +64,7 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
     <div className="w-full h-full flex flex-col relative overflow-hidden" data-testid="values-card-sort-container"
       style={{ background: "linear-gradient(145deg, #faf8f5 0%, #f3efe8 50%, #ede8e0 100%)" }}
     >
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
+      <div className="absolute inset-0 pointer-events-none opacity-[0.06]"
         style={{ backgroundImage: "radial-gradient(circle at 50% 50%, #C9A96E 0%, transparent 70%)" }}
       />
 
@@ -113,16 +113,18 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
               data-testid={`column-${col.id}`}
             >
               {/* Column Header */}
-              <div className="flex items-center gap-2 px-3 py-2 mb-2 rounded-xl" style={{ backgroundColor: `${col.color}15` }}>
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: col.color }} />
-                <h3 className="text-sm font-medium text-primary">{col.label}</h3>
-                <span className="text-xs text-muted-foreground ml-auto">{colCards.length}</span>
+              <div className="flex items-center gap-3 px-4 py-2.5 mb-2 rounded-xl glass-tool-card border-l-4" style={{ borderLeftColor: col.color }}>
+                <div className="w-2.5 h-6 rounded-full" style={{ backgroundColor: col.color, boxShadow: `0 0 8px ${col.color}30` }} />
+                <h3 className="text-sm font-serif font-medium text-primary">{col.label}</h3>
+                <span className="text-xs text-muted-foreground ml-auto font-mono">{colCards.length}</span>
               </div>
 
               {/* Column Drop Zone */}
               <div className={cn(
-                "flex-1 rounded-2xl border-2 border-dashed p-2 overflow-y-auto space-y-2 transition-colors min-h-[60px] md:min-h-[80px]",
-                dragCard ? "border-accent/40 bg-accent/5" : "border-white/30 bg-white/20"
+                "flex-1 rounded-2xl border-2 p-2 overflow-y-auto space-y-2 transition-all duration-300 min-h-[60px] md:min-h-[80px]",
+                dragCard
+                  ? "border-accent/50 bg-accent/8 shadow-[inset_0_0_20px_rgba(212,175,55,0.08)] border-dashed"
+                  : "border-transparent bg-white/15 hover:bg-white/20"
               )}>
                 <AnimatePresence>
                   {colCards.map((placement) => {
@@ -131,8 +133,8 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
                       <motion.div
                         key={placement.id}
                         layout
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
+                        initial={{ scale: 0.85, opacity: 0, y: 20, filter: "blur(4px)" }}
+                        animate={{ scale: 1, opacity: 1, y: 0, filter: "blur(0px)" }}
                         exit={{ scale: 0.8, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
                         draggable
@@ -145,7 +147,7 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
                         className="group relative cursor-grab active:cursor-grabbing"
                         data-testid={`placed-card-${placement.cardId}`}
                       >
-                        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-white/40 hover:shadow-md hover:bg-white transition-all flex items-center gap-3">
+                        <div className="glass-tool-card rounded-2xl border-l-3 p-3 shadow-sm border border-white/40 hover:shadow-md hover:bg-white transition-all flex items-center gap-3" style={{ borderLeftColor: col.color }}>
                           <GripVertical size={14} className="text-muted-foreground/30 shrink-0" />
                           <span className="text-lg shrink-0">{cardData?.emoji}</span>
                           <div className="flex-1 min-w-0">
@@ -165,7 +167,16 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
                 </AnimatePresence>
 
                 {colCards.length === 0 && (
-                  <p className="text-xs text-muted-foreground/40 text-center py-4">Drop cards here</p>
+                  <div className="flex flex-col items-center justify-center py-6 gap-2">
+                    <motion.div
+                      animate={{ y: [0, -4, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-8 h-8 rounded-xl border-2 border-dashed border-muted-foreground/15 flex items-center justify-center"
+                    >
+                      <span className="text-muted-foreground/20 text-lg">+</span>
+                    </motion.div>
+                    <p className="text-xs text-muted-foreground/30">Drop cards here</p>
+                  </div>
                 )}
               </div>
             </motion.div>
@@ -195,7 +206,7 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               className="overflow-hidden"
             >
-              <div className="bg-white/40 backdrop-blur-md border-t border-white/30 px-4 md:px-6 py-4">
+              <div className="glass-luxury backdrop-blur-xl px-4 md:px-6 py-4">
                 <div className="flex gap-2 overflow-x-auto pb-2 snap-x">
                   {deckCards.map((card, i) => (
                     <motion.div
@@ -215,7 +226,14 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
                       whileTap={{ scale: 0.97 }}
                       data-testid={`deck-card-${card.id}`}
                     >
-                      <div className="w-28 md:w-32 bg-white rounded-2xl p-3 md:p-4 shadow-md border border-white/50 hover:shadow-xl transition-shadow">
+                      <div className="w-28 md:w-32 rounded-2xl p-3 md:p-4 shadow-lg transition-shadow relative overflow-hidden"
+                        style={{
+                          background: "linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(250,248,245,0.9) 100%)",
+                          border: "1px solid rgba(212,175,55,0.15)",
+                          boxShadow: "0 4px 12px rgba(27,42,74,0.08), 0 1px 3px rgba(0,0,0,0.06)",
+                        }}
+                      >
+                        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
                         <span className="text-2xl block mb-2">{card.emoji}</span>
                         <p className="text-sm font-serif font-medium text-primary leading-tight">{card.label}</p>
                         <p className="text-[10px] text-muted-foreground mt-1 leading-tight">{card.description}</p>

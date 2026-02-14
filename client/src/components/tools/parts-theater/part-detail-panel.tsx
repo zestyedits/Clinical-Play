@@ -45,8 +45,11 @@ export function PartDetailPanel({ part, metaphor, onUpdate, onRemove, onStartCon
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "100%", opacity: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 28 }}
-      className="absolute right-0 top-0 bottom-0 w-72 md:w-80 bg-white/80 backdrop-blur-2xl border-l border-white/30 shadow-2xl z-30 flex flex-col overflow-y-auto"
+      className="absolute right-0 top-0 bottom-0 w-72 md:w-80 glass-luxury backdrop-blur-2xl border-l-0 shadow-2xl z-30 flex flex-col overflow-y-auto"
     >
+      {/* Decorative color strip */}
+      <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${part.color}, ${part.color}60, transparent)` }} />
+
       {/* Header */}
       <div className="p-4 pb-3 flex items-center justify-between border-b border-white/20">
         <h3 className="font-serif text-base text-primary">{labels.noun} Detail</h3>

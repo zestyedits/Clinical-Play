@@ -94,6 +94,11 @@ function WedgeLabel({ cx, cy, r, startAngle, endAngle, label, fontSize = 9 }: {
   );
 }
 
+function getEmotionColor(primaryLabel: string): string {
+  const emotion = FEELING_WHEEL_DATA.find(e => e.label === primaryLabel);
+  return emotion?.color || "#D4AF37";
+}
+
 export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, onAuraColor }: FeelingWheelSVGProps) {
   const [expandedPrimary, setExpandedPrimary] = useState<string | null>(null);
   const [expandedSecondary, setExpandedSecondary] = useState<string | null>(null);
@@ -153,8 +158,23 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
   const latestSelection = selections.length > 0 ? selections[selections.length - 1] : null;
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-4 bg-gradient-to-b from-background/50 to-background overflow-auto">
-      <div className="w-full max-w-[420px] mx-auto">
+    <div className="h-full flex flex-col items-center justify-center p-4 overflow-auto relative">
+      {/* Reactive background aura */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/30 to-background" />
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div
+          className="absolute w-[50%] h-[50%] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            background: hoveredWedge
+              ? `radial-gradient(circle, ${hoveredWedge}15 0%, transparent 70%)`
+              : "radial-gradient(circle, rgba(167,139,218,0.05) 0%, transparent 70%)",
+            filter: "blur(80px)",
+            transition: "background 0.5s ease",
+          }}
+        />
+      </div>
+
+      <div className="w-full max-w-[420px] mx-auto relative z-10">
         <motion.div
           className="text-center mb-4"
           initial={{ opacity: 0, y: 12 }}
@@ -167,9 +187,9 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
 
         <motion.div
           className="relative mx-auto"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0, scale: 0.85, rotate: -15 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           style={{
             maxWidth: 400,
             maxHeight: 400,
@@ -179,6 +199,25 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
           }}
         >
           <svg viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`} className="w-full h-full">
+            <defs>
+              {/* Wedge gradients for depth */}
+              {FEELING_WHEEL_DATA.map((emotion, i) => (
+                <radialGradient key={`wedge-grad-${i}`} id={`wedge-grad-${i}`} cx="50%" cy="50%" r="80%">
+                  <stop offset="0%" stopColor={emotion.color} stopOpacity="1" />
+                  <stop offset="100%" stopColor={emotion.color} stopOpacity="0.7" />
+                </radialGradient>
+              ))}
+              {/* Center glass orb */}
+              <radialGradient id="center-orb" cx="40%" cy="35%" r="60%">
+                <stop offset="0%" stopColor="rgba(255,255,255,1)" />
+                <stop offset="50%" stopColor="rgba(255,255,255,0.95)" />
+                <stop offset="100%" stopColor="rgba(240,237,230,0.9)" />
+              </radialGradient>
+              <filter id="center-shadow">
+                <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="rgba(27,42,74,0.15)" />
+              </filter>
+            </defs>
+
             {/* Inner ring: Primary emotions */}
             {FEELING_WHEEL_DATA.map((emotion, i) => {
               const startAngle = i * primaryArcAngle - 90;
@@ -193,9 +232,9 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
                 <g key={emotion.label} style={{ transition: "transform 0.3s ease" }}>
                   <path
                     d={describeArc(CENTER + pos.x, CENTER + pos.y, INNER_R1, INNER_R2, startAngle, endAngle)}
-                    fill={emotion.color}
-                    stroke="white"
-                    strokeWidth={1.5}
+                    fill={`url(#wedge-grad-${i})`}
+                    stroke="rgba(255,255,255,0.6)"
+                    strokeWidth={1}
                     opacity={isExpanded ? 1 : 0.85}
                     className="cursor-pointer"
                     style={{
@@ -247,8 +286,8 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
                       <path
                         d={describeArc(CENTER + pos.x, CENTER + pos.y, MID_R1, MID_R2, startAngle, endAngle)}
                         fill={sec.color}
-                        stroke="white"
-                        strokeWidth={1}
+                        stroke="rgba(255,255,255,0.5)"
+                        strokeWidth={0.75}
                         opacity={isExpanded ? 1 : 0.85}
                         className="cursor-pointer"
                         style={{
@@ -307,8 +346,8 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
                       <path
                         d={describeArc(CENTER + pos.x, CENTER + pos.y, OUTER_R1, OUTER_R2, startAngle, endAngle)}
                         fill={ter.color}
-                        stroke="white"
-                        strokeWidth={0.75}
+                        stroke="rgba(255,255,255,0.4)"
+                        strokeWidth={0.5}
                         opacity={0.9}
                         className="cursor-pointer"
                         style={{
@@ -334,7 +373,7 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
               })()}
             </AnimatePresence>
 
-            {/* Golden Thread */}
+            {/* Golden Thread with glow */}
             {completedSelection && (() => {
               const p1 = polarToCart(CENTER, CENTER, (INNER_R1 + INNER_R2) / 2, completedSelection.primaryAngle);
               const p2 = polarToCart(CENTER, CENTER, (MID_R1 + MID_R2) / 2, completedSelection.secondaryAngle);
@@ -343,22 +382,68 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
               const pathLength = 600; // approximate
 
               return (
-                <motion.path
-                  d={pathD}
-                  stroke="#D4AF37"
-                  strokeWidth={2}
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  initial={{ strokeDasharray: pathLength, strokeDashoffset: pathLength }}
-                  animate={{ strokeDashoffset: 0 }}
-                  transition={{ duration: 0.8, ease: "easeInOut" }}
-                />
+                <>
+                  {/* Glow behind thread */}
+                  <motion.path
+                    d={pathD}
+                    stroke="#D4AF37"
+                    strokeWidth={6}
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={0.2}
+                    initial={{ strokeDasharray: pathLength, strokeDashoffset: pathLength }}
+                    animate={{ strokeDashoffset: 0 }}
+                    transition={{ duration: 0.8, ease: "easeInOut" }}
+                    style={{ filter: "blur(4px)" }}
+                  />
+                  {/* Main thread */}
+                  <motion.path
+                    d={pathD}
+                    stroke="#D4AF37"
+                    strokeWidth={2}
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    initial={{ strokeDasharray: pathLength, strokeDashoffset: pathLength }}
+                    animate={{ strokeDashoffset: 0 }}
+                    transition={{ duration: 0.8, ease: "easeInOut" }}
+                  />
+                  {/* Junction dots */}
+                  {[p1, p2, p3].map((pt, idx) => (
+                    <motion.circle
+                      key={idx}
+                      cx={pt.x}
+                      cy={pt.y}
+                      r={3}
+                      fill="#D4AF37"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.4 + idx * 0.2, type: "spring", stiffness: 300 }}
+                    />
+                  ))}
+                </>
               );
             })()}
 
-            {/* Center circle */}
-            <circle cx={CENTER} cy={CENTER} r={INNER_R1 - 2} fill="white" fillOpacity={0.9} stroke="#D4AF37" strokeWidth={1} />
+            {/* Center circle - glass orb */}
+            <circle
+              cx={CENTER}
+              cy={CENTER}
+              r={INNER_R1 - 2}
+              fill="url(#center-orb)"
+              filter="url(#center-shadow)"
+              stroke="#D4AF37"
+              strokeWidth={1.5}
+            />
+            {/* Highlight arc */}
+            <path
+              d={`M ${CENTER - 18} ${CENTER - 26} A 22 22 0 0 1 ${CENTER + 18} ${CENTER - 26}`}
+              fill="none"
+              stroke="rgba(255,255,255,0.5)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
             <text
               x={CENTER}
               y={CENTER - 6}
@@ -391,7 +476,7 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
             animate={{ opacity: 1, y: 0 }}
             className="mt-4 text-center"
           >
-            <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/30 shadow-sm">
+            <div className="inline-flex items-center gap-2 glass-tool-card px-4 py-2 rounded-full shadow-sm">
               <span className="text-sm font-medium text-primary">
                 {latestSelection.primaryEmotion}
                 {latestSelection.secondaryEmotion && ` → ${latestSelection.secondaryEmotion}`}
@@ -418,15 +503,19 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
               )}
             </div>
             <div className="flex flex-wrap gap-2">
-              {selections.slice(-8).map((sel) => (
-                <div
+              {selections.slice(-8).map((sel, i) => (
+                <motion.div
                   key={sel.id}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium bg-white/50 backdrop-blur-sm border border-white/30 shadow-sm"
+                  className="px-3 py-1.5 rounded-full text-xs font-medium glass-tool-card border-l-3 shadow-sm"
+                  style={{ borderLeftColor: getEmotionColor(sel.primaryEmotion) }}
+                  initial={{ opacity: 0, scale: 0.8, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: 0.05 * i, type: "spring", stiffness: 300, damping: 25 }}
                 >
                   {sel.primaryEmotion}
                   {sel.secondaryEmotion && ` → ${sel.secondaryEmotion}`}
                   {sel.tertiaryEmotion && ` → ${sel.tertiaryEmotion}`}
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

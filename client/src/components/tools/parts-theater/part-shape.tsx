@@ -19,6 +19,22 @@ function getBlobRadius(id: string): string {
   return `${a}% ${100 - a}% ${100 - b}% ${b}% / ${c}% ${d}% ${100 - d}% ${100 - c}%`;
 }
 
+function lightenColor(hex: string, percent: number): string {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.min(255, ((num >> 16) & 0xff) + Math.round(255 * percent / 100));
+  const g = Math.min(255, ((num >> 8) & 0xff) + Math.round(255 * percent / 100));
+  const b = Math.min(255, (num & 0xff) + Math.round(255 * percent / 100));
+  return `rgb(${r},${g},${b})`;
+}
+
+function darkenColor(hex: string, percent: number): string {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.max(0, ((num >> 16) & 0xff) - Math.round(255 * percent / 100));
+  const g = Math.max(0, ((num >> 8) & 0xff) - Math.round(255 * percent / 100));
+  const b = Math.max(0, (num & 0xff) - Math.round(255 * percent / 100));
+  return `rgb(${r},${g},${b})`;
+}
+
 interface PartShapeProps {
   id: string;
   name: string | null;
@@ -136,6 +152,7 @@ export function PartShape({
           style={{
             border: "2px solid rgba(212,175,55,0.6)",
             borderRadius: blobRadius,
+            boxShadow: "0 0 12px rgba(212,175,55,0.3)",
           }}
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -156,16 +173,31 @@ export function PartShape({
 
       {/* Blob shape */}
       <div
-        className="w-full h-full flex items-center justify-center"
+        className="w-full h-full flex items-center justify-center relative"
         style={{
-          backgroundColor: color,
+          background: `radial-gradient(circle at 35% 30%, ${lightenColor(color, 25)} 0%, ${color} 50%, ${darkenColor(color, 15)} 100%)`,
           borderRadius: blobRadius,
           boxShadow: isDragging
-            ? `0 8px 24px ${color}40`
-            : `0 2px 8px ${color}30`,
+            ? `0 12px 32px ${color}50, inset 0 2px 4px rgba(255,255,255,0.2)`
+            : isSelected
+              ? `0 4px 16px ${color}40, inset 0 1px 3px rgba(255,255,255,0.15)`
+              : `0 3px 10px ${color}30, inset 0 1px 2px rgba(255,255,255,0.1)`,
           transition: "box-shadow 0.2s ease",
         }}
       >
+        {/* Inner highlight */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            width: displaySize * 0.4,
+            height: displaySize * 0.2,
+            top: displaySize * 0.1,
+            left: displaySize * 0.15,
+            background: "rgba(255,255,255,0.15)",
+            borderRadius: "50%",
+            filter: "blur(2px)",
+          }}
+        />
         {name && (
           <span
             className="text-center leading-tight font-medium pointer-events-none px-1"

@@ -538,3 +538,21 @@ select:focus-visible {
   75% { transform: translate(-6%, 8%) scale(0.96); }
   100% { transform: translate(5%, -5%) scale(0.98); }
 }
+
+/* ── Tool Visual Polish Utilities ── */
+.border-l-3 {
+  border-left-width: 3px;
+}
+
+.glass-tool-card {
+  backdrop-filter: blur(20px) saturate(1.15);
+  background: rgba(255, 255, 255, 0.25);
+  border: 0.5px solid rgba(212, 175, 55, 0.2);
+  border-radius: 1rem;
+  @apply shadow-sm transition-all duration-300;
+}
+
+.glass-tool-card:hover {
+  background: rgba(255, 255, 255, 0.4);
+  @apply shadow-md;
+}

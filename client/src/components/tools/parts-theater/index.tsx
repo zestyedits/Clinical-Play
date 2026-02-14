@@ -114,7 +114,7 @@ export function PartsTheater({
   }, [onClear]);
 
   return (
-    <div className="w-full h-full flex flex-col relative bg-gradient-to-b from-[#FAF8F5] to-[#F0EDE8]">
+    <div className="w-full h-full flex flex-col relative bg-gradient-to-b from-[#FAF8F5] via-[#F5F0EA] to-[#EDE8E0]">
       {/* Stage */}
       <div className="flex-1 relative">
         <TheaterStage

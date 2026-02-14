@@ -85,9 +85,10 @@ export function TheaterStage({
       {/* SVG background layer */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
         <defs>
-          <radialGradient id="theater-gradient" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.05)" />
-            <stop offset="70%" stopColor="rgba(245,241,235,0.3)" />
+          <radialGradient id="theater-gradient" cx="50%" cy="45%" r="55%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.08)" />
+            <stop offset="40%" stopColor="rgba(250,248,245,0.2)" />
+            <stop offset="70%" stopColor="rgba(245,241,235,0.35)" />
             <stop offset="100%" stopColor="rgba(235,228,218,0.5)" />
           </radialGradient>
         </defs>
@@ -98,9 +99,32 @@ export function TheaterStage({
           cy={cy}
           r={radius}
           fill="url(#theater-gradient)"
-          stroke="rgba(27,42,74,0.12)"
+          stroke="rgba(27,42,74,0.18)"
           strokeWidth={1.5}
         />
+
+        {/* Concentric decorative rings */}
+        {[0.7, 0.85, 1.0].map((factor, i) => (
+          <circle
+            key={`ring-${i}`}
+            cx={cx}
+            cy={cy}
+            r={radius * factor}
+            fill="none"
+            stroke="rgba(212,175,55,0.06)"
+            strokeWidth={0.5}
+            strokeDasharray={i === 1 ? "4 8" : undefined}
+          />
+        ))}
+
+        {/* Spotlight effect */}
+        <defs>
+          <radialGradient id="stage-spotlight" cx="50%" cy="40%" r="40%">
+            <stop offset="0%" stopColor="rgba(212,175,55,0.04)" />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
+        </defs>
+        <circle cx={cx} cy={cy} r={radius * 0.6} fill="url(#stage-spotlight)" />
 
         {/* Connection lines */}
         {connections.map((conn) => {

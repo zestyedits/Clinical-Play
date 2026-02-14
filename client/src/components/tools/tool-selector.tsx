@@ -10,17 +10,19 @@ interface Tool {
   desc: string;
   icon: React.ElementType;
   status: "active" | "development" | "planned";
+  accentColor: string;
+  iconClass: string;
 }
 
 const TOOLS: Tool[] = [
-  { id: "sandtray", label: "Zen Sandtray", desc: "Expressive world-building with drag-and-drop assets", icon: Palette, status: "active" },
-  { id: "breathing", label: "Calm Breathing", desc: "Synchronized breathing exercise for the group", icon: Wind, status: "active" },
-  { id: "feelings", label: "Feeling Wheel", desc: "Multi-layered emotional identification and exploration", icon: Target, status: "active" },
-  { id: "narrative", label: "Narrative Timeline", desc: "Visual life story and event mapping on a river", icon: Clock, status: "active" },
-  { id: "values-sort", label: "Values Card Sort", desc: "Interactive values identification and prioritization", icon: Layers, status: "active" },
-  { id: "parts-theater", label: "Parts Theater", desc: "IFS-inspired internal parts mapping and exploration", icon: Theater, status: "active" },
-  { id: "dbt-house", label: "The DBT House", desc: "Room-by-room emotional regulation framework", icon: House, status: "development" },
-  { id: "cbt", label: "Thought Bridge (CBT)", desc: "Cognitive restructuring visualization", icon: Brain, status: "planned" },
+  { id: "sandtray", label: "Zen Sandtray", desc: "Expressive world-building with drag-and-drop assets", icon: Palette, status: "active", accentColor: "#c4956a", iconClass: "icon-sandtray" },
+  { id: "breathing", label: "Calm Breathing", desc: "Synchronized breathing exercise for the group", icon: Wind, status: "active", accentColor: "#7fb99b", iconClass: "icon-breathing" },
+  { id: "feelings", label: "Feeling Wheel", desc: "Multi-layered emotional identification and exploration", icon: Target, status: "active", accentColor: "#a78bda", iconClass: "icon-feeling" },
+  { id: "narrative", label: "Narrative Timeline", desc: "Visual life story and event mapping on a river", icon: Clock, status: "active", accentColor: "#67c5c9", iconClass: "icon-timeline" },
+  { id: "values-sort", label: "Values Card Sort", desc: "Interactive values identification and prioritization", icon: Layers, status: "active", accentColor: "#e88fa5", iconClass: "icon-values" },
+  { id: "parts-theater", label: "Parts Theater", desc: "IFS-inspired internal parts mapping and exploration", icon: Theater, status: "active", accentColor: "#8db4e8", iconClass: "icon-ifs" },
+  { id: "dbt-house", label: "The DBT House", desc: "Room-by-room emotional regulation framework", icon: House, status: "development", accentColor: "#f59e6b", iconClass: "icon-dbt" },
+  { id: "cbt", label: "Thought Bridge (CBT)", desc: "Cognitive restructuring visualization", icon: Brain, status: "planned", accentColor: "#9ca3af", iconClass: "" },
 ];
 
 interface ToolSelectorProps {
@@ -96,9 +98,32 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
             animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, scale: 0.95, y: 20, filter: "blur(4px)" }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed inset-x-4 top-[10%] md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[520px] z-50 bg-white/80 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/30 overflow-hidden max-h-[80vh] flex flex-col"
+            className="fixed inset-x-4 top-[10%] md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[520px] z-50 glass-luxury rounded-3xl shadow-[0_8px_40px_rgba(27,42,74,0.15),0_0_0_1px_rgba(212,175,55,0.15)] overflow-hidden max-h-[80vh] flex flex-col"
           >
-            <div className="flex items-center justify-between p-6 pb-2 shrink-0">
+            {/* Ambient blobs */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-3xl" style={{ zIndex: 0 }}>
+              <div
+                className="absolute w-[60%] h-[60%] -left-[10%] -top-[10%] rounded-full"
+                style={{
+                  background: "radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)",
+                  filter: "blur(60px)",
+                  animation: "ambient-drift 40s ease-in-out infinite",
+                }}
+              />
+              <div
+                className="absolute w-[50%] h-[50%] -right-[15%] -bottom-[15%] rounded-full"
+                style={{
+                  background: "radial-gradient(circle, rgba(27,42,74,0.06) 0%, transparent 70%)",
+                  filter: "blur(60px)",
+                  animation: "ambient-drift-2 35s ease-in-out infinite",
+                }}
+              />
+            </div>
+
+            {/* Shimmer border */}
+            <div className="h-[1px] mx-6 mt-0 shimmer-border rounded-full relative z-10" />
+
+            <div className="flex items-center justify-between p-6 pb-2 shrink-0 relative z-10">
               <div>
                 <h2 className="font-serif text-2xl text-primary">Clinical Tools</h2>
                 <p className="text-sm text-muted-foreground mt-1">Your therapeutic toolkit is growing</p>
@@ -112,7 +137,7 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            <div className="flex-1 overflow-y-auto p-4 space-y-2 relative z-10">
               <AnimatePresence mode="wait">
                 {!showSuggest ? (
                   <motion.div
@@ -124,6 +149,7 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
                     {TOOLS.map((tool, i) => {
                       const isAvailable = tool.status === "active";
                       const badge = statusLabel(tool.status);
+                      const isActive = activeTool === tool.id;
 
                       return (
                         <motion.button
@@ -135,26 +161,37 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
                             }
                           }}
                           className={cn(
-                            "w-full p-4 rounded-2xl text-left transition-all flex items-start gap-4",
-                            activeTool === tool.id
-                              ? "bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 cursor-pointer"
+                            "w-full p-4 rounded-2xl text-left transition-all flex items-start gap-4 relative overflow-hidden",
+                            isActive
+                              ? "bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white shadow-[0_4px_20px_rgba(46,139,87,0.3)] border border-[#D4AF37]/30 cursor-pointer"
                               : isAvailable
-                                ? "bg-white/50 hover:bg-white/80 hover:shadow-md border border-white/30 cursor-pointer"
-                                : "bg-white/20 border border-dashed border-border/40 opacity-50 cursor-default"
+                                ? "glass-tool-card border-l-3 cursor-pointer hover:bg-white/40"
+                                : "bg-white/10 border border-dashed border-muted-foreground/15 opacity-40 backdrop-blur-sm cursor-default"
                           )}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.06 }}
-                          whileHover={isAvailable ? { scale: 1.01 } : {}}
+                          style={!isActive && isAvailable ? { borderLeftColor: tool.accentColor } : undefined}
+                          initial={{ opacity: 0, x: -12, y: 6 }}
+                          animate={{ opacity: 1, x: 0, y: 0 }}
+                          transition={{ delay: i * 0.07, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                          whileHover={isAvailable ? { scale: 1.02, x: 4 } : {}}
                           whileTap={isAvailable ? { scale: 0.99 } : {}}
                           disabled={!isAvailable}
                           data-testid={`button-select-tool-${tool.id}`}
                         >
-                          <div className={cn(
-                            "p-3 rounded-xl shrink-0",
-                            activeTool === tool.id ? "bg-white/15" : "bg-secondary/50"
-                          )}>
-                            <tool.icon size={22} />
+                          {/* Shimmer overlay for disabled tools */}
+                          {!isAvailable && (
+                            <div className="absolute inset-0 rounded-2xl shimmer-border opacity-20 pointer-events-none" />
+                          )}
+
+                          <div
+                            className={cn(
+                              "p-3 rounded-xl shrink-0 flex items-center justify-center",
+                              isActive ? "bg-white/15" : ""
+                            )}
+                            style={!isActive ? {
+                              background: `linear-gradient(135deg, ${tool.accentColor}20 0%, ${tool.accentColor}08 100%)`,
+                            } : undefined}
+                          >
+                            <tool.icon size={26} className={isActive ? "text-white" : ""} style={!isActive ? { color: tool.accentColor } : undefined} />
                           </div>
                           <div className="flex-1">
                             <div className="font-medium flex items-center gap-2 flex-wrap">
@@ -167,7 +204,7 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
                                   {badge}
                                 </span>
                               )}
-                              {activeTool === tool.id && (
+                              {isActive && (
                                 <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">
                                   Active
                                 </span>
@@ -175,7 +212,7 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
                             </div>
                             <p className={cn(
                               "text-sm mt-1",
-                              activeTool === tool.id ? "text-primary-foreground/70" : "text-muted-foreground"
+                              isActive ? "text-primary-foreground/70" : "text-muted-foreground"
                             )}>
                               {tool.desc}
                             </p>
@@ -246,7 +283,7 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
                         <button
                           onClick={() => submitSuggestion.mutate()}
                           disabled={!toolName.trim() || submitSuggestion.isPending}
-                          className="w-full min-h-[44px] py-3 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium flex items-center justify-center gap-2 shadow-lg hover:opacity-90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="btn-luxury w-full min-h-[44px] py-3 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium flex items-center justify-center gap-2 shadow-lg hover:opacity-90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           data-testid="button-submit-suggestion"
                         >
                           <Send size={16} />
@@ -259,11 +296,11 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
               </AnimatePresence>
             </div>
 
-            <div className="px-4 pb-4 pt-2 shrink-0 border-t border-white/20">
+            <div className="px-4 pb-4 pt-2 shrink-0 border-t border-white/20 relative z-10">
               {!showSuggest ? (
                 <button
                   onClick={() => setShowSuggest(true)}
-                  className="w-full min-h-[44px] py-3 rounded-xl bg-accent/10 text-accent font-medium text-sm flex items-center justify-center gap-2 hover:bg-accent/20 transition-colors cursor-pointer border border-accent/20"
+                  className="btn-luxury w-full min-h-[44px] py-3 rounded-xl bg-accent/10 text-accent font-medium text-sm flex items-center justify-center gap-2 hover:bg-accent/20 transition-colors cursor-pointer border border-accent/20"
                   data-testid="button-suggest-tool"
                 >
                   <MessageSquarePlus size={16} />

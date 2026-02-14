@@ -4,6 +4,22 @@ import { cn } from "@/lib/utils";
 import { playPlaceSound } from "@/lib/audio-feedback";
 import { Plus, X, Trash2, RotateCcw } from "lucide-react";
 
+function lightenColor(hex: string, percent: number): string {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.min(255, ((num >> 16) & 0xff) + Math.round(255 * percent / 100));
+  const g = Math.min(255, ((num >> 8) & 0xff) + Math.round(255 * percent / 100));
+  const b = Math.min(255, (num & 0xff) + Math.round(255 * percent / 100));
+  return `rgb(${r},${g},${b})`;
+}
+
+function darkenColor(hex: string, percent: number): string {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.max(0, ((num >> 16) & 0xff) - Math.round(255 * percent / 100));
+  const g = Math.max(0, ((num >> 8) & 0xff) - Math.round(255 * percent / 100));
+  const b = Math.max(0, (num & 0xff) - Math.round(255 * percent / 100));
+  return `rgb(${r},${g},${b})`;
+}
+
 export interface TimelineEventData {
   id: string;
   label: string;
@@ -61,9 +77,31 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
     <div className="w-full h-full flex flex-col relative overflow-hidden" data-testid="narrative-timeline-container"
       style={{ background: "linear-gradient(180deg, #f0f4f0 0%, #e8ede8 40%, #dde5dd 100%)" }}
     >
-      <div className="absolute inset-0 pointer-events-none opacity-10"
+      {/* Organic noise texture */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.04 }}>
+        <filter id="timeline-noise">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#timeline-noise)" />
+      </svg>
+
+      {/* Ambient color blobs */}
+      <div
+        className="absolute w-[500px] h-[500px] rounded-full pointer-events-none"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231B2A4A' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          background: "radial-gradient(circle, rgba(168,197,160,0.15) 0%, transparent 70%)",
+          top: "-10%",
+          left: "10%",
+          animation: "ambient-drift 20s ease-in-out infinite",
+        }}
+      />
+      <div
+        className="absolute w-[400px] h-[400px] rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(27,42,74,0.08) 0%, transparent 70%)",
+          bottom: "-5%",
+          right: "15%",
+          animation: "ambient-drift 25s ease-in-out infinite reverse",
         }}
       />
 
@@ -112,7 +150,23 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                   <stop offset="50%" stopColor="#1B2A4A" stopOpacity="0.15" />
                   <stop offset="100%" stopColor="#A8C5A0" stopOpacity="0.3" />
                 </linearGradient>
+                <style>{`
+                  @keyframes river-flow {
+                    from { stroke-dashoffset: 0; }
+                    to { stroke-dashoffset: -36; }
+                  }
+                `}</style>
               </defs>
+              {/* Ambient glow path */}
+              <path
+                d="M 0 100 Q 150 60, 300 100 Q 450 140, 600 100 Q 750 60, 900 100 Q 1050 140, 1200 100"
+                fill="none"
+                stroke="url(#riverGrad)"
+                strokeWidth="60"
+                strokeLinecap="round"
+                opacity="0.15"
+                style={{ filter: "blur(8px)" }}
+              />
               <path
                 d="M 0 100 Q 150 60, 300 100 Q 450 140, 600 100 Q 750 60, 900 100 Q 1050 140, 1200 100"
                 fill="none"
@@ -127,6 +181,17 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                 strokeWidth="3"
                 strokeDasharray="8 8"
                 opacity="0.2"
+              />
+              {/* Animated shimmer path */}
+              <path
+                d="M 0 100 Q 150 60, 300 100 Q 450 140, 600 100 Q 750 60, 900 100 Q 1050 140, 1200 100"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeDasharray="12 24"
+                opacity="0.3"
+                strokeLinecap="round"
+                style={{ animation: "river-flow 4s linear infinite" }}
               />
             </svg>
 
@@ -173,13 +238,17 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                   {/* Stone */}
                   <motion.div
                     className="relative"
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.12, y: -3 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <div
-                      className="w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center border-2 border-white/50"
-                      style={{ backgroundColor: evt.color }}
+                      className="w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center border-2 border-white/50 relative overflow-hidden"
+                      style={{
+                        background: `radial-gradient(circle at 35% 30%, ${lightenColor(evt.color, 30)} 0%, ${evt.color} 60%, ${darkenColor(evt.color, 20)} 100%)`,
+                        boxShadow: `0 4px 12px ${evt.color}40, inset 0 1px 3px rgba(255,255,255,0.3)`,
+                      }}
                     >
+                      <div className="absolute top-1 left-1.5 w-3 h-2 rounded-full bg-white/25 blur-[1px]" />
                       <div className="w-3 h-3 rounded-full bg-white/30" />
                     </div>
 
@@ -188,7 +257,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                       "absolute left-1/2 -translate-x-1/2 whitespace-nowrap",
                       isAbove ? "-top-8" : "-bottom-8"
                     )}>
-                      <span className="text-xs font-medium text-primary bg-white/70 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm border border-white/30">
+                      <span className="text-xs font-medium text-primary glass px-3 py-1.5 rounded-xl shadow-sm">
                         {evt.label}
                       </span>
                     </div>
@@ -259,7 +328,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
             transition={{ type: "spring", stiffness: 300, damping: 28 }}
             className="absolute bottom-0 inset-x-0 z-30"
           >
-            <div className="bg-white/90 backdrop-blur-2xl border-t border-white/30 p-6 shadow-2xl">
+            <div className="glass-luxury backdrop-blur-2xl shadow-[0_-4px_30px_rgba(27,42,74,0.08)] p-6">
               <div className="max-w-lg mx-auto">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-serif text-lg text-primary">Drop a Stone</h3>
@@ -298,9 +367,15 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                         onClick={() => setNewColor(c)}
                         className={cn(
                           "w-7 h-7 rounded-full cursor-pointer transition-all border-2",
-                          newColor === c ? "border-primary scale-110 shadow-md" : "border-transparent hover:scale-105"
+                          newColor === c ? "border-primary" : "border-transparent hover:scale-105"
                         )}
-                        style={{ backgroundColor: c }}
+                        style={{
+                          backgroundColor: c,
+                          boxShadow: newColor === c
+                            ? `0 0 0 3px rgba(255,255,255,0.8), 0 0 0 5px ${c}, 0 0 15px ${c}40`
+                            : `0 2px 6px rgba(0,0,0,0.15)`,
+                          transform: newColor === c ? "scale(1.1)" : "scale(1)",
+                        }}
                         data-testid={`button-color-${c}`}
                       />
                     ))}

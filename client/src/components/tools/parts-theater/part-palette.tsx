@@ -38,7 +38,7 @@ export function PartPalette({ onAddPart, metaphor, partCount, partLimit, frozen,
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 28 }}
-            className="bg-white/80 backdrop-blur-2xl border-t border-white/30 shadow-2xl p-4 pb-5"
+            className="glass-luxury backdrop-blur-2xl shadow-[0_-4px_30px_rgba(27,42,74,0.1)] p-4 pb-5"
           >
             <div className="max-w-md mx-auto space-y-3">
               {/* Name input */}
@@ -62,7 +62,7 @@ export function PartPalette({ onAddPart, metaphor, partCount, partLimit, frozen,
                     style={{
                       backgroundColor: c.hex,
                       boxShadow: selectedColor === c.hex
-                        ? `0 0 0 2px white, 0 0 0 4px ${c.hex}`
+                        ? `0 0 0 2px white, 0 0 0 4px ${c.hex}, 0 0 12px ${c.hex}40`
                         : "0 1px 3px rgba(0,0,0,0.1)",
                       transform: selectedColor === c.hex ? "scale(1.15)" : "scale(1)",
                     }}
@@ -93,7 +93,7 @@ export function PartPalette({ onAddPart, metaphor, partCount, partLimit, frozen,
               <button
                 onClick={handleSubmit}
                 disabled={isDisabled}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium text-sm shadow-lg hover:brightness-110 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-[#D4AF37]/30"
+                className="btn-luxury w-full py-2.5 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium text-sm shadow-lg hover:brightness-110 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-[#D4AF37]/30"
               >
                 <Plus size={16} />
                 Place in Theater

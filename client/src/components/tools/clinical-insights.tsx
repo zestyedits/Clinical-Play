@@ -178,7 +178,7 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool, sessionContext 
       <motion.button
         onClick={onToggle}
         className={cn(
-          "absolute top-20 md:top-4 right-4 z-30 min-w-[44px] min-h-[44px] p-3 rounded-2xl shadow-lg transition-all cursor-pointer flex items-center justify-center",
+          "absolute top-20 md:top-4 right-4 z-30 min-w-[44px] min-h-[44px] p-3 rounded-2xl shadow-lg transition-all cursor-pointer flex items-center justify-center relative",
           isOpen
             ? "bg-primary text-primary-foreground"
             : "bg-white/70 backdrop-blur-xl text-primary hover:bg-white/90 border border-white/30"
@@ -189,6 +189,13 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool, sessionContext 
         title="Clinical Insights"
       >
         {isOpen ? <EyeOff size={18} /> : <Eye size={18} />}
+        {!isOpen && (
+          <motion.div
+            className="absolute inset-0 rounded-2xl border-2 border-accent/20 pointer-events-none"
+            animate={{ opacity: [0, 0.5, 0], scale: [1, 1.15, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          />
+        )}
       </motion.button>
 
       <AnimatePresence>
@@ -205,12 +212,21 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool, sessionContext 
               borderLeft: "0.5px solid rgba(212, 175, 55, 0.5)",
             }}
           >
-            <div className="p-5 border-b" style={{ borderColor: "rgba(212, 175, 55, 0.2)" }}>
-              <div className="flex items-center gap-2 mb-1">
-                <Lightbulb size={16} className="text-accent" />
-                <h3 className="font-serif text-sm text-primary font-medium">Clinical Insights</h3>
+            <div className="p-5 pb-4 relative">
+              {/* Gold accent line */}
+              <div className="absolute top-0 left-5 right-5 h-[2px] bg-gradient-to-r from-transparent via-accent/40 to-transparent rounded-full" />
+
+              <div className="flex items-center gap-3 mb-1.5">
+                <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
+                  <Lightbulb size={18} className="text-accent" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-base text-primary font-medium">Clinical Insights</h3>
+                  <p className="text-[10px] text-muted-foreground/70">Private to you</p>
+                </div>
               </div>
-              <p className="text-[11px] text-muted-foreground">Private — only you can see this</p>
+
+              <div className="h-[0.5px] mt-3 bg-gradient-to-r from-accent/20 via-accent/10 to-transparent" />
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -218,9 +234,10 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool, sessionContext 
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="rounded-2xl bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 border border-primary/20 p-3 space-y-2"
+                  className="rounded-2xl bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 border border-primary/20 p-3 space-y-2 overflow-hidden relative"
                   data-testid="context-aware-insight"
                 >
+                  <div className="absolute inset-0 shimmer-border opacity-20 pointer-events-none" />
                   <div className="flex items-center gap-2">
                     <Sparkles size={14} className="text-primary" />
                     <p className="text-xs font-bold text-primary uppercase tracking-widest">
@@ -267,10 +284,10 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool, sessionContext 
               {toolData.prompts.map((prompt, i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="p-3 rounded-2xl bg-white/40 hover:bg-white/60 transition-colors group cursor-pointer"
+                  initial={{ opacity: 0, y: 10, filter: "blur(2px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  transition={{ delay: 0.15 + i * 0.06 }}
+                  className="p-3 rounded-2xl glass-tool-card border-l-2 border-l-accent/20 transition-colors group cursor-pointer"
                 >
                   <div className="flex items-start gap-2.5">
                     <MessageCircle size={14} className="text-accent mt-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
