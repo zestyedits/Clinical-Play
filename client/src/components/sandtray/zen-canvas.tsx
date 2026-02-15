@@ -6,7 +6,7 @@ import { getAssetMass, DEFAULT_LIGHT_SOURCE } from "@/lib/ambient-types";
 import { AmbientFloor } from "./ambient-floor";
 import { SandCanvas } from "./sand-canvas";
 import { TransformRing } from "./transform-ring";
-import { playPlaceSound } from "@/lib/audio-feedback";
+import { playPlaceSound, playSelectSound, playLiftSound } from "@/lib/audio-feedback";
 
 export interface CanvasItem {
   id: string;
@@ -132,6 +132,14 @@ function DustEffect({ particles }: { particles: DustParticle[] }) {
 }
 
 
+function triggerHaptic(style: "light" | "medium" | "heavy" = "light") {
+  try {
+    if (navigator.vibrate) {
+      navigator.vibrate(style === "light" ? 10 : style === "medium" ? 20 : 40);
+    }
+  } catch {}
+}
+
 function DraggableItem({
   item,
   isLocked,
@@ -158,59 +166,87 @@ function DraggableItem({
   onSelect: () => void;
 }) {
   const mass = getAssetMass(item.icon, item.category);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [longPressActive, setLongPressActive] = useState(false);
+  const didDragRef = useRef(false);
+  const dragDistRef = useRef(0);
+  const dragStartPosRef = useRef({ x: 0, y: 0 });
 
-  // Dynamic shadow based on light source
-  const shadowMultiplier = isDragging ? 30 : 15;
+  const shadowMultiplier = isDragging ? 35 : 12;
   const shadowOffsetX = (item.x - lightSource.x) * shadowMultiplier;
   const shadowOffsetY = (item.y - lightSource.y) * shadowMultiplier;
-  const baseShadowBlur = isDragging ? 30 : 6;
-  const baseShadowOpacity = isDragging ? 0.35 : 0.2;
+  const baseShadowBlur = isDragging ? 28 : 5;
+  const baseShadowOpacity = isDragging ? 0.4 : 0.18;
 
   const shadowBlur = useMotionValue(baseShadowBlur);
   const shadowOpacity = useMotionValue(baseShadowOpacity);
   const springBlur = useSpring(shadowBlur, { stiffness: 300, damping: 20 });
   const springOpacity = useSpring(shadowOpacity, { stiffness: 300, damping: 20 });
   const dropShadowFilter = useMotionTemplate`drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${springBlur}px rgba(0,0,0,${springOpacity}))`;
-  const didDragRef = useRef(false);
 
-  // Mass-based drag physics
-  const dragPower = Math.max(0.1, 0.3 / mass);
-  const dragTimeConstant = mass < 0.3 ? 400 : 100 * mass;
+  const dragPower = Math.max(0.08, 0.25 / mass);
+  const dragTimeConstant = mass < 0.3 ? 350 : 80 * mass;
 
-  const handleDragStart = useCallback(() => {
-    shadowBlur.set(30);
-    shadowOpacity.set(0.35);
+  const clearLongPress = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    setLongPressActive(false);
+  }, []);
+
+  useEffect(() => {
+    return () => { clearLongPress(); };
+  }, [clearLongPress]);
+
+  const handleDragStart = useCallback((_: any, info: any) => {
+    shadowBlur.set(28);
+    shadowOpacity.set(0.4);
     didDragRef.current = false;
+    dragDistRef.current = 0;
+    dragStartPosRef.current = { x: info.point.x, y: info.point.y };
+    clearLongPress();
+    playLiftSound();
+    triggerHaptic("light");
     onDragStart();
-  }, [shadowBlur, shadowOpacity, onDragStart]);
+  }, [shadowBlur, shadowOpacity, onDragStart, clearLongPress]);
 
   const handleDragEnd = useCallback((_: any, info: any) => {
-    shadowBlur.set(6);
-    shadowOpacity.set(0.2);
-    didDragRef.current = true;
+    shadowBlur.set(5);
+    shadowOpacity.set(0.18);
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const newX = Math.max(0.02, Math.min(0.98, (info.point.x - rect.left) / rect.width));
-    const newY = Math.max(0.02, Math.min(0.98, (info.point.y - rect.top) / rect.height));
-    onDragEnd(newX, newY);
 
-    // Heavy items: screen shake
-    if (mass > 3 && canvasRef.current) {
-      canvasRef.current.animate(
-        [
-          { transform: "translate(0, 0)" },
-          { transform: "translate(-2px, 1px)" },
-          { transform: "translate(2px, -1px)" },
-          { transform: "translate(-1px, 2px)" },
-          { transform: "translate(0, 0)" },
-        ],
-        { duration: 150, iterations: 2 }
-      );
+    const newX = Math.max(0.03, Math.min(0.97, (info.point.x - rect.left) / rect.width));
+    const newY = Math.max(0.03, Math.min(0.97, (info.point.y - rect.top) / rect.height));
+
+    if (dragDistRef.current > 5) {
+      didDragRef.current = true;
+      onDragEnd(newX, newY);
+      playPlaceSound();
+      triggerHaptic("medium");
+
+      if (mass > 3 && canvasRef.current) {
+        canvasRef.current.animate(
+          [
+            { transform: "translate(0, 0)" },
+            { transform: "translate(-1.5px, 1px)" },
+            { transform: "translate(1.5px, -1px)" },
+            { transform: "translate(-0.5px, 1px)" },
+            { transform: "translate(0, 0)" },
+          ],
+          { duration: 120, iterations: 2 }
+        );
+      }
     }
   }, [canvasRef, onDragEnd, shadowBlur, shadowOpacity, mass]);
 
   const handleDrag = useCallback((_: any, info: any) => {
-    didDragRef.current = true;
+    const dx = info.point.x - dragStartPosRef.current.x;
+    const dy = info.point.y - dragStartPosRef.current.y;
+    dragDistRef.current = Math.sqrt(dx * dx + dy * dy);
+    if (dragDistRef.current > 3) didDragRef.current = true;
+
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     const newX = (info.point.x - rect.left) / rect.width;
@@ -218,19 +254,43 @@ function DraggableItem({
     onCursorMove(newX, newY);
   }, [canvasRef, onCursorMove]);
 
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (isLocked || rakeMode) return;
+    const isTouchDevice = e.pointerType === "touch";
+    if (isTouchDevice && !isSelected) {
+      longPressTimer.current = setTimeout(() => {
+        setLongPressActive(false);
+        playSelectSound();
+        triggerHaptic("medium");
+        onSelect();
+      }, 400);
+      setLongPressActive(true);
+    }
+  }, [isLocked, rakeMode, isSelected, onSelect]);
+
+  const handlePointerUp = useCallback(() => {
+    clearLongPress();
+  }, [clearLongPress]);
+
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (didDragRef.current) {
       didDragRef.current = false;
       return;
     }
     e.stopPropagation();
+    playSelectSound();
+    triggerHaptic("light");
     onSelect();
   }, [onSelect]);
+
+  const itemScale = isDragging ? item.scale * 1.12 : item.scale;
+  const liftY = isDragging ? -8 : 0;
 
   return (
     <motion.div
       className={cn(
-        "absolute flex items-center justify-center cursor-grab active:cursor-grabbing",
+        "absolute flex items-center justify-center touch-none",
+        !isLocked && !rakeMode && "cursor-grab active:cursor-grabbing",
         isDragging ? "z-30" : isSelected ? "z-25" : "z-10"
       )}
       style={{
@@ -241,39 +301,45 @@ function DraggableItem({
       }}
       initial={{ scale: 0, opacity: 0 }}
       animate={{
-        scale: isDragging ? item.scale * 1.15 : item.scale,
-        y: isDragging ? -6 : 0,
+        scale: itemScale,
+        y: liftY,
         opacity: 1,
       }}
       exit={{ scale: 0, opacity: 0, transition: { duration: 0.2 } }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      transition={{ type: "spring", stiffness: 350, damping: 22 }}
       drag={!isLocked && !rakeMode}
       dragMomentum={true}
-      dragElastic={0.1}
+      dragElastic={0.08}
       dragTransition={{
         power: dragPower,
         timeConstant: dragTimeConstant,
         modifyTarget: (v) => v,
       }}
+      dragConstraints={canvasRef}
       onDragStart={handleDragStart}
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
       onClick={handleClick}
-      whileHover={!isSelected ? { scale: item.scale * 1.1 } : undefined}
+      whileHover={!isSelected && !isDragging ? { scale: item.scale * 1.08 } : undefined}
+      whileTap={!isDragging ? { scale: item.scale * 0.95 } : undefined}
     >
-      {/* Grounding shadow */}
+      {/* Grounding shadow — fades when lifted */}
       <div
         className="absolute pointer-events-none"
         style={{
-          bottom: -2,
-          left: '20%',
-          width: '60%',
-          height: 8,
-          background: 'radial-gradient(ellipse, rgba(80,60,30,0.15) 0%, transparent 70%)',
+          bottom: -3,
+          left: '15%',
+          width: '70%',
+          height: 10,
+          background: 'radial-gradient(ellipse, rgba(80,60,30,0.18) 0%, transparent 70%)',
           borderRadius: '50%',
-          filter: 'blur(2px)',
-          opacity: isDragging ? 0 : 1,
-          transition: 'opacity 0.2s ease',
+          filter: 'blur(3px)',
+          opacity: isDragging ? 0.3 : 1,
+          transform: isDragging ? 'translateY(6px) scale(1.3)' : 'translateY(0) scale(1)',
+          transition: 'all 0.2s ease',
         }}
       />
       {/* Contrast plate */}
@@ -284,16 +350,43 @@ function DraggableItem({
           background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
         }}
       />
+      {/* Selection ring glow */}
+      {isSelected && !isDragging && (
+        <motion.div
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            inset: -6,
+            border: '2px solid rgba(212, 175, 55, 0.5)',
+            boxShadow: '0 0 12px rgba(212, 175, 55, 0.25)',
+          }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+        />
+      )}
+      {/* Long-press progress indicator */}
+      {longPressActive && (
+        <motion.div
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            inset: -8,
+            border: '2px solid rgba(212, 175, 55, 0.6)',
+          }}
+          initial={{ scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1.1, opacity: [0, 0.8, 0] }}
+          transition={{ duration: 0.4 }}
+        />
+      )}
       <motion.span
-        className="text-5xl md:text-5xl select-none"
+        className="text-5xl select-none"
         style={{
-          minWidth: '44px',
-          minHeight: '44px',
+          minWidth: '48px',
+          minHeight: '48px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           filter: dropShadowFilter,
-          ...(isDragging ? { WebkitFilter: `brightness(1.02)` } : {}),
+          ...(isDragging ? { WebkitFilter: `brightness(1.05)` } : {}),
         }}
       >
         {item.icon}
@@ -402,6 +495,44 @@ export function ZenCanvas({
 
   const selectedItem = selectedId ? items.find(i => i.id === selectedId) : null;
 
+  const canvasPinchRef = useRef({
+    active: false,
+    initialDist: 0,
+    initialScale: 1,
+    initialAngle: 0,
+    initialRotation: 0,
+  });
+
+  const handleCanvasTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!selectedItem || e.touches.length !== 2) return;
+    e.preventDefault();
+    const t1 = e.touches[0];
+    const t2 = e.touches[1];
+    const dist = Math.sqrt((t1.clientX - t2.clientX) ** 2 + (t1.clientY - t2.clientY) ** 2);
+    const angle = Math.atan2(t1.clientY - t2.clientY, t1.clientX - t2.clientX) * (180 / Math.PI);
+
+    if (!canvasPinchRef.current.active) {
+      canvasPinchRef.current = {
+        active: true,
+        initialDist: dist,
+        initialScale: selectedItem.scale,
+        initialAngle: angle,
+        initialRotation: selectedItem.rotation,
+      };
+      return;
+    }
+
+    const scaleRatio = dist / canvasPinchRef.current.initialDist;
+    const newScale = Math.max(0.3, Math.min(4.0, canvasPinchRef.current.initialScale * scaleRatio));
+    const angleDelta = angle - canvasPinchRef.current.initialAngle;
+    const newRotation = (canvasPinchRef.current.initialRotation + angleDelta) % 360;
+    onItemTransform(selectedItem.id, newScale, newRotation);
+  }, [selectedItem, onItemTransform]);
+
+  const handleCanvasTouchEnd = useCallback(() => {
+    canvasPinchRef.current.active = false;
+  }, []);
+
   return (
     <div
       className="w-full h-full flex items-center justify-center p-3 md:p-4"
@@ -427,6 +558,8 @@ export function ZenCanvas({
           onDrop={handleDrop}
           onPointerMove={handlePointerMove}
           onClick={handleCanvasClick}
+          onTouchMove={handleCanvasTouchMove}
+          onTouchEnd={handleCanvasTouchEnd}
           style={{
             background: "linear-gradient(145deg, rgba(232,220,200,0.85) 0%, rgba(212,196,168,0.85) 30%, rgba(201,184,150,0.85) 60%, rgba(214,200,170,0.85) 100%)",
             boxShadow: "inset 0 2px 12px rgba(0,0,0,0.15), inset 0 0 40px rgba(139,119,80,0.1)",
@@ -518,9 +651,16 @@ export function ZenCanvas({
       {/* Empty state */}
       {items.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <p className="font-serif text-sm text-[#9B8B6E]/40 select-none">
-            Drag figurines from the library to begin
-          </p>
+          <div className="text-center">
+            <p className="font-serif text-sm text-[#9B8B6E]/50 select-none">
+              <span className="hidden md:inline">Drag figurines from the library to begin</span>
+              <span className="md:hidden">Tap figurines in the library to place them</span>
+            </p>
+            <p className="font-serif text-xs text-[#9B8B6E]/30 select-none mt-1">
+              <span className="hidden md:inline">Click items to resize, rotate, or remove</span>
+              <span className="md:hidden">Hold items to select · Pinch to resize</span>
+            </p>
+          </div>
         </div>
       )}
 

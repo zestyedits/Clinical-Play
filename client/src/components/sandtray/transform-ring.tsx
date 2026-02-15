@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import type { CanvasItem } from "./zen-canvas";
 
@@ -10,11 +10,18 @@ interface TransformRingProps {
   onDeselect: () => void;
 }
 
-const MIN_SCALE = 0.4;
-const MAX_SCALE = 3.0;
-const RING_RADIUS = 38;
-const HANDLE_SIZE = 16;
-const TOUCH_HANDLE_SIZE = 22;
+const MIN_SCALE = 0.3;
+const MAX_SCALE = 4.0;
+const HANDLE_SIZE = 20;
+const MOBILE_HANDLE_SIZE = 32;
+
+function useIsTouchDevice() {
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    setIsTouch(window.matchMedia("(pointer: coarse)").matches);
+  }, []);
+  return isTouch;
+}
 
 export function TransformRing({
   item,
@@ -23,9 +30,26 @@ export function TransformRing({
   onRemove,
   onDeselect,
 }: TransformRingProps) {
+  const isTouch = useIsTouchDevice();
+  const handleSize = isTouch ? MOBILE_HANDLE_SIZE : HANDLE_SIZE;
   const [isResizing, setIsResizing] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
-  const startRef = useRef({ scale: item.scale, rotation: item.rotation, startAngle: 0, startDist: 0, centerX: 0, centerY: 0 });
+  const startRef = useRef({
+    scale: item.scale,
+    rotation: item.rotation,
+    startAngle: 0,
+    startDist: 0,
+    centerX: 0,
+    centerY: 0,
+  });
+
+  const pinchRef = useRef({
+    active: false,
+    initialDist: 0,
+    initialScale: item.scale,
+    initialAngle: 0,
+    initialRotation: item.rotation,
+  });
 
   const getCenter = useCallback(() => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -36,7 +60,6 @@ export function TransformRing({
     };
   }, [canvasRef, item.x, item.y]);
 
-  // Scale handle (3 o'clock)
   const handleScaleStart = useCallback((e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -60,7 +83,8 @@ export function TransformRing({
     const { centerX, centerY, startDist, scale: startScale } = startRef.current;
     const currentDist = Math.sqrt((e.clientX - centerX) ** 2 + (e.clientY - centerY) ** 2);
     if (startDist < 1) return;
-    const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, startScale * (currentDist / startDist)));
+    const ratio = currentDist / startDist;
+    const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, startScale * ratio));
     onTransform(newScale, item.rotation);
   }, [isResizing, item.rotation, onTransform]);
 
@@ -70,7 +94,6 @@ export function TransformRing({
     setIsResizing(false);
   }, [isResizing]);
 
-  // Rotate handle (12 o'clock)
   const handleRotateStart = useCallback((e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -103,10 +126,45 @@ export function TransformRing({
     setIsRotating(false);
   }, [isRotating]);
 
-  const ringSize = Math.max(56, 48 * item.scale) + 20;
+  const handlePinch = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length !== 2) return;
+    e.stopPropagation();
+    e.preventDefault();
+
+    const t1 = e.touches[0];
+    const t2 = e.touches[1];
+    const dist = Math.sqrt((t1.clientX - t2.clientX) ** 2 + (t1.clientY - t2.clientY) ** 2);
+    const angle = Math.atan2(t1.clientY - t2.clientY, t1.clientX - t2.clientX) * (180 / Math.PI);
+
+    if (!pinchRef.current.active) {
+      pinchRef.current = {
+        active: true,
+        initialDist: dist,
+        initialScale: item.scale,
+        initialAngle: angle,
+        initialRotation: item.rotation,
+      };
+      return;
+    }
+
+    const scaleRatio = dist / pinchRef.current.initialDist;
+    const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, pinchRef.current.initialScale * scaleRatio));
+    const angleDelta = angle - pinchRef.current.initialAngle;
+    const newRotation = (pinchRef.current.initialRotation + angleDelta) % 360;
+    onTransform(newScale, newRotation);
+  }, [item.scale, item.rotation, onTransform]);
+
+  const handlePinchEnd = useCallback(() => {
+    pinchRef.current.active = false;
+  }, []);
+
+  const ringSize = Math.max(60, 52 * item.scale) + 24;
   const ringRadius = ringSize / 2;
-  const svgSize = ringSize + HANDLE_SIZE + 4;
+  const svgSize = ringSize + handleSize + 8;
   const center = svgSize / 2;
+
+  const scalePercent = Math.round((item.scale / 1.0) * 100);
+  const rotationDeg = Math.round(item.rotation % 360);
 
   return (
     <div
@@ -116,6 +174,8 @@ export function TransformRing({
         top: `${item.y * 100}%`,
         transform: `translate(-50%, -50%) rotate(${item.rotation}deg)`,
       }}
+      onTouchMove={handlePinch}
+      onTouchEnd={handlePinchEnd}
     >
       <motion.div
         className="relative pointer-events-auto"
@@ -131,7 +191,6 @@ export function TransformRing({
           viewBox={`0 0 ${svgSize} ${svgSize}`}
           className="absolute inset-0"
         >
-          {/* Ring circle */}
           <circle
             cx={center}
             cy={center}
@@ -139,7 +198,8 @@ export function TransformRing({
             fill="none"
             stroke="#D4AF37"
             strokeWidth={1.5}
-            opacity={0.7}
+            strokeDasharray="4 3"
+            opacity={0.6}
           />
         </svg>
 
@@ -147,100 +207,112 @@ export function TransformRing({
         <div
           className="absolute touch-none"
           style={{
-            left: center - HANDLE_SIZE / 2,
-            top: center - ringRadius - HANDLE_SIZE / 2,
-            width: HANDLE_SIZE,
-            height: HANDLE_SIZE,
+            left: center - handleSize / 2,
+            top: center - ringRadius - handleSize / 2,
+            width: handleSize,
+            height: handleSize,
             cursor: "grab",
           }}
           onPointerDown={handleRotateStart}
           onPointerMove={handleRotateMove}
           onPointerUp={handleRotateEnd}
         >
-          <div
-            className="w-full h-full rounded-full bg-white border-[1.5px] shadow-md flex items-center justify-center"
-            style={{ borderColor: "#D4AF37" }}
+          <motion.div
+            className="w-full h-full rounded-full bg-white shadow-lg flex items-center justify-center"
+            style={{ border: '2px solid #D4AF37' }}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9, backgroundColor: '#FFF8E7' }}
           >
-            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="3">
+            <svg width={isTouch ? 14 : 10} height={isTouch ? 14 : 10} viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round">
               <path d="M1 4v6h6" />
               <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
             </svg>
-          </div>
+          </motion.div>
         </div>
 
         {/* Scale handle - 3 o'clock */}
         <div
           className="absolute touch-none"
           style={{
-            left: center + ringRadius - HANDLE_SIZE / 2,
-            top: center - HANDLE_SIZE / 2,
-            width: HANDLE_SIZE,
-            height: HANDLE_SIZE,
+            left: center + ringRadius - handleSize / 2,
+            top: center - handleSize / 2,
+            width: handleSize,
+            height: handleSize,
             cursor: "nwse-resize",
           }}
           onPointerDown={handleScaleStart}
           onPointerMove={handleScaleMove}
           onPointerUp={handleScaleEnd}
         >
-          <div
-            className="w-full h-full rounded-full bg-white border-[1.5px] shadow-md flex items-center justify-center"
-            style={{ borderColor: "#D4AF37" }}
+          <motion.div
+            className="w-full h-full rounded-full bg-white shadow-lg flex items-center justify-center"
+            style={{ border: '2px solid #D4AF37' }}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9, backgroundColor: '#FFF8E7' }}
           >
-            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="3">
+            <svg width={isTouch ? 14 : 10} height={isTouch ? 14 : 10} viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round">
               <path d="M15 3h6v6" />
               <path d="M9 21H3v-6" />
               <line x1="21" y1="3" x2="14" y2="10" />
               <line x1="3" y1="21" x2="10" y2="14" />
             </svg>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Layer controls - 9 o'clock */}
+        {/* Size buttons - 9 o'clock */}
         <div
-          className="absolute flex flex-col gap-0.5"
+          className="absolute flex flex-col gap-1"
           style={{
-            left: center - ringRadius - HANDLE_SIZE / 2,
-            top: center - HANDLE_SIZE - 1,
-            width: HANDLE_SIZE,
+            left: center - ringRadius - handleSize / 2,
+            top: center - handleSize - 2,
+            width: handleSize,
           }}
         >
-          <button
-            className="w-full rounded-full bg-white border-[1.5px] shadow-sm flex items-center justify-center cursor-pointer"
-            style={{ borderColor: "#D4AF37", height: HANDLE_SIZE * 0.75 }}
+          <motion.button
+            className="w-full rounded-full bg-white shadow-md flex items-center justify-center cursor-pointer"
+            style={{ border: '2px solid #D4AF37', height: handleSize * 0.85 }}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.9, backgroundColor: '#FFF8E7' }}
             onClick={(e) => {
               e.stopPropagation();
-              onTransform(item.scale * 1.15, item.rotation);
+              onTransform(Math.min(MAX_SCALE, item.scale * 1.2), item.rotation);
             }}
           >
-            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="3">
-              <polyline points="18 15 12 9 6 15" />
+            <svg width={isTouch ? 12 : 9} height={isTouch ? 12 : 9} viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-          </button>
-          <button
-            className="w-full rounded-full bg-white border-[1.5px] shadow-sm flex items-center justify-center cursor-pointer"
-            style={{ borderColor: "#D4AF37", height: HANDLE_SIZE * 0.75 }}
+          </motion.button>
+          <motion.button
+            className="w-full rounded-full bg-white shadow-md flex items-center justify-center cursor-pointer"
+            style={{ border: '2px solid #D4AF37', height: handleSize * 0.85 }}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.9, backgroundColor: '#FFF8E7' }}
             onClick={(e) => {
               e.stopPropagation();
-              onTransform(Math.max(MIN_SCALE, item.scale * 0.85), item.rotation);
+              onTransform(Math.max(MIN_SCALE, item.scale * 0.8), item.rotation);
             }}
           >
-            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="3">
-              <polyline points="6 9 12 15 18 9" />
+            <svg width={isTouch ? 12 : 9} height={isTouch ? 12 : 9} viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round">
+              <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-          </button>
+          </motion.button>
         </div>
 
         {/* Delete handle - 6 o'clock */}
-        <button
-          className="absolute rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors cursor-pointer"
+        <motion.button
+          className="absolute rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg cursor-pointer"
           style={{
-            left: center - HANDLE_SIZE / 2 + 1,
-            top: center + ringRadius - HANDLE_SIZE / 2,
-            width: HANDLE_SIZE,
-            height: HANDLE_SIZE,
-            fontSize: "10px",
+            left: center - handleSize / 2,
+            top: center + ringRadius - handleSize / 2,
+            width: handleSize,
+            height: handleSize,
+            fontSize: isTouch ? "16px" : "12px",
             fontWeight: "bold",
+            border: '2px solid rgba(255,255,255,0.5)',
           }}
+          whileHover={{ scale: 1.2, backgroundColor: '#dc2626' }}
+          whileTap={{ scale: 0.85 }}
           onClick={(e) => {
             e.stopPropagation();
             onRemove();
@@ -248,18 +320,26 @@ export function TransformRing({
           data-testid="button-remove-item"
         >
           ×
-        </button>
-      </motion.div>
+        </motion.button>
 
-      {/* Touch target enlargement */}
-      <style>{`
-        @media (pointer: coarse) {
-          [data-testid="button-remove-item"] {
-            min-width: ${TOUCH_HANDLE_SIZE}px !important;
-            min-height: ${TOUCH_HANDLE_SIZE}px !important;
-          }
-        }
-      `}</style>
+        {/* Scale/rotation info tooltip */}
+        {(isResizing || isRotating) && (
+          <motion.div
+            className="absolute pointer-events-none"
+            style={{
+              left: center - 30,
+              top: center - ringRadius - handleSize - 24,
+              width: 60,
+            }}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="bg-black/70 text-white text-[10px] text-center px-2 py-1 rounded-full whitespace-nowrap backdrop-blur-sm">
+              {isResizing ? `${scalePercent}%` : `${rotationDeg}°`}
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
     </div>
   );
 }
