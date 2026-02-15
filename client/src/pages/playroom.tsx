@@ -8,6 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ZenCanvas, type CanvasItem } from "@/components/sandtray/zen-canvas";
 import { AssetLibrary } from "@/components/sandtray/asset-library";
+import type { SandtrayAsset } from "@/lib/sandtray-assets";
 import { ModeratorBar } from "@/components/sandtray/moderator-bar";
 import { ToolSelector } from "@/components/tools/tool-selector";
 import { BreathingGuide } from "@/components/tools/breathing-guide";
@@ -1151,6 +1152,12 @@ export default function Playroom() {
     send({ type: "activity-pulse" });
   }, [send]);
 
+  const handleTapPlace = useCallback((asset: SandtrayAsset) => {
+    const x = 0.3 + Math.random() * 0.4;
+    const y = 0.3 + Math.random() * 0.4;
+    handleItemDrop(asset.icon, asset.category, x, y);
+  }, [handleItemDrop]);
+
   const handleItemMove = useCallback((itemId: string, x: number, y: number) => {
     if (!isDemo) setItems(prev => prev.map(i => i.id === itemId ? { ...i, x, y } : i));
     send({ type: "item-moved", itemId, x, y });
@@ -1958,6 +1965,7 @@ export default function Playroom() {
                     isOpen={assetLibraryOpen}
                     onToggle={() => setAssetLibraryOpen(!assetLibraryOpen)}
                     disabled={isCanvasLocked && !isClinician}
+                    onTapPlace={handleTapPlace}
                   />
                 )}
               </motion.div>
