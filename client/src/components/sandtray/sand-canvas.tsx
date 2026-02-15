@@ -15,11 +15,18 @@ const HEIGHTMAP_H = 300;
 const MOBILE_HEIGHTMAP_W = 200;
 const MOBILE_HEIGHTMAP_H = 150;
 const RAKE_TINES = 5;
-const TINE_SPACING = 0.012;
+const TINE_SPACING = 0.015;
+
+// Seeded noise for stable grain texture
+function hashNoise(x: number, y: number): number {
+  const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+  return n - Math.floor(n);
+}
 
 export function SandCanvas({ width, height, rakePaths, isRakeMode, onRakePathAdd, lightSource }: SandCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const heightmapRef = useRef<Float32Array | null>(null);
+  const noiseRef = useRef<Float32Array | null>(null);
   const dirtyRef = useRef(true);
   const rafRef = useRef<number>(0);
   const drawingRef = useRef(false);
@@ -30,8 +37,16 @@ export function SandCanvas({ width, height, rakePaths, isRakeMode, onRakePathAdd
   const hmW = isMobile ? MOBILE_HEIGHTMAP_W : HEIGHTMAP_W;
   const hmH = isMobile ? MOBILE_HEIGHTMAP_H : HEIGHTMAP_H;
 
+  // Generate stable noise texture once per resolution
   useEffect(() => {
     heightmapRef.current = new Float32Array(hmW * hmH);
+    const noise = new Float32Array(hmW * hmH);
+    for (let y = 0; y < hmH; y++) {
+      for (let x = 0; x < hmW; x++) {
+        noise[y * hmW + x] = hashNoise(x, y);
+      }
+    }
+    noiseRef.current = noise;
     dirtyRef.current = true;
   }, [hmW, hmH]);
 
@@ -51,9 +66,9 @@ export function SandCanvas({ width, height, rakePaths, isRakeMode, onRakePathAdd
     if (!ctx) return;
 
     const render = () => {
-      if (dirtyRef.current && heightmapRef.current) {
+      if (dirtyRef.current && heightmapRef.current && noiseRef.current) {
         dirtyRef.current = false;
-        renderHeightmap(ctx, heightmapRef.current, hmW, hmH, canvas.width, canvas.height, lightSource);
+        renderHeightmap(ctx, heightmapRef.current, noiseRef.current, hmW, hmH, canvas.width, canvas.height, lightSource);
       }
       rafRef.current = requestAnimationFrame(render);
     };
@@ -139,7 +154,7 @@ export function SandCanvas({ width, height, rakePaths, isRakeMode, onRakePathAdd
 function applyRakePathToHeightmap(
   hm: Float32Array,
   points: { x: number; y: number }[],
-  width: number,
+  _width: number,
   hmW: number,
   hmH: number
 ) {
@@ -175,8 +190,8 @@ function applySingleGroove(
   hmW: number,
   hmH: number
 ) {
-  const grooveRadius = Math.max(1, hmW * 0.007);
-  const ridgeRadius = grooveRadius * 2.2;
+  const grooveRadius = Math.max(1.5, hmW * 0.009);
+  const ridgeRadius = grooveRadius * 2.5;
 
   const steps = Math.max(1, Math.ceil(Math.sqrt(
     ((p1.x - p0.x) * hmW) ** 2 + ((p1.y - p0.y) * hmH) ** 2
@@ -198,11 +213,14 @@ function applySingleGroove(
         const idx = y * hmW + x;
 
         if (dist < grooveRadius) {
-          const falloff = 1 - dist / grooveRadius;
-          hm[idx] = Math.max(-1, hm[idx] - falloff * 0.7);
+          // Smooth groove: deeper center, soft falloff
+          const falloff = 1 - (dist / grooveRadius) ** 2;
+          hm[idx] = Math.max(-1.2, hm[idx] - falloff * 0.8);
         } else if (dist < ridgeRadius) {
-          const ridgeFalloff = 1 - (dist - grooveRadius) / (ridgeRadius - grooveRadius);
-          hm[idx] = Math.min(1, hm[idx] + ridgeFalloff * 0.3);
+          // Ridge: pushed-up sand beside the groove
+          const ridgeT = (dist - grooveRadius) / (ridgeRadius - grooveRadius);
+          const ridgeProfile = Math.sin(ridgeT * Math.PI) * 0.5;
+          hm[idx] = Math.min(1, hm[idx] + ridgeProfile * 0.35);
         }
       }
     }
@@ -212,6 +230,7 @@ function applySingleGroove(
 function renderHeightmap(
   ctx: CanvasRenderingContext2D,
   hm: Float32Array,
+  noise: Float32Array,
   hmW: number,
   hmH: number,
   canvasW: number,
@@ -224,6 +243,8 @@ function renderHeightmap(
   const data = imgData.data;
   const lightX = lightSource.x;
   const lightY = lightSource.y;
+  // Light direction vector (normalized)
+  const lz = 0.5; // light height above surface
 
   for (let y = 0; y < hmH; y++) {
     for (let x = 0; x < hmW; x++) {
@@ -231,61 +252,73 @@ function renderHeightmap(
       const h = hm[idx];
       const pi = idx * 4;
 
-      if (Math.abs(h) < 0.005) {
-        data[pi] = 0;
-        data[pi + 1] = 0;
-        data[pi + 2] = 0;
+      if (Math.abs(h) < 0.003) {
         data[pi + 3] = 0;
         continue;
       }
 
+      // Surface normal from heightmap gradients
       const hLeft = x > 0 ? hm[idx - 1] : h;
       const hRight = x < hmW - 1 ? hm[idx + 1] : h;
       const hUp = y > 0 ? hm[idx - hmW] : h;
       const hDown = y < hmH - 1 ? hm[idx + hmW] : h;
 
-      const dx = hRight - hLeft;
-      const dy = hDown - hUp;
+      const nx = (hLeft - hRight) * 2;
+      const ny = (hUp - hDown) * 2;
+      const nz = 1.0;
+      const nLen = Math.sqrt(nx * nx + ny * ny + nz * nz);
 
+      // Light vector
       const lx = (x / hmW) - lightX;
       const ly = (y / hmH) - lightY;
-      const lLen = Math.sqrt(lx * lx + ly * ly) || 1;
-      const dot = -(dx * (lx / lLen) + dy * (ly / lLen));
+      const lLen = Math.sqrt(lx * lx + ly * ly + lz * lz);
+
+      // Diffuse lighting (dot product of normal and light direction)
+      const dot = (nx / nLen) * (lx / lLen) + (ny / nLen) * (ly / lLen) + (nz / nLen) * (lz / lLen);
 
       const absH = Math.abs(h);
+      const depth = Math.min(1, absH);
+      const n = noise[idx] * 0.15; // subtle grain variation
 
       if (h < 0) {
-        const depth = Math.min(1, absH);
-        const shade = dot * 0.6;
-        if (shade > 0) {
-          data[pi] = 100;
-          data[pi + 1] = 80;
-          data[pi + 2] = 50;
-          data[pi + 3] = Math.floor(Math.min(200, (shade * depth * 0.6 + depth * 0.25) * 255));
+        // Groove (depression in sand)
+        if (dot < 0) {
+          // Lit side of groove — warm highlight
+          const lit = Math.abs(dot) * depth;
+          data[pi] = 220;      // warm sand highlight
+          data[pi + 1] = 200;
+          data[pi + 2] = 160;
+          data[pi + 3] = Math.floor(Math.min(160, (lit * 0.5 + depth * 0.15 + n) * 255));
         } else {
-          data[pi] = 40;
-          data[pi + 1] = 30;
-          data[pi + 2] = 15;
-          data[pi + 3] = Math.floor(Math.min(220, (Math.abs(shade) * depth * 0.7 + depth * 0.35) * 255));
+          // Shadow side of groove — dark brown
+          const shade = dot * depth;
+          data[pi] = 50;
+          data[pi + 1] = 38;
+          data[pi + 2] = 20;
+          data[pi + 3] = Math.floor(Math.min(200, (shade * 0.6 + depth * 0.3 + n) * 255));
         }
       } else {
-        const ridge = Math.min(1, absH);
-        const shade = dot * 0.6;
-        if (shade > 0) {
+        // Ridge (pushed-up sand)
+        if (dot < 0) {
+          // Lit side of ridge — bright sand
+          const lit = Math.abs(dot) * depth;
           data[pi] = 255;
-          data[pi + 1] = 245;
-          data[pi + 2] = 220;
-          data[pi + 3] = Math.floor(Math.min(180, (shade * ridge * 0.5 + ridge * 0.2) * 255));
+          data[pi + 1] = 248;
+          data[pi + 2] = 225;
+          data[pi + 3] = Math.floor(Math.min(150, (lit * 0.4 + depth * 0.12 + n) * 255));
         } else {
-          data[pi] = 60;
-          data[pi + 1] = 45;
-          data[pi + 2] = 20;
-          data[pi + 3] = Math.floor(Math.min(160, (Math.abs(shade) * ridge * 0.4 + ridge * 0.15) * 255));
+          // Shadow side of ridge
+          const shade = dot * depth;
+          data[pi] = 80;
+          data[pi + 1] = 60;
+          data[pi + 2] = 30;
+          data[pi + 3] = Math.floor(Math.min(140, (shade * 0.4 + depth * 0.1 + n) * 255));
         }
       }
     }
   }
 
+  // Upscale to canvas with bilinear filtering
   const tempCanvas = document.createElement("canvas");
   tempCanvas.width = hmW;
   tempCanvas.height = hmH;

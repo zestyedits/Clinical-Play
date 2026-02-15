@@ -344,14 +344,16 @@ function DigRevealCanvas({
     const ridgeCtx = ridgeCanvasRef.current?.getContext("2d");
     if (!ctx) return;
 
-    const baseRadius = 28 + Math.random() * 12;
+    const baseRadius = 22 + Math.random() * 10;
 
+    // Erase sand to reveal beneath — irregular edge
     ctx.save();
     ctx.globalCompositeOperation = "destination-out";
     const eraseGrad = ctx.createRadialGradient(x, y, 0, x, y, baseRadius);
     eraseGrad.addColorStop(0, "rgba(0,0,0,1)");
-    eraseGrad.addColorStop(0.5, "rgba(0,0,0,0.9)");
-    eraseGrad.addColorStop(0.75, "rgba(0,0,0,0.4)");
+    eraseGrad.addColorStop(0.4, "rgba(0,0,0,0.95)");
+    eraseGrad.addColorStop(0.7, "rgba(0,0,0,0.5)");
+    eraseGrad.addColorStop(0.85, "rgba(0,0,0,0.15)");
     eraseGrad.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = eraseGrad;
     ctx.beginPath();
@@ -359,17 +361,29 @@ function DigRevealCanvas({
     ctx.fill();
     ctx.restore();
 
+    // Displaced sand ridge around the dig — warm sand-colored buildup
     if (ridgeCtx) {
-      const ridgeInner = baseRadius * 0.7;
-      const ridgeOuter = baseRadius * 1.4;
+      const ridgeInner = baseRadius * 0.75;
+      const ridgeOuter = baseRadius * 1.5;
       const ridgeGrad = ridgeCtx.createRadialGradient(x, y, ridgeInner, x, y, ridgeOuter);
       ridgeGrad.addColorStop(0, "rgba(0,0,0,0)");
-      ridgeGrad.addColorStop(0.3, "rgba(180,155,110,0.25)");
-      ridgeGrad.addColorStop(0.6, "rgba(160,135,90,0.15)");
+      ridgeGrad.addColorStop(0.2, "rgba(200,180,140,0.2)");
+      ridgeGrad.addColorStop(0.45, "rgba(180,155,110,0.3)");
+      ridgeGrad.addColorStop(0.7, "rgba(160,135,90,0.12)");
       ridgeGrad.addColorStop(1, "rgba(0,0,0,0)");
       ridgeCtx.fillStyle = ridgeGrad;
       ridgeCtx.beginPath();
       ridgeCtx.arc(x, y, ridgeOuter, 0, Math.PI * 2);
+      ridgeCtx.fill();
+
+      // Inner shadow for depth perception
+      const shadowGrad = ridgeCtx.createRadialGradient(x + 2, y + 2, 0, x + 2, y + 2, baseRadius * 0.6);
+      shadowGrad.addColorStop(0, "rgba(60,40,20,0.12)");
+      shadowGrad.addColorStop(0.5, "rgba(60,40,20,0.06)");
+      shadowGrad.addColorStop(1, "rgba(0,0,0,0)");
+      ridgeCtx.fillStyle = shadowGrad;
+      ridgeCtx.beginPath();
+      ridgeCtx.arc(x + 2, y + 2, baseRadius * 0.6, 0, Math.PI * 2);
       ridgeCtx.fill();
     }
   }, []);
@@ -727,11 +741,23 @@ export function ZenCanvas({
     if (isLocked) setSelectedId(null);
   }, [isLocked]);
 
+  const handleZoomReset = useCallback(() => {
+    setZoom(1);
+    setPanOffset({ x: 0, y: 0 });
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === "Space" && !e.repeat) {
         e.preventDefault();
         spaceHeldRef.current = true;
+      }
+      if (e.code === "Escape") {
+        if (zoom !== 1 || panOffset.x !== 0 || panOffset.y !== 0) {
+          setZoom(1);
+          setPanOffset({ x: 0, y: 0 });
+        }
+        setSelectedId(null);
       }
     };
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -746,7 +772,7 @@ export function ZenCanvas({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [zoom, panOffset]);
 
   useEffect(() => {
     const el = canvasRef.current;
@@ -930,11 +956,6 @@ export function ZenCanvas({
 
   const handleZoomOut = useCallback(() => {
     setZoom(z => Math.max(MIN_ZOOM, z - 0.25));
-  }, []);
-
-  const handleZoomReset = useCallback(() => {
-    setZoom(1);
-    setPanOffset({ x: 0, y: 0 });
   }, []);
 
   const showDigReveal = sandTexture !== "blue" && digMode;
@@ -1170,18 +1191,18 @@ export function ZenCanvas({
 
       {(zoom !== 1 || panOffset.x !== 0 || panOffset.y !== 0) && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="absolute top-3 left-3 z-50 flex items-center gap-1 bg-[#F5EDE0]/90 backdrop-blur-xl rounded-xl shadow-lg border border-[#D4C4A8]/50 p-1"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 bg-[#F5EDE0]/95 backdrop-blur-xl rounded-2xl shadow-xl border border-[#D4C4A8]/50 px-2 py-1.5"
         >
           <button
             onClick={handleZoomOut}
             className="p-1.5 rounded-lg hover:bg-[#D4C4A8]/30 transition-colors cursor-pointer"
             data-testid="button-zoom-out"
           >
-            <ZoomOut size={14} className="text-[#5A4A32]" />
+            <ZoomOut size={16} className="text-[#5A4A32]" />
           </button>
-          <span className="text-[11px] font-medium text-[#5A4A32] min-w-[36px] text-center">
+          <span className="text-xs font-semibold text-[#5A4A32] min-w-[40px] text-center tabular-nums">
             {Math.round(zoom * 100)}%
           </span>
           <button
@@ -1189,15 +1210,16 @@ export function ZenCanvas({
             className="p-1.5 rounded-lg hover:bg-[#D4C4A8]/30 transition-colors cursor-pointer"
             data-testid="button-zoom-in"
           >
-            <ZoomIn size={14} className="text-[#5A4A32]" />
+            <ZoomIn size={16} className="text-[#5A4A32]" />
           </button>
-          <div className="w-px h-4 bg-[#D4C4A8]/40" />
+          <div className="w-px h-5 bg-[#D4C4A8]/40" />
           <button
             onClick={handleZoomReset}
-            className="p-1.5 rounded-lg hover:bg-[#D4C4A8]/30 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#8B6914] text-white text-xs font-medium hover:bg-[#7A5C2E] transition-colors cursor-pointer"
             data-testid="button-zoom-reset"
           >
-            <Maximize size={14} className="text-[#5A4A32]" />
+            <Maximize size={14} />
+            Reset View
           </button>
         </motion.div>
       )}
