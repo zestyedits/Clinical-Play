@@ -29,10 +29,10 @@ import AccountPage from "@/pages/account";
 function PageTransition({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8, filter: "blur(3px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      exit={{ opacity: 0, y: -4, filter: "blur(2px)" }}
-      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15, ease: "easeOut" }}
     >
       {children}
     </motion.div>
@@ -43,11 +43,14 @@ function Router() {
   const [location] = useLocation();
   const isPlayroom = location.startsWith("/playroom/");
 
+  // Use the base path segment as key so dynamic params don't cause remounts
+  const routeKey = location.split("/").slice(0, 2).join("/") || "/";
+
   return (
     <>
       {!isPlayroom && <Navbar />}
       <AnimatePresence mode="wait">
-        <Switch key={location}>
+        <Switch key={routeKey}>
           <Route path="/">{() => <PageTransition><LandingPage /></PageTransition>}</Route>
           <Route path="/dashboard">{() => <PageTransition><Dashboard /></PageTransition>}</Route>
           <Route path="/playroom/:id">{(params) => <Playroom />}</Route>
