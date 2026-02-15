@@ -10,6 +10,12 @@ import {
   X,
   MessageSquare,
   Hash,
+  Shuffle,
+  PenLine,
+  BarChart3,
+  ChevronDown,
+  Send,
+  ShowerHead,
 } from "lucide-react";
 import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
@@ -42,11 +48,13 @@ export interface GratitudeJarProps {
 interface GratitudeJarSettings {
   showPrompts: boolean;
   maxStones: number;
+  letterMode: boolean;
 }
 
 const DEFAULT_GRATITUDE_JAR_SETTINGS: GratitudeJarSettings = {
   showPrompts: true,
   maxStones: 0,
+  letterMode: false,
 };
 
 const GRATITUDE_JAR_TOOLBAR_CONTROLS: ToolbarControl[] = [
@@ -64,6 +72,14 @@ const GRATITUDE_JAR_TOOLBAR_CONTROLS: ToolbarControl[] = [
     label: "Max Stones",
     steps: [0, 5, 10, 20, 50],
     activeColor: "amber",
+  },
+  {
+    type: "toggle",
+    key: "letterMode",
+    icon: PenLine,
+    label: "Letter Mode",
+    activeLabel: "Letter Mode On",
+    activeColor: "purple",
   },
 ];
 
@@ -133,15 +149,18 @@ function StoneSVG({
   color,
   size,
   isStarred,
+  glowColor,
 }: {
   shape: string;
   color: string;
   size: number;
   isStarred: boolean;
+  glowColor?: string;
 }) {
-  const uid = `${shape}-${color.replace("#", "")}-${Math.round(size)}`;
+  const uid = `${shape}-${color.replace("#", "")}-${Math.round(size)}-${glowColor ? "g" : "n"}`;
   const glowId = `glow-${uid}`;
   const starGlowId = `sglow-${uid}`;
+  const revisitGlowId = `rglow-${uid}`;
 
   const renderShape = () => {
     switch (shape as StoneShape) {
@@ -150,7 +169,7 @@ function StoneSVG({
           <polygon
             points={`${size / 2},${size * 0.1} ${size * 0.85},${size * 0.4} ${size * 0.7},${size * 0.9} ${size * 0.3},${size * 0.9} ${size * 0.15},${size * 0.4}`}
             fill={color}
-            filter={`url(#${glowId})`}
+            filter={`url(#${glowColor ? revisitGlowId : glowId})`}
             stroke={`${color}88`}
             strokeWidth={0.5}
           />
@@ -160,7 +179,7 @@ function StoneSVG({
           <polygon
             points={starPoints(size / 2, size / 2, 5, size * 0.4, size * 0.2)}
             fill={color}
-            filter={`url(#${glowId})`}
+            filter={`url(#${glowColor ? revisitGlowId : glowId})`}
             stroke={`${color}88`}
             strokeWidth={0.5}
           />
@@ -170,7 +189,7 @@ function StoneSVG({
           <path
             d={`M ${size / 2} ${size * 0.85} C ${size * 0.15} ${size * 0.55}, ${size * 0.05} ${size * 0.25}, ${size * 0.3} ${size * 0.15} C ${size * 0.42} ${size * 0.1}, ${size / 2} ${size * 0.2}, ${size / 2} ${size * 0.3} C ${size / 2} ${size * 0.2}, ${size * 0.58} ${size * 0.1}, ${size * 0.7} ${size * 0.15} C ${size * 0.95} ${size * 0.25}, ${size * 0.85} ${size * 0.55}, ${size / 2} ${size * 0.85} Z`}
             fill={color}
-            filter={`url(#${glowId})`}
+            filter={`url(#${glowColor ? revisitGlowId : glowId})`}
             stroke={`${color}88`}
             strokeWidth={0.5}
           />
@@ -183,7 +202,7 @@ function StoneSVG({
             rx={size * 0.42}
             ry={size * 0.32}
             fill={color}
-            filter={`url(#${glowId})`}
+            filter={`url(#${glowColor ? revisitGlowId : glowId})`}
             stroke={`${color}88`}
             strokeWidth={0.5}
           />
@@ -195,7 +214,7 @@ function StoneSVG({
             cy={size / 2}
             r={size * 0.38}
             fill={color}
-            filter={`url(#${glowId})`}
+            filter={`url(#${glowColor ? revisitGlowId : glowId})`}
             stroke={`${color}88`}
             strokeWidth={0.5}
           />
@@ -219,6 +238,17 @@ function StoneSVG({
           <filter id={starGlowId} x="-100%" y="-100%" width="300%" height="300%">
             <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
             <feFlood floodColor="#FBBF24" floodOpacity="0.6" result="color" />
+            <feComposite in="color" in2="blur" operator="in" result="glow" />
+            <feMerge>
+              <feMergeNode in="glow" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        )}
+        {glowColor && (
+          <filter id={revisitGlowId} x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+            <feFlood floodColor={glowColor} floodOpacity="0.8" result="color" />
             <feComposite in="color" in2="blur" operator="in" result="glow" />
             <feMerge>
               <feMergeNode in="glow" />
@@ -365,6 +395,346 @@ function ShapePicker({
   );
 }
 
+// ─── Category Insights Chart ──────────────────────────────────────────────────
+
+function CategoryInsights({ stones }: { stones: GratitudeStoneData[] }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const { categoryCounts, maxCount, mostUsed, leastUsed } = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const cat of CATEGORIES) {
+      counts[cat.label] = 0;
+    }
+    for (const stone of stones) {
+      if (counts[stone.category] !== undefined) {
+        counts[stone.category]++;
+      }
+    }
+    let maxC = 0;
+    let mostUsedLabel = CATEGORIES[0].label;
+    let leastUsedLabel = CATEGORIES[0].label;
+    let leastCount = Infinity;
+    for (const cat of CATEGORIES) {
+      if (counts[cat.label] > maxC) {
+        maxC = counts[cat.label];
+        mostUsedLabel = cat.label;
+      }
+      if (counts[cat.label] < leastCount) {
+        leastCount = counts[cat.label];
+        leastUsedLabel = cat.label;
+      }
+    }
+    return {
+      categoryCounts: counts,
+      maxCount: maxC,
+      mostUsed: mostUsedLabel,
+      leastUsed: leastUsedLabel,
+    };
+  }, [stones]);
+
+  if (stones.length === 0) return null;
+
+  return (
+    <div className="w-full rounded-2xl bg-white/8 backdrop-blur-sm border border-white/10 overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-white/5 transition-colors"
+      >
+        <div className="flex items-center gap-2 text-sm text-white/60">
+          <BarChart3 className="w-4 h-4 text-amber-300" />
+          <span className="font-medium text-white/70">Insights</span>
+        </div>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronDown className="w-4 h-4 text-white/40" />
+        </motion.div>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 space-y-3">
+              {/* Horizontal bar chart */}
+              <div className="space-y-1.5">
+                {CATEGORIES.map((cat) => {
+                  const count = categoryCounts[cat.label] || 0;
+                  const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                  const isMost = cat.label === mostUsed && count > 0;
+                  return (
+                    <div key={cat.label} className="flex items-center gap-2">
+                      <span className={cn(
+                        "text-xs w-24 truncate text-right",
+                        isMost ? "text-white/90 font-semibold" : "text-white/50"
+                      )}>
+                        {cat.label}
+                      </span>
+                      <div className="flex-1 h-4 rounded-full bg-white/5 overflow-hidden relative">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${pct}%` }}
+                          transition={{ duration: 0.6, ease: "easeOut" }}
+                          className={cn("h-full rounded-full", isMost && "ring-1 ring-white/30")}
+                          style={{ backgroundColor: cat.color, minWidth: count > 0 ? 8 : 0 }}
+                        />
+                      </div>
+                      <span className={cn(
+                        "text-xs w-6 text-left tabular-nums",
+                        isMost ? "text-white/90 font-semibold" : "text-white/40"
+                      )}>
+                        {count}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Insight text */}
+              {stones.length >= 3 && mostUsed !== leastUsed && (
+                <p className="text-xs text-white/45 italic leading-relaxed px-1">
+                  You tend to notice <span className="text-white/70 font-medium">{mostUsed}</span> the
+                  most — try exploring <span className="text-white/70 font-medium">{leastUsed}</span> next!
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Daily Streak Calculation ─────────────────────────────────────────────────
+
+function computeStreak(stones: GratitudeStoneData[]): number {
+  if (stones.length === 0) return 0;
+  // Collect unique date strings (YYYY-MM-DD) from stone creation dates
+  const dateSet = new Set<string>();
+  for (const stone of stones) {
+    const d = new Date(stone.createdAt);
+    if (!isNaN(d.getTime())) {
+      dateSet.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+    }
+  }
+  if (dateSet.size === 0) return 0;
+
+  const sortedDates = Array.from(dateSet).sort().reverse();
+
+  // Check if today or yesterday is in the set (streak must be current)
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+
+  if (sortedDates[0] !== todayStr && sortedDates[0] !== yesterdayStr) {
+    return 0;
+  }
+
+  let streak = 1;
+  for (let i = 1; i < sortedDates.length; i++) {
+    const current = new Date(sortedDates[i - 1]);
+    const prev = new Date(sortedDates[i]);
+    const diffMs = current.getTime() - prev.getTime();
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 1) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+// ─── Revisit Modal ────────────────────────────────────────────────────────────
+
+function RevisitModal({
+  stone,
+  onClose,
+}: {
+  stone: GratitudeStoneData;
+  onClose: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.8, opacity: 0, y: 20 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        className="relative w-80 p-6 rounded-3xl bg-[#1B2A4A]/95 backdrop-blur-2xl
+          border border-white/20 shadow-2xl text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-white/10
+            text-white/40 hover:text-white/80 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        <p className="text-xs text-white/40 italic mb-4">
+          Remember this moment of gratitude...
+        </p>
+
+        <motion.div
+          className="flex justify-center mb-4"
+          animate={{
+            filter: [
+              "drop-shadow(0 0 8px rgba(255,255,255,0.2))",
+              "drop-shadow(0 0 20px rgba(255,255,255,0.5))",
+              "drop-shadow(0 0 8px rgba(255,255,255,0.2))",
+            ],
+          }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <StoneSVG
+            shape={stone.shape}
+            color={stone.color}
+            size={64}
+            isStarred={stone.isStarred}
+            glowColor={stone.color}
+          />
+        </motion.div>
+
+        <p className="text-base text-white/90 leading-relaxed mb-3 font-medium">
+          &ldquo;{stone.content}&rdquo;
+        </p>
+
+        <div className="flex items-center justify-center gap-2 text-xs text-white/40">
+          <span
+            className="px-2 py-0.5 rounded-full text-white/60"
+            style={{ backgroundColor: `${stone.color}30` }}
+          >
+            {stone.category}
+          </span>
+          <span>{new Date(stone.createdAt).toLocaleDateString()}</span>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Gratitude Letter Mode ────────────────────────────────────────────────────
+
+function GratitudeLetterMode({
+  onSendToJar,
+}: {
+  onSendToJar: (content: string) => void;
+}) {
+  const [recipientName, setRecipientName] = useState("");
+  const [letterBody, setLetterBody] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleSend = useCallback(() => {
+    const fullLetter = `Dear ${recipientName || "..."}, ${letterBody}`.trim();
+    if (letterBody.trim().length < 2) return;
+    onSendToJar(fullLetter);
+    setRecipientName("");
+    setLetterBody("");
+  }, [recipientName, letterBody, onSendToJar]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      className="w-full rounded-2xl overflow-hidden border border-amber-500/20 shadow-lg"
+      style={{
+        background: "linear-gradient(145deg, rgba(251,191,36,0.08) 0%, rgba(245,158,11,0.04) 100%)",
+      }}
+    >
+      {/* Decorative letterhead */}
+      <div className="px-5 pt-4 pb-2 border-b border-amber-400/10">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-400/30" />
+          <PenLine className="w-4 h-4 text-amber-400/60" />
+          <span className="text-xs text-amber-300/60 font-medium tracking-wider uppercase">
+            Gratitude Letter
+          </span>
+          <PenLine className="w-4 h-4 text-amber-400/60 scale-x-[-1]" />
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-400/30" />
+        </div>
+      </div>
+
+      <div className="px-5 py-4 space-y-3">
+        {/* Dear [name] */}
+        <div className="flex items-baseline gap-1">
+          <span
+            className="text-sm text-white/60 italic"
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+          >
+            Dear
+          </span>
+          <input
+            type="text"
+            value={recipientName}
+            onChange={(e) => setRecipientName(e.target.value)}
+            placeholder="name..."
+            className="flex-1 bg-transparent border-b border-white/15 text-sm text-white/80
+              placeholder:text-white/25 focus:outline-none focus:border-amber-400/40
+              transition-colors italic pb-0.5"
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+          />
+          <span
+            className="text-sm text-white/60"
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+          >
+            ,
+          </span>
+        </div>
+
+        {/* Letter body */}
+        <textarea
+          ref={textareaRef}
+          value={letterBody}
+          onChange={(e) => setLetterBody(e.target.value)}
+          placeholder="I want you to know how grateful I am for..."
+          rows={5}
+          className="w-full bg-transparent text-sm text-white/80 leading-relaxed
+            placeholder:text-white/25 focus:outline-none resize-none italic"
+          style={{
+            fontFamily: "Georgia, 'Times New Roman', serif",
+            lineHeight: "1.8",
+          }}
+        />
+
+        {/* Send to Jar button */}
+        <div className="flex justify-end">
+          <motion.button
+            onClick={handleSend}
+            disabled={letterBody.trim().length < 2}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+              letterBody.trim().length >= 2
+                ? "bg-amber-500/30 text-amber-200 hover:bg-amber-500/40 shadow-md"
+                : "bg-white/5 text-white/25 cursor-not-allowed",
+            )}
+          >
+            <Send className="w-3.5 h-3.5" />
+            Send to Jar
+          </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function GratitudeJar({
@@ -387,9 +757,15 @@ export function GratitudeJar({
   const [showConfetti, setShowConfetti] = useState(false);
   const [milestoneCount, setMilestoneCount] = useState<number | null>(null);
   const [newStoneId, setNewStoneId] = useState<string | null>(null);
+  const [revisitStone, setRevisitStone] = useState<GratitudeStoneData | null>(null);
+  const [highlightedStoneId, setHighlightedStoneId] = useState<string | null>(null);
+  const [isShaking, setIsShaking] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const prevStoneCount = useRef(stones.length);
+
+  // Compute streak
+  const streak = useMemo(() => computeStreak(stones), [stones]);
 
   // Sync color when category changes
   const handleCategorySelect = useCallback((label: string, color: string) => {
@@ -451,6 +827,42 @@ export function GratitudeJar({
     [stones, activeStoneId],
   );
 
+  // Random stone revisit
+  const handleRevisit = useCallback(() => {
+    if (stones.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * stones.length);
+    const stone = stones[randomIndex];
+    setHighlightedStoneId(stone.id);
+    // Show the modal after a brief highlight delay
+    const timer = setTimeout(() => {
+      setRevisitStone(stone);
+    }, 600);
+    // Clear highlight after animation
+    const clearTimer = setTimeout(() => {
+      setHighlightedStoneId(null);
+    }, 2000);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(clearTimer);
+    };
+  }, [stones]);
+
+  // Shake the jar
+  const handleShake = useCallback(() => {
+    if (isShaking || stones.length === 0) return;
+    setIsShaking(true);
+    const timer = setTimeout(() => setIsShaking(false), 1200);
+    return () => clearTimeout(timer);
+  }, [isShaking, stones.length]);
+
+  // Letter mode: send to jar as golden stone
+  const handleLetterToJar = useCallback(
+    (content: string) => {
+      onAddStone(content, "People", "#FFD700", "gem");
+    },
+    [onAddStone],
+  );
+
   // Calculate stone positions inside the jar using deterministic layout
   const stonePositions = useMemo(() => {
     const jarInnerLeft = 0.15;
@@ -500,7 +912,7 @@ export function GratitudeJar({
         }}
       />
 
-      {/* ── Header: stone count + clinician clear ── */}
+      {/* ── Header: stone count + streak + action buttons ── */}
       <div className="w-full flex items-center justify-between px-2">
         <div className="flex items-center gap-2 text-sm text-white/60">
           <span
@@ -511,12 +923,60 @@ export function GratitudeJar({
             <span className="font-medium text-white/80">{stones.length}</span>
             <span>stone{stones.length !== 1 ? "s" : ""}</span>
           </span>
+
+          {/* Daily Streak Tracker */}
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs",
+              streak > 0
+                ? "bg-orange-500/15 border border-orange-400/20 text-orange-300"
+                : "bg-white/5 border border-white/8 text-white/40",
+            )}
+          >
+            {streak > 0 ? (
+              <>
+                <span role="img" aria-label="streak">&#x1F525;</span>
+                <span className="font-semibold">{streak}</span>
+                <span>day{streak !== 1 ? "s" : ""}</span>
+              </>
+            ) : (
+              <span className="italic text-[11px]">Start your streak today!</span>
+            )}
+          </span>
         </div>
-        {/* Clinician clear moved to toolbar */}
+
+        {/* Revisit + Shake buttons */}
+        <div className="flex items-center gap-1.5">
+          {stones.length > 0 && (
+            <>
+              <button
+                onClick={handleRevisit}
+                className="p-1.5 rounded-lg bg-white/8 hover:bg-white/15 text-white/50
+                  hover:text-white/80 transition-all duration-200"
+                title="Revisit a random stone"
+              >
+                <Shuffle className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleShake}
+                disabled={isShaking}
+                className={cn(
+                  "p-1.5 rounded-lg transition-all duration-200",
+                  isShaking
+                    ? "bg-purple-500/20 text-purple-300"
+                    : "bg-white/8 hover:bg-white/15 text-white/50 hover:text-white/80",
+                )}
+                title="Shake the jar"
+              >
+                <ShowerHead className="w-4 h-4" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* ── Gratitude prompt generator ── */}
-      {settings.showPrompts && (
+      {settings.showPrompts && !settings.letterMode && (
         <div
           className="w-full px-4 py-2.5 rounded-xl bg-white/8 backdrop-blur-sm
             border border-white/10 flex items-center gap-3"
@@ -541,7 +1001,23 @@ export function GratitudeJar({
       )}
 
       {/* ── Jar visualization ── */}
-      <div className="relative w-full" style={{ aspectRatio: "3 / 4" }}>
+      <motion.div
+        className="relative w-full"
+        style={{ aspectRatio: "3 / 4" }}
+        animate={
+          isShaking
+            ? {
+                x: [0, -6, 6, -8, 8, -5, 5, -3, 3, 0],
+                rotate: [0, -1, 1, -2, 2, -1, 1, -0.5, 0.5, 0],
+              }
+            : { x: 0, rotate: 0 }
+        }
+        transition={
+          isShaking
+            ? { duration: 1.2, ease: "easeInOut" }
+            : { duration: 0.3 }
+        }
+      >
         {/* Glass jar SVG */}
         <svg
           viewBox="0 0 300 400"
@@ -634,6 +1110,15 @@ export function GratitudeJar({
               const pos = stonePositions[i];
               if (!pos) return null;
               const isNew = stone.id === newStoneId;
+              const isHighlighted = stone.id === highlightedStoneId;
+
+              // Shake physics: random bounce offsets
+              const shakeOffsetX = isShaking
+                ? (seededRandom(i * 43 + 17) - 0.5) * 30
+                : 0;
+              const shakeOffsetY = isShaking
+                ? -(seededRandom(i * 59 + 23) * 20 + 5)
+                : 0;
 
               return (
                 <motion.div
@@ -644,7 +1129,7 @@ export function GratitudeJar({
                     top: `${pos.y * 100}%`,
                     width: pos.size,
                     height: pos.size,
-                    zIndex: i + 1,
+                    zIndex: isHighlighted ? 200 : i + 1,
                   }}
                   initial={
                     isNew
@@ -652,10 +1137,11 @@ export function GratitudeJar({
                       : { opacity: 1, rotate: pos.rotation }
                   }
                   animate={{
-                    y: 0,
+                    y: shakeOffsetY,
+                    x: shakeOffsetX,
                     opacity: 1,
-                    scale: 1,
-                    rotate: pos.rotation,
+                    scale: isHighlighted ? 1.5 : 1,
+                    rotate: pos.rotation + (isShaking ? (seededRandom(i * 31) - 0.5) * 40 : 0),
                   }}
                   exit={{ opacity: 0, scale: 0, transition: { duration: 0.25 } }}
                   transition={
@@ -666,7 +1152,14 @@ export function GratitudeJar({
                           damping: 14,
                           mass: 0.8,
                         }
-                      : { duration: 0.3 }
+                      : isShaking
+                        ? {
+                            type: "spring",
+                            stiffness: 200,
+                            damping: 10,
+                            mass: 0.6 + seededRandom(i * 7) * 0.4,
+                          }
+                        : { duration: 0.3 }
                   }
                   onClick={() =>
                     setActiveStoneId(activeStoneId === stone.id ? null : stone.id)
@@ -679,6 +1172,7 @@ export function GratitudeJar({
                     color={stone.color}
                     size={pos.size}
                     isStarred={stone.isStarred}
+                    glowColor={isHighlighted ? "#ffffff" : undefined}
                   />
                 </motion.div>
               );
@@ -781,89 +1275,101 @@ export function GratitudeJar({
         <AnimatePresence>
           {milestoneCount !== null && <MilestoneToast count={milestoneCount} />}
         </AnimatePresence>
-      </div>
+      </motion.div>
+
+      {/* ── Category Insights (collapsible) ── */}
+      <CategoryInsights stones={stones} />
+
+      {/* ── Letter Mode ── */}
+      <AnimatePresence>
+        {settings.letterMode && (
+          <GratitudeLetterMode onSendToJar={handleLetterToJar} />
+        )}
+      </AnimatePresence>
 
       {/* ── Input panel — glassmorphic ── */}
-      <div
-        className="w-full rounded-2xl p-4 space-y-3
-          bg-white/10 backdrop-blur-xl border border-white/15 shadow-lg"
-      >
-        {/* Category selector chips */}
-        <div className="flex flex-wrap gap-1.5">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.label}
-              onClick={() => handleCategorySelect(cat.label, cat.color)}
+      {!settings.letterMode && (
+        <div
+          className="w-full rounded-2xl p-4 space-y-3
+            bg-white/10 backdrop-blur-xl border border-white/15 shadow-lg"
+        >
+          {/* Category selector chips */}
+          <div className="flex flex-wrap gap-1.5">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.label}
+                onClick={() => handleCategorySelect(cat.label, cat.color)}
+                className={cn(
+                  "px-3 py-1 rounded-full text-xs font-medium transition-all duration-200",
+                  selectedCategory === cat.label
+                    ? "text-white scale-105 shadow-md"
+                    : "text-white/60 hover:text-white/80 bg-white/5 hover:bg-white/10",
+                )}
+                style={
+                  selectedCategory === cat.label
+                    ? {
+                        backgroundColor: `${cat.color}40`,
+                        boxShadow: `0 0 12px ${cat.color}30`,
+                      }
+                    : undefined
+                }
+              >
+                <span
+                  className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle"
+                  style={{ backgroundColor: cat.color }}
+                />
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Shape picker */}
+          <ShapePicker
+            selected={selectedShape}
+            onSelect={setSelectedShape}
+            color={selectedColor}
+          />
+
+          {/* Text input + add button */}
+          <div className="flex gap-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={GRATITUDE_PROMPTS[promptIndex]}
+              className="flex-1 px-4 py-2.5 rounded-xl bg-white/8 border border-white/10
+                text-sm text-white/90 placeholder:text-white/30
+                focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20
+                transition-all duration-200"
+            />
+            <motion.button
+              onClick={handleAddStone}
+              disabled={!inputText.trim() || (settings.maxStones > 0 && stones.length >= settings.maxStones)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className={cn(
-                "px-3 py-1 rounded-full text-xs font-medium transition-all duration-200",
-                selectedCategory === cat.label
-                  ? "text-white scale-105 shadow-md"
-                  : "text-white/60 hover:text-white/80 bg-white/5 hover:bg-white/10",
+                "px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-1.5 transition-all duration-200",
+                inputText.trim() && !(settings.maxStones > 0 && stones.length >= settings.maxStones)
+                  ? "text-white shadow-lg"
+                  : "bg-white/8 text-white/30 cursor-not-allowed",
               )}
               style={
-                selectedCategory === cat.label
+                inputText.trim() && !(settings.maxStones > 0 && stones.length >= settings.maxStones)
                   ? {
-                      backgroundColor: `${cat.color}40`,
-                      boxShadow: `0 0 12px ${cat.color}30`,
+                      backgroundColor: `${selectedColor}60`,
+                      boxShadow: `0 4px 20px ${selectedColor}25`,
                     }
                   : undefined
               }
             >
-              <span
-                className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle"
-                style={{ backgroundColor: cat.color }}
-              />
-              {cat.label}
-            </button>
-          ))}
+              <Plus className="w-4 h-4" />
+              {settings.maxStones > 0 && stones.length >= settings.maxStones ? "Full" : "Add"}
+            </motion.button>
+          </div>
         </div>
-
-        {/* Shape picker */}
-        <ShapePicker
-          selected={selectedShape}
-          onSelect={setSelectedShape}
-          color={selectedColor}
-        />
-
-        {/* Text input + add button */}
-        <div className="flex gap-2">
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={GRATITUDE_PROMPTS[promptIndex]}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-white/8 border border-white/10
-              text-sm text-white/90 placeholder:text-white/30
-              focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20
-              transition-all duration-200"
-          />
-          <motion.button
-            onClick={handleAddStone}
-            disabled={!inputText.trim() || (settings.maxStones > 0 && stones.length >= settings.maxStones)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className={cn(
-              "px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-1.5 transition-all duration-200",
-              inputText.trim() && !(settings.maxStones > 0 && stones.length >= settings.maxStones)
-                ? "text-white shadow-lg"
-                : "bg-white/8 text-white/30 cursor-not-allowed",
-            )}
-            style={
-              inputText.trim() && !(settings.maxStones > 0 && stones.length >= settings.maxStones)
-                ? {
-                    backgroundColor: `${selectedColor}60`,
-                    boxShadow: `0 4px 20px ${selectedColor}25`,
-                  }
-                : undefined
-            }
-          >
-            <Plus className="w-4 h-4" />
-            {settings.maxStones > 0 && stones.length >= settings.maxStones ? "Full" : "Add"}
-          </motion.button>
-        </div>
-      </div>
+      )}
 
       {isClinician && onSettingsUpdate && (
         <ClinicianToolbar
@@ -873,6 +1379,16 @@ export function GratitudeJar({
           onClear={onClear}
         />
       )}
+
+      {/* ── Revisit Modal ── */}
+      <AnimatePresence>
+        {revisitStone && (
+          <RevisitModal
+            stone={revisitStone}
+            onClose={() => setRevisitStone(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

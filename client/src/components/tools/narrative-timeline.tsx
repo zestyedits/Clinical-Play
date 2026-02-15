@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playRippleSound } from "@/lib/audio-feedback";
-import { Plus, X, Trash2, RotateCcw, Hash, MessageSquare } from "lucide-react";
+import { Plus, X, Trash2, RotateCcw, Hash, MessageSquare, Check, Pencil, Star } from "lucide-react";
 import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 function lightenColor(hex: string, percent: number): string {
@@ -21,6 +21,117 @@ function darkenColor(hex: string, percent: number): string {
   return `rgb(${r},${g},${b})`;
 }
 
+// ─── Emotion Tags ──────────────────────────────────────────────────────────────
+
+interface EmotionTag {
+  emoji: string;
+  label: string;
+  color: string;
+  value: number; // 0-1 scale for arc visualization
+}
+
+const EMOTION_TAGS: EmotionTag[] = [
+  { emoji: "\u{1F60A}", label: "Happy", color: "#4CAF50", value: 0.85 },
+  { emoji: "\u{1F622}", label: "Sad", color: "#5C6BC0", value: 0.25 },
+  { emoji: "\u{1F621}", label: "Angry", color: "#E53935", value: 0.3 },
+  { emoji: "\u{1F628}", label: "Scared", color: "#7E57C2", value: 0.2 },
+  { emoji: "\u{1F4AA}", label: "Strong", color: "#FF9800", value: 0.9 },
+  { emoji: "\u{1F31F}", label: "Proud", color: "#FFC107", value: 0.95 },
+];
+
+function getEmotionByEmoji(emoji: string): EmotionTag | undefined {
+  return EMOTION_TAGS.find(e => e.emoji === emoji);
+}
+
+function emotionColorForSegment(fromEmotion: string | null, toEmotion: string | null): string {
+  const from = fromEmotion ? getEmotionByEmoji(fromEmotion) : null;
+  const to = toEmotion ? getEmotionByEmoji(toEmotion) : null;
+  if (from && to) {
+    // Blend colors
+    const avg = (from.value + to.value) / 2;
+    if (avg > 0.7) return "rgba(76,175,80,0.5)";
+    if (avg > 0.4) return "rgba(255,152,0,0.4)";
+    return "rgba(229,57,53,0.35)";
+  }
+  if (from) return from.color + "50";
+  if (to) return to.color + "50";
+  return "rgba(91,143,161,0.3)";
+}
+
+// ─── Chapter System ────────────────────────────────────────────────────────────
+
+interface Chapter {
+  id: string;
+  name: string;
+  startPosition: number;
+  endPosition: number;
+  color: string;
+}
+
+const CHAPTER_COLORS = [
+  "rgba(168,197,160,0.25)",
+  "rgba(201,169,110,0.25)",
+  "rgba(123,143,161,0.25)",
+  "rgba(232,180,188,0.25)",
+  "rgba(157,181,178,0.25)",
+  "rgba(27,42,74,0.15)",
+];
+
+function autoSuggestChapters(events: TimelineEventData[]): Chapter[] {
+  if (events.length < 2) return [];
+  const sorted = [...events].sort((a, b) => a.position - b.position);
+  const chapters: Chapter[] = [];
+
+  // Cluster events by proximity gaps
+  let currentCluster: TimelineEventData[] = [sorted[0]];
+  const clusters: TimelineEventData[][] = [];
+
+  for (let i = 1; i < sorted.length; i++) {
+    const gap = sorted[i].position - sorted[i - 1].position;
+    if (gap > 0.2 && currentCluster.length >= 1) {
+      clusters.push([...currentCluster]);
+      currentCluster = [sorted[i]];
+    } else {
+      currentCluster.push(sorted[i]);
+    }
+  }
+  clusters.push(currentCluster);
+
+  // Generate chapter names based on position
+  const chapterNames = ["Early Beginnings", "Rising Action", "Middle Chapter", "Turning Point", "Recent Times", "Current Chapter"];
+
+  clusters.forEach((cluster, i) => {
+    const start = Math.max(0, cluster[0].position - 0.02);
+    const end = Math.min(1, cluster[cluster.length - 1].position + 0.02);
+    const positionFraction = (start + end) / 2;
+
+    let name: string;
+    if (positionFraction < 0.2) name = "Early Childhood";
+    else if (positionFraction < 0.35) name = "Growing Up";
+    else if (positionFraction < 0.5) name = "High School";
+    else if (positionFraction < 0.65) name = "Young Adult";
+    else if (positionFraction < 0.8) name = "Finding My Way";
+    else name = "Recent Times";
+
+    // If there are more clusters than position-based names cover well, use index fallback
+    if (clusters.length > 3) {
+      name = chapterNames[Math.min(i, chapterNames.length - 1)];
+    }
+
+    chapters.push({
+      id: `chapter-${i}`,
+      name,
+      startPosition: start,
+      endPosition: end,
+      color: CHAPTER_COLORS[i % CHAPTER_COLORS.length],
+    });
+  });
+
+  return chapters;
+}
+
+// ─── Types ─────────────────────────────────────────────────────────────────────
+
 export interface TimelineEventData {
   id: string;
   label: string;
@@ -28,6 +139,8 @@ export interface TimelineEventData {
   position: number;
   color: string;
   placedBy: string | null;
+  emotion?: string | null;
+  reflection?: string | null;
 }
 
 interface NarrativeTimelineProps {
@@ -84,7 +197,7 @@ function FloatingElements() {
       delay: i * 3.5,
       size: 8 + Math.random() * 6,
       opacity: 0.15 + Math.random() * 0.15,
-      symbol: ['🍃', '🍂', '🌿', '🪨', '✨', '💧'][i],
+      symbol: ['\u{1F343}', '\u{1F342}', '\u{1F33F}', '\u{1FAA8}', '\u{2728}', '\u{1F4A7}'][i],
     })), []);
 
   return (
@@ -139,15 +252,370 @@ function RippleEffect({ x, y }: { x: string; y: string }) {
   );
 }
 
+// ─── Narrative Arc SVG ─────────────────────────────────────────────────────────
+
+function NarrativeArcOverlay({ events }: { events: TimelineEventData[] }) {
+  const sorted = [...events].sort((a, b) => a.position - b.position);
+  if (sorted.length < 4) return null;
+
+  // Calculate emotional values for each event
+  const points = sorted.map((evt) => {
+    const emotion = evt.emotion ? getEmotionByEmoji(evt.emotion) : null;
+    const value = emotion ? emotion.value : 0.5;
+    return {
+      x: evt.position * 1200,
+      y: 180 - value * 160, // Invert so high = top
+      value,
+      id: evt.id,
+    };
+  });
+
+  // Find the turning point (largest emotional shift between consecutive events)
+  let maxShift = 0;
+  let turningPointIndex = 0;
+  for (let i = 1; i < points.length; i++) {
+    const shift = Math.abs(points[i].value - points[i - 1].value);
+    if (shift > maxShift) {
+      maxShift = shift;
+      turningPointIndex = i;
+    }
+  }
+
+  // Build smooth curve path using cubic bezier
+  let pathD = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const cpx1 = prev.x + (curr.x - prev.x) * 0.4;
+    const cpx2 = prev.x + (curr.x - prev.x) * 0.6;
+    pathD += ` C ${cpx1} ${prev.y}, ${cpx2} ${curr.y}, ${curr.x} ${curr.y}`;
+  }
+
+  return (
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      viewBox="0 0 1200 200"
+      preserveAspectRatio="none"
+      style={{ zIndex: 1 }}
+    >
+      <defs>
+        <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#A8C5A0" stopOpacity="0.6" />
+          <stop offset="50%" stopColor="#C9A96E" stopOpacity="0.7" />
+          <stop offset="100%" stopColor="#E8B4BC" stopOpacity="0.6" />
+        </linearGradient>
+      </defs>
+
+      {/* Main arc curve */}
+      <motion.path
+        d={pathD}
+        fill="none"
+        stroke="url(#arcGrad)"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeDasharray="6 4"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 0.7 }}
+        transition={{ duration: 1.5, ease: "easeOut" }}
+      />
+
+      {/* Rising/falling cue arrows */}
+      {points.slice(1).map((pt, i) => {
+        const prev = points[i];
+        const rising = pt.value > prev.value;
+        const midX = (prev.x + pt.x) / 2;
+        const midY = (prev.y + pt.y) / 2;
+        return (
+          <g key={`cue-${i}`} opacity="0.4">
+            <text
+              x={midX}
+              y={midY - 8}
+              textAnchor="middle"
+              fontSize="10"
+              fill={rising ? "#4CAF50" : "#E53935"}
+            >
+              {rising ? "\u25B2" : "\u25BC"}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Turning point star */}
+      {maxShift > 0 && (
+        <motion.g
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 1, type: "spring" }}
+        >
+          <text
+            x={points[turningPointIndex].x}
+            y={points[turningPointIndex].y - 14}
+            textAnchor="middle"
+            fontSize="16"
+          >
+            {"\u2B50"}
+          </text>
+        </motion.g>
+      )}
+    </svg>
+  );
+}
+
+// ─── Timeline Summary Card ─────────────────────────────────────────────────────
+
+function TimelineSummary({ events }: { events: TimelineEventData[] }) {
+  if (events.length < 3) return null;
+
+  const sorted = [...events].sort((a, b) => a.position - b.position);
+  const totalEvents = events.length;
+  const span = sorted[sorted.length - 1].position - sorted[0].position;
+  const spanPercent = Math.round(span * 100);
+
+  // Most common emotional theme
+  const emotionCounts: Record<string, number> = {};
+  events.forEach(evt => {
+    if (evt.emotion) {
+      emotionCounts[evt.emotion] = (emotionCounts[evt.emotion] || 0) + 1;
+    }
+  });
+  const topEmotion = Object.entries(emotionCounts).sort((a, b) => b[1] - a[1])[0];
+  const topEmotionTag = topEmotion ? getEmotionByEmoji(topEmotion[0]) : null;
+
+  // Key turning point: event with highest shift from predecessor
+  let turningPoint: TimelineEventData | null = null;
+  let maxShift = 0;
+  for (let i = 1; i < sorted.length; i++) {
+    const prevEmo = sorted[i - 1].emotion ? getEmotionByEmoji(sorted[i - 1].emotion!) : null;
+    const currEmo = sorted[i].emotion ? getEmotionByEmoji(sorted[i].emotion!) : null;
+    if (prevEmo && currEmo) {
+      const shift = Math.abs(currEmo.value - prevEmo.value);
+      if (shift > maxShift) {
+        maxShift = shift;
+        turningPoint = sorted[i];
+      }
+    }
+  }
+
+  return (
+    <motion.div
+      className="mx-6 mb-3 relative z-10"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
+    >
+      <div className="bg-white/70 backdrop-blur-xl rounded-2xl px-5 py-3 shadow-sm border border-white/50 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs">
+        <div className="flex items-center gap-1.5">
+          <span className="text-muted-foreground">Events:</span>
+          <span className="font-semibold text-primary">{totalEvents}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-muted-foreground">Timeline span:</span>
+          <span className="font-semibold text-primary">{spanPercent}%</span>
+        </div>
+        {topEmotionTag && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-muted-foreground">Dominant emotion:</span>
+            <span className="font-semibold">{topEmotionTag.emoji} {topEmotionTag.label}</span>
+          </div>
+        )}
+        {turningPoint && (
+          <div className="flex items-center gap-1.5">
+            <Star size={12} className="text-amber-500" />
+            <span className="text-muted-foreground">Key turning point:</span>
+            <span className="font-semibold text-primary">{turningPoint.label}</span>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Expanded Event Card ───────────────────────────────────────────────────────
+
+function ExpandedEventCard({
+  evt,
+  isAbove,
+  onRemove,
+  onUpdate,
+  onClose,
+  localReflections,
+  setLocalReflections,
+}: {
+  evt: TimelineEventData;
+  isAbove: boolean;
+  onRemove: () => void;
+  onUpdate: (label: string, description: string | null, position: number, color: string) => void;
+  onClose: () => void;
+  localReflections: Record<string, string>;
+  setLocalReflections: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editLabel, setEditLabel] = useState(evt.label);
+  const [editDesc, setEditDesc] = useState(evt.description || "");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const reflection = localReflections[evt.id] || evt.reflection || "";
+
+  const handleSave = () => {
+    onUpdate(editLabel.trim() || evt.label, editDesc.trim() || null, evt.position, evt.color);
+    setEditing(false);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      className={cn(
+        "absolute left-1/2 -translate-x-1/2 w-64 z-50",
+        isAbove ? "top-16" : "bottom-16"
+      )}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div
+        className="bg-white/95 backdrop-blur-xl rounded-2xl p-4 shadow-xl border"
+        style={{ borderColor: `${evt.color}25` }}
+      >
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-2">
+          <div
+            className="w-4 h-4 rounded-full shrink-0"
+            style={{
+              background: `radial-gradient(circle at 35% 30%, ${lightenColor(evt.color, 30)}, ${evt.color})`,
+            }}
+          />
+          {editing ? (
+            <input
+              type="text"
+              value={editLabel}
+              onChange={(e) => setEditLabel(e.target.value)}
+              className="font-serif text-primary font-medium text-sm flex-1 bg-secondary/30 rounded px-2 py-1 border border-white/40 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              autoFocus
+              onKeyDown={(e) => e.key === "Enter" && handleSave()}
+            />
+          ) : (
+            <p className="font-serif text-primary font-medium text-sm flex-1">{evt.label}</p>
+          )}
+          {evt.emotion && (
+            <span className="text-sm">{evt.emotion}</span>
+          )}
+          {!editing && (
+            <button
+              onClick={() => {
+                setEditing(true);
+                setEditLabel(evt.label);
+                setEditDesc(evt.description || "");
+              }}
+              className="p-1 rounded hover:bg-secondary/50 text-muted-foreground cursor-pointer"
+            >
+              <Pencil size={12} />
+            </button>
+          )}
+        </div>
+
+        {/* Description */}
+        {editing ? (
+          <textarea
+            value={editDesc}
+            onChange={(e) => setEditDesc(e.target.value)}
+            placeholder="Description (optional)"
+            rows={2}
+            className="w-full text-xs bg-secondary/30 rounded px-2 py-1 mb-2 border border-white/40 focus:outline-none focus:ring-1 focus:ring-accent/30 resize-none"
+          />
+        ) : (
+          evt.description && (
+            <p className="text-xs text-muted-foreground leading-relaxed mb-2 pl-6">{evt.description}</p>
+          )
+        )}
+
+        {editing && (
+          <div className="flex gap-2 mb-2">
+            <button
+              onClick={handleSave}
+              className="flex items-center gap-1 text-xs text-green-700 hover:bg-green-50 px-2 py-1 rounded cursor-pointer"
+            >
+              <Check size={12} /> Save
+            </button>
+            <button
+              onClick={() => setEditing(false)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:bg-secondary/50 px-2 py-1 rounded cursor-pointer"
+            >
+              <X size={12} /> Cancel
+            </button>
+          </div>
+        )}
+
+        {/* Reflection prompt */}
+        {!editing && (
+          <div className="mb-3 pl-1">
+            <label className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium mb-1 block">
+              How did this shape you?
+            </label>
+            <textarea
+              value={reflection}
+              onChange={(e) =>
+                setLocalReflections((prev) => ({ ...prev, [evt.id]: e.target.value }))
+              }
+              placeholder="Reflect on this moment..."
+              rows={2}
+              className="w-full text-xs bg-secondary/20 rounded-lg px-3 py-2 border border-white/40 focus:outline-none focus:ring-1 focus:ring-accent/30 resize-none text-primary placeholder:text-muted-foreground/40"
+            />
+          </div>
+        )}
+
+        {/* Delete with confirmation */}
+        {!editing && (
+          confirmDelete ? (
+            <div className="flex items-center gap-2 justify-center">
+              <span className="text-xs text-destructive">Remove this stone?</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove();
+                }}
+                className="text-xs text-white bg-destructive hover:bg-destructive/80 px-3 py-1.5 rounded-lg cursor-pointer"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="text-xs text-muted-foreground hover:bg-secondary/50 px-3 py-1.5 rounded-lg cursor-pointer"
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setConfirmDelete(true);
+              }}
+              className="flex items-center gap-1 text-xs text-destructive hover:text-destructive/80 cursor-pointer min-h-[44px] min-w-[44px] justify-center w-full rounded-xl hover:bg-destructive/5 transition-colors"
+              data-testid={`button-remove-event-${evt.id}`}
+            >
+              <Trash2 size={12} />
+              Remove Stone
+            </button>
+          )
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Main Component ────────────────────────────────────────────────────────────
+
 export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateEvent, onClear, isClinician, toolSettings, onSettingsUpdate }: NarrativeTimelineProps) {
   const settings = { ...DEFAULT_NARRATIVE_TIMELINE_SETTINGS, ...toolSettings } as NarrativeTimelineSettings;
   const [showAddForm, setShowAddForm] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newColor, setNewColor] = useState(STONE_COLORS[0]);
+  const [newEmotion, setNewEmotion] = useState<string | null>(null);
   const [clickPosition, setClickPosition] = useState<number>(0.5);
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [ripples, setRipples] = useState<Array<{ id: number; x: string; y: string }>>([]);
+  const [localReflections, setLocalReflections] = useState<Record<string, string>>({});
   const timelineRef = useRef<HTMLDivElement>(null);
   const rippleId = useRef(0);
 
@@ -162,6 +630,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
     setShowAddForm(true);
     setNewLabel("");
     setNewDesc("");
+    setNewEmotion(null);
     setNewColor(STONE_COLORS[Math.floor(Math.random() * STONE_COLORS.length)]);
 
     // Add ripple at click position
@@ -170,7 +639,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
     const id = rippleId.current++;
     setRipples(prev => [...prev, { id, x: rippleX, y: rippleY }]);
     setTimeout(() => setRipples(prev => prev.filter(r => r.id !== id)), 2000);
-  }, []);
+  }, [settings.maxEvents, events.length]);
 
   const handleSubmitEvent = useCallback(() => {
     if (!newLabel.trim()) return;
@@ -179,9 +648,23 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
     setShowAddForm(false);
     setNewLabel("");
     setNewDesc("");
+    setNewEmotion(null);
   }, [newLabel, newDesc, clickPosition, newColor, onAddEvent]);
 
   const sortedEvents = [...events].sort((a, b) => a.position - b.position);
+
+  // Compute chapters
+  const chapters = useMemo(() => autoSuggestChapters(events), [events]);
+
+  // Compute emotion-colored segments between events for the river
+  const emotionSegments = useMemo(() => {
+    if (sortedEvents.length < 2) return [];
+    return sortedEvents.slice(1).map((evt, i) => ({
+      from: sortedEvents[i],
+      to: evt,
+      color: emotionColorForSegment(sortedEvents[i].emotion || null, evt.emotion || null),
+    }));
+  }, [sortedEvents]);
 
   return (
     <div className="w-full h-full flex flex-col relative overflow-hidden" data-testid="narrative-timeline-container"
@@ -203,10 +686,10 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
         </svg>
 
         {/* Tree silhouettes on edges */}
-        <div className="absolute left-[3%] bottom-[25%] text-4xl opacity-[0.08] select-none">🌲</div>
-        <div className="absolute left-[6%] bottom-[28%] text-3xl opacity-[0.06] select-none">🌳</div>
-        <div className="absolute right-[4%] bottom-[27%] text-4xl opacity-[0.07] select-none">🌲</div>
-        <div className="absolute right-[8%] bottom-[24%] text-3xl opacity-[0.05] select-none">🌳</div>
+        <div className="absolute left-[3%] bottom-[25%] text-4xl opacity-[0.08] select-none">{"\u{1F332}"}</div>
+        <div className="absolute left-[6%] bottom-[28%] text-3xl opacity-[0.06] select-none">{"\u{1F333}"}</div>
+        <div className="absolute right-[4%] bottom-[27%] text-4xl opacity-[0.07] select-none">{"\u{1F332}"}</div>
+        <div className="absolute right-[8%] bottom-[24%] text-3xl opacity-[0.05] select-none">{"\u{1F333}"}</div>
 
         {/* Ambient color blobs */}
         <motion.div
@@ -256,6 +739,9 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
         </div>
       </motion.div>
 
+      {/* Timeline Summary */}
+      <TimelineSummary events={events} />
+
       {/* Timeline Area */}
       <motion.div
         className="flex-1 flex items-center px-6 relative z-10"
@@ -273,6 +759,38 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
           {ripples.map(r => <RippleEffect key={r.id} x={r.x} y={r.y} />)}
 
           <div className="relative min-w-[600px] md:min-w-[1200px] h-48">
+
+            {/* Chapter Bands */}
+            {chapters.map((chapter) => (
+              <div
+                key={chapter.id}
+                className="absolute top-0 bottom-0 pointer-events-none"
+                style={{
+                  left: `${chapter.startPosition * 100}%`,
+                  width: `${(chapter.endPosition - chapter.startPosition) * 100}%`,
+                }}
+              >
+                {/* Colored band */}
+                <div
+                  className="absolute inset-0 rounded-lg"
+                  style={{ background: chapter.color }}
+                />
+                {/* Chapter label */}
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                  <span
+                    className="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded-full"
+                    style={{
+                      background: "rgba(255,255,255,0.7)",
+                      color: "rgba(27,42,74,0.6)",
+                      backdropFilter: "blur(4px)",
+                    }}
+                  >
+                    {chapter.name}
+                  </span>
+                </div>
+              </div>
+            ))}
+
             {/* River Path */}
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1200 200" preserveAspectRatio="none">
               <defs>
@@ -330,6 +848,32 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                 strokeLinecap="round"
               />
 
+              {/* Emotion-colored segments overlay */}
+              {emotionSegments.map((seg, i) => {
+                const x1 = seg.from.position * 1200;
+                const x2 = seg.to.position * 1200;
+                const midX = (x1 + x2) / 2;
+                // Approximate a small section of the sinusoidal river path
+                const getY = (x: number) => {
+                  // Match the river path: Q 150 55, 300 100 Q 450 145, 600 100 etc.
+                  return 100 + 45 * Math.sin((x / 1200) * Math.PI * 2);
+                };
+                const y1 = getY(x1);
+                const y2 = getY(x2);
+                const yMid = getY(midX);
+                return (
+                  <path
+                    key={`eseg-${i}`}
+                    d={`M ${x1} ${y1} Q ${midX} ${yMid}, ${x2} ${y2}`}
+                    fill="none"
+                    stroke={seg.color}
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                    opacity="0.7"
+                  />
+                );
+              })}
+
               {/* Current flow lines */}
               <path
                 d="M 0 100 Q 150 55, 300 100 Q 450 145, 600 100 Q 750 55, 900 100 Q 1050 145, 1200 100"
@@ -382,13 +926,16 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
               />
             </svg>
 
+            {/* Narrative Arc Overlay */}
+            <NarrativeArcOverlay events={events} />
+
             {/* Start/End Markers with icons */}
             <div className="absolute left-3 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
-              <span className="text-lg opacity-30 select-none">🌅</span>
+              <span className="text-lg opacity-30 select-none">{"\u{1F305}"}</span>
               <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider opacity-40">Past</span>
             </div>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
-              <span className="text-lg opacity-30 select-none">🌟</span>
+              <span className="text-lg opacity-30 select-none">{"\u{1F31F}"}</span>
               <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider opacity-40">Now</span>
             </div>
 
@@ -441,7 +988,12 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                     >
                       {/* Glass highlight */}
                       <div className="absolute top-1 left-1.5 w-4 h-2.5 rounded-full bg-white/30 blur-[1px]" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-white/25" />
+                      {/* Show emotion emoji or default dot */}
+                      {evt.emotion ? (
+                        <span className="text-sm select-none relative z-10">{evt.emotion}</span>
+                      ) : (
+                        <div className="w-2.5 h-2.5 rounded-full bg-white/25" />
+                      )}
                     </div>
 
                     {/* Subtle pulsing ring for newest stone */}
@@ -470,48 +1022,23 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                     </div>
                   </motion.div>
 
-                  {/* Expanded detail */}
+                  {/* Expanded detail card */}
                   <AnimatePresence>
                     {selectedEvent === evt.id && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                        className={cn(
-                          "absolute left-1/2 -translate-x-1/2 w-52 z-50",
-                          isAbove ? "top-16" : "bottom-16"
-                        )}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="bg-white/92 backdrop-blur-xl rounded-2xl p-4 shadow-xl border"
-                          style={{ borderColor: `${evt.color}25` }}
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-4 h-4 rounded-full shrink-0"
-                              style={{
-                                background: `radial-gradient(circle at 35% 30%, ${lightenColor(evt.color, 30)}, ${evt.color})`,
-                              }}
-                            />
-                            <p className="font-serif text-primary font-medium text-sm">{evt.label}</p>
-                          </div>
-                          {evt.description && (
-                            <p className="text-xs text-muted-foreground leading-relaxed mb-3 pl-6">{evt.description}</p>
-                          )}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onRemoveEvent(evt.id);
-                              setSelectedEvent(null);
-                            }}
-                            className="flex items-center gap-1 text-xs text-destructive hover:text-destructive/80 cursor-pointer min-h-[44px] min-w-[44px] justify-center w-full rounded-xl hover:bg-destructive/5 transition-colors"
-                            data-testid={`button-remove-event-${evt.id}`}
-                          >
-                            <Trash2 size={12} />
-                            Remove Stone
-                          </button>
-                        </div>
-                      </motion.div>
+                      <ExpandedEventCard
+                        evt={evt}
+                        isAbove={isAbove}
+                        onRemove={() => {
+                          onRemoveEvent(evt.id);
+                          setSelectedEvent(null);
+                        }}
+                        onUpdate={(label, desc, pos, color) => {
+                          onUpdateEvent(evt.id, label, desc, pos, color);
+                        }}
+                        onClose={() => setSelectedEvent(null)}
+                        localReflections={localReflections}
+                        setLocalReflections={setLocalReflections}
+                      />
                     )}
                   </AnimatePresence>
                 </motion.div>
@@ -535,7 +1062,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             >
-              🪨
+              {"\u{1FAA8}"}
             </motion.span>
             <p className="text-muted-foreground/50 text-lg font-serif">
               Click anywhere on the river to begin...
@@ -558,7 +1085,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
               <div className="max-w-lg mx-auto">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl select-none">🪨</span>
+                    <span className="text-xl select-none">{"\u{1FAA8}"}</span>
                     <h3 className="font-serif text-lg text-primary">Drop a Stone</h3>
                   </div>
                   <button
@@ -588,6 +1115,28 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                     className="w-full px-4 py-3 rounded-xl bg-secondary/30 border border-white/40 text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 text-sm resize-none min-h-[44px]"
                     data-testid="input-event-description"
                   />
+
+                  {/* Emotion tag selector */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs text-muted-foreground mr-1">Feeling:</span>
+                    {EMOTION_TAGS.map(tag => (
+                      <button
+                        key={tag.emoji}
+                        onClick={() => setNewEmotion(newEmotion === tag.emoji ? null : tag.emoji)}
+                        className={cn(
+                          "text-lg px-1.5 py-0.5 rounded-lg cursor-pointer transition-all",
+                          newEmotion === tag.emoji
+                            ? "bg-secondary ring-2 ring-accent/40 scale-110"
+                            : "hover:bg-secondary/50 opacity-60 hover:opacity-100"
+                        )}
+                        title={tag.label}
+                        type="button"
+                      >
+                        {tag.emoji}
+                      </button>
+                    ))}
+                  </div>
+
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground mr-1">Stone:</span>
                     {STONE_COLORS.map(c => (

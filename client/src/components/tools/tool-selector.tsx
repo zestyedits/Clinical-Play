@@ -15,7 +15,6 @@ interface Tool {
 }
 
 const TOOLS: Tool[] = [
-  { id: "sandtray", label: "Zen Sandtray", desc: "Expressive world-building with drag-and-drop assets", icon: Palette, status: "active", accentColor: "#c4956a", iconClass: "icon-sandtray" },
   { id: "breathing", label: "Calm Breathing", desc: "Synchronized breathing exercise for the group", icon: Wind, status: "active", accentColor: "#7fb99b", iconClass: "icon-breathing" },
   { id: "feelings", label: "Feeling Wheel", desc: "Multi-layered emotional identification and exploration", icon: Target, status: "active", accentColor: "#a78bda", iconClass: "icon-feeling" },
   { id: "narrative", label: "Narrative Timeline", desc: "Visual life story and event mapping on a river", icon: Clock, status: "active", accentColor: "#67c5c9", iconClass: "icon-timeline" },

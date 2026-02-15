@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playClickSound } from "@/lib/audio-feedback";
-import { RotateCcw, Plus, X, Check, ChevronRight, TreePine, Leaf, Clock, Sparkles, HelpCircle, GitBranch, Hash } from "lucide-react";
+import { RotateCcw, Plus, X, Check, ChevronRight, ChevronDown, ChevronUp, TreePine, Leaf, Clock, Sparkles, HelpCircle, GitBranch, Hash, BarChart3, Award } from "lucide-react";
 import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ─── Data Interfaces ──────────────────────────────────────────────────────────
@@ -112,11 +112,55 @@ function getCategoryInfo(cat: string | null) {
   return WORRY_CATEGORIES.find((c) => c.label === cat) || WORRY_CATEGORIES[6];
 }
 
+// ─── Intensity helpers ───────────────────────────────────────────────────────
+
+function getIntensityColor(intensity: number): string {
+  if (intensity <= 3) return "#22C55E";
+  if (intensity <= 6) return "#F59E0B";
+  return "#EF4444";
+}
+
+function getIntensityLabel(intensity: number): string {
+  if (intensity <= 3) return "Low";
+  if (intensity <= 6) return "Moderate";
+  return "High";
+}
+
 // ─── Deterministic pseudo-random from seed ──────────────────────────────────
 
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 9301 + 49297) * 49297;
   return x - Math.floor(x);
+}
+
+// ─── Floating Leaf Particle (letting go animation) ──────────────────────────
+
+function FloatingLeafParticle({ index, onComplete }: { index: number; onComplete?: () => void }) {
+  const startX = 20 + seededRandom(index * 7) * 60;
+  const drift = (seededRandom(index * 13) - 0.5) * 80;
+  const duration = 1.8 + seededRandom(index * 19) * 1.2;
+  const delay = seededRandom(index * 31) * 0.5;
+  const rotation = seededRandom(index * 41) * 540;
+  const scale = 0.5 + seededRandom(index * 53) * 0.8;
+
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      style={{ left: `${startX}%`, bottom: "40%" }}
+      initial={{ opacity: 1, y: 0, x: 0, rotate: 0, scale }}
+      animate={{
+        opacity: [1, 0.9, 0.5, 0],
+        y: [0, -60, -140, -240],
+        x: [0, drift * 0.4, drift * 0.8, drift],
+        rotate: [0, rotation * 0.3, rotation * 0.6, rotation],
+        scale: [scale, scale * 1.1, scale * 0.7, scale * 0.3],
+      }}
+      transition={{ duration, delay, ease: "easeOut" }}
+      onAnimationComplete={onComplete}
+    >
+      <Leaf className="w-3 h-3 text-emerald-400/80" />
+    </motion.div>
+  );
 }
 
 // ─── Falling Leaf Particle ──────────────────────────────────────────────────
@@ -284,7 +328,7 @@ function DecisionButton({
   disabled?: boolean;
 }) {
   const baseClass =
-    "relative rounded-xl px-4 py-3 text-left transition-all duration-200 border cursor-pointer w-full";
+    "relative rounded-xl px-4 py-3 text-left transition-all duration-200 border cursor-pointer w-full min-h-[44px]";
   const variantClasses: Record<string, string> = {
     default:
       "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-white/80",
@@ -321,17 +365,412 @@ function DecisionButton({
   );
 }
 
+// ─── Intensity Slider ────────────────────────────────────────────────────────
+
+function IntensitySlider({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (val: number) => void;
+}) {
+  const color = getIntensityColor(value);
+  const label = getIntensityLabel(value);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-xs text-white/50">
+          Worry intensity <span className="text-white/30">(optional)</span>
+        </label>
+        <div className="flex items-center gap-1.5">
+          <div
+            className="w-2.5 h-2.5 rounded-full"
+            style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}60` }}
+          />
+          <span className="text-xs font-medium" style={{ color }}>
+            {value}/10 - {label}
+          </span>
+        </div>
+      </div>
+      <div className="relative">
+        <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-200"
+            style={{
+              width: `${value * 10}%`,
+              background: `linear-gradient(to right, #22C55E, #F59E0B, #EF4444)`,
+              opacity: 0.7,
+            }}
+          />
+        </div>
+        <input
+          type="range"
+          min="1"
+          max="10"
+          value={value}
+          onChange={(e) => onChange(parseInt(e.target.value, 10))}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          style={{ margin: 0 }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─── Intensity Dot ──────────────────────────────────────────────────────────
+
+function IntensityDot({ intensity }: { intensity: number }) {
+  const color = getIntensityColor(intensity);
+  return (
+    <div
+      className="w-2 h-2 rounded-full flex-shrink-0"
+      title={`Intensity: ${intensity}/10`}
+      style={{
+        backgroundColor: color,
+        boxShadow: `0 0 4px ${color}50`,
+      }}
+    />
+  );
+}
+
+// ─── Worry Pattern Insights ─────────────────────────────────────────────────
+
+function WorryPatternInsights({
+  entries,
+  intensityMap,
+}: {
+  entries: WorryTreeEntryData[];
+  intensityMap: Record<string, number>;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const insights = useMemo(() => {
+    // Category frequency
+    const categoryCounts: Record<string, number> = {};
+    entries.forEach((e) => {
+      const cat = e.category || "Other";
+      categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+    });
+    const sortedCategories = Object.entries(categoryCounts)
+      .sort((a, b) => b[1] - a[1]);
+    const topCategory = sortedCategories[0]?.[0] || "N/A";
+
+    // Real vs hypothetical
+    const withRealDecision = entries.filter((e) => e.isReal !== null);
+    const realCount = withRealDecision.filter((e) => e.isReal === true).length;
+    const hypotheticalCount = withRealDecision.filter((e) => e.isReal === false).length;
+    const realPct = withRealDecision.length > 0
+      ? Math.round((realCount / withRealDecision.length) * 100) : 0;
+    const hypotheticalPct = withRealDecision.length > 0
+      ? Math.round((hypotheticalCount / withRealDecision.length) * 100) : 0;
+
+    // Actionable vs not
+    const withActionDecision = entries.filter((e) => e.isActionable !== null);
+    const actionableCount = withActionDecision.filter((e) => e.isActionable === true).length;
+    const notActionableCount = withActionDecision.filter((e) => e.isActionable === false).length;
+    const actionablePct = withActionDecision.length > 0
+      ? Math.round((actionableCount / withActionDecision.length) * 100) : 0;
+    const notActionablePct = withActionDecision.length > 0
+      ? Math.round((notActionableCount / withActionDecision.length) * 100) : 0;
+
+    // Average entries per session (estimate sessions by unique dates)
+    const uniqueDays = new Set(entries.map((e) => e.createdAt.substring(0, 10)));
+    const sessionsCount = Math.max(1, uniqueDays.size);
+    const avgPerSession = (entries.length / sessionsCount).toFixed(1);
+
+    // Average intensity
+    const intensityValues = entries
+      .map((e) => intensityMap[e.id])
+      .filter((v): v is number => v !== undefined);
+    const avgIntensity = intensityValues.length > 0
+      ? (intensityValues.reduce((a, b) => a + b, 0) / intensityValues.length).toFixed(1)
+      : null;
+
+    return {
+      categoryCounts,
+      sortedCategories,
+      topCategory,
+      realPct,
+      hypotheticalPct,
+      realCount,
+      hypotheticalCount,
+      actionablePct,
+      notActionablePct,
+      actionableCount,
+      notActionableCount,
+      avgPerSession,
+      avgIntensity,
+      totalEntries: entries.length,
+    };
+  }, [entries, intensityMap]);
+
+  if (entries.length < 3) return null;
+
+  const maxCatCount = insights.sortedCategories[0]?.[1] || 1;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-xl bg-white/[0.04] border border-white/[0.08] overflow-hidden"
+    >
+      <button
+        onClick={() => {
+          playClickSound?.();
+          setIsExpanded(!isExpanded);
+        }}
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.03] transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <BarChart3 className="w-3.5 h-3.5 text-violet-400" />
+          <span className="text-xs font-medium text-white/60">Worry Pattern Insights</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-500/15 text-violet-300/70 border border-violet-500/15">
+            {insights.totalEntries} entries
+          </span>
+        </div>
+        {isExpanded ? (
+          <ChevronUp className="w-3.5 h-3.5 text-white/40" />
+        ) : (
+          <ChevronDown className="w-3.5 h-3.5 text-white/40" />
+        )}
+      </button>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 space-y-4">
+              {/* Category distribution - mini bar chart */}
+              <div className="space-y-2">
+                <span className="text-[10px] text-white/40 uppercase tracking-wider font-medium">
+                  Most common: {insights.topCategory}
+                </span>
+                <div className="space-y-1">
+                  {insights.sortedCategories.map(([cat, count]) => {
+                    const catInfo = getCategoryInfo(cat);
+                    const pct = Math.round((count / maxCatCount) * 100);
+                    return (
+                      <div key={cat} className="flex items-center gap-2">
+                        <span className="text-[10px] w-20 truncate text-right" style={{ color: `${catInfo.color}CC` }}>
+                          {catInfo.icon} {cat}
+                        </span>
+                        <div className="flex-1 h-3 rounded-full bg-white/5 overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${pct}%` }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            className="h-full rounded-full"
+                            style={{ backgroundColor: `${catInfo.color}60` }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-white/40 w-4 text-right">{count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Real vs Hypothetical */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-white/40 uppercase tracking-wider font-medium">
+                  Real vs Hypothetical
+                </span>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-4 rounded-full bg-white/5 overflow-hidden flex">
+                    {insights.realPct > 0 && (
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${insights.realPct}%` }}
+                        transition={{ duration: 0.5 }}
+                        className="h-full bg-emerald-500/50 flex items-center justify-center"
+                      >
+                        {insights.realPct >= 20 && (
+                          <span className="text-[9px] text-emerald-200 font-medium">{insights.realPct}%</span>
+                        )}
+                      </motion.div>
+                    )}
+                    {insights.hypotheticalPct > 0 && (
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${insights.hypotheticalPct}%` }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                        className="h-full bg-amber-500/50 flex items-center justify-center"
+                      >
+                        {insights.hypotheticalPct >= 20 && (
+                          <span className="text-[9px] text-amber-200 font-medium">{insights.hypotheticalPct}%</span>
+                        )}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 text-[10px]">
+                  <span className="flex items-center gap-1 text-emerald-300/60">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/60" /> Real ({insights.realCount})
+                  </span>
+                  <span className="flex items-center gap-1 text-amber-300/60">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500/60" /> Hypothetical ({insights.hypotheticalCount})
+                  </span>
+                </div>
+              </div>
+
+              {/* Actionable vs Not */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-white/40 uppercase tracking-wider font-medium">
+                  Actionable vs Not Actionable
+                </span>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-4 rounded-full bg-white/5 overflow-hidden flex">
+                    {insights.actionablePct > 0 && (
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${insights.actionablePct}%` }}
+                        transition={{ duration: 0.5 }}
+                        className="h-full bg-blue-500/50 flex items-center justify-center"
+                      >
+                        {insights.actionablePct >= 20 && (
+                          <span className="text-[9px] text-blue-200 font-medium">{insights.actionablePct}%</span>
+                        )}
+                      </motion.div>
+                    )}
+                    {insights.notActionablePct > 0 && (
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${insights.notActionablePct}%` }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                        className="h-full bg-violet-500/50 flex items-center justify-center"
+                      >
+                        {insights.notActionablePct >= 20 && (
+                          <span className="text-[9px] text-violet-200 font-medium">{insights.notActionablePct}%</span>
+                        )}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 text-[10px]">
+                  <span className="flex items-center gap-1 text-blue-300/60">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500/60" /> Actionable ({insights.actionableCount})
+                  </span>
+                  <span className="flex items-center gap-1 text-violet-300/60">
+                    <span className="w-1.5 h-1.5 rounded-full bg-violet-500/60" /> Not actionable ({insights.notActionableCount})
+                  </span>
+                </div>
+              </div>
+
+              {/* Session stats */}
+              <div className="flex items-center gap-4 pt-2 border-t border-white/5">
+                <div className="text-center">
+                  <span className="block text-sm font-semibold text-white/70">{insights.avgPerSession}</span>
+                  <span className="text-[9px] text-white/30">Avg/session</span>
+                </div>
+                {insights.avgIntensity && (
+                  <div className="text-center">
+                    <span className="block text-sm font-semibold" style={{ color: getIntensityColor(parseFloat(insights.avgIntensity)) }}>
+                      {insights.avgIntensity}
+                    </span>
+                    <span className="text-[9px] text-white/30">Avg intensity</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+// ─── Progress Celebration Banner ────────────────────────────────────────────
+
+function CelebrationBanner({ entries }: { entries: WorryTreeEntryData[] }) {
+  const stats = useMemo(() => {
+    const total = entries.length;
+    const withActionPlans = entries.filter(
+      (e) => e.isActionable === true && e.resolution !== null
+    ).length;
+    const letGo = entries.filter((e) => e.lettingGoMethod !== null).length;
+    return { total, withActionPlans, letGo };
+  }, [entries]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      className="rounded-xl bg-gradient-to-br from-emerald-500/15 to-violet-500/10 border border-emerald-500/20 p-5 text-center space-y-3 overflow-hidden relative"
+    >
+      {/* Pulse ring background */}
+      <motion.div
+        className="absolute inset-0 rounded-xl border-2 border-emerald-400/20"
+        animate={{
+          scale: [1, 1.02, 1],
+          opacity: [0.3, 0.6, 0.3],
+        }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", stiffness: 200, damping: 12, delay: 0.15 }}
+      >
+        <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+          <Award className="w-7 h-7 text-emerald-400" />
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <h3 className="text-base font-bold text-emerald-300">Well done!</h3>
+        <p className="text-xs text-white/40 mt-1">
+          All active worries have been processed through the decision tree.
+        </p>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.45 }}
+        className="flex items-center justify-center gap-3 pt-1"
+      >
+        <div className="text-center px-3">
+          <span className="block text-lg font-bold text-white/80">{stats.total}</span>
+          <span className="text-[10px] text-white/35">processed</span>
+        </div>
+        <div className="w-px h-8 bg-white/10" />
+        <div className="text-center px-3">
+          <span className="block text-lg font-bold text-blue-300/80">{stats.withActionPlans}</span>
+          <span className="text-[10px] text-white/35">action plans</span>
+        </div>
+        <div className="w-px h-8 bg-white/10" />
+        <div className="text-center px-3">
+          <span className="block text-lg font-bold text-violet-300/80">{stats.letGo}</span>
+          <span className="text-[10px] text-white/35">let go</span>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ─── Worry Input Form ───────────────────────────────────────────────────────
 
 function WorryInputForm({
   onSubmit,
   onCancel,
 }: {
-  onSubmit: (text: string, category: string | null) => void;
+  onSubmit: (text: string, category: string | null, intensity: number) => void;
   onCancel: () => void;
 }) {
   const [text, setText] = useState("");
   const [category, setCategory] = useState<string | null>(null);
+  const [intensity, setIntensity] = useState(5);
   const [step, setStep] = useState<"text" | "category">("text");
 
   const handleTextSubmit = useCallback(() => {
@@ -343,14 +782,14 @@ function WorryInputForm({
     (cat: string) => {
       playClickSound?.();
       setCategory(cat);
-      onSubmit(text.trim(), cat);
+      onSubmit(text.trim(), cat, intensity);
     },
-    [text, onSubmit]
+    [text, onSubmit, intensity]
   );
 
   const handleSkipCategory = useCallback(() => {
-    onSubmit(text.trim(), null);
-  }, [text, onSubmit]);
+    onSubmit(text.trim(), null, intensity);
+  }, [text, onSubmit, intensity]);
 
   return (
     <motion.div
@@ -371,17 +810,18 @@ function WorryInputForm({
             className="w-full min-h-[100px] rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white/90 placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/30 resize-none backdrop-blur-sm transition-all"
             autoFocus
           />
+          <IntensitySlider value={intensity} onChange={setIntensity} />
           <div className="flex gap-2 justify-end">
             <button
               onClick={onCancel}
-              className="px-4 py-2 rounded-lg text-sm text-white/50 hover:text-white/80 hover:bg-white/5 transition-all"
+              className="px-4 py-2 rounded-lg text-sm text-white/50 hover:text-white/80 hover:bg-white/5 transition-all min-h-[44px]"
             >
               Cancel
             </button>
             <button
               onClick={handleTextSubmit}
               disabled={text.trim().length === 0}
-              className="px-4 py-2 rounded-lg text-sm bg-emerald-600/80 hover:bg-emerald-500/80 text-white font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
+              className="px-4 py-2 rounded-lg text-sm bg-emerald-600/80 hover:bg-emerald-500/80 text-white font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 min-h-[44px]"
             >
               Next <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -394,7 +834,7 @@ function WorryInputForm({
           <label className="block text-sm font-medium text-white/70">
             What category does this worry fall into?
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {WORRY_CATEGORIES.map((cat) => (
               <DecisionButton
                 key={cat.label}
@@ -406,7 +846,7 @@ function WorryInputForm({
           </div>
           <button
             onClick={handleSkipCategory}
-            className="w-full text-center text-xs text-white/40 hover:text-white/60 py-1.5 transition-colors"
+            className="w-full text-center text-xs text-white/40 hover:text-white/60 py-1.5 transition-colors min-h-[44px]"
           >
             Skip categorization
           </button>
@@ -421,9 +861,11 @@ function WorryInputForm({
 function DecisionFlowPanel({
   entry,
   onUpdate,
+  onLettingGoStart,
 }: {
   entry: WorryTreeEntryData;
   onUpdate: (fields: Partial<WorryTreeEntryData>) => void;
+  onLettingGoStart: () => void;
 }) {
   const [actionInput, setActionInput] = useState("");
   const [scheduledTime, setScheduledTime] = useState(entry.scheduledTime || "");
@@ -470,9 +912,10 @@ function DecisionFlowPanel({
   const handleLettingGo = useCallback(
     (method: string) => {
       playClickSound?.();
+      onLettingGoStart();
       onUpdate({ lettingGoMethod: method, resolution: `Let go via: ${method}` });
     },
-    [onUpdate]
+    [onUpdate, onLettingGoStart]
   );
 
   const catInfo = getCategoryInfo(entry.category);
@@ -510,14 +953,14 @@ function DecisionFlowPanel({
       </div>
 
       {/* Flow progress bar */}
-      <div className="flex items-center gap-1 px-1">
+      <div className="flex items-center gap-1 px-1 flex-wrap sm:flex-nowrap">
         {flowSteps.map((fs, idx) => {
           const isCurrent = fs.key === currentStep;
           const isPast =
             currentStep === "resolved" ||
             flowSteps.findIndex((f) => f.key === currentStep) > idx;
           return (
-            <div key={fs.key} className="flex items-center gap-1 flex-1">
+            <div key={fs.key} className="flex items-center gap-1 flex-1 min-w-0">
               <div
                 className={cn(
                   "h-1.5 flex-1 rounded-full transition-all duration-500",
@@ -554,7 +997,7 @@ function DecisionFlowPanel({
             <p className="text-xs text-white/40 pl-6">
               A "real" worry is about a current, concrete situation -- not a hypothetical or "what if" scenario.
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <DecisionButton
                 label="Yes, it's real"
                 description="This is happening or very likely to happen"
@@ -592,7 +1035,7 @@ function DecisionFlowPanel({
             <p className="text-xs text-white/40 pl-6">
               Is there something concrete you can do about it, even a small step?
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <DecisionButton
                 label="Yes, I can act"
                 description="There are steps I can take"
@@ -647,7 +1090,7 @@ function DecisionFlowPanel({
                     <span className="flex-1 min-w-0 truncate">{step}</span>
                     <button
                       onClick={() => removeActionStep(idx)}
-                      className="flex-shrink-0 opacity-40 hover:opacity-80 transition-opacity"
+                      className="flex-shrink-0 opacity-40 hover:opacity-80 transition-opacity min-w-[44px] min-h-[44px] flex items-center justify-center"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -664,12 +1107,12 @@ function DecisionFlowPanel({
                 onChange={(e) => setActionInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && addActionStep()}
                 placeholder="Add an action step..."
-                className="flex-1 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white/90 placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
+                className="flex-1 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white/90 placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all min-h-[44px]"
               />
               <button
                 onClick={addActionStep}
                 disabled={actionInput.trim().length === 0}
-                className="px-3 py-2 rounded-lg bg-emerald-600/60 hover:bg-emerald-500/60 text-white text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-3 py-2 rounded-lg bg-emerald-600/60 hover:bg-emerald-500/60 text-white text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -682,17 +1125,17 @@ function DecisionFlowPanel({
                   <Clock className="w-3.5 h-3.5" />
                   <span className="text-xs font-medium">When will you start?</span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="datetime-local"
                     value={scheduledTime}
                     onChange={(e) => setScheduledTime(e.target.value)}
-                    className="flex-1 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all [color-scheme:dark]"
+                    className="flex-1 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all [color-scheme:dark] min-h-[44px]"
                   />
                   <button
                     onClick={handleSchedule}
                     disabled={!scheduledTime || existingSteps.length === 0}
-                    className="px-4 py-2 rounded-lg bg-emerald-600/80 hover:bg-emerald-500/80 text-white text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-lg bg-emerald-600/80 hover:bg-emerald-500/80 text-white text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 min-h-[44px]"
                   >
                     <Check className="w-3.5 h-3.5" /> Resolve
                   </button>
@@ -788,11 +1231,15 @@ function EntrySidebar({
   activeId,
   onSelect,
   onRemove,
+  intensityMap,
+  lettingGoAnimatingId,
 }: {
   entries: WorryTreeEntryData[];
   activeId: string | null;
   onSelect: (id: string) => void;
   onRemove: (id: string) => void;
+  intensityMap: Record<string, number>;
+  lettingGoAnimatingId: string | null;
 }) {
   if (entries.length === 0) return null;
 
@@ -808,67 +1255,95 @@ function EntrySidebar({
           const statusColor = getStatusColor(status);
           const isActive = entry.id === activeId;
           const catInfo = getCategoryInfo(entry.category);
+          const intensity = intensityMap[entry.id];
+          const isAnimatingAway = entry.id === lettingGoAnimatingId;
 
           return (
-            <motion.button
-              key={entry.id}
-              layout
-              onClick={() => {
-                playClickSound?.();
-                onSelect(entry.id);
-              }}
-              className={cn(
-                "w-full text-left rounded-lg px-3 py-2.5 transition-all duration-200 group border",
-                isActive
-                  ? "bg-white/10 border-white/20 shadow-lg"
-                  : "bg-white/[0.03] border-transparent hover:bg-white/[0.06] hover:border-white/10"
-              )}
-            >
-              <div className="flex items-start gap-2.5">
-                {/* Status dot */}
-                <div
-                  className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ring-2"
-                  style={{
-                    backgroundColor: statusColor,
-                    boxShadow: `0 0 6px ${statusColor}40`,
-                    outline: `2px solid ${statusColor}30`,
-                    outlineOffset: "1px",
-                  }}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-white/80 truncate leading-relaxed">
-                    {entry.worryText}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    {entry.category && (
-                      <span
-                        className="text-[10px] px-1.5 py-0.5 rounded"
-                        style={{ backgroundColor: `${catInfo.color}15`, color: `${catInfo.color}CC` }}
-                      >
-                        {entry.category}
-                      </span>
-                    )}
-                    <span
-                      className="text-[10px] capitalize"
-                      style={{ color: `${statusColor}AA` }}
-                    >
-                      {status.replace("-", " ")}
-                    </span>
-                  </div>
-                </div>
-                {/* Remove button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
+            <AnimatePresence key={entry.id}>
+              {!isAnimatingAway ? (
+                <motion.button
+                  layout
+                  onClick={() => {
                     playClickSound?.();
-                    onRemove(entry.id);
+                    onSelect(entry.id);
                   }}
-                  className="flex-shrink-0 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity p-0.5"
+                  className={cn(
+                    "w-full text-left rounded-lg px-3 py-2.5 transition-all duration-200 group border min-h-[44px]",
+                    isActive
+                      ? "bg-white/10 border-white/20 shadow-lg"
+                      : "bg-white/[0.03] border-transparent hover:bg-white/[0.06] hover:border-white/10"
+                  )}
                 >
-                  <X className="w-3 h-3 text-white/60" />
-                </button>
-              </div>
-            </motion.button>
+                  <div className="flex items-start gap-2.5">
+                    {/* Status dot */}
+                    <div
+                      className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ring-2"
+                      style={{
+                        backgroundColor: statusColor,
+                        boxShadow: `0 0 6px ${statusColor}40`,
+                        outline: `2px solid ${statusColor}30`,
+                        outlineOffset: "1px",
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs text-white/80 truncate leading-relaxed flex-1">
+                          {entry.worryText}
+                        </p>
+                        {intensity !== undefined && (
+                          <IntensityDot intensity={intensity} />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        {entry.category && (
+                          <span
+                            className="text-[10px] px-1.5 py-0.5 rounded"
+                            style={{ backgroundColor: `${catInfo.color}15`, color: `${catInfo.color}CC` }}
+                          >
+                            {entry.category}
+                          </span>
+                        )}
+                        <span
+                          className="text-[10px] capitalize"
+                          style={{ color: `${statusColor}AA` }}
+                        >
+                          {status.replace("-", " ")}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Remove button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        playClickSound?.();
+                        onRemove(entry.id);
+                      }}
+                      className="flex-shrink-0 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity p-0.5 min-w-[44px] min-h-[44px] flex items-center justify-center -m-2"
+                    >
+                      <X className="w-3 h-3 text-white/60" />
+                    </button>
+                  </div>
+                </motion.button>
+              ) : (
+                <motion.div
+                  key={`animating-${entry.id}`}
+                  initial={{ opacity: 1, scale: 1, y: 0 }}
+                  animate={{
+                    opacity: 0,
+                    scale: 0.6,
+                    y: -60,
+                    filter: "blur(4px)",
+                  }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="w-full rounded-lg px-3 py-2.5 bg-violet-500/10 border border-violet-500/20 overflow-hidden"
+                >
+                  <div className="flex items-center gap-2">
+                    <Leaf className="w-3.5 h-3.5 text-violet-400" />
+                    <p className="text-xs text-violet-300/80 truncate">{entry.worryText}</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           );
         })}
       </div>
@@ -1003,6 +1478,11 @@ export function WorryTree({
   const [showInfo, setShowInfo] = useState(false);
   const [fallingLeaves, setFallingLeaves] = useState<number[]>([]);
   const [leafCounter, setLeafCounter] = useState(0);
+  const [floatingLeaves, setFloatingLeaves] = useState<number[]>([]);
+  const [floatingLeafCounter, setFloatingLeafCounter] = useState(0);
+  const [lettingGoAnimatingId, setLettingGoAnimatingId] = useState<string | null>(null);
+  // Local intensity state keyed by entry ID
+  const [intensityMap, setIntensityMap] = useState<Record<string, number>>({});
 
   const activeEntry = useMemo(
     () => entries.find((e) => e.id === activeEntryId) || null,
@@ -1019,20 +1499,62 @@ export function WorryTree({
     });
   }, [entries]);
 
+  // Check if all worries are resolved (for celebration)
+  const allResolved = useMemo(() => {
+    return entries.length > 0 && entries.every((e) => getEntryStatus(e) === "resolved");
+  }, [entries]);
+
   const handleCreate = useCallback(
-    (text: string, category: string | null) => {
+    (text: string, category: string | null, intensity: number) => {
       onCreateEntry(text, category);
       setShowInput(false);
+      // We store intensity after creation. Since we don't have the ID yet,
+      // we use a small timeout to let the entry appear, then match by text.
+      // Instead, store pending intensity to assign on next render.
+      setPendingIntensity({ text, intensity });
     },
     [onCreateEntry]
   );
+
+  // Pending intensity assignment
+  const [pendingIntensity, setPendingIntensity] = useState<{ text: string; intensity: number } | null>(null);
+
+  // Assign intensity to newly created entries
+  useMemo(() => {
+    if (pendingIntensity) {
+      const match = entries.find(
+        (e) => e.worryText === pendingIntensity.text && !intensityMap[e.id]
+      );
+      if (match) {
+        setIntensityMap((prev) => ({ ...prev, [match.id]: pendingIntensity.intensity }));
+        setPendingIntensity(null);
+      }
+    }
+  }, [entries, pendingIntensity, intensityMap]);
+
+  const handleLettingGoStart = useCallback(() => {
+    if (!activeEntryId) return;
+    // Trigger letting go animation
+    setLettingGoAnimatingId(activeEntryId);
+    playClickSound?.();
+
+    // Spawn floating leaf particles
+    const newLeaves = Array.from({ length: 12 }, (_, i) => floatingLeafCounter + i);
+    setFloatingLeaves((prev) => [...prev, ...newLeaves]);
+    setFloatingLeafCounter((prev) => prev + 12);
+
+    // Clear animation state after delay
+    setTimeout(() => {
+      setLettingGoAnimatingId(null);
+    }, 900);
+  }, [activeEntryId, floatingLeafCounter]);
 
   const handleUpdate = useCallback(
     (fields: Partial<WorryTreeEntryData>) => {
       if (!activeEntryId) return;
 
-      // Trigger falling leaves on resolution
-      if (fields.resolution && fields.lettingGoMethod) {
+      // Trigger falling leaves on resolution (for action plan path)
+      if (fields.resolution && !fields.lettingGoMethod) {
         const newLeaves = Array.from({ length: 8 }, (_, i) => leafCounter + i);
         setFallingLeaves((prev) => [...prev, ...newLeaves]);
         setLeafCounter((prev) => prev + 8);
@@ -1046,6 +1568,13 @@ export function WorryTree({
   const handleRemoveLeaf = useCallback(
     (idx: number) => {
       setFallingLeaves((prev) => prev.filter((l) => l !== idx));
+    },
+    []
+  );
+
+  const handleRemoveFloatingLeaf = useCallback(
+    (idx: number) => {
+      setFloatingLeaves((prev) => prev.filter((l) => l !== idx));
     },
     []
   );
@@ -1068,6 +1597,8 @@ export function WorryTree({
     setActiveEntryId(null);
     setShowInput(false);
     setFallingLeaves([]);
+    setFloatingLeaves([]);
+    setIntensityMap({});
   }, [onClear]);
 
   // Auto-select first unprocessed entry if none selected
@@ -1092,9 +1623,20 @@ export function WorryTree({
       <AnimatePresence>
         {fallingLeaves.map((leafIdx) => (
           <FallingLeaf
-            key={leafIdx}
+            key={`fall-${leafIdx}`}
             index={leafIdx}
             onComplete={() => handleRemoveLeaf(leafIdx)}
+          />
+        ))}
+      </AnimatePresence>
+
+      {/* Floating leaf particles (letting go animation) */}
+      <AnimatePresence>
+        {floatingLeaves.map((leafIdx) => (
+          <FloatingLeafParticle
+            key={`float-${leafIdx}`}
+            index={leafIdx}
+            onComplete={() => handleRemoveFloatingLeaf(leafIdx)}
           />
         ))}
       </AnimatePresence>
@@ -1154,15 +1696,22 @@ export function WorryTree({
         <StatsBar entries={entries} />
       </div>
 
+      {/* Worry Pattern Insights */}
+      <div className="relative z-10">
+        <WorryPatternInsights entries={entries} intensityMap={intensityMap} />
+      </div>
+
       {/* Main content area: sidebar + flow panel */}
       <div className="relative z-10 flex flex-col md:flex-row gap-4">
         {/* Entry sidebar */}
-        <div className="md:w-[240px] flex-shrink-0">
+        <div className="w-full md:w-[240px] flex-shrink-0">
           <EntrySidebar
             entries={sortedEntries}
             activeId={effectiveActiveId}
             onSelect={handleSelectEntry}
             onRemove={onRemoveEntry}
+            intensityMap={intensityMap}
+            lettingGoAnimatingId={lettingGoAnimatingId}
           />
 
           {/* New worry button */}
@@ -1171,7 +1720,7 @@ export function WorryTree({
             whileTap={{ scale: 0.98 }}
             onClick={handleNewWorry}
             className={cn(
-              "w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border",
+              "w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border min-h-[44px]",
               showInput
                 ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
                 : "bg-white/5 border-white/10 text-white/60 hover:bg-emerald-500/10 hover:border-emerald-500/20 hover:text-emerald-300"
@@ -1210,6 +1759,7 @@ export function WorryTree({
                 <DecisionFlowPanel
                   entry={effectiveEntry}
                   onUpdate={handleUpdate}
+                  onLettingGoStart={handleLettingGoStart}
                 />
               </motion.div>
             )}
@@ -1240,7 +1790,7 @@ export function WorryTree({
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleNewWorry}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600/70 hover:bg-emerald-500/70 text-white text-sm font-medium transition-all shadow-lg shadow-emerald-900/20"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600/70 hover:bg-emerald-500/70 text-white text-sm font-medium transition-all shadow-lg shadow-emerald-900/20 min-h-[44px]"
                 >
                   <Plus className="w-4 h-4" />
                   Add Your First Worry
@@ -1254,23 +1804,30 @@ export function WorryTree({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="flex flex-col items-center justify-center py-12 space-y-4"
+                className="space-y-4"
               >
-                <motion.div
-                  initial={{ rotate: -10 }}
-                  animate={{ rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center">
-                    <Sparkles className="w-8 h-8 text-emerald-400/60" />
+                {/* Celebration banner */}
+                {allResolved && <CelebrationBanner entries={entries} />}
+
+                {!allResolved && (
+                  <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                    <motion.div
+                      initial={{ rotate: -10 }}
+                      animate={{ rotate: [0, 5, -5, 0] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center">
+                        <Sparkles className="w-8 h-8 text-emerald-400/60" />
+                      </div>
+                    </motion.div>
+                    <div className="text-center space-y-1.5">
+                      <p className="text-sm text-emerald-300/80 font-medium">All worries processed</p>
+                      <p className="text-xs text-white/30 max-w-[260px]">
+                        Well done! Select an entry to review, or add a new worry.
+                      </p>
+                    </div>
                   </div>
-                </motion.div>
-                <div className="text-center space-y-1.5">
-                  <p className="text-sm text-emerald-300/80 font-medium">All worries processed</p>
-                  <p className="text-xs text-white/30 max-w-[260px]">
-                    Well done! Select an entry to review, or add a new worry.
-                  </p>
-                </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

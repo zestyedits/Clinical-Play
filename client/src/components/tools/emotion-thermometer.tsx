@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playClickSound } from "@/lib/audio-feedback";
-import { RotateCcw, Plus, MessageSquare, MapPin, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { RotateCcw, Plus, MessageSquare, MapPin, Sparkles, ChevronDown, ChevronUp, Zap } from "lucide-react";
 import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ─── Data Interfaces ──────────────────────────────────────────────────────────
@@ -33,18 +33,21 @@ interface EmotionThermometerSettings {
   showBodyLocation: boolean;
   showTriggerNotes: boolean;
   showInsights: boolean;
+  quickMode: boolean;
 }
 
 const DEFAULT_EMOTION_THERMOMETER_SETTINGS: EmotionThermometerSettings = {
   showBodyLocation: true,
   showTriggerNotes: true,
   showInsights: true,
+  quickMode: false,
 };
 
 const EMOTION_THERMOMETER_TOOLBAR_CONTROLS: ToolbarControl[] = [
   { type: "toggle", key: "showBodyLocation", icon: MapPin, label: "Body Location", activeColor: "sky" },
   { type: "toggle", key: "showTriggerNotes", icon: MessageSquare, label: "Trigger Notes", activeColor: "amber" },
   { type: "toggle", key: "showInsights", icon: Sparkles, label: "Insights", activeColor: "purple" },
+  { type: "toggle", key: "quickMode", icon: Zap, label: "Quick Mode", activeLabel: "Quick Mode ON", activeColor: "emerald" },
 ];
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -85,6 +88,42 @@ const INTENSITY_LABELS: Record<number, string> = {
   10: "Maximum",
 };
 
+// ─── Quick Mode Emoji Scale ──────────────────────────────────────────────────
+
+const QUICK_EMOJI_SCALE: { emoji: string; label: string; intensityRange: [number, number] }[] = [
+  { emoji: "\u{1F60C}", label: "Calm", intensityRange: [0, 2] },
+  { emoji: "\u{1F642}", label: "Okay", intensityRange: [3, 4] },
+  { emoji: "\u{1F610}", label: "Uneasy", intensityRange: [5, 6] },
+  { emoji: "\u{1F61F}", label: "Stressed", intensityRange: [7, 8] },
+  { emoji: "\u{1F630}", label: "Distressed", intensityRange: [9, 10] },
+];
+
+// ─── Regulation Zone Data ────────────────────────────────────────────────────
+
+interface RegulationZone {
+  label: string;
+  range: [number, number];
+  color: string;
+  bgColor: string;
+  isCrisis: boolean;
+}
+
+const REGULATION_ZONES: RegulationZone[] = [
+  { label: "Calm Zone", range: [0, 3], color: "#60A5FA", bgColor: "rgba(96, 165, 250, 0.15)", isCrisis: false },
+  { label: "Alert Zone", range: [4, 6], color: "#FBBF24", bgColor: "rgba(251, 191, 36, 0.15)", isCrisis: false },
+  { label: "Activation Zone", range: [7, 8], color: "#F97316", bgColor: "rgba(249, 115, 22, 0.15)", isCrisis: false },
+  { label: "Crisis Zone", range: [9, 10], color: "#EF4444", bgColor: "rgba(239, 68, 68, 0.15)", isCrisis: true },
+];
+
+function getRegulationZone(intensity: number): RegulationZone {
+  for (const zone of REGULATION_ZONES) {
+    if (intensity >= zone.range[0] && intensity <= zone.range[1]) {
+      return zone;
+    }
+  }
+  return REGULATION_ZONES[0];
+}
+
 // ─── Color utilities ──────────────────────────────────────────────────────────
 
 function intensityToColor(intensity: number): string {
@@ -121,6 +160,415 @@ function intensityToHex(intensity: number): string {
     const b = Math.round(11 + (68 - 11) * s);
     return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   }
+}
+
+// ─── Trend Sparkline Chart ───────────────────────────────────────────────────
+
+function TrendSparkline({ readings }: { readings: ThermometerReadingData[] }) {
+  const width = 240;
+  const height = 60;
+  const padding = { top: 8, right: 8, bottom: 8, left: 8 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+
+  const points = useMemo(() => {
+    return readings.map((r, i) => {
+      const x = padding.left + (readings.length === 1 ? chartW / 2 : (i / (readings.length - 1)) * chartW);
+      const y = padding.top + chartH - (r.intensity / 10) * chartH;
+      return { x, y, intensity: r.intensity };
+    });
+  }, [readings, chartW, chartH]);
+
+  const pathD = useMemo(() => {
+    if (points.length === 0) return "";
+    return points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+  }, [points]);
+
+  // Build gradient stops from the readings
+  const gradientId = "sparkline-grad";
+
+  if (readings.length < 2) return null;
+
+  return (
+    <div className="w-full mt-2">
+      <p className="text-[10px] text-white/35 mb-1 font-medium uppercase tracking-wider">Emotional Trajectory</p>
+      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="w-full" style={{ maxWidth: width }}>
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
+            {points.map((p, i) => (
+              <stop
+                key={i}
+                offset={`${(i / (points.length - 1)) * 100}%`}
+                stopColor={intensityToHex(p.intensity)}
+              />
+            ))}
+          </linearGradient>
+        </defs>
+
+        {/* Subtle horizontal guide lines */}
+        {[0, 5, 10].map((val) => {
+          const y = padding.top + chartH - (val / 10) * chartH;
+          return (
+            <line
+              key={val}
+              x1={padding.left}
+              y1={y}
+              x2={padding.left + chartW}
+              y2={y}
+              stroke="white"
+              strokeOpacity={0.08}
+              strokeWidth={0.5}
+              strokeDasharray="2,3"
+            />
+          );
+        })}
+
+        {/* Line path */}
+        <path
+          d={pathD}
+          fill="none"
+          stroke={`url(#${gradientId})`}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {/* Data points */}
+        {points.map((p, i) => (
+          <circle
+            key={i}
+            cx={p.x}
+            cy={p.y}
+            r={i === points.length - 1 ? 3.5 : 2.5}
+            fill={intensityToHex(p.intensity)}
+            stroke="rgba(0,0,0,0.3)"
+            strokeWidth={0.8}
+            opacity={i === points.length - 1 ? 1 : 0.7}
+          />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+// ─── Emotional Shift Arrow ───────────────────────────────────────────────────
+
+function EmotionalShiftArrow({ readings }: { readings: ThermometerReadingData[] }) {
+  if (readings.length < 2) return null;
+
+  const current = readings[readings.length - 1].intensity;
+  const previous = readings[readings.length - 2].intensity;
+  const delta = current - previous;
+
+  const direction: "up" | "down" | "steady" = delta > 0 ? "up" : delta < 0 ? "down" : "steady";
+  const arrowSymbol = direction === "up" ? "\u2191" : direction === "down" ? "\u2193" : "\u2194";
+  const deltaText = delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : "0";
+
+  const arrowColor =
+    direction === "up"
+      ? intensityToColor(Math.min(10, current))
+      : direction === "down"
+        ? intensityToColor(Math.max(0, current))
+        : "rgba(255,255,255,0.4)";
+
+  const bgColor =
+    direction === "up"
+      ? `${intensityToHex(current)}20`
+      : direction === "down"
+        ? `${intensityToHex(current)}20`
+        : "rgba(255,255,255,0.05)";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10"
+      style={{ backgroundColor: bgColor }}
+    >
+      <motion.span
+        key={`${current}-${previous}`}
+        initial={{ y: direction === "up" ? 6 : direction === "down" ? -6 : 0, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 20 }}
+        className="text-lg font-bold leading-none"
+        style={{ color: arrowColor }}
+      >
+        {arrowSymbol}
+      </motion.span>
+      <span className="text-xs font-semibold" style={{ color: arrowColor }}>
+        {deltaText}
+      </span>
+      <span className="text-[10px] text-white/30">from last</span>
+    </motion.div>
+  );
+}
+
+// ─── Regulation Zone Labels (alongside thermometer) ─────────────────────────
+
+function RegulationZoneLabels({ currentIntensity }: { currentIntensity: number }) {
+  // The thermometer tube goes from y=280 (intensity 0) to y=40 (intensity 10) in the SVG
+  // Map intensity values to vertical positions relative to the container (320px height)
+  const intensityToY = (val: number) => {
+    // In the thermometer SVG viewBox (0 0 120 380), intensity marks go from y=280 (0) to y=40 (10)
+    // Container height is 320px, SVG viewBox height is 380
+    // So y in container = (svgY / 380) * 320
+    const svgY = 280 - val * 24;
+    return (svgY / 380) * 320;
+  };
+
+  return (
+    <div className="absolute left-full ml-1 top-0 bottom-0" style={{ width: 90 }}>
+      {REGULATION_ZONES.map((zone) => {
+        const topY = intensityToY(zone.range[1]);
+        const bottomY = intensityToY(zone.range[0]);
+        const heightPx = bottomY - topY;
+        const isActive = currentIntensity >= zone.range[0] && currentIntensity <= zone.range[1];
+
+        return (
+          <motion.div
+            key={zone.label}
+            className="absolute left-0 flex items-center"
+            style={{
+              top: topY,
+              height: heightPx,
+            }}
+            animate={{
+              opacity: isActive ? 1 : 0.4,
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            <div
+              className={cn(
+                "px-1.5 py-0.5 rounded text-[9px] font-semibold leading-tight whitespace-nowrap border",
+                zone.isCrisis && isActive ? "animate-pulse" : "",
+              )}
+              style={{
+                color: zone.color,
+                backgroundColor: isActive ? zone.bgColor : "transparent",
+                borderColor: isActive ? `${zone.color}30` : "transparent",
+              }}
+            >
+              {zone.label}
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Quick Check-in Mode Component ───────────────────────────────────────────
+
+function QuickCheckInMode({
+  intensity,
+  onIntensityChange,
+  onAddReading,
+  displayIntensity,
+  readings,
+}: {
+  intensity: number;
+  onIntensityChange: (v: number) => void;
+  onAddReading: (label: string, val: number) => void;
+  displayIntensity: number;
+  readings: ThermometerReadingData[];
+}) {
+  const [selectedEmojiIdx, setSelectedEmojiIdx] = useState<number | null>(null);
+  const currentColor = intensityToColor(intensity);
+  const currentHex = intensityToHex(intensity);
+  const percentage = (intensity / 10) * 100;
+
+  const handleEmojiSelect = useCallback((idx: number) => {
+    playClickSound();
+    setSelectedEmojiIdx(idx);
+    const mid = Math.round((QUICK_EMOJI_SCALE[idx].intensityRange[0] + QUICK_EMOJI_SCALE[idx].intensityRange[1]) / 2);
+    onIntensityChange(mid);
+  }, [onIntensityChange]);
+
+  const handleQuickAdd = useCallback(() => {
+    if (selectedEmojiIdx === null) return;
+    playClickSound();
+    const emojiEntry = QUICK_EMOJI_SCALE[selectedEmojiIdx];
+    onAddReading(emojiEntry.label, intensity);
+    setSelectedEmojiIdx(null);
+  }, [selectedEmojiIdx, intensity, onAddReading]);
+
+  return (
+    <div className="w-full flex flex-col items-center gap-4">
+      {/* Shift arrow */}
+      {readings.length >= 2 && (
+        <EmotionalShiftArrow readings={readings} />
+      )}
+
+      {/* Compact thermometer + slider */}
+      <div className="w-full flex items-center gap-4">
+        <div className="flex-shrink-0" style={{ width: 60, height: 200 }}>
+          <ThermometerSVG intensity={displayIntensity} animate={false} />
+        </div>
+        <div className="flex-1 space-y-3">
+          {/* Slider */}
+          <div className="w-full space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/50 font-medium">How intense?</span>
+              <motion.span
+                key={intensity}
+                initial={{ scale: 1.3, opacity: 0.5 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="text-sm font-bold"
+                style={{ color: currentColor }}
+              >
+                {intensity}/10
+              </motion.span>
+            </div>
+            <div className="relative h-10 flex items-center">
+              <div className="absolute inset-x-0 h-3 rounded-full bg-white/8 border border-white/10 overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  animate={{ width: `${percentage}%`, backgroundColor: currentColor }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  style={{ boxShadow: `0 0 12px ${currentHex}60` }}
+                />
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="10"
+                step="1"
+                value={intensity}
+                onChange={(e) => {
+                  const newVal = parseInt(e.target.value, 10);
+                  if (newVal !== intensity) playClickSound();
+                  onIntensityChange(newVal);
+                  // Update emoji to match
+                  const matchIdx = QUICK_EMOJI_SCALE.findIndex(
+                    (em) => newVal >= em.intensityRange[0] && newVal <= em.intensityRange[1]
+                  );
+                  if (matchIdx >= 0) setSelectedEmojiIdx(matchIdx);
+                }}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              <motion.div
+                className="absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 pointer-events-none z-20"
+                animate={{
+                  left: `calc(${percentage}% - 12px)`,
+                  borderColor: currentColor,
+                  boxShadow: `0 0 16px ${currentHex}50, 0 0 4px ${currentHex}80`,
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                style={{ backgroundColor: "rgba(15, 15, 30, 0.8)" }}
+              >
+                <motion.div
+                  className="absolute inset-1 rounded-full"
+                  animate={{ backgroundColor: currentColor }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              </motion.div>
+            </div>
+            <motion.p
+              key={intensity}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center text-xs font-medium"
+              style={{ color: currentColor }}
+            >
+              {INTENSITY_LABELS[intensity]}
+            </motion.p>
+          </div>
+
+          {/* Zone label */}
+          <div className="text-center">
+            <span
+              className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full"
+              style={{
+                color: getRegulationZone(intensity).color,
+                backgroundColor: getRegulationZone(intensity).bgColor,
+              }}
+            >
+              {getRegulationZone(intensity).label}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Emoji scale */}
+      <div className="w-full">
+        <p className="text-xs text-white/40 mb-2 font-medium text-center">How are you feeling?</p>
+        <div className="flex justify-center gap-2">
+          {QUICK_EMOJI_SCALE.map((entry, idx) => {
+            const isSelected = selectedEmojiIdx === idx;
+            return (
+              <motion.button
+                key={idx}
+                onClick={() => handleEmojiSelect(idx)}
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.9 }}
+                className={cn(
+                  "flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 min-w-[52px]",
+                  isSelected
+                    ? "bg-white/15 border border-white/25"
+                    : "bg-white/5 border border-white/8 hover:bg-white/10",
+                )}
+              >
+                <motion.span
+                  className="text-2xl"
+                  animate={isSelected ? {
+                    scale: [1, 1.3, 1],
+                    rotate: [0, -10, 10, 0],
+                  } : { scale: 1, rotate: 0 }}
+                  transition={isSelected ? {
+                    duration: 0.5,
+                    ease: "easeInOut",
+                  } : { duration: 0.2 }}
+                >
+                  {entry.emoji}
+                </motion.span>
+                <span className={cn(
+                  "text-[9px] font-medium",
+                  isSelected ? "text-white/80" : "text-white/40"
+                )}>
+                  {entry.label}
+                </span>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Quick record button */}
+      <motion.button
+        onClick={handleQuickAdd}
+        disabled={selectedEmojiIdx === null}
+        whileHover={selectedEmojiIdx !== null ? { scale: 1.02 } : undefined}
+        whileTap={selectedEmojiIdx !== null ? { scale: 0.98 } : undefined}
+        className={cn(
+          "w-full py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all duration-300",
+          selectedEmojiIdx !== null
+            ? "text-white shadow-lg cursor-pointer"
+            : "bg-white/5 text-white/25 cursor-not-allowed border border-white/8",
+        )}
+        style={
+          selectedEmojiIdx !== null
+            ? {
+                backgroundColor: `${currentHex}40`,
+                boxShadow: `0 4px 24px ${currentHex}25, inset 0 0 0 1px ${currentHex}30`,
+              }
+            : undefined
+        }
+      >
+        <Zap className="w-4 h-4" />
+        {selectedEmojiIdx !== null ? (
+          <span>
+            Quick record{" "}
+            <span style={{ color: currentColor }}>
+              {QUICK_EMOJI_SCALE[selectedEmojiIdx].emoji} {QUICK_EMOJI_SCALE[selectedEmojiIdx].label}
+            </span>{" "}
+            at <span style={{ color: currentColor }}>{intensity}/10</span>
+          </span>
+        ) : (
+          <span>Tap an emoji to check in</span>
+        )}
+      </motion.button>
+    </div>
+  );
 }
 
 // ─── Thermometer SVG Component ────────────────────────────────────────────────
@@ -696,6 +1144,12 @@ export function EmotionThermometer({
     setTimeout(() => setAnimateThermometer(false), 100);
   }, [activeEmotionLabel, intensity, bodyLocation, triggerNote, onAddReading]);
 
+  const handleQuickAddReading = useCallback((label: string, val: number) => {
+    onAddReading(label, val, null, null);
+    setAnimateThermometer(true);
+    setTimeout(() => setAnimateThermometer(false), 100);
+  }, [onAddReading]);
+
   const handleClear = useCallback(() => {
     playClickSound();
     onClear();
@@ -711,6 +1165,59 @@ export function EmotionThermometer({
     return [...readings].slice(-20);
   }, [readings]);
 
+  // ── Quick Mode Render ──
+  if (settings.quickMode) {
+    return (
+      <div className="relative w-full max-w-lg mx-auto flex flex-col items-center gap-4 select-none">
+        {/* Ambient background glow */}
+        <motion.div
+          className="absolute inset-0 -z-10 rounded-3xl pointer-events-none"
+          animate={{
+            background: `radial-gradient(ellipse at 50% 60%, ${displayHex}18 0%, ${displayHex}08 40%, transparent 70%)`,
+          }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
+        />
+
+        {/* Header */}
+        <div className="w-full flex items-center justify-between px-2">
+          <div className="flex items-center gap-2 text-sm text-white/60">
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full
+                bg-white/10 backdrop-blur-sm border border-white/10"
+            >
+              <Zap className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="font-medium text-white/80">Quick Check-in</span>
+            </span>
+            {readings.length > 0 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/8 text-xs">
+                <span className="text-white/40">{readings.length} reading{readings.length !== 1 ? "s" : ""}</span>
+              </span>
+            )}
+          </div>
+        </div>
+
+        <QuickCheckInMode
+          intensity={intensity}
+          onIntensityChange={setIntensity}
+          onAddReading={handleQuickAddReading}
+          displayIntensity={displayIntensity}
+          readings={readings}
+        />
+
+        {/* Clinician Toolbar */}
+        {isClinician && onSettingsUpdate && (
+          <ClinicianToolbar
+            controls={EMOTION_THERMOMETER_TOOLBAR_CONTROLS}
+            settings={settings}
+            onUpdate={onSettingsUpdate}
+            onClear={onClear}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // ── Full Mode Render ──
   return (
     <div className="relative w-full max-w-lg mx-auto flex flex-col items-center gap-4 select-none">
       {/* ── Ambient background glow (changes with intensity) ── */}
@@ -736,7 +1243,7 @@ export function EmotionThermometer({
         }}
       />
 
-      {/* ── Header: reading count + clinician clear ── */}
+      {/* ── Header: reading count + shift arrow + clinician clear ── */}
       <div className="w-full flex items-center justify-between px-2">
         <div className="flex items-center gap-2 text-sm text-white/60">
           <span
@@ -761,14 +1268,24 @@ export function EmotionThermometer({
         </div>
         </div>
 
+      {/* ── Emotional Shift Arrow (when 2+ readings) ── */}
+      {readings.length >= 2 && (
+        <div className="w-full flex justify-center">
+          <EmotionalShiftArrow readings={readings} />
+        </div>
+      )}
+
       {/* ── Main visualization area ── */}
       <div className="w-full flex gap-4 items-stretch">
-        {/* Thermometer column */}
+        {/* Thermometer column with regulation zone labels */}
         <div className="relative flex-shrink-0" style={{ width: 100, height: 320 }}>
           <ThermometerSVG
             intensity={displayIntensity}
             animate={animateThermometer}
           />
+
+          {/* Regulation Zone Labels */}
+          <RegulationZoneLabels currentIntensity={displayIntensity} />
 
           {/* Current reading label overlay */}
           {latestReading && (
@@ -1249,6 +1766,9 @@ function InsightSummary({ readings }: { readings: ThermometerReadingData[] }) {
           </span>
         </div>
       )}
+
+      {/* Trend Sparkline Chart */}
+      <TrendSparkline readings={readings} />
     </div>
   );
 }

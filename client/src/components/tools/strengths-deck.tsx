@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { CHARACTER_STRENGTHS, VIRTUES } from "@/lib/strengths-data";
 import { playClickSound } from "@/lib/audio-feedback";
-import { Plus, X, Check, ChevronDown, Star, Eye, Sparkles, Filter, FileText } from "lucide-react";
+import { Plus, X, Check, ChevronDown, Star, Eye, Sparkles, Filter, FileText, BookOpen, BarChart3, GitCompareArrows, Trophy } from "lucide-react";
 import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ---------------------------------------------------------------------------
@@ -135,11 +135,13 @@ function VirtueDot({ virtueId, size = 8 }: { virtueId: string; size?: number }) 
 function PlacedCard({
   placement,
   spottingCount,
+  hasStory,
   onTap,
   isSpottingMode,
 }: {
   placement: StrengthsPlacementData;
   spottingCount: number;
+  hasStory: boolean;
   onTap: () => void;
   isSpottingMode: boolean;
 }) {
@@ -174,6 +176,12 @@ function PlacedCard({
       <span className="text-xs font-medium text-white/90 truncate">
         {strength.name}
       </span>
+      {hasStory && (
+        <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-[8px] font-bold text-emerald-300 uppercase tracking-wider flex-shrink-0">
+          <BookOpen className="w-2.5 h-2.5" />
+          Story
+        </span>
+      )}
       {spottingCount > 0 && (
         <span
           className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold border"
@@ -239,6 +247,637 @@ function ProgressRing({ placed, total }: { placed: number; total: number }) {
 }
 
 // ---------------------------------------------------------------------------
+// Virtue Wheel Visualization (radar chart)
+// ---------------------------------------------------------------------------
+
+function VirtueWheel({
+  placements,
+}: {
+  placements: StrengthsPlacementData[];
+}) {
+  const signaturePlacements = placements.filter((p) => p.tier === "signature");
+  const virtueScores = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const maxPerVirtue: Record<string, number> = {};
+    for (const v of VIRTUES) {
+      counts[v.id] = 0;
+      maxPerVirtue[v.id] = CHARACTER_STRENGTHS.filter(
+        (s) => s.virtue === v.id
+      ).length;
+    }
+    for (const p of signaturePlacements) {
+      const strength = CHARACTER_STRENGTHS.find(
+        (s) => s.id === p.strengthId
+      );
+      if (strength) {
+        counts[strength.virtue] = (counts[strength.virtue] ?? 0) + 1;
+      }
+    }
+    return VIRTUES.map((v) => ({
+      virtue: v,
+      count: counts[v.id] ?? 0,
+      max: maxPerVirtue[v.id] ?? 1,
+      ratio: maxPerVirtue[v.id] > 0 ? (counts[v.id] ?? 0) / maxPerVirtue[v.id] : 0,
+    }));
+  }, [signaturePlacements]);
+
+  const cx = 100;
+  const cy = 100;
+  const maxR = 70;
+  const minR = 15;
+  const numSpokes = VIRTUES.length;
+
+  const getPoint = (index: number, radius: number) => {
+    const angle = (Math.PI * 2 * index) / numSpokes - Math.PI / 2;
+    return {
+      x: cx + Math.cos(angle) * radius,
+      y: cy + Math.sin(angle) * radius,
+    };
+  };
+
+  // Build the filled polygon path
+  const dataPoints = virtueScores.map((vs, i) => {
+    const r = minR + vs.ratio * (maxR - minR);
+    return getPoint(i, r);
+  });
+  const dataPath = dataPoints
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+    .join(" ") + " Z";
+
+  // Grid rings
+  const rings = [0.25, 0.5, 0.75, 1.0];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+      className="rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm p-4"
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <BarChart3 className="w-3.5 h-3.5 text-amber-400/70" />
+        <h4 className="text-xs font-semibold text-white/70 tracking-wide">
+          Virtue Wheel
+        </h4>
+        <span className="text-[10px] text-white/30 ml-auto">
+          Based on signature strengths
+        </span>
+      </div>
+      <div className="flex justify-center">
+        <svg viewBox="0 0 200 200" className="w-48 h-48">
+          {/* Grid rings */}
+          {rings.map((r) => {
+            const ringR = minR + r * (maxR - minR);
+            const ringPoints = Array.from({ length: numSpokes }, (_, i) =>
+              getPoint(i, ringR)
+            );
+            const ringPath = ringPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
+            return (
+              <path
+                key={r}
+                d={ringPath}
+                fill="none"
+                stroke="rgba(255,255,255,0.06)"
+                strokeWidth="0.5"
+              />
+            );
+          })}
+
+          {/* Spokes */}
+          {VIRTUES.map((v, i) => {
+            const outer = getPoint(i, maxR + 5);
+            return (
+              <line
+                key={v.id}
+                x1={cx}
+                y1={cy}
+                x2={outer.x}
+                y2={outer.y}
+                stroke="rgba(255,255,255,0.06)"
+                strokeWidth="0.5"
+              />
+            );
+          })}
+
+          {/* Data polygon */}
+          <motion.path
+            d={dataPath}
+            fill="rgba(212,160,23,0.12)"
+            stroke="rgba(212,160,23,0.5)"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          />
+
+          {/* Data dots & virtue labels */}
+          {virtueScores.map((vs, i) => {
+            const r = minR + vs.ratio * (maxR - minR);
+            const pt = getPoint(i, r);
+            const labelPt = getPoint(i, maxR + 18);
+            return (
+              <g key={vs.virtue.id}>
+                <motion.circle
+                  cx={pt.x}
+                  cy={pt.y}
+                  r="3"
+                  fill={vs.virtue.color}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.3 + i * 0.08 }}
+                />
+                <text
+                  x={labelPt.x}
+                  y={labelPt.y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill={vs.virtue.color}
+                  fontSize="7"
+                  fontWeight="600"
+                >
+                  {vs.virtue.name}
+                </text>
+                {vs.count > 0 && (
+                  <text
+                    x={labelPt.x}
+                    y={labelPt.y + 9}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="rgba(255,255,255,0.35)"
+                    fontSize="6"
+                  >
+                    {vs.count}/{vs.max}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Session Progress Tracker
+// ---------------------------------------------------------------------------
+
+function SessionProgressTracker({
+  placements,
+  totalStrengths,
+}: {
+  placements: StrengthsPlacementData[];
+  totalStrengths: number;
+}) {
+  const placedCount = placements.length;
+  const progress = totalStrengths > 0 ? placedCount / totalStrengths : 0;
+
+  const tierCounts = useMemo(() => {
+    const counts: Record<string, number> = { signature: 0, middle: 0, lesser: 0 };
+    for (const p of placements) {
+      counts[p.tier] = (counts[p.tier] ?? 0) + 1;
+    }
+    return counts;
+  }, [placements]);
+
+  const topVirtue = useMemo(() => {
+    const sigPlacements = placements.filter((p) => p.tier === "signature");
+    if (sigPlacements.length === 0) return null;
+    const virtueCounts: Record<string, number> = {};
+    for (const p of sigPlacements) {
+      const strength = CHARACTER_STRENGTHS.find((s) => s.id === p.strengthId);
+      if (strength) {
+        virtueCounts[strength.virtue] = (virtueCounts[strength.virtue] ?? 0) + 1;
+      }
+    }
+    let best = "";
+    let bestCount = 0;
+    for (const [vid, count] of Object.entries(virtueCounts)) {
+      if (count > bestCount) {
+        best = vid;
+        bestCount = count;
+      }
+    }
+    return best ? VIRTUES.find((v) => v.id === best) ?? null : null;
+  }, [placements]);
+
+  if (placedCount === 0) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm p-4 space-y-3"
+    >
+      <div className="flex items-center gap-2">
+        <Trophy className="w-3.5 h-3.5 text-amber-400/70" />
+        <h4 className="text-xs font-semibold text-white/70 tracking-wide">
+          Session Progress
+        </h4>
+      </div>
+
+      {/* Progress bar */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-white/50">
+            {placedCount} of {totalStrengths} strengths sorted
+          </span>
+          <span className="text-[11px] font-semibold text-amber-300/70">
+            {Math.round(progress * 100)}%
+          </span>
+        </div>
+        <div className="w-full h-2 rounded-full bg-white/[0.06] overflow-hidden">
+          <motion.div
+            className="h-full rounded-full"
+            style={{
+              background: "linear-gradient(90deg, #D4A017, #F59E0B)",
+            }}
+            initial={{ width: 0 }}
+            animate={{ width: `${progress * 100}%` }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          />
+        </div>
+      </div>
+
+      {/* Tier distribution */}
+      <div className="flex items-center gap-3">
+        {TIERS.map((tier) => (
+          <div key={tier.id} className="flex items-center gap-1.5">
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{ backgroundColor: tier.color }}
+            />
+            <span className="text-[10px] text-white/40">
+              {tier.label.split(" ")[0]}:
+            </span>
+            <span
+              className="text-[11px] font-semibold"
+              style={{ color: tier.color }}
+            >
+              {tierCounts[tier.id] ?? 0}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Top virtue */}
+      {topVirtue && (
+        <div className="flex items-center gap-2 pt-1">
+          <span className="text-[10px] text-white/35">Your top virtue:</span>
+          <span
+            className="text-[11px] font-semibold px-2 py-0.5 rounded-full border"
+            style={{
+              color: topVirtue.color,
+              borderColor: `${topVirtue.color}40`,
+              backgroundColor: `${topVirtue.color}15`,
+            }}
+          >
+            {topVirtue.name}
+          </span>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Strength Comparison View
+// ---------------------------------------------------------------------------
+
+function StrengthComparisonView({
+  selectedIds,
+  placements,
+  spottingsByStrength,
+  onDeselect,
+}: {
+  selectedIds: [string, string];
+  placements: StrengthsPlacementData[];
+  spottingsByStrength: Record<string, number>;
+  onDeselect: () => void;
+}) {
+  const [reflectionText, setReflectionText] = useState("");
+  const strengthA = CHARACTER_STRENGTHS.find((s) => s.id === selectedIds[0]);
+  const strengthB = CHARACTER_STRENGTHS.find((s) => s.id === selectedIds[1]);
+  if (!strengthA || !strengthB) return null;
+
+  const placementA = placements.find((p) => p.strengthId === selectedIds[0]);
+  const placementB = placements.find((p) => p.strengthId === selectedIds[1]);
+
+  const getTierLabel = (tier: string | undefined) =>
+    tier ? (TIERS.find((t) => t.id === tier)?.label.split(" ")[0] ?? tier) : "Unsorted";
+  const getTierColor = (tier: string | undefined) =>
+    tier ? (TIERS.find((t) => t.id === tier)?.color ?? "#9CA3AF") : "#9CA3AF";
+
+  const items = [
+    { a: strengthA, b: strengthB, placementA, placementB },
+  ];
+
+  const rows: { label: string; aVal: string; bVal: string; aColor: string; bColor: string }[] = [
+    {
+      label: "Tier",
+      aVal: getTierLabel(placementA?.tier),
+      bVal: getTierLabel(placementB?.tier),
+      aColor: getTierColor(placementA?.tier),
+      bColor: getTierColor(placementB?.tier),
+    },
+    {
+      label: "Spottings",
+      aVal: String(spottingsByStrength[selectedIds[0]] ?? 0),
+      bVal: String(spottingsByStrength[selectedIds[1]] ?? 0),
+      aColor: "#A78BFA",
+      bColor: "#A78BFA",
+    },
+    {
+      label: "Story",
+      aVal: placementA?.scenarioResponse ? "Yes" : "No",
+      bVal: placementB?.scenarioResponse ? "Yes" : "No",
+      aColor: placementA?.scenarioResponse ? "#34D399" : "#6B7280",
+      bColor: placementB?.scenarioResponse ? "#34D399" : "#6B7280",
+    },
+    {
+      label: "Virtue",
+      aVal: getVirtueName(strengthA.virtue),
+      bVal: getVirtueName(strengthB.virtue),
+      aColor: getVirtueColor(strengthA.virtue),
+      bColor: getVirtueColor(strengthB.virtue),
+    },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      className="rounded-2xl border border-sky-500/20 bg-sky-500/[0.04] backdrop-blur-xl p-4 space-y-3"
+    >
+      <div className="flex items-center gap-2">
+        <GitCompareArrows className="w-4 h-4 text-sky-400" />
+        <p className="text-xs font-semibold text-sky-300">
+          Strength Comparison
+        </p>
+        <motion.button
+          whileTap={{ scale: 0.85 }}
+          onClick={onDeselect}
+          className="ml-auto p-1 rounded-lg hover:bg-white/[0.08] transition-colors"
+        >
+          <X className="w-3.5 h-3.5 text-white/40" />
+        </motion.button>
+      </div>
+
+      {/* Headers */}
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
+        <div className="flex flex-col items-center gap-1 p-2 rounded-xl" style={{ background: `${getVirtueColor(strengthA.virtue)}10` }}>
+          <span className="text-2xl">{strengthA.emoji}</span>
+          <span className="text-[11px] font-semibold text-white/80 text-center">{strengthA.name}</span>
+        </div>
+
+        {/* Connection line */}
+        <div className="flex flex-col items-center gap-1">
+          <svg width="40" height="4" viewBox="0 0 40 4">
+            <motion.line
+              x1="0" y1="2" x2="40" y2="2"
+              stroke="rgba(56,189,248,0.4)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeDasharray="4 4"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.6 }}
+            />
+          </svg>
+          <span className="text-[9px] text-white/25">vs</span>
+        </div>
+
+        <div className="flex flex-col items-center gap-1 p-2 rounded-xl" style={{ background: `${getVirtueColor(strengthB.virtue)}10` }}>
+          <span className="text-2xl">{strengthB.emoji}</span>
+          <span className="text-[11px] font-semibold text-white/80 text-center">{strengthB.name}</span>
+        </div>
+      </div>
+
+      {/* Comparison rows */}
+      <div className="space-y-1.5">
+        {rows.map((row) => (
+          <div key={row.label} className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
+            <div className="text-right">
+              <span className="text-[11px] font-medium" style={{ color: row.aColor }}>{row.aVal}</span>
+            </div>
+            <span className="text-[9px] text-white/30 w-16 text-center">{row.label}</span>
+            <div className="text-left">
+              <span className="text-[11px] font-medium" style={{ color: row.bColor }}>{row.bVal}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Reflection prompt */}
+      <div className="space-y-2 pt-1">
+        <p className="text-[10px] font-semibold text-white/35 uppercase tracking-wider">
+          Reflection
+        </p>
+        <p className="text-[11px] text-sky-300/60 italic">
+          How do {strengthA.name} and {strengthB.name} work together in your life?
+        </p>
+        <textarea
+          value={reflectionText}
+          onChange={(e) => setReflectionText(e.target.value)}
+          placeholder="Think about how these two strengths complement each other..."
+          rows={2}
+          className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white/80 placeholder:text-white/25 resize-none focus:outline-none focus:ring-1 focus:ring-sky-500/40 transition-all"
+        />
+      </div>
+    </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Spotting Feed (enhanced)
+// ---------------------------------------------------------------------------
+
+function SpottingFeed({
+  spottings,
+  isClinician,
+  highlightedSpottings,
+  onToggleHighlight,
+}: {
+  spottings: StrengthsSpottingData[];
+  isClinician: boolean;
+  highlightedSpottings: Set<string>;
+  onToggleHighlight: (id: string) => void;
+}) {
+  const [feedMode, setFeedMode] = useState<"chronological" | "grouped">("chronological");
+
+  const sortedSpottings = useMemo(
+    () =>
+      [...spottings].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ),
+    [spottings]
+  );
+
+  const groupedSpottings = useMemo(() => {
+    const groups: Record<string, StrengthsSpottingData[]> = {};
+    for (const s of sortedSpottings) {
+      if (!groups[s.strengthId]) groups[s.strengthId] = [];
+      groups[s.strengthId].push(s);
+    }
+    return Object.entries(groups)
+      .map(([strengthId, items]) => ({
+        strengthId,
+        strength: CHARACTER_STRENGTHS.find((s) => s.id === strengthId),
+        items,
+      }))
+      .sort((a, b) => b.items.length - a.items.length);
+  }, [sortedSpottings]);
+
+  if (spottings.length === 0) return null;
+
+  return (
+    <div className="rounded-2xl border border-purple-500/15 bg-purple-500/[0.04] backdrop-blur-sm overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-2.5">
+        <Eye className="w-3.5 h-3.5 text-purple-400/60" />
+        <h4 className="text-xs font-semibold text-purple-300/70 tracking-wide">
+          Strength Spottings
+        </h4>
+        <div className="flex items-center gap-1 ml-auto">
+          <button
+            onClick={() => setFeedMode("chronological")}
+            className={cn(
+              "text-[9px] px-2 py-0.5 rounded-full border transition-all",
+              feedMode === "chronological"
+                ? "bg-purple-500/20 border-purple-500/30 text-purple-300"
+                : "border-white/[0.08] text-white/30 hover:text-white/50"
+            )}
+          >
+            Timeline
+          </button>
+          <button
+            onClick={() => setFeedMode("grouped")}
+            className={cn(
+              "text-[9px] px-2 py-0.5 rounded-full border transition-all",
+              feedMode === "grouped"
+                ? "bg-purple-500/20 border-purple-500/30 text-purple-300"
+                : "border-white/[0.08] text-white/30 hover:text-white/50"
+            )}
+          >
+            Grouped
+          </button>
+          <span className="text-[10px] text-white/30 ml-1">
+            {spottings.length} total
+          </span>
+        </div>
+      </div>
+
+      <div className="px-4 pb-3 space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
+        {feedMode === "chronological" ? (
+          sortedSpottings.map((spotting) => {
+            const strength = CHARACTER_STRENGTHS.find(
+              (s) => s.id === spotting.strengthId
+            );
+            const isHighlighted = highlightedSpottings.has(spotting.id);
+            return (
+              <motion.div
+                key={spotting.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className={cn(
+                  "flex items-start gap-2 text-[11px] p-1.5 rounded-lg transition-colors",
+                  isHighlighted && "bg-amber-500/[0.08] border border-amber-500/20"
+                )}
+              >
+                <span className="leading-none mt-0.5">
+                  {strength?.emoji ?? "?"}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium text-white/60">
+                    {strength?.name ?? "Unknown"}
+                  </span>
+                  <p className="text-white/40 leading-relaxed mt-0.5">
+                    {spotting.note}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
+                  <span className="text-[9px] text-white/20">
+                    {new Date(spotting.createdAt).toLocaleDateString(
+                      undefined,
+                      { month: "short", day: "numeric" }
+                    )}
+                    {" "}
+                    {new Date(spotting.createdAt).toLocaleTimeString(
+                      undefined,
+                      { hour: "2-digit", minute: "2-digit" }
+                    )}
+                  </span>
+                  {isClinician && (
+                    <button
+                      onClick={() => onToggleHighlight(spotting.id)}
+                      className={cn(
+                        "p-0.5 rounded transition-colors",
+                        isHighlighted
+                          ? "text-amber-400"
+                          : "text-white/15 hover:text-white/40"
+                      )}
+                    >
+                      <Star className="w-3 h-3" fill={isHighlighted ? "currentColor" : "none"} />
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })
+        ) : (
+          groupedSpottings.map(({ strengthId, strength, items }) => (
+            <div key={strengthId} className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm leading-none">{strength?.emoji ?? "?"}</span>
+                <span className="text-[11px] font-medium text-white/60">
+                  {strength?.name ?? "Unknown"}
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/25 text-purple-300 font-semibold">
+                  {items.length}
+                </span>
+              </div>
+              {items.map((spotting) => {
+                const isHighlighted = highlightedSpottings.has(spotting.id);
+                return (
+                  <div
+                    key={spotting.id}
+                    className={cn(
+                      "ml-6 flex items-start gap-2 text-[10px] p-1 rounded transition-colors",
+                      isHighlighted && "bg-amber-500/[0.08]"
+                    )}
+                  >
+                    <span className="text-white/30 flex-shrink-0 mt-0.5">-</span>
+                    <p className="text-white/40 leading-relaxed flex-1">{spotting.note}</p>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <span className="text-[8px] text-white/15">
+                        {new Date(spotting.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      </span>
+                      {isClinician && (
+                        <button
+                          onClick={() => onToggleHighlight(spotting.id)}
+                          className={cn(
+                            "p-0.5 rounded transition-colors",
+                            isHighlighted ? "text-amber-400" : "text-white/15 hover:text-white/40"
+                          )}
+                        >
+                          <Star className="w-2.5 h-2.5" fill={isHighlighted ? "currentColor" : "none"} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
@@ -264,6 +903,18 @@ export function StrengthsDeck({
   const [showCelebration, setShowCelebration] = useState(false);
   const [showFilterBar, setShowFilterBar] = useState(false);
 
+  // Story prompt state
+  const [storyTarget, setStoryTarget] = useState<string | null>(null);
+  const [storyText, setStoryText] = useState("");
+  const [expandedStoryId, setExpandedStoryId] = useState<string | null>(null);
+
+  // Comparison state
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareSelection, setCompareSelection] = useState<string[]>([]);
+
+  // Spotting highlight state (clinician)
+  const [highlightedSpottings, setHighlightedSpottings] = useState<Set<string>>(new Set());
+
   // ---- derived data ----
   const placedIds = useMemo(
     () => new Set(placements.map((p) => p.strengthId)),
@@ -277,6 +928,16 @@ export function StrengthsDeck({
     }
     return map;
   }, [spottings]);
+
+  const storiesByStrength = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const p of placements) {
+      if (p.scenarioResponse) {
+        map[p.strengthId] = p.scenarioResponse;
+      }
+    }
+    return map;
+  }, [placements]);
 
   const deckCards = useMemo(() => {
     let cards = CHARACTER_STRENGTHS.filter((s) => !placedIds.has(s.id));
@@ -297,14 +958,27 @@ export function StrengthsDeck({
   const totalStrengths = CHARACTER_STRENGTHS.length;
   const placedCount = placements.length;
   const allPlaced = placedCount === totalStrengths && totalStrengths > 0;
+  const showVirtueWheel = placements.filter((p) => p.tier === "signature").length >= 5 || placedCount >= 5;
 
   // ---- handlers ----
   const handleExpandCard = useCallback(
     (strengthId: string) => {
       playClickSound();
+      if (compareMode) {
+        setCompareSelection((prev) => {
+          if (prev.includes(strengthId)) {
+            return prev.filter((id) => id !== strengthId);
+          }
+          if (prev.length < 2) {
+            return [...prev, strengthId];
+          }
+          return [prev[1], strengthId];
+        });
+        return;
+      }
       setExpandedStrengthId((prev) => (prev === strengthId ? null : strengthId));
     },
-    []
+    [compareMode]
   );
 
   const handlePlaceInTier = useCallback(
@@ -341,6 +1015,19 @@ export function StrengthsDeck({
 
   const handlePlacedCardTap = useCallback(
     (placement: StrengthsPlacementData) => {
+      if (compareMode) {
+        setCompareSelection((prev) => {
+          if (prev.includes(placement.strengthId)) {
+            return prev.filter((id) => id !== placement.strengthId);
+          }
+          if (prev.length < 2) {
+            return [...prev, placement.strengthId];
+          }
+          return [prev[1], placement.strengthId];
+        });
+        playClickSound();
+        return;
+      }
       if (spottingMode) {
         setSpottingTarget(placement.strengthId);
         setSpottingNote("");
@@ -351,7 +1038,7 @@ export function StrengthsDeck({
       }
       playClickSound();
     },
-    [spottingMode]
+    [spottingMode, compareMode]
   );
 
   const handleSubmitSpotting = useCallback(() => {
@@ -373,8 +1060,42 @@ export function StrengthsDeck({
     setSpottingMode(false);
     setSpottingTarget(null);
     setShowCelebration(false);
+    setStoryTarget(null);
+    setStoryText("");
+    setCompareMode(false);
+    setCompareSelection([]);
+    setHighlightedSpottings(new Set());
     playClickSound();
   }, [onClear]);
+
+  const handleSaveStory = useCallback(
+    (placementId: string, strengthId: string, tier: string, orderIndex: number) => {
+      if (!storyText.trim()) return;
+      // We re-place the strength with the scenarioResponse to save the story
+      onRemove(placementId);
+      // Small delay to ensure removal processes
+      setTimeout(() => {
+        onPlace(strengthId, tier, orderIndex, storyText.trim());
+        playClickSound();
+        setStoryTarget(null);
+        setStoryText("");
+      }, 50);
+    },
+    [storyText, onRemove, onPlace]
+  );
+
+  const handleToggleHighlight = useCallback((spottingId: string) => {
+    setHighlightedSpottings((prev) => {
+      const next = new Set(prev);
+      if (next.has(spottingId)) {
+        next.delete(spottingId);
+      } else {
+        next.add(spottingId);
+      }
+      return next;
+    });
+    playClickSound();
+  }, []);
 
   // ---- expanded card detail for the currently selected strength ----
   const expandedStrength = useMemo(
@@ -417,6 +1138,26 @@ export function StrengthsDeck({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Compare mode toggle */}
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={() => {
+              setCompareMode((prev) => !prev);
+              setCompareSelection([]);
+              if (spottingMode) setSpottingMode(false);
+              playClickSound();
+            }}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-all duration-200",
+              compareMode
+                ? "bg-sky-500/20 border-sky-500/40 text-sky-300"
+                : "bg-white/[0.04] border-white/[0.08] text-white/50 hover:text-white/70"
+            )}
+          >
+            <GitCompareArrows className="w-3.5 h-3.5" />
+            Compare
+          </motion.button>
+
           {/* Spotting mode toggle */}
           {settings.showSpottingMode && (
             <motion.button
@@ -424,6 +1165,7 @@ export function StrengthsDeck({
               onClick={() => {
                 setSpottingMode((prev) => !prev);
                 setSpottingTarget(null);
+                if (compareMode) setCompareMode(false);
                 playClickSound();
               }}
               className={cn(
@@ -459,6 +1201,39 @@ export function StrengthsDeck({
           {/* Clinician clear moved to toolbar */}
         </div>
       </div>
+
+      {/* ======== COMPARE MODE BANNER ======== */}
+      <AnimatePresence>
+        {compareMode && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden border-b border-sky-500/15 flex-shrink-0"
+          >
+            <div className="px-4 py-2 bg-sky-500/[0.04] flex items-center gap-2">
+              <GitCompareArrows className="w-3.5 h-3.5 text-sky-400/70" />
+              <span className="text-[11px] text-sky-300/70">
+                {compareSelection.length === 0
+                  ? "Tap two strengths to compare them"
+                  : compareSelection.length === 1
+                  ? "Tap one more strength to compare"
+                  : "Comparing two strengths"}
+              </span>
+              {compareSelection.length > 0 && (
+                <div className="flex items-center gap-1 ml-auto">
+                  {compareSelection.map((id) => {
+                    const s = CHARACTER_STRENGTHS.find((c) => c.id === id);
+                    return s ? (
+                      <span key={id} className="text-sm">{s.emoji}</span>
+                    ) : null;
+                  })}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ======== VIRTUE FILTER BAR ======== */}
       <AnimatePresence>
@@ -532,6 +1307,12 @@ export function StrengthsDeck({
 
       {/* ======== SCROLLABLE BODY ======== */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 scrollbar-hide">
+        {/* ---- SESSION PROGRESS TRACKER ---- */}
+        <SessionProgressTracker
+          placements={placements}
+          totalStrengths={totalStrengths}
+        />
+
         {/* ---- UNPLACED DECK ---- */}
         {deckCards.length > 0 && (
           <div>
@@ -542,6 +1323,7 @@ export function StrengthsDeck({
               {deckCards.map((strength) => {
                 const virtueColor = getVirtueColor(strength.virtue);
                 const isExpanded = expandedStrengthId === strength.id;
+                const isCompareSelected = compareSelection.includes(strength.id);
                 return (
                   <motion.button
                     key={strength.id}
@@ -555,12 +1337,16 @@ export function StrengthsDeck({
                       "backdrop-blur-md transition-all duration-200",
                       isExpanded
                         ? "ring-2 ring-white/30 shadow-lg"
+                        : isCompareSelected
+                        ? "ring-2 ring-sky-400/50 shadow-lg"
                         : "hover:shadow-md"
                     )}
                     style={{
                       background: `linear-gradient(160deg, ${virtueColor}22, ${virtueColor}08, rgba(0,0,0,0.15))`,
                       borderColor: isExpanded
                         ? `${virtueColor}60`
+                        : isCompareSelected
+                        ? "rgba(56,189,248,0.5)"
                         : `${virtueColor}25`,
                     }}
                   >
@@ -576,9 +1362,21 @@ export function StrengthsDeck({
           </div>
         )}
 
+        {/* ---- COMPARISON VIEW ---- */}
+        <AnimatePresence>
+          {compareMode && compareSelection.length === 2 && (
+            <StrengthComparisonView
+              selectedIds={compareSelection as [string, string]}
+              placements={placements}
+              spottingsByStrength={spottingsByStrength}
+              onDeselect={() => setCompareSelection([])}
+            />
+          )}
+        </AnimatePresence>
+
         {/* ---- EXPANDED CARD DETAIL ---- */}
         <AnimatePresence mode="wait">
-          {expandedStrength && (
+          {expandedStrength && !compareMode && (
             <motion.div
               key={expandedStrength.id}
               initial={{ opacity: 0, y: 12, scale: 0.97 }}
@@ -636,7 +1434,7 @@ export function StrengthsDeck({
                   Example
                 </p>
                 <p className="text-[11px] text-white/60 leading-relaxed italic">
-                  "{expandedStrength.example}"
+                  &ldquo;{expandedStrength.example}&rdquo;
                 </p>
               </div>
 
@@ -674,6 +1472,125 @@ export function StrengthsDeck({
                       {spottingsByStrength[expandedStrength.id] > 1 ? "s" : ""}
                     </span>
                   </div>
+                </div>
+              )}
+
+              {/* ---- STRENGTH STORY SECTION ---- */}
+              {expandedPlacement && (
+                <div className="px-4 pb-3">
+                  {/* Show existing story if present */}
+                  {expandedPlacement.scenarioResponse && storyTarget !== expandedStrength.id && (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <BookOpen className="w-3 h-3 text-emerald-400/70" />
+                        <p className="text-[10px] font-semibold text-emerald-300/70 uppercase tracking-wider">
+                          Your Story
+                        </p>
+                        <button
+                          onClick={() => setExpandedStoryId(
+                            expandedStoryId === expandedStrength.id ? null : expandedStrength.id
+                          )}
+                          className="ml-auto text-[9px] text-white/30 hover:text-white/50 transition-colors"
+                        >
+                          {expandedStoryId === expandedStrength.id ? "Collapse" : "Expand"}
+                        </button>
+                      </div>
+                      <AnimatePresence>
+                        {expandedStoryId === expandedStrength.id && (
+                          <motion.p
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="text-[11px] text-white/50 leading-relaxed bg-white/[0.03] rounded-lg p-2.5 border border-white/[0.06] overflow-hidden"
+                          >
+                            {expandedPlacement.scenarioResponse}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                      <button
+                        onClick={() => {
+                          setStoryTarget(expandedStrength.id);
+                          setStoryText(expandedPlacement.scenarioResponse ?? "");
+                          playClickSound();
+                        }}
+                        className="text-[10px] text-emerald-400/50 hover:text-emerald-400/80 transition-colors"
+                      >
+                        Edit story
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Story writing prompt */}
+                  {!expandedPlacement.scenarioResponse && storyTarget !== expandedStrength.id && (
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setStoryTarget(expandedStrength.id);
+                        setStoryText("");
+                        playClickSound();
+                      }}
+                      className="flex items-center gap-1.5 text-[11px] text-emerald-400/60 hover:text-emerald-400/80 transition-colors"
+                    >
+                      <BookOpen className="w-3 h-3" />
+                      Write a story about using {expandedStrength.name}
+                    </motion.button>
+                  )}
+
+                  {/* Story editor */}
+                  <AnimatePresence>
+                    {storyTarget === expandedStrength.id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-2 overflow-hidden"
+                      >
+                        <p className="text-[11px] text-emerald-300/60 italic">
+                          Tell me about a time you used {expandedStrength.name}...
+                        </p>
+                        <textarea
+                          value={storyText}
+                          onChange={(e) => setStoryText(e.target.value)}
+                          placeholder={`Describe a moment when ${expandedStrength.name} showed up in your life...`}
+                          rows={3}
+                          className="w-full bg-white/[0.05] border border-emerald-500/20 rounded-xl px-3 py-2.5 text-xs text-white/80 placeholder:text-white/25 resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500/40 transition-all"
+                        />
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              setStoryTarget(null);
+                              setStoryText("");
+                              playClickSound();
+                            }}
+                            className="px-3 py-1.5 rounded-lg text-[11px] font-medium text-white/50 hover:text-white/70 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <motion.button
+                            whileTap={{ scale: 0.92 }}
+                            onClick={() =>
+                              handleSaveStory(
+                                expandedPlacement.id,
+                                expandedStrength.id,
+                                expandedPlacement.tier,
+                                expandedPlacement.orderIndex
+                              )
+                            }
+                            disabled={!storyText.trim()}
+                            className={cn(
+                              "flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[11px] font-semibold border transition-all duration-200",
+                              storyText.trim()
+                                ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30"
+                                : "bg-white/[0.04] border-white/[0.08] text-white/25 cursor-not-allowed"
+                            )}
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            Save Story
+                          </motion.button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               )}
 
@@ -791,14 +1708,17 @@ export function StrengthsDeck({
                   <X className="w-3.5 h-3.5 text-white/40" />
                 </motion.button>
               </div>
-              <p className="text-[11px] text-white/45 leading-relaxed">
-                When did you notice this strength in action? Describe a recent
-                moment when you or someone else used it.
+              <p className="text-[11px] text-white/45 leading-relaxed italic">
+                I noticed you being{" "}
+                <span className="text-purple-300/70 font-medium not-italic">
+                  {CHARACTER_STRENGTHS.find((s) => s.id === spottingTarget)?.name ?? ""}
+                </span>{" "}
+                when...
               </p>
               <textarea
                 value={spottingNote}
                 onChange={(e) => setSpottingNote(e.target.value)}
-                placeholder="I noticed this strength when..."
+                placeholder={`I noticed you being ${CHARACTER_STRENGTHS.find((s) => s.id === spottingTarget)?.name ?? ""} when...`}
                 rows={3}
                 className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-3 py-2.5 text-xs text-white/80 placeholder:text-white/25 resize-none focus:outline-none focus:ring-1 focus:ring-purple-500/40 transition-all"
               />
@@ -890,7 +1810,8 @@ export function StrengthsDeck({
                           spottingCount={
                             spottingsByStrength[placement.strengthId] ?? 0
                           }
-                          isSpottingMode={spottingMode}
+                          hasStory={!!storiesByStrength[placement.strengthId]}
+                          isSpottingMode={spottingMode || compareMode}
                           onTap={() => handlePlacedCardTap(placement)}
                         />
                       ))}
@@ -902,67 +1823,19 @@ export function StrengthsDeck({
           );
         })}
 
-        {/* ---- SPOTTING HISTORY (condensed) ---- */}
+        {/* ---- VIRTUE WHEEL ---- */}
+        {showVirtueWheel && (
+          <VirtueWheel placements={placements} />
+        )}
+
+        {/* ---- SPOTTING FEED (enhanced) ---- */}
         {settings.showSpottingMode && spottings.length > 0 && (
-          <div className="rounded-2xl border border-purple-500/15 bg-purple-500/[0.04] backdrop-blur-sm overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-2.5">
-              <Eye className="w-3.5 h-3.5 text-purple-400/60" />
-              <h4 className="text-xs font-semibold text-purple-300/70 tracking-wide">
-                Strength Spottings
-              </h4>
-              <span className="text-[10px] text-white/30 ml-auto">
-                {spottings.length} total
-              </span>
-            </div>
-            <div className="px-4 pb-3 space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
-              {[...spottings]
-                .sort(
-                  (a, b) =>
-                    new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime()
-                )
-                .slice(0, 10)
-                .map((spotting) => {
-                  const strength = CHARACTER_STRENGTHS.find(
-                    (s) => s.id === spotting.strengthId
-                  );
-                  return (
-                    <motion.div
-                      key={spotting.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex items-start gap-2 text-[11px]"
-                    >
-                      <span className="leading-none mt-0.5">
-                        {strength?.emoji ?? "?"}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <span className="font-medium text-white/60">
-                          {strength?.name ?? "Unknown"}
-                        </span>
-                        <p className="text-white/40 leading-relaxed mt-0.5">
-                          {spotting.note}
-                        </p>
-                      </div>
-                      <span className="text-[9px] text-white/20 flex-shrink-0 mt-0.5">
-                        {new Date(spotting.createdAt).toLocaleDateString(
-                          undefined,
-                          {
-                            month: "short",
-                            day: "numeric",
-                          }
-                        )}
-                      </span>
-                    </motion.div>
-                  );
-                })}
-              {spottings.length > 10 && (
-                <p className="text-[10px] text-white/25 text-center pt-1">
-                  + {spottings.length - 10} more spottings
-                </p>
-              )}
-            </div>
-          </div>
+          <SpottingFeed
+            spottings={spottings}
+            isClinician={isClinician}
+            highlightedSpottings={highlightedSpottings}
+            onToggleHighlight={handleToggleHighlight}
+          />
         )}
 
         {/* Bottom spacer */}

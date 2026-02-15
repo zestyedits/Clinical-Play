@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playClickSound } from "@/lib/audio-feedback";
-import { RotateCcw, Plus, X, ChevronDown, Wind, Sparkles, List } from "lucide-react";
+import { RotateCcw, Plus, X, ChevronDown, Wind, Sparkles, List, FlipHorizontal, TrendingUp, ChevronUp } from "lucide-react";
 import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ─── Data Interfaces ──────────────────────────────────────────────────────────
@@ -111,15 +111,19 @@ interface BodyRegion {
   path: string;
   cx: number;
   cy: number;
+  side?: "left" | "right" | "center";
+  vertical?: "upper" | "lower";
 }
 
-const BODY_REGIONS: BodyRegion[] = [
+const FRONT_BODY_REGIONS: BodyRegion[] = [
   {
     id: "head",
     label: "Head",
     path: "M85,28 C85,14 95,4 110,4 C125,4 135,14 135,28 C135,42 125,52 110,52 C95,52 85,42 85,28 Z",
     cx: 110,
     cy: 28,
+    side: "center",
+    vertical: "upper",
   },
   {
     id: "face",
@@ -127,6 +131,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M93,32 C93,24 100,18 110,18 C120,18 127,24 127,32 C127,44 120,50 110,50 C100,50 93,44 93,32 Z",
     cx: 110,
     cy: 36,
+    side: "center",
+    vertical: "upper",
   },
   {
     id: "neck",
@@ -134,6 +140,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M103,52 L117,52 L117,68 L103,68 Z",
     cx: 110,
     cy: 60,
+    side: "center",
+    vertical: "upper",
   },
   {
     id: "left-shoulder",
@@ -141,6 +149,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M68,68 C68,68 85,64 103,68 L103,82 C90,78 75,78 68,82 Z",
     cx: 85,
     cy: 74,
+    side: "left",
+    vertical: "upper",
   },
   {
     id: "right-shoulder",
@@ -148,6 +158,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M117,68 C135,64 152,68 152,68 L152,82 C145,78 130,78 117,82 Z",
     cx: 135,
     cy: 74,
+    side: "right",
+    vertical: "upper",
   },
   {
     id: "chest",
@@ -155,13 +167,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M82,82 L138,82 L138,120 L82,120 Z",
     cx: 110,
     cy: 100,
-  },
-  {
-    id: "upper-back",
-    label: "Upper Back",
-    path: "M86,84 L134,84 L134,118 L86,118 Z",
-    cx: 110,
-    cy: 101,
+    side: "center",
+    vertical: "upper",
   },
   {
     id: "left-arm",
@@ -169,6 +176,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M52,82 L68,82 L68,84 L64,120 L60,160 L48,160 L52,120 L52,82 Z",
     cx: 58,
     cy: 120,
+    side: "left",
+    vertical: "upper",
   },
   {
     id: "right-arm",
@@ -176,6 +185,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M152,82 L168,82 L168,120 L172,160 L160,160 L156,120 L152,84 Z",
     cx: 162,
     cy: 120,
+    side: "right",
+    vertical: "upper",
   },
   {
     id: "stomach",
@@ -183,13 +194,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M85,120 L135,120 L135,160 L85,160 Z",
     cx: 110,
     cy: 140,
-  },
-  {
-    id: "lower-back",
-    label: "Lower Back",
-    path: "M88,122 L132,122 L132,158 L88,158 Z",
-    cx: 110,
-    cy: 140,
+    side: "center",
+    vertical: "upper",
   },
   {
     id: "left-hand",
@@ -197,6 +203,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M40,160 L56,160 L58,180 L52,188 L44,188 L38,180 Z",
     cx: 48,
     cy: 174,
+    side: "left",
+    vertical: "upper",
   },
   {
     id: "right-hand",
@@ -204,6 +212,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M164,160 L180,160 L182,180 L176,188 L168,188 L162,180 Z",
     cx: 172,
     cy: 174,
+    side: "right",
+    vertical: "upper",
   },
   {
     id: "hips",
@@ -211,6 +221,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M82,160 L138,160 L142,180 L78,180 Z",
     cx: 110,
     cy: 170,
+    side: "center",
+    vertical: "lower",
   },
   {
     id: "left-leg",
@@ -218,6 +230,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M82,180 L104,180 L100,260 L78,260 Z",
     cx: 92,
     cy: 220,
+    side: "left",
+    vertical: "lower",
   },
   {
     id: "right-leg",
@@ -225,6 +239,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M116,180 L138,180 L142,260 L120,260 Z",
     cx: 128,
     cy: 220,
+    side: "right",
+    vertical: "lower",
   },
   {
     id: "left-foot",
@@ -232,6 +248,8 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M74,260 L100,260 L100,278 L96,284 L70,284 L68,278 Z",
     cx: 86,
     cy: 272,
+    side: "left",
+    vertical: "lower",
   },
   {
     id: "right-foot",
@@ -239,14 +257,124 @@ const BODY_REGIONS: BodyRegion[] = [
     path: "M120,260 L146,260 L152,278 L150,284 L124,284 L120,278 Z",
     cx: 134,
     cy: 272,
+    side: "right",
+    vertical: "lower",
   },
 ];
 
-// Regions that overlap (upper-back overlaps chest, lower-back overlaps stomach)
-// We hide the back regions from the front-view SVG and use only the front-facing ones
-const FRONT_REGIONS = BODY_REGIONS.filter(
-  (r) => r.id !== "upper-back" && r.id !== "lower-back",
-);
+const BACK_BODY_REGIONS: BodyRegion[] = [
+  {
+    id: "back-of-head",
+    label: "Back of Head",
+    path: "M85,28 C85,14 95,4 110,4 C125,4 135,14 135,28 C135,42 125,52 110,52 C95,52 85,42 85,28 Z",
+    cx: 110,
+    cy: 28,
+    side: "center",
+    vertical: "upper",
+  },
+  {
+    id: "back-of-neck",
+    label: "Back of Neck",
+    path: "M100,52 L120,52 L120,70 L100,70 Z",
+    cx: 110,
+    cy: 61,
+    side: "center",
+    vertical: "upper",
+  },
+  {
+    id: "left-shoulder-blade",
+    label: "Left Shoulder Blade",
+    path: "M80,76 L106,76 L106,108 L80,108 Z",
+    cx: 93,
+    cy: 92,
+    side: "left",
+    vertical: "upper",
+  },
+  {
+    id: "right-shoulder-blade",
+    label: "Right Shoulder Blade",
+    path: "M114,76 L140,76 L140,108 L114,108 Z",
+    cx: 127,
+    cy: 92,
+    side: "right",
+    vertical: "upper",
+  },
+  {
+    id: "spine",
+    label: "Spine",
+    path: "M106,70 L114,70 L114,160 L106,160 Z",
+    cx: 110,
+    cy: 115,
+    side: "center",
+    vertical: "upper",
+  },
+  {
+    id: "upper-back",
+    label: "Upper Back",
+    path: "M80,82 L140,82 L140,120 L80,120 Z",
+    cx: 110,
+    cy: 100,
+    side: "center",
+    vertical: "upper",
+  },
+  {
+    id: "lower-back",
+    label: "Lower Back",
+    path: "M84,120 L136,120 L136,160 L84,160 Z",
+    cx: 110,
+    cy: 140,
+    side: "center",
+    vertical: "lower",
+  },
+  {
+    id: "glutes",
+    label: "Glutes",
+    path: "M80,160 L140,160 L144,190 L76,190 Z",
+    cx: 110,
+    cy: 175,
+    side: "center",
+    vertical: "lower",
+  },
+  {
+    id: "back-left-thigh",
+    label: "Back of Left Thigh",
+    path: "M80,190 L104,190 L100,260 L76,260 Z",
+    cx: 90,
+    cy: 225,
+    side: "left",
+    vertical: "lower",
+  },
+  {
+    id: "back-right-thigh",
+    label: "Back of Right Thigh",
+    path: "M116,190 L140,190 L144,260 L120,260 Z",
+    cx: 130,
+    cy: 225,
+    side: "right",
+    vertical: "lower",
+  },
+  {
+    id: "left-calf",
+    label: "Left Calf",
+    path: "M76,260 L100,260 L98,284 L72,284 Z",
+    cx: 86,
+    cy: 272,
+    side: "left",
+    vertical: "lower",
+  },
+  {
+    id: "right-calf",
+    label: "Right Calf",
+    path: "M120,260 L144,260 L148,284 L122,284 Z",
+    cx: 134,
+    cy: 272,
+    side: "right",
+    vertical: "lower",
+  },
+];
+
+// Combined list for lookup purposes
+const ALL_BODY_REGIONS: BodyRegion[] = [...FRONT_BODY_REGIONS, ...BACK_BODY_REGIONS];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -264,6 +392,66 @@ function intensityToSize(intensity: number): number {
   return 6 + intensity * 1.2;
 }
 
+function findRegion(id: string): BodyRegion | undefined {
+  return ALL_BODY_REGIONS.find((r) => r.id === id);
+}
+
+// ─── Body Awareness Score ─────────────────────────────────────────────────────
+
+function computeBodyAwarenessScore(markers: BodyScanMarkerData[]): number {
+  if (markers.length === 0) return 0;
+  const uniqueRegions = new Set(markers.map((m) => m.bodyRegion));
+  const uniqueTypes = new Set(markers.map((m) => m.sensationType));
+  // 0-18 regions => 0-60 points
+  const regionScore = Math.min(uniqueRegions.size, 18) * (60 / 18);
+  // 0-10 types => 0-40 points
+  const typeScore = Math.min(uniqueTypes.size, 10) * (40 / 10);
+  return Math.round(regionScore + typeScore);
+}
+
+// ─── Progress Ring Component ──────────────────────────────────────────────────
+
+function ProgressRing({ score, size = 36 }: { score: number; size?: number }) {
+  const strokeWidth = 3;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = Math.min(score, 100) / 100;
+  const dashOffset = circumference * (1 - progress);
+
+  const color = score < 30 ? "#6B7280" : score < 60 ? "#F59E0B" : score < 85 ? "#3B82F6" : "#34D399";
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="rgba(255,255,255,0.06)"
+          strokeWidth={strokeWidth}
+        />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: dashOffset }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-[9px] font-bold text-white/70">{score}</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Body Silhouette SVG ──────────────────────────────────────────────────────
 
 function BodySilhouetteSVG({
@@ -272,12 +460,16 @@ function BodySilhouetteSVG({
   onRegionClick,
   onRegionHover,
   onMarkerClick,
+  regions,
+  view,
 }: {
   markers: BodyScanMarkerData[];
   hoveredRegion: string | null;
   onRegionClick: (regionId: string) => void;
   onRegionHover: (regionId: string | null) => void;
   onMarkerClick: (marker: BodyScanMarkerData) => void;
+  regions: BodyRegion[];
+  view: "front" | "back";
 }) {
   const markersByRegion = useMemo(() => {
     const map = new Map<string, BodyScanMarkerData[]>();
@@ -289,6 +481,15 @@ function BodySilhouetteSVG({
     return map;
   }, [markers]);
 
+  // Filter markers to only those belonging to current view's regions
+  const regionIds = useMemo(() => new Set(regions.map((r) => r.id)), [regions]);
+  const visibleMarkers = useMemo(
+    () => markers.filter((m) => regionIds.has(m.bodyRegion)),
+    [markers, regionIds],
+  );
+
+  const filterId = `heatmap-blur-${view}`;
+
   return (
     <svg
       viewBox="0 0 220 300"
@@ -297,13 +498,13 @@ function BodySilhouetteSVG({
     >
       <defs>
         {/* Body silhouette gradient */}
-        <linearGradient id="body-fill" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`body-fill-${view}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="white" stopOpacity="0.06" />
           <stop offset="100%" stopColor="white" stopOpacity="0.02" />
         </linearGradient>
 
         {/* Glow filter for markers */}
-        <filter id="marker-glow" x="-100%" y="-100%" width="300%" height="300%">
+        <filter id={`marker-glow-${view}`} x="-100%" y="-100%" width="300%" height="300%">
           <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
@@ -312,7 +513,7 @@ function BodySilhouetteSVG({
         </filter>
 
         {/* Pulse animation filter */}
-        <filter id="pulse-glow" x="-150%" y="-150%" width="400%" height="400%">
+        <filter id={`pulse-glow-${view}`} x="-150%" y="-150%" width="400%" height="400%">
           <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
@@ -321,9 +522,17 @@ function BodySilhouetteSVG({
           </feMerge>
         </filter>
 
+        {/* Heatmap blur for region overlays */}
+        <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+          </feMerge>
+        </filter>
+
         {/* Outer body silhouette path */}
         <path
-          id="body-outline"
+          id={`body-outline-${view}`}
           d="
             M110,4
             C125,4 136,14 136,30
@@ -381,15 +590,45 @@ function BodySilhouetteSVG({
 
       {/* Background body outline */}
       <use
-        href="#body-outline"
-        fill="url(#body-fill)"
+        href={`#body-outline-${view}`}
+        fill={`url(#body-fill-${view})`}
         stroke="white"
         strokeOpacity="0.12"
         strokeWidth="1"
       />
 
+      {/* Heatmap glow layer (rendered below clickable regions) */}
+      {regions.map((region) => {
+        const regionMarkers = markersByRegion.get(region.id) ?? [];
+        if (regionMarkers.length === 0) return null;
+        const avgIntensity = regionMarkers.reduce((s, m) => s + m.intensity, 0) / regionMarkers.length;
+        const dominantColor = getSensationColor(regionMarkers[0].sensationType);
+        const glowOpacity = 0.08 + (avgIntensity / 10) * 0.25;
+
+        return (
+          <g key={`heatmap-${region.id}`} className="pointer-events-none">
+            {/* Soft radial glow */}
+            <circle
+              cx={region.cx}
+              cy={region.cy}
+              r={18 + avgIntensity * 2.5}
+              fill={dominantColor}
+              fillOpacity={glowOpacity * 0.5}
+              filter={`url(#${filterId})`}
+            />
+            {/* Region-shaped overlay */}
+            <path
+              d={region.path}
+              fill={dominantColor}
+              fillOpacity={glowOpacity}
+              filter={`url(#${filterId})`}
+            />
+          </g>
+        );
+      })}
+
       {/* Clickable body regions */}
-      {FRONT_REGIONS.map((region) => {
+      {regions.map((region) => {
         const isHovered = hoveredRegion === region.id;
         const hasMarkers = markersByRegion.has(region.id);
         const regionMarkers = markersByRegion.get(region.id) ?? [];
@@ -444,7 +683,7 @@ function BodySilhouetteSVG({
               </text>
             )}
 
-            {/* Intensity heatmap overlay */}
+            {/* Intensity heatmap overlay (sharper, on the region) */}
             {hasMarkers && avgIntensity > 0 && (
               <path
                 d={region.path}
@@ -458,13 +697,15 @@ function BodySilhouetteSVG({
       })}
 
       {/* Marker dots */}
-      {markers.map((marker, idx) => {
-        const region = BODY_REGIONS.find((r) => r.id === marker.bodyRegion);
+      {visibleMarkers.map((marker, idx) => {
+        const region = findRegion(marker.bodyRegion);
         if (!region) return null;
 
         const color = marker.color ?? getSensationColor(marker.sensationType);
         const size = intensityToSize(marker.intensity);
-        const offset = idx * 3 - (markers.filter((m) => m.bodyRegion === marker.bodyRegion).length - 1) * 1.5;
+        const sameRegionMarkers = visibleMarkers.filter((m) => m.bodyRegion === marker.bodyRegion);
+        const idxInRegion = sameRegionMarkers.indexOf(marker);
+        const offset = idxInRegion * 3 - (sameRegionMarkers.length - 1) * 1.5;
 
         return (
           <g key={marker.id} className="cursor-pointer" onClick={() => onMarkerClick(marker)}>
@@ -475,7 +716,7 @@ function BodySilhouetteSVG({
               r={size + 4}
               fill={color}
               fillOpacity={0.15}
-              filter="url(#pulse-glow)"
+              filter={`url(#pulse-glow-${view})`}
             >
               <animate
                 attributeName="r"
@@ -501,7 +742,7 @@ function BodySilhouetteSVG({
               stroke={color}
               strokeOpacity="0.5"
               strokeWidth="1"
-              filter="url(#marker-glow)"
+              filter={`url(#marker-glow-${view})`}
             />
 
             {/* Intensity number */}
@@ -522,6 +763,21 @@ function BodySilhouetteSVG({
           </g>
         );
       })}
+
+      {/* View label */}
+      <text
+        x="110"
+        y="296"
+        fill="white"
+        fillOpacity="0.2"
+        fontSize="8"
+        fontWeight="500"
+        textAnchor="middle"
+        fontFamily="system-ui, sans-serif"
+        className="pointer-events-none select-none"
+      >
+        {view === "front" ? "FRONT" : "BACK"}
+      </text>
     </svg>
   );
 }
@@ -664,7 +920,7 @@ function SidePanel({
   const [notes, setNotes] = useState(marker?.notes ?? "");
   const [showEmotionDropdown, setShowEmotionDropdown] = useState(false);
 
-  const regionLabel = BODY_REGIONS.find((r) => r.id === regionId)?.label ?? regionId;
+  const regionLabel = findRegion(regionId)?.label ?? regionId;
   const activeColor = sensationType ? getSensationColor(sensationType) : "#8B5CF6";
 
   const handleSubmit = useCallback(() => {
@@ -862,11 +1118,11 @@ function SidePanel({
             Can Your Breath Reach Here?
           </p>
           <div className="flex gap-2">
-            {[
+            {([
               { label: "Yes", value: true },
               { label: "No", value: false },
               { label: "Unsure", value: null },
-            ].map((option) => (
+            ] as { label: string; value: boolean | null }[]).map((option) => (
               <motion.button
                 key={option.label}
                 onClick={() => { playClickSound(); setBreathReaches(option.value); }}
@@ -1003,7 +1259,7 @@ function MarkerSummaryCard({
   onClick: () => void;
 }) {
   const color = marker.color ?? getSensationColor(marker.sensationType);
-  const regionLabel = BODY_REGIONS.find((r) => r.id === marker.bodyRegion)?.label ?? marker.bodyRegion;
+  const regionLabel = findRegion(marker.bodyRegion)?.label ?? marker.bodyRegion;
   const dateStr = new Date(marker.createdAt).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
@@ -1132,6 +1388,190 @@ function LegendBar({ markers }: { markers: BodyScanMarkerData[] }) {
   );
 }
 
+// ─── Somatic Pattern Summary ──────────────────────────────────────────────────
+
+interface PatternData {
+  laterality: string | null;
+  verticalBias: string | null;
+  dominantType: string;
+  dominantCount: number;
+  highIntensityRegions: string[];
+}
+
+function computePatterns(markers: BodyScanMarkerData[]): PatternData {
+  // Laterality (left vs right)
+  let leftCount = 0;
+  let rightCount = 0;
+  for (const m of markers) {
+    const region = findRegion(m.bodyRegion);
+    if (region?.side === "left") leftCount++;
+    else if (region?.side === "right") rightCount++;
+  }
+  let laterality: string | null = null;
+  if (leftCount > 0 || rightCount > 0) {
+    if (leftCount > rightCount + 1) laterality = "left";
+    else if (rightCount > leftCount + 1) laterality = "right";
+    else if (leftCount > 0 && rightCount > 0) laterality = "balanced";
+  }
+
+  // Vertical bias
+  let upperCount = 0;
+  let lowerCount = 0;
+  for (const m of markers) {
+    const region = findRegion(m.bodyRegion);
+    if (region?.vertical === "upper") upperCount++;
+    else if (region?.vertical === "lower") lowerCount++;
+  }
+  let verticalBias: string | null = null;
+  if (upperCount > 0 || lowerCount > 0) {
+    if (upperCount > lowerCount + 1) verticalBias = "upper";
+    else if (lowerCount > upperCount + 1) verticalBias = "lower";
+    else if (upperCount > 0 && lowerCount > 0) verticalBias = "balanced";
+  }
+
+  // Dominant sensation
+  const sensationCounts = new Map<string, number>();
+  for (const m of markers) {
+    sensationCounts.set(m.sensationType, (sensationCounts.get(m.sensationType) ?? 0) + 1);
+  }
+  let dominantType = markers[0]?.sensationType ?? "";
+  let dominantCount = 0;
+  for (const [s, c] of Array.from(sensationCounts)) {
+    if (c > dominantCount) {
+      dominantCount = c;
+      dominantType = s;
+    }
+  }
+
+  // High intensity regions (7+)
+  const highIntensityRegions: string[] = [];
+  for (const m of markers) {
+    if (m.intensity >= 7) {
+      const label = findRegion(m.bodyRegion)?.label ?? m.bodyRegion;
+      if (!highIntensityRegions.includes(label)) {
+        highIntensityRegions.push(label);
+      }
+    }
+  }
+
+  return { laterality, verticalBias, dominantType, dominantCount, highIntensityRegions };
+}
+
+function SomaticPatternSummary({ markers }: { markers: BodyScanMarkerData[] }) {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const patterns = useMemo(() => computePatterns(markers), [markers]);
+  const dominantColor = getSensationColor(patterns.dominantType);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="rounded-2xl overflow-hidden
+        bg-white/[0.04] backdrop-blur-xl border border-white/[0.08]"
+    >
+      <button
+        onClick={() => { playClickSound(); setIsExpanded(!isExpanded); }}
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.03] transition-colors duration-200"
+      >
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-emerald-400/60" />
+          <span className="text-[11px] uppercase tracking-wider text-white/40 font-medium">
+            Somatic Patterns
+          </span>
+          <span className="text-[10px] text-white/20 ml-1">
+            {markers.length} markers analyzed
+          </span>
+        </div>
+        <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronUp className="w-4 h-4 text-white/30" />
+        </motion.div>
+      </button>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 space-y-2.5">
+              {/* Laterality */}
+              {patterns.laterality && (
+                <div className="flex items-center gap-2 text-xs text-white/55">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400/60" />
+                  {patterns.laterality === "left" && (
+                    <span>Sensations cluster more on the <span className="font-medium text-white/75">left side</span> of the body</span>
+                  )}
+                  {patterns.laterality === "right" && (
+                    <span>Sensations cluster more on the <span className="font-medium text-white/75">right side</span> of the body</span>
+                  )}
+                  {patterns.laterality === "balanced" && (
+                    <span>Sensations are <span className="font-medium text-white/75">evenly distributed</span> left-to-right</span>
+                  )}
+                </div>
+              )}
+
+              {/* Vertical bias */}
+              {patterns.verticalBias && (
+                <div className="flex items-center gap-2 text-xs text-white/55">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400/60" />
+                  {patterns.verticalBias === "upper" && (
+                    <span>Concentration in the <span className="font-medium text-white/75">upper body</span> (head, chest, arms)</span>
+                  )}
+                  {patterns.verticalBias === "lower" && (
+                    <span>Concentration in the <span className="font-medium text-white/75">lower body</span> (hips, legs, feet)</span>
+                  )}
+                  {patterns.verticalBias === "balanced" && (
+                    <span>Sensations are <span className="font-medium text-white/75">balanced</span> between upper and lower body</span>
+                  )}
+                </div>
+              )}
+
+              {/* Dominant sensation */}
+              {patterns.dominantType && (
+                <div className="flex items-center gap-2 text-xs text-white/55">
+                  <div
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: dominantColor }}
+                  />
+                  <span>
+                    Dominant sensation: <span className="font-medium text-white/75">{patterns.dominantType}</span>
+                    <span className="text-white/30 ml-1">({patterns.dominantCount}x)</span>
+                  </span>
+                </div>
+              )}
+
+              {/* High intensity */}
+              {patterns.highIntensityRegions.length > 0 && (
+                <div className="flex items-start gap-2 text-xs text-white/55">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-400/60 mt-1 shrink-0" />
+                  <span>
+                    High intensity (7+) in:{" "}
+                    <span className="font-medium text-red-300/70">
+                      {patterns.highIntensityRegions.join(", ")}
+                    </span>
+                  </span>
+                </div>
+              )}
+
+              {patterns.highIntensityRegions.length === 0 &&
+                !patterns.laterality &&
+                !patterns.verticalBias && (
+                  <div className="text-xs text-white/30 italic">
+                    Add markers to different regions to see emerging patterns.
+                  </div>
+                )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function BodyScanMap({
@@ -1146,11 +1586,14 @@ export function BodyScanMap({
 }: BodyScanMapProps) {
   const settings = { ...DEFAULT_BODY_SCAN_SETTINGS, ...toolSettings } as BodyScanSettings;
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
+  const [bodyView, setBodyView] = useState<"front" | "back">("front");
   const [panelState, setPanelState] = useState<{
     mode: "add" | "edit";
     regionId: string;
     marker: BodyScanMarkerData | null;
   } | null>(null);
+
+  const awarenessScore = useMemo(() => computeBodyAwarenessScore(markers), [markers]);
 
   const handleRegionClick = useCallback((regionId: string) => {
     playClickSound();
@@ -1172,6 +1615,11 @@ export function BodyScanMap({
     setPanelState(null);
   }, [onClear]);
 
+  const handleViewToggle = useCallback(() => {
+    playClickSound();
+    setBodyView((v) => (v === "front" ? "back" : "front"));
+  }, []);
+
   const regionCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const m of markers) {
@@ -1181,6 +1629,7 @@ export function BodyScanMap({
   }, [markers]);
 
   const totalRegions = regionCounts.size;
+  const currentRegions = bodyView === "front" ? FRONT_BODY_REGIONS : BACK_BODY_REGIONS;
 
   return (
     <div className="relative w-full max-w-2xl mx-auto flex flex-col gap-3 select-none">
@@ -1215,6 +1664,16 @@ export function BodyScanMap({
             </span>
           )}
         </div>
+
+        {/* Body Awareness Score */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] uppercase tracking-wider text-white/25 font-medium hidden sm:inline">
+              Awareness
+            </span>
+            <ProgressRing score={awarenessScore} size={34} />
+          </div>
+        </div>
       </div>
 
       {/* Main layout: body SVG + panel */}
@@ -1237,16 +1696,53 @@ export function BodyScanMap({
             }}
           />
 
-          <div className="relative p-4 h-full flex flex-col items-center justify-center">
-            {/* Body SVG */}
+          {/* Front / Back toggle */}
+          <div className="absolute top-3 right-3 z-10">
+            <motion.button
+              onClick={handleViewToggle}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full
+                bg-white/[0.08] backdrop-blur-sm border border-white/[0.12]
+                text-[11px] font-medium text-white/60 hover:text-white/80
+                hover:bg-white/[0.12] transition-colors duration-200"
+            >
+              <motion.div
+                animate={{ rotateY: bodyView === "back" ? 180 : 0 }}
+                transition={{ duration: 0.4 }}
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                <FlipHorizontal className="w-3.5 h-3.5" />
+              </motion.div>
+              <span>{bodyView === "front" ? "Front" : "Back"}</span>
+            </motion.button>
+          </div>
+
+          <div className="relative p-4 h-full flex flex-col items-center justify-center"
+            style={{ perspective: "800px" }}
+          >
+            {/* Body SVG with flip animation */}
             <div className="w-full max-w-[240px] mx-auto">
-              <BodySilhouetteSVG
-                markers={markers}
-                hoveredRegion={hoveredRegion}
-                onRegionClick={handleRegionClick}
-                onRegionHover={setHoveredRegion}
-                onMarkerClick={handleMarkerClick}
-              />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={bodyView}
+                  initial={{ rotateY: bodyView === "back" ? -90 : 90, opacity: 0 }}
+                  animate={{ rotateY: 0, opacity: 1 }}
+                  exit={{ rotateY: bodyView === "back" ? 90 : -90, opacity: 0 }}
+                  transition={{ duration: 0.35, ease: "easeInOut" }}
+                  style={{ transformStyle: "preserve-3d" }}
+                >
+                  <BodySilhouetteSVG
+                    markers={markers}
+                    hoveredRegion={hoveredRegion}
+                    onRegionClick={handleRegionClick}
+                    onRegionHover={setHoveredRegion}
+                    onMarkerClick={handleMarkerClick}
+                    regions={currentRegions}
+                    view={bodyView}
+                  />
+                </motion.div>
+              </AnimatePresence>
             </div>
 
             {/* Hovered region label */}
@@ -1261,7 +1757,7 @@ export function BodyScanMap({
                     bg-white/[0.1] backdrop-blur-sm border border-white/[0.15]
                     text-xs text-white/70 font-medium whitespace-nowrap"
                 >
-                  Click to add marker on {BODY_REGIONS.find((r) => r.id === hoveredRegion)?.label}
+                  Click to add marker on {findRegion(hoveredRegion)?.label ?? hoveredRegion}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1316,6 +1812,13 @@ export function BodyScanMap({
 
       {/* Legend bar */}
       {settings.showLegend && <LegendBar markers={markers} />}
+
+      {/* Somatic Pattern Summary (3+ markers) */}
+      <AnimatePresence>
+        {markers.length >= 3 && !panelState && (
+          <SomaticPatternSummary markers={markers} />
+        )}
+      </AnimatePresence>
 
       {/* Marker summary list (when panel closed) */}
       <AnimatePresence>
@@ -1416,7 +1919,7 @@ function BodyInsight({ markers }: { markers: BodyScanMarkerData[] }) {
     const breathReachCount = breathMarkers.filter((m) => m.breathReaches === true).length;
 
     // Upper vs lower body
-    const upperRegions = new Set(["head", "face", "neck", "left-shoulder", "right-shoulder", "chest", "upper-back", "left-arm", "right-arm", "left-hand", "right-hand"]);
+    const upperRegions = new Set(["head", "face", "neck", "left-shoulder", "right-shoulder", "chest", "upper-back", "left-arm", "right-arm", "left-hand", "right-hand", "back-of-head", "back-of-neck", "left-shoulder-blade", "right-shoulder-blade", "spine"]);
     const upperMarkers = markers.filter((m) => upperRegions.has(m.bodyRegion));
     const lowerMarkers = markers.filter((m) => !upperRegions.has(m.bodyRegion));
     const upperAvg = upperMarkers.length > 0
@@ -1444,7 +1947,7 @@ function BodyInsight({ markers }: { markers: BodyScanMarkerData[] }) {
 
   const topColor = getSensationColor(stats.topSensation);
   const highestRegionLabel = stats.highestMarker
-    ? BODY_REGIONS.find((r) => r.id === stats.highestMarker!.bodyRegion)?.label ?? ""
+    ? findRegion(stats.highestMarker.bodyRegion)?.label ?? ""
     : "";
 
   return (

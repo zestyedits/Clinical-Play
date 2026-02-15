@@ -68,7 +68,7 @@ export default function Playroom() {
   const [remoteCursors, setRemoteCursors] = useState<RemoteCursor[]>([]);
   const [assetLibraryOpen, setAssetLibraryOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
-  const [activeTool, setActiveTool] = useState("sandtray");
+  const [activeTool, setActiveTool] = useState("breathing");
   const [joinNotification, setJoinNotification] = useState<string | null>(null);
   const [toolSelectorOpen, setToolSelectorOpen] = useState(false);
   const [breathingActive, setBreathingActive] = useState(false);

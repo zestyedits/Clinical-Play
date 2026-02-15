@@ -1,8 +1,8 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playClickSound } from "@/lib/audio-feedback";
-import { RotateCcw, Plus, Lock, Unlock, X, Sparkles, Trash2, Hash } from "lucide-react";
+import { RotateCcw, Plus, Lock, Unlock, X, Sparkles, Trash2, Hash, ChevronDown, ChevronUp, Eye, BarChart3 } from "lucide-react";
 import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ─── Data Interfaces ──────────────────────────────────────────────────────────
@@ -106,11 +106,541 @@ const ITEM_COLORS = [
   { id: "rose", hex: "#F43F5E", label: "Rose" },
 ];
 
+const DISSOLUTION_MILESTONES = [5, 10, 25];
+
 // ─── Deterministic pseudo-random ──────────────────────────────────────────────
 
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 9301 + 49297) * 49297;
   return x - Math.floor(x);
+}
+
+// ─── Breathing Lock Ritual ────────────────────────────────────────────────────
+
+function BreathingRitual({
+  onComplete,
+  onSkip,
+}: {
+  onComplete: () => void;
+  onSkip: () => void;
+}) {
+  const [breathIndex, setBreathIndex] = useState(0);
+  const [phase, setPhase] = useState<"inhale" | "hold" | "exhale">("inhale");
+  const [finished, setFinished] = useState(false);
+  const totalBreaths = 3;
+
+  useEffect(() => {
+    if (finished) return;
+    const timings: Record<string, number> = { inhale: 3000, hold: 1500, exhale: 3000 };
+    const timer = setTimeout(() => {
+      if (phase === "inhale") {
+        setPhase("hold");
+      } else if (phase === "hold") {
+        setPhase("exhale");
+      } else {
+        // exhale done
+        const next = breathIndex + 1;
+        if (next >= totalBreaths) {
+          setFinished(true);
+          setTimeout(onComplete, 600);
+        } else {
+          setBreathIndex(next);
+          setPhase("inhale");
+        }
+      }
+    }, timings[phase]);
+    return () => clearTimeout(timer);
+  }, [phase, breathIndex, finished, onComplete]);
+
+  const circleScale = phase === "inhale" ? 1.6 : phase === "hold" ? 1.6 : 0.8;
+  const promptText =
+    phase === "inhale"
+      ? "Breathe in..."
+      : phase === "hold"
+        ? "Hold..."
+        : "Breathe out...";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="flex flex-col items-center gap-4 py-6"
+    >
+      <p className="text-[10px] uppercase tracking-wider text-white/40 font-medium">
+        Breath {breathIndex + 1} of {totalBreaths}
+      </p>
+
+      <div className="relative w-24 h-24 flex items-center justify-center">
+        <motion.div
+          className="absolute rounded-full"
+          style={{
+            width: 60,
+            height: 60,
+            background: "radial-gradient(circle, rgba(245,158,11,0.35), rgba(139,92,246,0.15))",
+          }}
+          animate={{
+            scale: circleScale,
+            opacity: phase === "hold" ? 0.9 : 0.6,
+          }}
+          transition={{ duration: phase === "hold" ? 0.3 : 2.5, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute rounded-full border-2 border-amber-400/40"
+          style={{ width: 72, height: 72 }}
+          animate={{
+            scale: circleScale * 0.95,
+            borderColor:
+              phase === "inhale"
+                ? "rgba(245,158,11,0.5)"
+                : phase === "hold"
+                  ? "rgba(139,92,246,0.5)"
+                  : "rgba(245,158,11,0.25)",
+          }}
+          transition={{ duration: phase === "hold" ? 0.3 : 2.5, ease: "easeInOut" }}
+        />
+      </div>
+
+      <motion.p
+        key={phase + breathIndex}
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-sm text-white/70 font-medium"
+      >
+        {finished ? "Sealing..." : promptText}
+      </motion.p>
+
+      {!finished && (
+        <button
+          onClick={onSkip}
+          className="text-[10px] text-white/30 hover:text-white/50 transition-colors underline underline-offset-2"
+        >
+          Skip
+        </button>
+      )}
+    </motion.div>
+  );
+}
+
+// ─── Container Strength Meter Ring ────────────────────────────────────────────
+
+function StrengthMeterRing({
+  strength,
+  isLocked,
+}: {
+  strength: number;
+  isLocked: boolean;
+}) {
+  const radius = 70;
+  const strokeWidth = 5;
+  const circumference = 2 * Math.PI * radius;
+  const fillPct = (strength / 10);
+  const dashOffset = circumference * (1 - fillPct);
+
+  // Color based on strength: low=amber, mid=blue, high=purple
+  const strokeColor =
+    strength <= 3
+      ? "rgba(245,158,11,0.7)"
+      : strength <= 6
+        ? "rgba(59,130,246,0.7)"
+        : "rgba(139,92,246,0.8)";
+
+  const glowColor =
+    strength <= 3
+      ? "rgba(245,158,11,0.3)"
+      : strength <= 6
+        ? "rgba(59,130,246,0.3)"
+        : "rgba(139,92,246,0.4)";
+
+  return (
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      viewBox="0 0 160 160"
+      style={{ transform: "rotate(-90deg)" }}
+    >
+      <defs>
+        <filter id="strength-glow">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feFlood floodColor={glowColor} floodOpacity="1" />
+          <feComposite in2="blur" operator="in" />
+          <feMerge>
+            <feMergeNode />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      {/* Track */}
+      <circle
+        cx="80"
+        cy="80"
+        r={radius}
+        fill="none"
+        stroke="rgba(255,255,255,0.04)"
+        strokeWidth={strokeWidth}
+      />
+      {/* Filled arc */}
+      <motion.circle
+        cx="80"
+        cy="80"
+        r={radius}
+        fill="none"
+        stroke={strokeColor}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        initial={{ strokeDashoffset: circumference }}
+        animate={{
+          strokeDashoffset: dashOffset,
+          opacity: isLocked && strength === 10 ? [1, 0.6, 1] : 1,
+        }}
+        transition={
+          isLocked && strength === 10
+            ? { strokeDashoffset: { duration: 0.8, ease: "easeOut" }, opacity: { duration: 2, repeat: Infinity } }
+            : { duration: 0.8, ease: "easeOut" }
+        }
+        filter="url(#strength-glow)"
+      />
+    </svg>
+  );
+}
+
+// ─── Item Dissolution Ceremony ────────────────────────────────────────────────
+
+function DissolutionCeremony({
+  item,
+  onComplete,
+  onCancel,
+}: {
+  item: ContainmentItemData;
+  onComplete: (reflection: string) => void;
+  onCancel: () => void;
+}) {
+  const [stage, setStage] = useState<"reflect" | "shrink" | "glow" | "dissolve">("reflect");
+  const [reflection, setReflection] = useState("");
+  const chipColor = item.color || "#8B5CF6";
+
+  const handleStartDissolve = useCallback(() => {
+    playClickSound();
+    setStage("shrink");
+    setTimeout(() => setStage("glow"), 700);
+    setTimeout(() => setStage("dissolve"), 1400);
+    setTimeout(() => onComplete(reflection), 2200);
+  }, [reflection, onComplete]);
+
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 20 }, (_, i) => ({
+        id: i,
+        x: (seededRandom(i * 7 + 3) - 0.5) * 120,
+        y: (seededRandom(i * 13 + 5) - 0.5) * 120,
+        size: seededRandom(i * 11 + 7) * 5 + 2,
+        delay: seededRandom(i * 17 + 11) * 0.5,
+      })),
+    [],
+  );
+
+  if (stage === "reflect") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        className={cn(
+          "rounded-2xl p-4 space-y-3",
+          "bg-white/[0.06] backdrop-blur-xl border border-white/[0.12]",
+          "shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
+        )}
+      >
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-semibold text-white/80 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-amber-400/80" />
+            Release: {item.emoji || ""} {item.label}
+          </h4>
+          <button onClick={onCancel} className="text-white/40 hover:text-white/70 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <p className="text-xs text-white/40">
+          What did you learn from holding this?
+        </p>
+        <input
+          type="text"
+          value={reflection}
+          onChange={(e) => setReflection(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleStartDissolve()}
+          placeholder="A brief reflection (optional)..."
+          className={cn(
+            "w-full px-3 py-2.5 rounded-xl text-sm",
+            "bg-white/[0.06] backdrop-blur-md border border-white/[0.1]",
+            "text-white/90 placeholder:text-white/30",
+            "focus:outline-none focus:border-white/25 focus:ring-1 focus:ring-white/10",
+            "transition-all duration-200",
+          )}
+          autoFocus
+        />
+        <div className="flex gap-2">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleStartDissolve}
+            className={cn(
+              "flex-1 py-2.5 rounded-xl text-sm font-medium",
+              "flex items-center justify-center gap-2",
+              "bg-gradient-to-r from-amber-500/30 to-orange-500/30 text-white/90 border border-amber-500/30",
+              "hover:from-amber-500/40 hover:to-orange-500/40 transition-all duration-200",
+            )}
+          >
+            <Sparkles className="w-4 h-4" />
+            Dissolve
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onCancel}
+            className={cn(
+              "px-4 py-2.5 rounded-xl text-sm font-medium",
+              "bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.1]",
+              "text-white/50 hover:text-white/70 transition-all duration-200",
+            )}
+          >
+            Cancel
+          </motion.button>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      className="relative flex items-center justify-center py-6"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: stage === "dissolve" ? 0 : 1 }}
+      transition={{ duration: 0.8 }}
+    >
+      {/* Main chip animating */}
+      <motion.div
+        className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium border"
+        style={{
+          backgroundColor: `${chipColor}20`,
+          borderColor: `${chipColor}40`,
+          color: chipColor,
+        }}
+        animate={{
+          scale: stage === "shrink" ? 0.4 : stage === "glow" ? 0.6 : 0,
+          opacity: stage === "dissolve" ? 0 : 1,
+          boxShadow:
+            stage === "glow"
+              ? `0 0 30px ${chipColor}80, 0 0 60px ${chipColor}40`
+              : "none",
+        }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+      >
+        {item.emoji && <span className="text-sm">{item.emoji}</span>}
+        <span>{item.label}</span>
+      </motion.div>
+
+      {/* Particles on dissolve */}
+      {stage === "dissolve" && (
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-visible">
+          {particles.map((p) => (
+            <motion.div
+              key={p.id}
+              className="absolute rounded-full"
+              style={{
+                width: p.size,
+                height: p.size,
+                backgroundColor: chipColor,
+              }}
+              initial={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+              animate={{ opacity: 0, x: p.x, y: p.y, scale: 0 }}
+              transition={{ duration: 1, delay: p.delay, ease: "easeOut" }}
+            />
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// ─── Dissolution Milestone Toast ──────────────────────────────────────────────
+
+function MilestoneToast({ count }: { count: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.8 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10, scale: 0.9 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className={cn(
+        "flex items-center gap-2 px-4 py-2.5 rounded-xl",
+        "bg-gradient-to-r from-amber-500/20 to-purple-500/20",
+        "border border-amber-400/30 backdrop-blur-xl",
+        "shadow-[0_4px_20px_rgba(245,158,11,0.15)]",
+      )}
+    >
+      <Sparkles className="w-4 h-4 text-amber-400" />
+      <span className="text-sm font-medium text-white/80">
+        You have released {count} items
+      </span>
+      <span className="text-base">
+        {count >= 25 ? "🌟" : count >= 10 ? "✨" : "🎉"}
+      </span>
+    </motion.div>
+  );
+}
+
+// ─── Session Summary Panel ────────────────────────────────────────────────────
+
+function SessionSummary({
+  containers,
+  items,
+}: {
+  containers: ContainmentContainerData[];
+  items: ContainmentItemData[];
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  const totalContained = items.filter((it) => it.status === "contained").length;
+  const totalDissolved = items.filter((it) => it.status === "dissolved").length;
+
+  const avgStrength = useMemo(() => {
+    const locked = containers.filter((c) => c.containmentStrength != null);
+    if (locked.length === 0) return 0;
+    const sum = locked.reduce((acc, c) => acc + (c.containmentStrength ?? 0), 0);
+    return Math.round((sum / locked.length) * 10) / 10;
+  }, [containers]);
+
+  const mostUsedType = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const c of containers) {
+      counts[c.containerType] = (counts[c.containerType] || 0) + 1;
+    }
+    let best = "";
+    let bestCount = 0;
+    for (const [k, v] of Object.entries(counts)) {
+      if (v > bestCount) {
+        best = k;
+        bestCount = v;
+      }
+    }
+    return CONTAINER_TYPES.find((ct) => ct.id === best)?.label || "None";
+  }, [containers]);
+
+  // Color distribution for emotional load bar
+  const colorDistribution = useMemo(() => {
+    const containedItems = items.filter((it) => it.status === "contained");
+    const counts: Record<string, number> = {};
+    for (const item of containedItems) {
+      const color = item.color || "#8B5CF6";
+      counts[color] = (counts[color] || 0) + 1;
+    }
+    const total = containedItems.length || 1;
+    return Object.entries(counts).map(([color, count]) => ({
+      color,
+      pct: (count / total) * 100,
+    }));
+  }, [items]);
+
+  if (items.length === 0) return null;
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={cn(
+        "rounded-2xl overflow-hidden",
+        "bg-white/[0.04] backdrop-blur-xl border border-white/[0.08]",
+      )}
+    >
+      <button
+        onClick={() => {
+          playClickSound();
+          setExpanded(!expanded);
+        }}
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/[0.02] transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <BarChart3 className="w-3.5 h-3.5 text-white/40" />
+          <span className="text-xs font-medium text-white/50">Session Insights</span>
+        </div>
+        {expanded ? (
+          <ChevronUp className="w-3.5 h-3.5 text-white/30" />
+        ) : (
+          <ChevronDown className="w-3.5 h-3.5 text-white/30" />
+        )}
+      </button>
+
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 space-y-3">
+              {/* Stats grid */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-2.5">
+                  <p className="text-[9px] uppercase tracking-wider text-white/30">Contained</p>
+                  <p className="text-lg font-bold text-white/70">{totalContained}</p>
+                </div>
+                <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-2.5">
+                  <p className="text-[9px] uppercase tracking-wider text-white/30">Dissolved</p>
+                  <p className="text-lg font-bold text-amber-400/70">{totalDissolved}</p>
+                </div>
+                <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-2.5">
+                  <p className="text-[9px] uppercase tracking-wider text-white/30">Preferred Type</p>
+                  <p className="text-sm font-semibold text-white/60 mt-0.5">{mostUsedType}</p>
+                </div>
+                <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-2.5">
+                  <p className="text-[9px] uppercase tracking-wider text-white/30">Avg. Strength</p>
+                  <p className="text-lg font-bold text-white/70">{avgStrength || "---"}</p>
+                </div>
+              </div>
+
+              {/* Emotional load bar */}
+              {colorDistribution.length > 0 && (
+                <div>
+                  <p className="text-[9px] uppercase tracking-wider text-white/30 mb-1.5">
+                    Emotional Load
+                  </p>
+                  <div className="h-3 rounded-full overflow-hidden flex bg-white/[0.04]">
+                    {colorDistribution.map((seg, i) => (
+                      <motion.div
+                        key={seg.color + i}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${seg.pct}%` }}
+                        transition={{ duration: 0.5, delay: i * 0.1 }}
+                        style={{ backgroundColor: seg.color, opacity: 0.7 }}
+                        className="h-full"
+                      />
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-1.5">
+                    {colorDistribution.map((seg, i) => {
+                      const colorLabel = ITEM_COLORS.find((c) => c.hex === seg.color)?.label || "Other";
+                      return (
+                        <div key={seg.color + i} className="flex items-center gap-1">
+                          <div
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: seg.color }}
+                          />
+                          <span className="text-[9px] text-white/30">{colorLabel}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
 }
 
 // ─── SVG Container Illustrations ──────────────────────────────────────────────
@@ -453,20 +983,29 @@ function ContainedItemChip({
   isLocked,
   onDissolve,
   showDissolution = true,
+  useEnhancedDissolution = false,
+  onEnhancedDissolve,
 }: {
   item: ContainmentItemData;
   isLocked: boolean;
   onDissolve: (id: string) => void;
   showDissolution?: boolean;
+  useEnhancedDissolution?: boolean;
+  onEnhancedDissolve?: (item: ContainmentItemData) => void;
 }) {
   const [dissolving, setDissolving] = useState(false);
   const chipColor = item.color || "#8B5CF6";
 
   const handleDissolve = useCallback(() => {
+    if (useEnhancedDissolution && onEnhancedDissolve) {
+      playClickSound();
+      onEnhancedDissolve(item);
+      return;
+    }
     playClickSound();
     setDissolving(true);
     setTimeout(() => onDissolve(item.id), 900);
-  }, [item.id, onDissolve]);
+  }, [item, onDissolve, useEnhancedDissolution, onEnhancedDissolve]);
 
   if (item.status === "dissolved") {
     return null;
@@ -695,12 +1234,50 @@ function LockPanel({
 }) {
   const [selectedMethod, setSelectedMethod] = useState<string>("key");
   const [strength, setStrength] = useState<number>(5);
+  const [showBreathing, setShowBreathing] = useState(false);
 
   const handleLock = useCallback(() => {
     playClickSound();
     onLock(containerId, selectedMethod, strength);
     onClose();
   }, [containerId, selectedMethod, strength, onLock, onClose]);
+
+  const handleInitiateLock = useCallback(() => {
+    playClickSound();
+    setShowBreathing(true);
+  }, []);
+
+  if (showBreathing) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+        className={cn(
+          "rounded-2xl p-4 space-y-2",
+          "bg-white/[0.06] backdrop-blur-xl border border-white/[0.12]",
+          "shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
+        )}
+      >
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-semibold text-white/80 flex items-center gap-2">
+            <Lock className="w-4 h-4 text-amber-400/80" />
+            Breathing seal ritual
+          </h4>
+          <button onClick={onClose} className="text-white/40 hover:text-white/70 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <p className="text-xs text-white/40 text-center">
+          Take three breaths before sealing this container.
+        </p>
+        <BreathingRitual
+          onComplete={handleLock}
+          onSkip={handleLock}
+        />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -789,24 +1366,155 @@ function LockPanel({
         {strength > 8 && "An absolute vault -- completely sealed and impenetrable."}
       </div>
 
-      {/* Lock button */}
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={handleLock}
-        className={cn(
-          "w-full py-2.5 rounded-xl text-sm font-medium",
-          "flex items-center justify-center gap-2",
-          "bg-gradient-to-r from-amber-500/30 to-yellow-500/30",
-          "text-amber-200/90 border border-amber-500/30",
-          "hover:from-amber-500/40 hover:to-yellow-500/40",
-          "transition-all duration-200"
-        )}
-      >
-        <Lock className="w-4 h-4" />
-        Seal & Lock
-      </motion.button>
+      {/* Lock buttons */}
+      <div className="flex gap-2">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleInitiateLock}
+          className={cn(
+            "flex-1 py-2.5 rounded-xl text-sm font-medium",
+            "flex items-center justify-center gap-2",
+            "bg-gradient-to-r from-purple-500/20 to-amber-500/20",
+            "text-white/80 border border-purple-500/20",
+            "hover:from-purple-500/30 hover:to-amber-500/30",
+            "transition-all duration-200"
+          )}
+        >
+          Seal with Breath
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleLock}
+          className={cn(
+            "flex-1 py-2.5 rounded-xl text-sm font-medium",
+            "flex items-center justify-center gap-2",
+            "bg-gradient-to-r from-amber-500/30 to-yellow-500/30",
+            "text-amber-200/90 border border-amber-500/30",
+            "hover:from-amber-500/40 hover:to-yellow-500/40",
+            "transition-all duration-200"
+          )}
+        >
+          <Lock className="w-4 h-4" />
+          Seal & Lock
+        </motion.button>
+      </div>
     </motion.div>
+  );
+}
+
+// ─── Gallery Card (compact) ──────────────────────────────────────────────────
+
+function GalleryCard({
+  container,
+  items,
+  isActive,
+  onSelect,
+  onQuickAdd,
+}: {
+  container: ContainmentContainerData;
+  items: ContainmentItemData[];
+  isActive: boolean;
+  onSelect: () => void;
+  onQuickAdd: () => void;
+}) {
+  const containedItems = items.filter((it) => it.status === "contained");
+  const containerLabel = CONTAINER_TYPES.find((ct) => ct.id === container.containerType)?.label || "Container";
+
+  return (
+    <motion.button
+      whileHover={{ scale: 1.03, y: -2 }}
+      whileTap={{ scale: 0.97 }}
+      onClick={onSelect}
+      className={cn(
+        "flex-shrink-0 w-36 rounded-xl p-3 text-left",
+        "transition-all duration-200 border relative",
+        isActive
+          ? "bg-white/[0.08] border-amber-400/40 shadow-[0_0_15px_rgba(245,158,11,0.12)]"
+          : "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06]",
+      )}
+    >
+      <div className="w-full h-14 mb-2">
+        <ContainerSVG
+          type={container.containerType}
+          strength={container.containmentStrength ?? 5}
+          isLocked={container.isLocked}
+        />
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] font-semibold text-white/70 truncate">{containerLabel}</span>
+        {container.isLocked && (
+          <Lock className="w-3 h-3 text-amber-400/60 flex-shrink-0" />
+        )}
+      </div>
+      <div className="flex items-center justify-between mt-1">
+        <span className="text-[9px] text-white/30">
+          {containedItems.length} item{containedItems.length !== 1 ? "s" : ""}
+        </span>
+        <motion.button
+          whileHover={{ scale: 1.2 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            playClickSound();
+            onQuickAdd();
+          }}
+          className={cn(
+            "w-5 h-5 rounded-full flex items-center justify-center",
+            "bg-white/[0.08] hover:bg-white/[0.15] text-white/40 hover:text-white/70",
+            "transition-all duration-150",
+            container.isLocked && "opacity-30 pointer-events-none",
+          )}
+        >
+          <Plus className="w-3 h-3" />
+        </motion.button>
+      </div>
+    </motion.button>
+  );
+}
+
+// ─── Container Gallery ────────────────────────────────────────────────────────
+
+function ContainerGallery({
+  containers,
+  itemsByContainer,
+  activeContainerId,
+  onSelectContainer,
+  onQuickAdd,
+}: {
+  containers: ContainmentContainerData[];
+  itemsByContainer: Record<string, ContainmentItemData[]>;
+  activeContainerId: string | null;
+  onSelectContainer: (id: string) => void;
+  onQuickAdd: (containerId: string) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  if (containers.length < 2) return null;
+
+  return (
+    <div className="relative">
+      <p className="text-[10px] uppercase tracking-wider text-white/30 font-medium mb-2">
+        Containers
+      </p>
+      <div
+        ref={scrollRef}
+        className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+        style={{ scrollbarWidth: "thin" }}
+      >
+        {containers.map((container) => (
+          <GalleryCard
+            key={container.id}
+            container={container}
+            items={itemsByContainer[container.id] || []}
+            isActive={activeContainerId === container.id}
+            onSelect={() => onSelectContainer(container.id)}
+            onQuickAdd={() => onQuickAdd(container.id)}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -821,6 +1529,7 @@ function ContainerCard({
   onUnlock,
   showDissolution = true,
   maxItemsPerContainer = 0,
+  dissolutionCount,
 }: {
   container: ContainmentContainerData;
   items: ContainmentItemData[];
@@ -830,9 +1539,12 @@ function ContainerCard({
   onUnlock: (containerId: string) => void;
   showDissolution?: boolean;
   maxItemsPerContainer?: number;
+  dissolutionCount: number;
 }) {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [showLockPanel, setShowLockPanel] = useState(false);
+  const [dissolvingItem, setDissolvingItem] = useState<ContainmentItemData | null>(null);
+  const [milestoneToShow, setMilestoneToShow] = useState<number | null>(null);
 
   const containedItems = useMemo(
     () => items.filter((it) => it.status === "contained"),
@@ -853,6 +1565,28 @@ function ContainerCard({
       setShowAddPanel(false);
     },
     [onAddItem],
+  );
+
+  const handleEnhancedDissolve = useCallback(
+    (item: ContainmentItemData) => {
+      setDissolvingItem(item);
+    },
+    [],
+  );
+
+  const handleDissolutionComplete = useCallback(
+    (_reflection: string) => {
+      if (dissolvingItem) {
+        onDissolveItem(dissolvingItem.id);
+        const newTotal = dissolutionCount + 1;
+        if (DISSOLUTION_MILESTONES.includes(newTotal)) {
+          setMilestoneToShow(newTotal);
+          setTimeout(() => setMilestoneToShow(null), 3000);
+        }
+      }
+      setDissolvingItem(null);
+    },
+    [dissolvingItem, onDissolveItem, dissolutionCount],
   );
 
   return (
@@ -897,10 +1631,17 @@ function ContainerCard({
         </div>
       </div>
 
-      {/* Container SVG illustration */}
+      {/* Container SVG illustration with strength meter ring */}
       <div className="relative w-full h-32 flex items-center justify-center">
+        {/* Strength meter ring */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative w-40 h-32">
+            <StrengthMeterRing strength={strengthVal} isLocked={container.isLocked} />
+          </div>
+        </div>
+
         <motion.div
-          className="w-40 h-32"
+          className="w-40 h-32 relative z-[1]"
           animate={container.isLocked ? { scale: [1, 1.01, 1] } : {}}
           transition={container.isLocked ? { duration: 4, repeat: Infinity, ease: "easeInOut" } : {}}
         >
@@ -913,7 +1654,7 @@ function ContainerCard({
 
         {/* Items peeking out when unlocked */}
         {!container.isLocked && containedItems.length > 0 && (
-          <div className="absolute top-1 left-1/2 -translate-x-1/2 flex gap-0.5 max-w-[140px] overflow-hidden">
+          <div className="absolute top-1 left-1/2 -translate-x-1/2 flex gap-0.5 max-w-[140px] overflow-hidden z-[2]">
             {containedItems.slice(0, 4).map((item, idx) => (
               <motion.div
                 key={item.id}
@@ -945,19 +1686,53 @@ function ContainerCard({
           <motion.div
             className="h-full rounded-full"
             style={{
-              background: `linear-gradient(to right, rgba(245,158,11,0.4), rgba(245,158,11,0.8))`,
+              background:
+                strengthVal <= 3
+                  ? "linear-gradient(to right, rgba(245,158,11,0.4), rgba(245,158,11,0.8))"
+                  : strengthVal <= 6
+                    ? "linear-gradient(to right, rgba(59,130,246,0.4), rgba(59,130,246,0.8))"
+                    : "linear-gradient(to right, rgba(139,92,246,0.4), rgba(139,92,246,0.8))",
             }}
             initial={{ width: 0 }}
             animate={{ width: `${(strengthVal / 10) * 100}%` }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           />
         </div>
-        <span className="text-[9px] text-amber-400/60 font-medium">{strengthVal}</span>
+        <span
+          className={cn(
+            "text-[9px] font-medium",
+            strengthVal <= 3
+              ? "text-amber-400/60"
+              : strengthVal <= 6
+                ? "text-blue-400/60"
+                : "text-purple-400/60",
+          )}
+        >
+          {strengthVal}
+        </span>
       </div>
+
+      {/* Milestone toast */}
+      <AnimatePresence>
+        {milestoneToShow !== null && (
+          <MilestoneToast count={milestoneToShow} />
+        )}
+      </AnimatePresence>
+
+      {/* Enhanced dissolution ceremony */}
+      <AnimatePresence>
+        {dissolvingItem && (
+          <DissolutionCeremony
+            item={dissolvingItem}
+            onComplete={handleDissolutionComplete}
+            onCancel={() => setDissolvingItem(null)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Item list */}
       <AnimatePresence mode="popLayout">
-        {containedItems.length > 0 && (
+        {containedItems.length > 0 && !dissolvingItem && (
           <motion.div
             layout
             className="flex flex-wrap gap-1.5"
@@ -969,6 +1744,8 @@ function ContainerCard({
                 isLocked={container.isLocked}
                 onDissolve={onDissolveItem}
                 showDissolution={showDissolution}
+                useEnhancedDissolution={true}
+                onEnhancedDissolve={handleEnhancedDissolve}
               />
             ))}
           </motion.div>
@@ -1092,6 +1869,8 @@ export function ContainmentBox({
 }: ContainmentBoxProps) {
   const settings = { ...DEFAULT_CONTAINMENT_BOX_SETTINGS, ...toolSettings } as ContainmentBoxSettings;
   const [showCreatePanel, setShowCreatePanel] = useState(false);
+  const [activeContainerId, setActiveContainerId] = useState<string | null>(null);
+  const [galleryQuickAddId, setGalleryQuickAddId] = useState<string | null>(null);
 
   const itemsByContainer = useMemo(() => {
     const map: Record<string, ContainmentItemData[]> = {};
@@ -1128,6 +1907,28 @@ export function ContainmentBox({
     },
     [onCreateContainer],
   );
+
+  // For gallery: when user selects from gallery, scroll to that container
+  const handleGallerySelect = useCallback((containerId: string) => {
+    playClickSound();
+    setActiveContainerId(containerId);
+  }, []);
+
+  const handleGalleryQuickAdd = useCallback((containerId: string) => {
+    setActiveContainerId(containerId);
+    setGalleryQuickAddId(containerId);
+    // The quick-add state will be cleared by the ContainerCard internally
+  }, []);
+
+  // Determine which containers to show based on gallery selection
+  const displayContainers = useMemo(() => {
+    if (containers.length <= 1) return containers;
+    if (activeContainerId) {
+      const found = containers.find((c) => c.id === activeContainerId);
+      if (found) return [found];
+    }
+    return containers;
+  }, [containers, activeContainerId]);
 
   return (
     <div
@@ -1193,6 +1994,40 @@ export function ContainmentBox({
           </div>
         </div>
 
+        {/* Container Gallery (when multiple containers exist) */}
+        {containers.length >= 2 && (
+          <ContainerGallery
+            containers={containers}
+            itemsByContainer={itemsByContainer}
+            activeContainerId={activeContainerId}
+            onSelectContainer={handleGallerySelect}
+            onQuickAdd={handleGalleryQuickAdd}
+          />
+        )}
+
+        {/* Gallery: show all button when filtered */}
+        {containers.length >= 2 && activeContainerId && (
+          <div className="flex justify-center">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                playClickSound();
+                setActiveContainerId(null);
+              }}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-[10px] font-medium",
+                "bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08]",
+                "text-white/40 hover:text-white/60 transition-all duration-200",
+                "flex items-center gap-1.5",
+              )}
+            >
+              <Eye className="w-3 h-3" />
+              Show all containers
+            </motion.button>
+          </div>
+        )}
+
         {/* Create container button / panel */}
         <div>
           <AnimatePresence mode="wait">
@@ -1253,7 +2088,7 @@ export function ContainmentBox({
         {containers.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AnimatePresence mode="popLayout">
-              {containers.map((container) => (
+              {displayContainers.map((container) => (
                 <ContainerCard
                   key={container.id}
                   container={container}
@@ -1264,6 +2099,7 @@ export function ContainmentBox({
                   onUnlock={onUnlock}
                   showDissolution={settings.showDissolution}
                   maxItemsPerContainer={settings.maxItemsPerContainer}
+                  dissolutionCount={totalDissolved}
                 />
               ))}
             </AnimatePresence>
@@ -1289,6 +2125,11 @@ export function ContainmentBox({
               </p>
             </div>
           </motion.div>
+        )}
+
+        {/* Session Summary */}
+        {items.length > 0 && (
+          <SessionSummary containers={containers} items={items} />
         )}
 
         {/* Therapeutic guidance footer */}

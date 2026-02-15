@@ -17,6 +17,11 @@ import {
   Edit3,
   Trash2,
   Lightbulb,
+  Printer,
+  Clock,
+  CheckCircle2,
+  PhoneCall,
+  MessageSquare,
 } from "lucide-react";
 import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
@@ -376,7 +381,7 @@ function ProgressBar({ completedSteps }: { completedSteps: number }) {
           Safety Plan Progress
         </span>
         <span className="text-xs font-semibold text-white/70">
-          {completedSteps}/6 steps
+          {completedSteps}/6 steps ({Math.round(percentage)}%)
         </span>
       </div>
       <div className="h-2.5 rounded-full bg-white/[0.07] overflow-hidden backdrop-blur-sm">
@@ -417,6 +422,364 @@ function ProgressBar({ completedSteps }: { completedSteps: number }) {
         })}
       </div>
     </div>
+  );
+}
+
+// ─── Last Updated Banner ──────────────────────────────────────────────────────
+
+function LastUpdatedBanner({ items }: { items: SafetyPlanItemData[] }) {
+  const lastUpdated = useMemo(() => {
+    if (items.length === 0) return null;
+    let latest = items[0].createdAt;
+    for (const item of items) {
+      if (item.createdAt > latest) {
+        latest = item.createdAt;
+      }
+    }
+    return new Date(latest);
+  }, [items]);
+
+  if (!lastUpdated) return null;
+
+  const now = new Date();
+  const diffMs = now.getTime() - lastUpdated.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const isStale = diffDays > 30;
+
+  const formattedDate = lastUpdated.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-center gap-2 text-xs text-white/40">
+        <Clock className="w-3.5 h-3.5" />
+        <span>Last updated: {formattedDate}</span>
+      </div>
+      {isStale && (
+        <motion.div
+          className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2 bg-amber-500/10 border border-amber-400/20"
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          <p className="text-xs text-amber-300">
+            Consider reviewing your safety plan -- it hasn&apos;t been updated in {diffDays} days.
+          </p>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+// ─── Emergency Quick-Access Overlay ───────────────────────────────────────────
+
+function QuickAccessOverlay({
+  items,
+  onClose,
+}: {
+  items: SafetyPlanItemData[];
+  onClose: () => void;
+}) {
+  const step4Items = useMemo(
+    () => items.filter((i) => i.step === 4).sort((a, b) => a.orderIndex - b.orderIndex),
+    [items],
+  );
+  const step5Items = useMemo(
+    () => items.filter((i) => i.step === 5).sort((a, b) => a.orderIndex - b.orderIndex),
+    [items],
+  );
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/80 backdrop-blur-md"
+        onClick={onClose}
+      />
+
+      {/* Content */}
+      <motion.div
+        className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-gradient-to-b from-gray-900 to-gray-950 border border-red-500/30 shadow-2xl shadow-red-500/10"
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+      >
+        {/* Header */}
+        <div className="sticky top-0 z-20 bg-gradient-to-b from-red-950/90 to-gray-900/95 backdrop-blur-sm border-b border-red-500/20 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-500/20 border border-red-400/30 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-white">Emergency Quick Access</h2>
+                <p className="text-xs text-white/40">Your crisis contacts & resources</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl text-white/40 hover:text-white hover:bg-white/[0.08] transition-colors"
+              aria-label="Close quick access"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-4 space-y-4">
+          {/* Always-visible crisis resources */}
+          <div className="space-y-2">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-red-400 mb-2">
+              Crisis Resources
+            </h3>
+            <a
+              href="tel:988"
+              className="flex items-center gap-3 p-3.5 rounded-xl bg-red-500/15 border border-red-400/30 hover:bg-red-500/25 transition-colors group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-red-500/30 border border-red-400/40 flex items-center justify-center shrink-0">
+                <PhoneCall className="w-5 h-5 text-red-300" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white">Call 988 Suicide & Crisis Lifeline</p>
+                <p className="text-xs text-white/40">Available 24/7 -- call or text 988</p>
+              </div>
+            </a>
+            <a
+              href="sms:741741&body=HOME"
+              className="flex items-center gap-3 p-3.5 rounded-xl bg-blue-500/15 border border-blue-400/30 hover:bg-blue-500/25 transition-colors group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-blue-500/30 border border-blue-400/40 flex items-center justify-center shrink-0">
+                <MessageSquare className="w-5 h-5 text-blue-300" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white">Text HOME to 741741</p>
+                <p className="text-xs text-white/40">Crisis Text Line -- free, 24/7 support</p>
+              </div>
+            </a>
+          </div>
+
+          {/* Step 4: Support People */}
+          <div>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-green-400 mb-2 flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5" />
+              People I Can Ask for Help
+            </h3>
+            {step4Items.length > 0 ? (
+              <div className="space-y-2">
+                {step4Items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-400/20"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white/90">{item.content}</p>
+                      {item.contactName && (
+                        <p className="text-xs text-white/40 mt-0.5">{item.contactName}{item.contactRelationship ? ` (${item.contactRelationship})` : ""}</p>
+                      )}
+                    </div>
+                    {item.contactPhone && (
+                      <a
+                        href={`tel:${item.contactPhone}`}
+                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-400/30 text-green-300 text-xs font-medium hover:bg-green-500/30 transition-colors"
+                      >
+                        <PhoneCall className="w-3.5 h-3.5" />
+                        {item.contactPhone}
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-white/30 italic px-3 py-2">No support people added yet.</p>
+            )}
+          </div>
+
+          {/* Step 5: Professionals */}
+          <div>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-2 flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5" />
+              Professionals & Agencies
+            </h3>
+            {step5Items.length > 0 ? (
+              <div className="space-y-2">
+                {step5Items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/10 border border-blue-400/20"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white/90">{item.content}</p>
+                      {item.contactName && (
+                        <p className="text-xs text-white/40 mt-0.5">{item.contactName}{item.contactRelationship ? ` (${item.contactRelationship})` : ""}</p>
+                      )}
+                    </div>
+                    {item.contactPhone && (
+                      <a
+                        href={`tel:${item.contactPhone}`}
+                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-medium hover:bg-blue-500/30 transition-colors"
+                      >
+                        <PhoneCall className="w-3.5 h-3.5" />
+                        {item.contactPhone}
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-white/30 italic px-3 py-2">No professionals added yet.</p>
+            )}
+          </div>
+
+          {/* Emergency footer */}
+          <div className="pt-2 border-t border-white/[0.06]">
+            <p className="text-[11px] text-white/30 text-center">
+              If you are in immediate danger, call <span className="text-white/60 font-medium">911</span> or go to your nearest emergency room.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Print / Export View ──────────────────────────────────────────────────────
+
+function PrintExportOverlay({
+  items,
+  onClose,
+}: {
+  items: SafetyPlanItemData[];
+  onClose: () => void;
+}) {
+  const itemsByStep = useMemo(() => {
+    const grouped: Record<number, SafetyPlanItemData[]> = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+    for (const item of items) {
+      if (grouped[item.step]) {
+        grouped[item.step].push(item);
+      }
+    }
+    return grouped;
+  }, [items]);
+
+  const lastUpdated = useMemo(() => {
+    if (items.length === 0) return null;
+    let latest = items[0].createdAt;
+    for (const item of items) {
+      if (item.createdAt > latest) latest = item.createdAt;
+    }
+    return new Date(latest);
+  }, [items]);
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
+
+      <motion.div
+        className="relative z-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+      >
+        {/* Close button (non-print) */}
+        <div className="sticky top-0 z-20 flex justify-end p-3 bg-white/90 backdrop-blur-sm print:hidden">
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            aria-label="Close print view"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Printable content */}
+        <div className="px-8 pb-8 pt-2">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">My Safety Plan</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Stanley-Brown Safety Planning Framework
+            </p>
+            {lastUpdated && (
+              <p className="text-xs text-gray-400 mt-1">
+                Last updated: {lastUpdated.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-5">
+            {STEP_CONFIGS.map((config) => {
+              const stepItems = (itemsByStep[config.number] || []).sort(
+                (a, b) => a.orderIndex - b.orderIndex,
+              );
+              return (
+                <div key={config.number} className="border border-gray-200 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span
+                      className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-bold"
+                      style={{ backgroundColor: config.color }}
+                    >
+                      {config.number}
+                    </span>
+                    <h2 className="text-sm font-semibold text-gray-900">{config.title}</h2>
+                    {stepItems.length > 0 && (
+                      <CheckCircle2 className="w-4 h-4 text-green-500 ml-auto" />
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mb-2">{config.description}</p>
+                  {stepItems.length > 0 ? (
+                    <ul className="space-y-1.5">
+                      {stepItems.map((item) => (
+                        <li key={item.id} className="text-sm text-gray-700 flex items-start gap-2">
+                          <span className="text-gray-300 mt-0.5">&#8226;</span>
+                          <div>
+                            <span>{item.content}</span>
+                            {config.hasContactFields && (item.contactName || item.contactPhone) && (
+                              <span className="text-xs text-gray-400 ml-1">
+                                {item.contactName && `-- ${item.contactName}`}
+                                {item.contactPhone && ` (${item.contactPhone})`}
+                                {item.contactRelationship && ` [${item.contactRelationship}]`}
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-gray-300 italic">No items added</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Crisis footer */}
+          <div className="mt-6 p-4 border-2 border-red-200 rounded-xl bg-red-50">
+            <p className="text-sm font-semibold text-red-800 mb-1">Emergency Resources</p>
+            <p className="text-xs text-red-700">
+              988 Suicide & Crisis Lifeline: Call or text <span className="font-bold">988</span>
+            </p>
+            <p className="text-xs text-red-700">
+              Crisis Text Line: Text <span className="font-bold">HOME</span> to <span className="font-bold">741741</span>
+            </p>
+            <p className="text-xs text-red-700">
+              Emergency: Call <span className="font-bold">911</span>
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -735,8 +1098,7 @@ function StepCard({
               {/* Completion indicator */}
               {isComplete && (
                 <motion.div
-                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: config.color }}
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center bg-emerald-500"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 500 }}
@@ -953,6 +1315,8 @@ export function SafetyMap({
   const [expandedSteps, setExpandedSteps] = useState<Set<number>>(
     () => new Set([1]),
   );
+  const [showQuickAccess, setShowQuickAccess] = useState(false);
+  const [showPrintView, setShowPrintView] = useState(false);
 
   // Group items by step
   const itemsByStep = useMemo(() => {
@@ -982,6 +1346,7 @@ export function SafetyMap({
   }, [itemsByStep]);
 
   const allComplete = completedSteps === 6;
+  const hasAnyItems = items.length > 0;
 
   const toggleExpand = useCallback((stepNumber: number) => {
     setExpandedSteps((prev) => {
@@ -1026,6 +1391,25 @@ export function SafetyMap({
           This plan is yours to use whenever you need it.
         </p>
       </motion.div>
+
+      {/* Last updated banner */}
+      <LastUpdatedBanner items={items} />
+
+      {/* Action buttons row */}
+      {hasAnyItems && (
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => {
+              setShowPrintView(true);
+              playClickSound();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-white/50 hover:text-white/80 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] transition-colors"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            Print / Export
+          </button>
+        </div>
+      )}
 
       {/* Progress bar */}
       <ProgressBar completedSteps={completedSteps} />
@@ -1091,6 +1475,45 @@ export function SafetyMap({
 
       {/* Bottom spacing */}
       <div className="h-8" />
+
+      {/* Floating Quick Access Button */}
+      {hasAnyItems && (
+        <motion.button
+          onClick={() => {
+            setShowQuickAccess(true);
+            playClickSound();
+          }}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-semibold text-sm shadow-lg shadow-red-900/40 border border-red-400/30 transition-colors"
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: 1.2, type: "spring", stiffness: 200 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <PhoneCall className="w-4 h-4" />
+          Quick Access
+        </motion.button>
+      )}
+
+      {/* Quick Access Overlay */}
+      <AnimatePresence>
+        {showQuickAccess && (
+          <QuickAccessOverlay
+            items={items}
+            onClose={() => setShowQuickAccess(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Print/Export Overlay */}
+      <AnimatePresence>
+        {showPrintView && (
+          <PrintExportOverlay
+            items={items}
+            onClose={() => setShowPrintView(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {isClinician && onSettingsUpdate && (
         <ClinicianToolbar

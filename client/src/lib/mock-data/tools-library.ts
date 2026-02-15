@@ -86,7 +86,7 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "moderate",
     duration: "15-30",
     interactionType: "expressive",
-    status: "active",
+    status: "development",
     tier: "free",
     bestUsedFor: [
       "Externalizing internal family systems",
