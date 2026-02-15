@@ -2,14 +2,50 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playClickSound } from "@/lib/audio-feedback";
-import { Infinity, Circle, Palette, Wind, Loader, Waves } from "lucide-react";
+import { Infinity, Circle, Palette, Wind, Loader, Waves, Hash, Sliders } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface FidgetToolsProps {
   onInteraction: (widgetType: string, data: any) => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Toolbar Settings ──────────────────────────────────────────────
+
+interface FidgetSettings {
+  showCounter: boolean;
+  enabledWidgets: string[];
+}
+
+const ALL_WIDGET_IDS = ["infinity-spinner", "bubble-pop", "color-mixer", "breathing-circle", "fidget-spinner", "zen-ripples"];
+
+const DEFAULT_FIDGET_SETTINGS: FidgetSettings = {
+  showCounter: true,
+  enabledWidgets: ALL_WIDGET_IDS,
+};
+
+const FIDGET_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  { type: "toggle", key: "showCounter", icon: Hash, label: "Counter", activeColor: "amber" },
+  {
+    type: "filter",
+    key: "enabledWidgets",
+    icon: Sliders,
+    label: "Widgets",
+    allOptions: [
+      { value: "infinity-spinner", label: "Infinity" },
+      { value: "bubble-pop", label: "Bubbles" },
+      { value: "color-mixer", label: "Colors" },
+      { value: "breathing-circle", label: "Breathe" },
+      { value: "fidget-spinner", label: "Spinner" },
+      { value: "zen-ripples", label: "Ripples" },
+    ],
+    activeColor: "purple",
+  },
+];
 
 type WidgetId =
   | "infinity-spinner"
@@ -1188,7 +1224,9 @@ function ZenRipples({ onInteraction }: ZenRipplesProps) {
 
 // ─── Main Component: FidgetTools ──────────────────────────────────────────────
 
-export function FidgetTools({ onInteraction, isClinician }: FidgetToolsProps) {
+export function FidgetTools({ onInteraction, isClinician, toolSettings, onSettingsUpdate }: FidgetToolsProps) {
+  const settings = { ...DEFAULT_FIDGET_SETTINGS, ...toolSettings } as FidgetSettings;
+
   const [activeWidget, setActiveWidget] = useState<WidgetId>("infinity-spinner");
   const [totalInteractions, setTotalInteractions] = useState(0);
 
@@ -1209,10 +1247,16 @@ export function FidgetTools({ onInteraction, isClinician }: FidgetToolsProps) {
     [onInteraction],
   );
 
-  const activeTab = WIDGET_TABS.find((t) => t.id === activeWidget)!;
+  const filteredTabs = WIDGET_TABS.filter((t) => settings.enabledWidgets.includes(t.id));
+  const activeTab = filteredTabs.find((t) => t.id === activeWidget) || filteredTabs[0];
+
+  // If active widget was filtered out, switch to first available
+  const effectiveWidget = filteredTabs.some((t) => t.id === activeWidget)
+    ? activeWidget
+    : (filteredTabs[0]?.id ?? "infinity-spinner");
 
   return (
-    <div className="w-full h-full flex flex-col gap-3 p-2 sm:p-4 select-none">
+    <div className="relative w-full h-full flex flex-col gap-3 p-2 sm:p-4 select-none">
       {/* ── Widget Selector Bar ──────────────────────────────────────── */}
       <div
         className={cn(
@@ -1220,7 +1264,7 @@ export function FidgetTools({ onInteraction, isClinician }: FidgetToolsProps) {
           GLASS_STYLE,
         )}
       >
-        {WIDGET_TABS.map((tab) => {
+        {filteredTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeWidget === tab.id;
           return (
@@ -1277,7 +1321,7 @@ export function FidgetTools({ onInteraction, isClinician }: FidgetToolsProps) {
         {/* Subtle themed gradient background */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
-          key={activeWidget}
+          key={effectiveWidget}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -1289,39 +1333,39 @@ export function FidgetTools({ onInteraction, isClinician }: FidgetToolsProps) {
 
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeWidget}
+            key={effectiveWidget}
             className="relative w-full h-full"
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            {activeWidget === "infinity-spinner" && (
+            {effectiveWidget === "infinity-spinner" && (
               <InfinitySpinner
                 onInteraction={handleWidgetInteraction("infinity-spinner")}
               />
             )}
-            {activeWidget === "bubble-pop" && (
+            {effectiveWidget === "bubble-pop" && (
               <BubblePop
                 onInteraction={handleWidgetInteraction("bubble-pop")}
               />
             )}
-            {activeWidget === "color-mixer" && (
+            {effectiveWidget === "color-mixer" && (
               <ColorMixer
                 onInteraction={handleWidgetInteraction("color-mixer")}
               />
             )}
-            {activeWidget === "breathing-circle" && (
+            {effectiveWidget === "breathing-circle" && (
               <BreathingCircle
                 onInteraction={handleWidgetInteraction("breathing-circle")}
               />
             )}
-            {activeWidget === "fidget-spinner" && (
+            {effectiveWidget === "fidget-spinner" && (
               <FidgetSpinner
                 onInteraction={handleWidgetInteraction("fidget-spinner")}
               />
             )}
-            {activeWidget === "zen-ripples" && (
+            {effectiveWidget === "zen-ripples" && (
               <ZenRipples
                 onInteraction={handleWidgetInteraction("zen-ripples")}
               />
@@ -1330,19 +1374,21 @@ export function FidgetTools({ onInteraction, isClinician }: FidgetToolsProps) {
         </AnimatePresence>
 
         {/* ── Interaction Counter ─────────────────────────────────────── */}
-        <motion.div
-          className={cn(
-            "absolute top-3 right-3 px-3 py-1.5 rounded-full text-xs font-mono",
-            "backdrop-blur-md bg-white/5 border border-white/10 text-white/40",
-          )}
-          animate={{
-            scale: totalInteractions > 0 ? [1, 1.08, 1] : 1,
-          }}
-          transition={{ duration: 0.25 }}
-          key={totalInteractions}
-        >
-          {totalInteractions} {totalInteractions === 1 ? "interaction" : "interactions"}
-        </motion.div>
+        {settings.showCounter && (
+          <motion.div
+            className={cn(
+              "absolute top-3 right-3 px-3 py-1.5 rounded-full text-xs font-mono",
+              "backdrop-blur-md bg-white/5 border border-white/10 text-white/40",
+            )}
+            animate={{
+              scale: totalInteractions > 0 ? [1, 1.08, 1] : 1,
+            }}
+            transition={{ duration: 0.25 }}
+            key={totalInteractions}
+          >
+            {totalInteractions} {totalInteractions === 1 ? "interaction" : "interactions"}
+          </motion.div>
+        )}
 
         {/* ── Clinician badge ─────────────────────────────────────────── */}
         {isClinician && (
@@ -1356,6 +1402,15 @@ export function FidgetTools({ onInteraction, isClinician }: FidgetToolsProps) {
           </div>
         )}
       </div>
+
+      {/* ── Clinician Toolbar ── */}
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={FIDGET_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+        />
+      )}
     </div>
   );
 }

@@ -39,6 +39,7 @@ interface RoomState {
   theaterDimInactive: boolean;
   theaterMetaphor: string;
   theaterPartLimit: number;
+  toolSettings: Record<string, Record<string, any>>;
 }
 
 const roomStates = new Map<string, RoomState>();
@@ -57,6 +58,7 @@ function getRoomState(sessionId: string): RoomState {
       theaterDimInactive: false,
       theaterMetaphor: "parts",
       theaterPartLimit: 0,
+      toolSettings: {},
     });
   }
   return roomStates.get(sessionId)!;
@@ -190,6 +192,7 @@ export function setupWebSocketServer(server: Server) {
               gardenPlants: gardenPlantsData,
               gardenJournalEntries: gardenJournalData,
               gardenWeeds: gardenWeedsData,
+              toolSettings: state.toolSettings,
             }));
 
             broadcast(sessionId, {
@@ -579,6 +582,23 @@ export function setupWebSocketServer(server: Server) {
               dimInactive: tState.theaterDimInactive,
               metaphor: tState.theaterMetaphor,
               partLimit: tState.theaterPartLimit,
+            });
+            break;
+          }
+
+          // --- Generic Tool Settings ---
+          case "tool-settings-update": {
+            if (!client) return;
+            const tsState = getRoomState(client.sessionId);
+            const toolId = msg.toolId as string;
+            if (!tsState.toolSettings[toolId]) {
+              tsState.toolSettings[toolId] = {};
+            }
+            Object.assign(tsState.toolSettings[toolId], msg.settings);
+            broadcast(client.sessionId, {
+              type: "tool-settings-updated",
+              toolId,
+              settings: tsState.toolSettings[toolId],
             });
             break;
           }

@@ -2,7 +2,8 @@ import React, { useState, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playClickSound } from "@/lib/audio-feedback";
-import { RotateCcw, Plus, X, Link2, Users, Edit3, Trash2, Sparkles } from "lucide-react";
+import { RotateCcw, Plus, X, Link2, Users, Edit3, Trash2, Sparkles, Hash } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -35,6 +36,36 @@ export interface SocialAtomConnectionData {
   createdAt: string;
 }
 
+// ─── Clinician Toolbar Settings ──────────────────────────────────────────────
+
+interface SocialAtomSettings {
+  showConnections: boolean;
+  maxPeople: number;
+}
+
+const DEFAULT_SOCIAL_ATOM_SETTINGS: SocialAtomSettings = {
+  showConnections: true,
+  maxPeople: 0,
+};
+
+const SOCIAL_ATOM_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  {
+    type: "toggle",
+    key: "showConnections",
+    icon: Link2,
+    label: "Connections",
+    activeColor: "sky",
+  },
+  {
+    type: "number",
+    key: "maxPeople",
+    icon: Hash,
+    label: "Max People",
+    steps: [0, 4, 8, 12, 16],
+    activeColor: "amber",
+  },
+];
+
 export interface SocialAtomProps {
   people: SocialAtomPersonData[];
   connections: SocialAtomConnectionData[];
@@ -62,6 +93,8 @@ export interface SocialAtomProps {
   onRemoveConnection: (connectionId: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -178,7 +211,11 @@ export function SocialAtom({
   onRemoveConnection,
   onClear,
   isClinician,
+  toolSettings,
+  onSettingsUpdate,
 }: SocialAtomProps) {
+  const settings = { ...DEFAULT_SOCIAL_ATOM_SETTINGS, ...toolSettings } as SocialAtomSettings;
+
   // Panel states
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
@@ -263,6 +300,7 @@ export function SocialAtom({
 
   const handleAddPerson = useCallback(() => {
     if (!newName.trim()) return;
+    if (settings.maxPeople > 0 && people.length >= settings.maxPeople) return;
     const existingOnRing = people.filter((p) => p.distanceRing === newRing);
     const angleStep = (2 * Math.PI) / Math.max(existingOnRing.length + 1, 1);
     const angle = angleStep * existingOnRing.length;
@@ -1350,7 +1388,7 @@ export function SocialAtom({
   // ---------------------------------------------------------------------------
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 relative">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-base font-semibold text-slate-200 flex items-center gap-2">
@@ -1407,22 +1445,6 @@ export function SocialAtom({
             Add
           </button>
 
-          {/* Clear (clinician only) */}
-          {isClinician && people.length > 0 && (
-            <button
-              onClick={() => {
-                onClear();
-                playClickSound();
-                setSelectedPersonId(null);
-                setEditingPersonId(null);
-                setConnectionMode(false);
-              }}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red-300 hover:bg-red-500/20 border border-red-400/20 transition-all flex items-center gap-1"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Clear
-            </button>
-          )}
         </div>
       </div>
 
@@ -1504,7 +1526,7 @@ export function SocialAtom({
           </text>
 
           {/* Connections */}
-          {renderConnections}
+          {settings.showConnections && renderConnections}
 
           {/* People */}
           {renderPeople}
@@ -1531,6 +1553,16 @@ export function SocialAtom({
           <div key="detail">{renderDetailPopover()}</div>
         )}
       </AnimatePresence>
+
+      {/* Clinician Toolbar */}
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={SOCIAL_ATOM_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
     </div>
   );
 }

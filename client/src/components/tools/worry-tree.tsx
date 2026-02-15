@@ -2,7 +2,8 @@ import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playClickSound } from "@/lib/audio-feedback";
-import { RotateCcw, Plus, X, Check, ChevronRight, TreePine, Leaf, Clock, Sparkles, HelpCircle } from "lucide-react";
+import { RotateCcw, Plus, X, Check, ChevronRight, TreePine, Leaf, Clock, Sparkles, HelpCircle, GitBranch, Hash } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ─── Data Interfaces ──────────────────────────────────────────────────────────
 
@@ -27,7 +28,48 @@ export interface WorryTreeProps {
   onRemoveEntry: (entryId: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Toolbar Settings ──────────────────────────────────────────────
+
+interface WorryTreeSettings {
+  showTreeVisualization: boolean;
+  showDecisionFlow: boolean;
+  maxEntries: number;
+}
+
+const DEFAULT_WORRY_TREE_SETTINGS: WorryTreeSettings = {
+  showTreeVisualization: true,
+  showDecisionFlow: true,
+  maxEntries: 0,
+};
+
+const WORRY_TREE_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  {
+    type: "toggle",
+    key: "showTreeVisualization",
+    icon: TreePine,
+    label: "Tree Visual",
+    activeColor: "emerald",
+  },
+  {
+    type: "toggle",
+    key: "showDecisionFlow",
+    icon: GitBranch,
+    label: "Decision Flow",
+    activeColor: "sky",
+  },
+  {
+    type: "number",
+    key: "maxEntries",
+    icon: Hash,
+    label: "Max Entries",
+    steps: [0, 3, 5, 10],
+    activeColor: "amber",
+  },
+];
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -951,7 +993,11 @@ export function WorryTree({
   onRemoveEntry,
   onClear,
   isClinician,
+  toolSettings,
+  onSettingsUpdate,
 }: WorryTreeProps) {
+  const settings = { ...DEFAULT_WORRY_TREE_SETTINGS, ...toolSettings } as WorryTreeSettings;
+
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
   const [showInput, setShowInput] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -1010,10 +1056,11 @@ export function WorryTree({
   }, []);
 
   const handleNewWorry = useCallback(() => {
+    if (settings.maxEntries > 0 && entries.length >= settings.maxEntries) return;
     playClickSound?.();
     setShowInput(true);
     setActiveEntryId(null);
-  }, []);
+  }, [settings.maxEntries, entries.length]);
 
   const handleClear = useCallback(() => {
     playClickSound?.();
@@ -1076,17 +1123,6 @@ export function WorryTree({
           >
             <HelpCircle className="w-4 h-4" />
           </motion.button>
-          {isClinician && entries.length > 0 && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleClear}
-              className="p-2 rounded-lg text-white/40 hover:text-red-300/70 hover:bg-red-500/10 transition-all"
-              title="Clear all entries"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </motion.button>
-          )}
         </div>
       </div>
 
@@ -1100,16 +1136,18 @@ export function WorryTree({
       </AnimatePresence>
 
       {/* Tree visualization */}
-      <div className="relative z-10">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="rounded-2xl bg-gradient-to-b from-white/[0.04] to-white/[0.01] border border-white/[0.06] p-4 backdrop-blur-sm overflow-hidden"
-        >
-          <TreeSVG entries={entries} activeEntryId={effectiveActiveId} />
-        </motion.div>
-      </div>
+      {settings.showTreeVisualization && (
+        <div className="relative z-10">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="rounded-2xl bg-gradient-to-b from-white/[0.04] to-white/[0.01] border border-white/[0.06] p-4 backdrop-blur-sm overflow-hidden"
+          >
+            <TreeSVG entries={entries} activeEntryId={effectiveActiveId} />
+          </motion.div>
+        </div>
+      )}
 
       {/* Stats bar */}
       <div className="relative z-10">
@@ -1145,6 +1183,7 @@ export function WorryTree({
         </div>
 
         {/* Decision flow / input panel */}
+        {settings.showDecisionFlow && (
         <div className="flex-1 min-w-0">
           <AnimatePresence mode="wait">
             {showInput && (
@@ -1236,7 +1275,18 @@ export function WorryTree({
             )}
           </AnimatePresence>
         </div>
+        )}
       </div>
+
+      {/* Clinician Toolbar */}
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={WORRY_TREE_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
 
       {/* Glassmorphism corner accents */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />

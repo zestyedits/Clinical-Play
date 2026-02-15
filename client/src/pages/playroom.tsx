@@ -102,6 +102,7 @@ export default function Playroom() {
   const [gardenPlants, setGardenPlants] = useState<GardenPlantData[]>([]);
   const [gardenJournalEntries, setGardenJournalEntries] = useState<GardenJournalEntryData[]>([]);
   const [gardenWeeds, setGardenWeeds] = useState<GardenWeedData[]>([]);
+  const [toolSettings, setToolSettings] = useState<Record<string, Record<string, any>>>({});
 
   const [subscriptionType, setSubscriptionType] = useState<string>("free");
   const [sessionEnded, setSessionEnded] = useState(false);
@@ -243,6 +244,7 @@ export default function Playroom() {
         if (msg.gardenPlants) setGardenPlants(msg.gardenPlants);
         if (msg.gardenJournalEntries) setGardenJournalEntries(msg.gardenJournalEntries);
         if (msg.gardenWeeds) setGardenWeeds(msg.gardenWeeds);
+        if (msg.toolSettings) setToolSettings(msg.toolSettings);
         break;
       case "item-placed":
         setItems(prev => [...prev, {
@@ -441,6 +443,11 @@ export default function Playroom() {
           metaphor: msg.metaphor,
           partLimit: msg.partLimit,
         });
+        break;
+
+      // Generic Tool Settings
+      case "tool-settings-updated":
+        setToolSettings(prev => ({ ...prev, [msg.toolId]: msg.settings }));
         break;
 
       // Emotion Thermometer
@@ -813,6 +820,11 @@ export default function Playroom() {
             ...(msg.metaphor !== undefined && { metaphor: msg.metaphor }),
             ...(msg.partLimit !== undefined && { partLimit: msg.partLimit }),
           }));
+          break;
+
+        // Demo: Generic tool settings
+        case "tool-settings-update":
+          setToolSettings(prev => ({ ...prev, [msg.toolId]: { ...(prev[msg.toolId] || {}), ...msg.settings } }));
           break;
 
         // Demo: Thermometer
@@ -1573,6 +1585,12 @@ export default function Playroom() {
     if (!isDemo) { setGardenPlants([]); setGardenJournalEntries([]); setGardenWeeds([]); }
   }, [send, isDemo]);
 
+  // Generic tool settings handler
+  const handleToolSettingsUpdate = useCallback((toolId: string, updates: Record<string, any>) => {
+    setToolSettings(prev => ({ ...prev, [toolId]: { ...(prev[toolId] || {}), ...updates } }));
+    send({ type: "tool-settings-update", toolId, settings: updates });
+  }, [send]);
+
   const handleEndSession = useCallback(async () => {
     if (!sessionId) return;
     setEndingSession(true);
@@ -1961,6 +1979,8 @@ export default function Playroom() {
                   startTime={breathingStartTime}
                   techniqueId={breathingTechnique}
                   onTechniqueChange={handleBreathingTechniqueChange}
+                  toolSettings={toolSettings["breathing"]}
+                  onSettingsUpdate={(u) => handleToolSettingsUpdate("breathing", u)}
                 />
               </motion.div>
             )}
@@ -1979,6 +1999,8 @@ export default function Playroom() {
                   onSelect={handleFeelingSelect}
                   onClear={handleFeelingClear}
                   isClinician={isClinician}
+                  toolSettings={toolSettings["feelings"]}
+                  onSettingsUpdate={(u) => handleToolSettingsUpdate("feelings", u)}
                 />
               </motion.div>
             )}
@@ -1999,6 +2021,8 @@ export default function Playroom() {
                   onUpdateEvent={handleTimelineUpdate}
                   onClear={handleTimelineClear}
                   isClinician={isClinician}
+                  toolSettings={toolSettings["narrative"]}
+                  onSettingsUpdate={(u) => handleToolSettingsUpdate("narrative", u)}
                 />
               </motion.div>
             )}
@@ -2019,6 +2043,8 @@ export default function Playroom() {
                   onRemoveCard={handleValuesRemove}
                   onClear={handleValuesClear}
                   isClinician={isClinician}
+                  toolSettings={toolSettings["values-sort"]}
+                  onSettingsUpdate={(u) => handleToolSettingsUpdate("values-sort", u)}
                 />
               </motion.div>
             )}
@@ -2051,81 +2077,81 @@ export default function Playroom() {
 
             {activeTool === "emotion-thermometer" && (
               <motion.div key="emotion-thermometer" className="absolute inset-0" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <EmotionThermometer readings={thermometerReadings} onAddReading={handleThermometerAdd} onRemoveReading={handleThermometerRemove} onClear={handleThermometerClear} isClinician={isClinician} />
+                <EmotionThermometer readings={thermometerReadings} onAddReading={handleThermometerAdd} onRemoveReading={handleThermometerRemove} onClear={handleThermometerClear} isClinician={isClinician} toolSettings={toolSettings["emotion-thermometer"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("emotion-thermometer", u)} />
               </motion.div>
             )}
 
             {activeTool === "containment-box" && (
               <motion.div key="containment-box" className="absolute inset-0" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <ContainmentBox containers={containmentContainers} items={containmentItems} onCreateContainer={handleContainmentCreateContainer} onAddItem={handleContainmentAddItem} onContainItem={handleContainmentContainItem} onDissolveItem={handleContainmentDissolveItem} onLock={handleContainmentLock} onUnlock={handleContainmentUnlock} onClear={handleContainmentClear} isClinician={isClinician} />
+                <ContainmentBox containers={containmentContainers} items={containmentItems} onCreateContainer={handleContainmentCreateContainer} onAddItem={handleContainmentAddItem} onContainItem={handleContainmentContainItem} onDissolveItem={handleContainmentDissolveItem} onLock={handleContainmentLock} onUnlock={handleContainmentUnlock} onClear={handleContainmentClear} isClinician={isClinician} toolSettings={toolSettings["containment-box"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("containment-box", u)} />
               </motion.div>
             )}
 
             {activeTool === "body-scan" && (
               <motion.div key="body-scan" className="absolute inset-0" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <BodyScanMap markers={bodyScanMarkers} onAddMarker={handleBodyScanAdd} onUpdateMarker={handleBodyScanUpdate} onRemoveMarker={handleBodyScanRemove} onClear={handleBodyScanClear} isClinician={isClinician} />
+                <BodyScanMap markers={bodyScanMarkers} onAddMarker={handleBodyScanAdd} onUpdateMarker={handleBodyScanUpdate} onRemoveMarker={handleBodyScanRemove} onClear={handleBodyScanClear} isClinician={isClinician} toolSettings={toolSettings["body-scan"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("body-scan", u)} />
               </motion.div>
             )}
 
             {activeTool === "gratitude-jar" && (
               <motion.div key="gratitude-jar" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
                 <div className="p-4 flex items-start justify-center min-h-full">
-                  <GratitudeJar stones={gratitudeStones} onAddStone={handleGratitudeAdd} onStarStone={handleGratitudeStar} onRemoveStone={handleGratitudeRemove} onClear={handleGratitudeClear} isClinician={isClinician} />
+                  <GratitudeJar stones={gratitudeStones} onAddStone={handleGratitudeAdd} onStarStone={handleGratitudeStar} onRemoveStone={handleGratitudeRemove} onClear={handleGratitudeClear} isClinician={isClinician} toolSettings={toolSettings["gratitude-jar"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("gratitude-jar", u)} />
                 </div>
               </motion.div>
             )}
 
             {activeTool === "fidget-tools" && (
               <motion.div key="fidget-tools" className="absolute inset-0" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <FidgetTools onInteraction={handleFidgetInteraction} isClinician={isClinician} />
+                <FidgetTools onInteraction={handleFidgetInteraction} isClinician={isClinician} toolSettings={toolSettings["fidget-tools"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("fidget-tools", u)} />
               </motion.div>
             )}
 
             {activeTool === "safety-map" && (
               <motion.div key="safety-map" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <SafetyMap items={safetyPlanItems} onAddItem={handleSafetyAdd} onUpdateItem={handleSafetyUpdate} onRemoveItem={handleSafetyRemove} onClear={handleSafetyClear} isClinician={isClinician} />
+                <SafetyMap items={safetyPlanItems} onAddItem={handleSafetyAdd} onUpdateItem={handleSafetyUpdate} onRemoveItem={handleSafetyRemove} onClear={handleSafetyClear} isClinician={isClinician} toolSettings={toolSettings["safety-map"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("safety-map", u)} />
               </motion.div>
             )}
 
             {activeTool === "worry-tree" && (
               <motion.div key="worry-tree" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <WorryTree entries={worryTreeEntries} onCreateEntry={handleWorryCreate} onUpdateEntry={handleWorryUpdate} onRemoveEntry={handleWorryRemove} onClear={handleWorryClear} isClinician={isClinician} />
+                <WorryTree entries={worryTreeEntries} onCreateEntry={handleWorryCreate} onUpdateEntry={handleWorryUpdate} onRemoveEntry={handleWorryRemove} onClear={handleWorryClear} isClinician={isClinician} toolSettings={toolSettings["worry-tree"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("worry-tree", u)} />
               </motion.div>
             )}
 
             {activeTool === "thought-bridge" && (
               <motion.div key="thought-bridge" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <ThoughtBridge records={thoughtBridgeRecords} evidence={thoughtBridgeEvidence} onCreateRecord={handleThoughtBridgeCreate} onUpdateRecord={handleThoughtBridgeUpdate} onRemoveRecord={handleThoughtBridgeRemove} onAddEvidence={handleThoughtBridgeAddEvidence} onRemoveEvidence={handleThoughtBridgeRemoveEvidence} onClear={handleThoughtBridgeClear} isClinician={isClinician} />
+                <ThoughtBridge records={thoughtBridgeRecords} evidence={thoughtBridgeEvidence} onCreateRecord={handleThoughtBridgeCreate} onUpdateRecord={handleThoughtBridgeUpdate} onRemoveRecord={handleThoughtBridgeRemove} onAddEvidence={handleThoughtBridgeAddEvidence} onRemoveEvidence={handleThoughtBridgeRemoveEvidence} onClear={handleThoughtBridgeClear} isClinician={isClinician} toolSettings={toolSettings["thought-bridge"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("thought-bridge", u)} />
               </motion.div>
             )}
 
             {activeTool === "coping-toolbox" && (
               <motion.div key="coping-toolbox" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <CopingToolbox strategies={copingStrategies} onAddStrategy={handleCopingAdd} onUpdateStrategy={handleCopingUpdate} onRemoveStrategy={handleCopingRemove} onClear={handleCopingClear} isClinician={isClinician} />
+                <CopingToolbox strategies={copingStrategies} onAddStrategy={handleCopingAdd} onUpdateStrategy={handleCopingUpdate} onRemoveStrategy={handleCopingRemove} onClear={handleCopingClear} isClinician={isClinician} toolSettings={toolSettings["coping-toolbox"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("coping-toolbox", u)} />
               </motion.div>
             )}
 
             {activeTool === "dbt-house" && (
               <motion.div key="dbt-house" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <DbtHouse skills={dbtHouseSkills} onPlaceSkill={handleDbtSkillPlace} onUpdateSkill={handleDbtSkillUpdate} onRemoveSkill={handleDbtSkillRemove} onClear={handleDbtHouseClear} isClinician={isClinician} />
+                <DbtHouse skills={dbtHouseSkills} onPlaceSkill={handleDbtSkillPlace} onUpdateSkill={handleDbtSkillUpdate} onRemoveSkill={handleDbtSkillRemove} onClear={handleDbtHouseClear} isClinician={isClinician} toolSettings={toolSettings["dbt-house"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("dbt-house", u)} />
               </motion.div>
             )}
 
             {activeTool === "strengths-deck" && (
               <motion.div key="strengths-deck" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <StrengthsDeck placements={strengthsPlacements} spottings={strengthsSpottings} onPlace={handleStrengthsPlace} onMove={handleStrengthsMove} onRemove={handleStrengthsRemove} onSpot={handleStrengthsSpot} onClear={handleStrengthsClear} isClinician={isClinician} />
+                <StrengthsDeck placements={strengthsPlacements} spottings={strengthsSpottings} onPlace={handleStrengthsPlace} onMove={handleStrengthsMove} onRemove={handleStrengthsRemove} onSpot={handleStrengthsSpot} onClear={handleStrengthsClear} isClinician={isClinician} toolSettings={toolSettings["strengths-deck"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("strengths-deck", u)} />
               </motion.div>
             )}
 
             {activeTool === "social-atom" && (
               <motion.div key="social-atom" className="absolute inset-0" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <SocialAtom people={socialAtomPeople} connections={socialAtomConnections} onAddPerson={handleSocialAtomAddPerson} onMovePerson={handleSocialAtomMovePerson} onUpdatePerson={handleSocialAtomUpdatePerson} onRemovePerson={handleSocialAtomRemovePerson} onAddConnection={handleSocialAtomAddConnection} onRemoveConnection={handleSocialAtomRemoveConnection} onClear={handleSocialAtomClear} isClinician={isClinician} />
+                <SocialAtom people={socialAtomPeople} connections={socialAtomConnections} onAddPerson={handleSocialAtomAddPerson} onMovePerson={handleSocialAtomMovePerson} onUpdatePerson={handleSocialAtomUpdatePerson} onRemovePerson={handleSocialAtomRemovePerson} onAddConnection={handleSocialAtomAddConnection} onRemoveConnection={handleSocialAtomRemoveConnection} onClear={handleSocialAtomClear} isClinician={isClinician} toolSettings={toolSettings["social-atom"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("social-atom", u)} />
               </motion.div>
             )}
 
             {activeTool === "growth-garden" && (
               <motion.div key="growth-garden" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <GrowthGarden plants={gardenPlants} journalEntries={gardenJournalEntries} weeds={gardenWeeds} onAddPlant={handleGardenAddPlant} onUpdatePlant={handleGardenUpdatePlant} onRemovePlant={handleGardenRemovePlant} onAddJournalEntry={handleGardenAddJournal} onAddWeed={handleGardenAddWeed} onPullWeed={handleGardenPullWeed} onClear={handleGardenClear} isClinician={isClinician} />
+                <GrowthGarden plants={gardenPlants} journalEntries={gardenJournalEntries} weeds={gardenWeeds} onAddPlant={handleGardenAddPlant} onUpdatePlant={handleGardenUpdatePlant} onRemovePlant={handleGardenRemovePlant} onAddJournalEntry={handleGardenAddJournal} onAddWeed={handleGardenAddWeed} onPullWeed={handleGardenPullWeed} onClear={handleGardenClear} isClinician={isClinician} toolSettings={toolSettings["growth-garden"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("growth-garden", u)} />
               </motion.div>
             )}
           </AnimatePresence>

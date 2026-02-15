@@ -2,7 +2,8 @@ import { useState, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playRippleSound } from "@/lib/audio-feedback";
-import { Plus, X, Trash2, RotateCcw } from "lucide-react";
+import { Plus, X, Trash2, RotateCcw, Hash, MessageSquare } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 function lightenColor(hex: string, percent: number): string {
   const num = parseInt(hex.replace('#', ''), 16);
@@ -36,7 +37,39 @@ interface NarrativeTimelineProps {
   onUpdateEvent: (eventId: string, label: string, description: string | null, position: number, color: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Settings ────────────────────────────────────────────────────────
+
+interface NarrativeTimelineSettings {
+  maxEvents: number;
+  showPrompts: boolean;
+}
+
+const DEFAULT_NARRATIVE_TIMELINE_SETTINGS: NarrativeTimelineSettings = {
+  maxEvents: 0,
+  showPrompts: true,
+};
+
+const NARRATIVE_TIMELINE_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  {
+    type: "number",
+    key: "maxEvents",
+    icon: Hash,
+    label: "Max Events",
+    steps: [0, 5, 10, 15, 20],
+    activeColor: "amber",
+  },
+  {
+    type: "toggle",
+    key: "showPrompts",
+    icon: MessageSquare,
+    label: "Prompts",
+    activeColor: "sky",
+  },
+];
 
 const STONE_COLORS = ["#1B2A4A", "#A8C5A0", "#C9A96E", "#7B8FA1", "#E8B4BC", "#9DB5B2"];
 
@@ -106,7 +139,8 @@ function RippleEffect({ x, y }: { x: string; y: string }) {
   );
 }
 
-export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateEvent, onClear, isClinician }: NarrativeTimelineProps) {
+export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateEvent, onClear, isClinician, toolSettings, onSettingsUpdate }: NarrativeTimelineProps) {
+  const settings = { ...DEFAULT_NARRATIVE_TIMELINE_SETTINGS, ...toolSettings } as NarrativeTimelineSettings;
   const [showAddForm, setShowAddForm] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [newDesc, setNewDesc] = useState("");
@@ -118,6 +152,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
   const rippleId = useRef(0);
 
   const handleTimelineClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (settings.maxEvents > 0 && events.length >= settings.maxEvents) return;
     const rect = timelineRef.current?.getBoundingClientRect();
     if (!rect) return;
     const scrollEl = timelineRef.current!;
@@ -217,16 +252,6 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
             <span className="text-xs text-muted-foreground/50 font-medium">
               {events.length} stone{events.length !== 1 ? 's' : ''}
             </span>
-          )}
-          {isClinician && events.length > 0 && (
-            <button
-              onClick={onClear}
-              className="min-w-[44px] min-h-[44px] p-2 rounded-xl hover:bg-white/50 transition-colors cursor-pointer text-muted-foreground hover:text-destructive"
-              data-testid="button-clear-timeline"
-              title="Clear timeline"
-            >
-              <RotateCcw size={18} />
-            </button>
           )}
         </div>
       </motion.div>
@@ -497,7 +522,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
       </motion.div>
 
       {/* Empty State */}
-      {events.length === 0 && !showAddForm && (
+      {events.length === 0 && !showAddForm && settings.showPrompts && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <motion.div
             className="text-center"
@@ -586,7 +611,7 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
                   </div>
                   <button
                     onClick={handleSubmitEvent}
-                    disabled={!newLabel.trim()}
+                    disabled={!newLabel.trim() || (settings.maxEvents > 0 && events.length >= settings.maxEvents)}
                     className="w-full min-h-[44px] py-3 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white border border-[#D4AF37]/30 font-medium flex items-center justify-center gap-2 shadow-lg hover:opacity-90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     data-testid="button-submit-event"
                   >
@@ -599,6 +624,15 @@ export function NarrativeTimeline({ events, onAddEvent, onRemoveEvent, onUpdateE
           </motion.div>
         )}
       </AnimatePresence>
+
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={NARRATIVE_TIMELINE_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
     </div>
   );
 }

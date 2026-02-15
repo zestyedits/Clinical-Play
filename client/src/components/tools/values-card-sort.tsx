@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { VALUES_CARDS, VALUE_COLUMNS, type ValueCard } from "@/lib/values-cards-data";
 import { playSortSound } from "@/lib/audio-feedback";
-import { RotateCcw, ChevronUp, GripVertical, Sparkles, Check } from "lucide-react";
+import { RotateCcw, ChevronUp, GripVertical, Sparkles, Check, Hash } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 export interface CardPlacement {
   id: string;
@@ -21,7 +22,30 @@ interface ValuesCardSortProps {
   onRemoveCard: (placementId: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Toolbar Settings ──────────────────────────────────────────────
+
+interface ValuesCardSortSettings {
+  maxCards: number;
+}
+
+const DEFAULT_VALUES_CARD_SORT_SETTINGS: ValuesCardSortSettings = {
+  maxCards: 0,
+};
+
+const VALUES_CARD_SORT_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  {
+    type: "number",
+    key: "maxCards",
+    icon: Hash,
+    label: "Max Cards",
+    steps: [0, 5, 10, 15, 24],
+    activeColor: "amber",
+  },
+];
 
 const COLUMN_GRADIENTS: Record<string, string> = {
   "very-important": "linear-gradient(135deg, #C9A96E15, #C9A96E08)",
@@ -29,7 +53,9 @@ const COLUMN_GRADIENTS: Record<string, string> = {
   "not-important": "linear-gradient(135deg, #94A3B815, #94A3B808)",
 };
 
-export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCard, onClear, isClinician }: ValuesCardSortProps) {
+export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCard, onClear, isClinician, toolSettings, onSettingsUpdate }: ValuesCardSortProps) {
+  const settings = { ...DEFAULT_VALUES_CARD_SORT_SETTINGS, ...toolSettings } as ValuesCardSortSettings;
+
   const [showDeck, setShowDeck] = useState(true);
   const [dragCard, setDragCard] = useState<string | null>(null);
   const [hoveredColumn, setHoveredColumn] = useState<string | null>(null);
@@ -56,6 +82,7 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
       const colCards = getColumnCards(colId);
       onMoveCard(existing.id, colId, colCards.length);
     } else {
+      if (settings.maxCards > 0 && placements.length >= settings.maxCards) return;
       const card = VALUES_CARDS.find(c => c.id === cardId);
       if (!card) return;
       const colCards = getColumnCards(colId);
@@ -119,16 +146,6 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
                 {progress}/{total}
               </span>
             </div>
-          )}
-          {isClinician && placements.length > 0 && (
-            <button
-              onClick={onClear}
-              className="min-w-[44px] min-h-[44px] p-2 rounded-xl hover:bg-white/50 transition-colors cursor-pointer text-muted-foreground hover:text-destructive"
-              data-testid="button-clear-values"
-              title="Reset all cards"
-            >
-              <RotateCcw size={18} />
-            </button>
           )}
         </div>
       </motion.div>
@@ -366,6 +383,16 @@ export function ValuesCardSort({ placements, onPlaceCard, onMoveCard, onRemoveCa
           )}
         </AnimatePresence>
       </div>
+
+      {/* Clinician Toolbar */}
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={VALUES_CARD_SORT_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
     </div>
   );
 }

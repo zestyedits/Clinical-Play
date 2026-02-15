@@ -16,7 +16,9 @@ import {
   Sparkles,
   Edit3,
   Trash2,
+  Lightbulb,
 } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ─── Data Interfaces ──────────────────────────────────────────────────────────
 
@@ -46,7 +48,38 @@ export interface SafetyMapProps {
   onRemoveItem: (itemId: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Settings ────────────────────────────────────────────────────────
+
+interface SafetyMapSettings {
+  showExamples: boolean;
+  showEmergencyBanner: boolean;
+}
+
+const DEFAULT_SAFETY_MAP_SETTINGS: SafetyMapSettings = {
+  showExamples: true,
+  showEmergencyBanner: true,
+};
+
+const SAFETY_MAP_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  {
+    type: "toggle",
+    key: "showExamples",
+    icon: Lightbulb,
+    label: "Examples",
+    activeColor: "amber",
+  },
+  {
+    type: "toggle",
+    key: "showEmergencyBanner",
+    icon: Phone,
+    label: "Emergency Info",
+    activeColor: "rose",
+  },
+];
 
 // ─── Step Configuration ───────────────────────────────────────────────────────
 
@@ -566,6 +599,7 @@ interface StepCardProps {
   isExpanded: boolean;
   onToggleExpand: () => void;
   index: number;
+  showExamples?: boolean;
 }
 
 function StepCard({
@@ -577,6 +611,7 @@ function StepCard({
   isExpanded,
   onToggleExpand,
   index,
+  showExamples = true,
 }: StepCardProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newContent, setNewContent] = useState("");
@@ -768,7 +803,7 @@ function StepCard({
                     <p className="text-xs text-white/50 italic">
                       {currentPrompt}
                     </p>
-                    {config.examples.length > 0 && (
+                    {showExamples && config.examples.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {config.examples.slice(0, 3).map((example, i) => (
                           <button
@@ -911,11 +946,13 @@ export function SafetyMap({
   onRemoveItem,
   onClear,
   isClinician,
+  toolSettings,
+  onSettingsUpdate,
 }: SafetyMapProps) {
+  const settings = { ...DEFAULT_SAFETY_MAP_SETTINGS, ...toolSettings } as SafetyMapSettings;
   const [expandedSteps, setExpandedSteps] = useState<Set<number>>(
     () => new Set([1]),
   );
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   // Group items by step
   const itemsByStep = useMemo(() => {
@@ -958,12 +995,6 @@ export function SafetyMap({
     });
   }, []);
 
-  const handleClear = useCallback(() => {
-    onClear();
-    setShowClearConfirm(false);
-    setExpandedSteps(new Set([1]));
-    playClickSound();
-  }, [onClear]);
 
   return (
     <div className="relative w-full max-w-4xl mx-auto px-2 sm:px-0">
@@ -1020,96 +1051,55 @@ export function SafetyMap({
               isExpanded={expandedSteps.has(config.number)}
               onToggleExpand={() => toggleExpand(config.number)}
               index={i}
+              showExamples={settings.showExamples}
             />
           ))}
         </div>
       </div>
 
       {/* Emergency reminder */}
-      <motion.div
-        className="mt-6 rounded-2xl overflow-hidden relative"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-red-400/5 to-red-500/10" />
-        <div className="absolute inset-0 backdrop-blur-xl" />
-        <div className="absolute inset-[1px] rounded-2xl bg-white/[0.02] border border-red-400/20" />
-        <div className="relative z-10 p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-red-500/20 border border-red-400/30 flex items-center justify-center shrink-0">
-            <AlertTriangle className="w-5 h-5 text-red-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-red-300 mb-0.5">
-              In Immediate Danger?
-            </p>
-            <p className="text-[11px] text-white/50 leading-relaxed">
-              Call <span className="text-white/80 font-medium">911</span> or go to
-              your nearest emergency room. You can also reach the{" "}
-              <span className="text-white/80 font-medium">
-                988 Suicide & Crisis Lifeline
-              </span>{" "}
-              by calling or texting <span className="text-white/80 font-medium">988</span>.
-            </p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Clinician clear button */}
-      {isClinician && items.length > 0 && (
+      {settings.showEmergencyBanner && (
         <motion.div
-          className="mt-4 flex justify-center"
+          className="mt-6 rounded-2xl overflow-hidden relative"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.8 }}
         >
-          <AnimatePresence mode="wait">
-            {showClearConfirm ? (
-              <motion.div
-                key="confirm"
-                className="flex items-center gap-2 rounded-xl bg-red-500/10 border border-red-400/20 px-4 py-2.5"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-              >
-                <span className="text-xs text-red-300">
-                  Clear entire safety plan?
-                </span>
-                <button
-                  onClick={handleClear}
-                  className="px-3 py-1 rounded-lg bg-red-500/20 border border-red-400/30 text-xs text-red-300 hover:bg-red-500/30 transition-colors font-medium"
-                >
-                  Yes, clear all
-                </button>
-                <button
-                  onClick={() => setShowClearConfirm(false)}
-                  className="px-3 py-1 rounded-lg bg-white/[0.05] text-xs text-white/50 hover:text-white/70 transition-colors"
-                >
-                  Cancel
-                </button>
-              </motion.div>
-            ) : (
-              <motion.button
-                key="trigger"
-                onClick={() => {
-                  setShowClearConfirm(true);
-                  playClickSound();
-                }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs text-white/30 hover:text-white/50 hover:bg-white/[0.04] border border-transparent hover:border-white/[0.08] transition-all"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Clear Safety Plan
-              </motion.button>
-            )}
-          </AnimatePresence>
+          <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-red-400/5 to-red-500/10" />
+          <div className="absolute inset-0 backdrop-blur-xl" />
+          <div className="absolute inset-[1px] rounded-2xl bg-white/[0.02] border border-red-400/20" />
+          <div className="relative z-10 p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-red-500/20 border border-red-400/30 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5 text-red-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-red-300 mb-0.5">
+                In Immediate Danger?
+              </p>
+              <p className="text-[11px] text-white/50 leading-relaxed">
+                Call <span className="text-white/80 font-medium">911</span> or go to
+                your nearest emergency room. You can also reach the{" "}
+                <span className="text-white/80 font-medium">
+                  988 Suicide & Crisis Lifeline
+                </span>{" "}
+                by calling or texting <span className="text-white/80 font-medium">988</span>.
+              </p>
+            </div>
+          </div>
         </motion.div>
       )}
 
       {/* Bottom spacing */}
       <div className="h-8" />
+
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={SAFETY_MAP_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
     </div>
   );
 }

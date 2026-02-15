@@ -2,7 +2,8 @@ import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playClickSound } from "@/lib/audio-feedback";
-import { RotateCcw, Plus, Lock, Unlock, X, Sparkles, Trash2 } from "lucide-react";
+import { RotateCcw, Plus, Lock, Unlock, X, Sparkles, Trash2, Hash } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ─── Data Interfaces ──────────────────────────────────────────────────────────
 
@@ -38,7 +39,39 @@ export interface ContainmentBoxProps {
   onUnlock: (containerId: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Settings ────────────────────────────────────────────────────────
+
+interface ContainmentBoxSettings {
+  showDissolution: boolean;
+  maxItemsPerContainer: number;
+}
+
+const DEFAULT_CONTAINMENT_BOX_SETTINGS: ContainmentBoxSettings = {
+  showDissolution: true,
+  maxItemsPerContainer: 0,
+};
+
+const CONTAINMENT_BOX_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  {
+    type: "toggle",
+    key: "showDissolution",
+    icon: Sparkles,
+    label: "Dissolution",
+    activeColor: "amber",
+  },
+  {
+    type: "number",
+    key: "maxItemsPerContainer",
+    icon: Hash,
+    label: "Max Items",
+    steps: [0, 3, 5, 8, 12],
+    activeColor: "purple",
+  },
+];
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -419,10 +452,12 @@ function ContainedItemChip({
   item,
   isLocked,
   onDissolve,
+  showDissolution = true,
 }: {
   item: ContainmentItemData;
   isLocked: boolean;
   onDissolve: (id: string) => void;
+  showDissolution?: boolean;
 }) {
   const [dissolving, setDissolving] = useState(false);
   const chipColor = item.color || "#8B5CF6";
@@ -467,7 +502,7 @@ function ContainedItemChip({
       >
         {item.emoji && <span className="text-sm">{item.emoji}</span>}
         <span className="max-w-[100px] truncate">{item.label}</span>
-        {!isLocked && !dissolving && (
+        {!isLocked && !dissolving && showDissolution && (
           <button
             onClick={handleDissolve}
             className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 hover:scale-110"
@@ -784,6 +819,8 @@ function ContainerCard({
   onDissolveItem,
   onLock,
   onUnlock,
+  showDissolution = true,
+  maxItemsPerContainer = 0,
 }: {
   container: ContainmentContainerData;
   items: ContainmentItemData[];
@@ -791,6 +828,8 @@ function ContainerCard({
   onDissolveItem: (itemId: string) => void;
   onLock: (containerId: string, lockMethod: string, containmentStrength: number) => void;
   onUnlock: (containerId: string) => void;
+  showDissolution?: boolean;
+  maxItemsPerContainer?: number;
 }) {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [showLockPanel, setShowLockPanel] = useState(false);
@@ -929,6 +968,7 @@ function ContainerCard({
                 item={item}
                 isLocked={container.isLocked}
                 onDissolve={onDissolveItem}
+                showDissolution={showDissolution}
               />
             ))}
           </motion.div>
@@ -951,6 +991,7 @@ function ContainerCard({
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
+              disabled={maxItemsPerContainer > 0 && containedItems.length >= maxItemsPerContainer}
               onClick={() => {
                 playClickSound();
                 setShowAddPanel(!showAddPanel);
@@ -960,7 +1001,8 @@ function ContainerCard({
                 "flex-1 py-2 rounded-xl text-xs font-medium",
                 "flex items-center justify-center gap-1.5",
                 "bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.1]",
-                "text-white/60 hover:text-white/80 transition-all duration-200"
+                "text-white/60 hover:text-white/80 transition-all duration-200",
+                "disabled:opacity-30 disabled:cursor-not-allowed"
               )}
             >
               <Plus className="w-3.5 h-3.5" />
@@ -1045,7 +1087,10 @@ export function ContainmentBox({
   onUnlock,
   onClear,
   isClinician,
+  toolSettings,
+  onSettingsUpdate,
 }: ContainmentBoxProps) {
+  const settings = { ...DEFAULT_CONTAINMENT_BOX_SETTINGS, ...toolSettings } as ContainmentBoxSettings;
   const [showCreatePanel, setShowCreatePanel] = useState(false);
 
   const itemsByContainer = useMemo(() => {
@@ -1145,26 +1190,6 @@ export function ContainmentBox({
               </div>
             )}
 
-            {/* Clinician clear button */}
-            {isClinician && containers.length > 0 && (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  playClickSound();
-                  onClear();
-                }}
-                className={cn(
-                  "p-2 rounded-xl",
-                  "bg-white/[0.04] hover:bg-red-500/10 border border-white/[0.08] hover:border-red-500/20",
-                  "text-white/40 hover:text-red-400/80",
-                  "transition-all duration-200"
-                )}
-                title="Clear all containers"
-              >
-                <Trash2 className="w-4 h-4" />
-              </motion.button>
-            )}
           </div>
         </div>
 
@@ -1237,6 +1262,8 @@ export function ContainmentBox({
                   onDissolveItem={onDissolveItem}
                   onLock={onLock}
                   onUnlock={onUnlock}
+                  showDissolution={settings.showDissolution}
+                  maxItemsPerContainer={settings.maxItemsPerContainer}
                 />
               ))}
             </AnimatePresence>
@@ -1283,6 +1310,15 @@ export function ContainmentBox({
           </motion.div>
         )}
       </div>
+
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={CONTAINMENT_BOX_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
     </div>
   );
 }

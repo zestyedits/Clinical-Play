@@ -1,9 +1,10 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FEELING_WHEEL_DATA, type EmotionNode } from "@/lib/feeling-wheel-data";
-import { RotateCcw, Sparkles } from "lucide-react";
+import { RotateCcw, Sparkles, Type, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { playClickSound } from "@/lib/audio-feedback";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 export interface FeelingSelection {
   id: string;
@@ -22,7 +23,37 @@ interface FeelingWheelSVGProps {
   onClear: () => void;
   isClinician: boolean;
   onAuraColor?: (color: string | null) => void;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Toolbar Settings ──────────────────────────────────────────────
+
+interface FeelingWheelSettings {
+  showLabels: boolean;
+  wheelDepth: number;
+}
+
+const DEFAULT_FEELING_WHEEL_SETTINGS: FeelingWheelSettings = {
+  showLabels: true,
+  wheelDepth: 3,
+};
+
+const FEELING_WHEEL_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  { type: "toggle", key: "showLabels", icon: Type, label: "Labels", activeColor: "sky" },
+  {
+    type: "cycle",
+    key: "wheelDepth",
+    icon: Circle,
+    options: [
+      { value: 1, label: "Core Only" },
+      { value: 2, label: "2 Rings" },
+      { value: 3, label: "All Rings" },
+    ],
+    label: "Depth",
+    activeColor: "purple",
+  },
+];
 
 const SVG_SIZE = 400;
 const CENTER = SVG_SIZE / 2;
@@ -124,7 +155,8 @@ function getEmotionEmoji(primaryLabel: string): string {
   return emotion?.emoji || "";
 }
 
-export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, onAuraColor }: FeelingWheelSVGProps) {
+export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, onAuraColor, toolSettings, onSettingsUpdate }: FeelingWheelSVGProps) {
+  const settings = { ...DEFAULT_FEELING_WHEEL_SETTINGS, ...toolSettings } as FeelingWheelSettings;
   const [expandedPrimary, setExpandedPrimary] = useState<string | null>(null);
   const [expandedSecondary, setExpandedSecondary] = useState<string | null>(null);
   const [hoveredWedge, setHoveredWedge] = useState<string | null>(null);
@@ -273,8 +305,8 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
 
             {/* Subtle ring guides */}
             <circle cx={CENTER} cy={CENTER} r={INNER_R2} fill="none" stroke="rgba(0,0,0,0.03)" strokeWidth="0.5" />
-            <circle cx={CENTER} cy={CENTER} r={MID_R2} fill="none" stroke="rgba(0,0,0,0.03)" strokeWidth="0.5" />
-            <circle cx={CENTER} cy={CENTER} r={OUTER_R2} fill="none" stroke="rgba(0,0,0,0.03)" strokeWidth="0.5" />
+            {settings.wheelDepth >= 2 && <circle cx={CENTER} cy={CENTER} r={MID_R2} fill="none" stroke="rgba(0,0,0,0.03)" strokeWidth="0.5" />}
+            {settings.wheelDepth >= 3 && <circle cx={CENTER} cy={CENTER} r={OUTER_R2} fill="none" stroke="rgba(0,0,0,0.03)" strokeWidth="0.5" />}
 
             {/* Inner ring: Primary emotions */}
             {FEELING_WHEEL_DATA.map((emotion, i) => {
@@ -304,7 +336,7 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
                     onPointerLeave={() => handleWedgeHover(null)}
                   />
                   {/* Emoji in wedge */}
-                  {emotion.emoji && (
+                  {settings.showLabels && emotion.emoji && (
                     <WedgeEmoji
                       cx={CENTER + pos.x}
                       cy={CENTER + pos.y}
@@ -315,22 +347,24 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
                       size={isExpanded ? 18 : 14}
                     />
                   )}
-                  <WedgeLabel
-                    cx={CENTER + pos.x}
-                    cy={CENTER + pos.y}
-                    r={(INNER_R1 + INNER_R2) / 2 + 10}
-                    startAngle={startAngle}
-                    endAngle={endAngle}
-                    label={emotion.label}
-                    fontSize={9}
-                  />
+                  {settings.showLabels && (
+                    <WedgeLabel
+                      cx={CENTER + pos.x}
+                      cy={CENTER + pos.y}
+                      r={(INNER_R1 + INNER_R2) / 2 + 10}
+                      startAngle={startAngle}
+                      endAngle={endAngle}
+                      label={emotion.label}
+                      fontSize={9}
+                    />
+                  )}
                 </g>
               );
             })}
 
             {/* Middle ring: Secondary emotions */}
             <AnimatePresence>
-              {selectedPrimary && selectedPrimary.children && (() => {
+              {settings.wheelDepth >= 2 && selectedPrimary && selectedPrimary.children && (() => {
                 const primaryIdx = FEELING_WHEEL_DATA.findIndex(e => e.label === expandedPrimary);
                 const parentStart = primaryIdx * primaryArcAngle - 90;
                 const secCount = selectedPrimary.children.length;
@@ -372,7 +406,7 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
                         onPointerLeave={() => handleWedgeHover(null)}
                       />
                       {/* Emoji for secondary */}
-                      {sec.emoji && (
+                      {settings.showLabels && sec.emoji && (
                         <WedgeEmoji
                           cx={CENTER + pos.x}
                           cy={CENTER + pos.y}
@@ -383,15 +417,17 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
                           size={12}
                         />
                       )}
-                      <WedgeLabel
-                        cx={CENTER + pos.x}
-                        cy={CENTER + pos.y}
-                        r={(MID_R1 + MID_R2) / 2 + 10}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        label={sec.label}
-                        fontSize={7.5}
-                      />
+                      {settings.showLabels && (
+                        <WedgeLabel
+                          cx={CENTER + pos.x}
+                          cy={CENTER + pos.y}
+                          r={(MID_R1 + MID_R2) / 2 + 10}
+                          startAngle={startAngle}
+                          endAngle={endAngle}
+                          label={sec.label}
+                          fontSize={7.5}
+                        />
+                      )}
                     </motion.g>
                   );
                 });
@@ -400,7 +436,7 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
 
             {/* Outer ring: Tertiary emotions */}
             <AnimatePresence>
-              {selectedSecondary && selectedSecondary.children && (() => {
+              {settings.wheelDepth >= 3 && selectedSecondary && selectedSecondary.children && (() => {
                 const primaryIdx = FEELING_WHEEL_DATA.findIndex(e => e.label === expandedPrimary);
                 const secCount = selectedPrimary!.children!.length;
                 const secArc = primaryArcAngle / secCount;
@@ -440,15 +476,17 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
                         onPointerEnter={() => handleWedgeHover(ter.color + ter.label)}
                         onPointerLeave={() => handleWedgeHover(null)}
                       />
-                      <WedgeLabel
-                        cx={CENTER + pos.x}
-                        cy={CENTER + pos.y}
-                        r={(OUTER_R1 + OUTER_R2) / 2}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        label={ter.label}
-                        fontSize={7}
-                      />
+                      {settings.showLabels && (
+                        <WedgeLabel
+                          cx={CENTER + pos.x}
+                          cy={CENTER + pos.y}
+                          r={(OUTER_R1 + OUTER_R2) / 2}
+                          startAngle={startAngle}
+                          endAngle={endAngle}
+                          label={ter.label}
+                          fontSize={7}
+                        />
+                      )}
                     </motion.g>
                   );
                 });
@@ -644,16 +682,6 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Selections</span>
-              {isClinician && (
-                <button
-                  onClick={onClear}
-                  className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 cursor-pointer min-h-[44px] min-w-[44px] p-2 rounded-xl"
-                  data-testid="button-clear-feelings"
-                >
-                  <RotateCcw size={10} />
-                  Clear
-                </button>
-              )}
             </div>
             <div className="flex flex-wrap gap-2">
               {selections.slice(-8).map((sel, i) => (
@@ -680,6 +708,16 @@ export function FeelingWheelSVG({ selections, onSelect, onClear, isClinician, on
           </motion.div>
         )}
       </div>
+
+      {/* ── Clinician Toolbar ── */}
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={FEELING_WHEEL_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
     </div>
   );
 }

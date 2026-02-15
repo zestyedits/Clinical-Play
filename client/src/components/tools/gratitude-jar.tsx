@@ -6,10 +6,12 @@ import {
   Trash2,
   Plus,
   Sparkles,
-  RotateCcw,
   RefreshCw,
   X,
+  MessageSquare,
+  Hash,
 } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ─── Data Interfaces ──────────────────────────────────────────────────────────
 
@@ -31,7 +33,39 @@ export interface GratitudeJarProps {
   onRemoveStone: (stoneId: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Toolbar Settings ─────────────────────────────────────────────
+
+interface GratitudeJarSettings {
+  showPrompts: boolean;
+  maxStones: number;
+}
+
+const DEFAULT_GRATITUDE_JAR_SETTINGS: GratitudeJarSettings = {
+  showPrompts: true,
+  maxStones: 0,
+};
+
+const GRATITUDE_JAR_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  {
+    type: "toggle",
+    key: "showPrompts",
+    icon: MessageSquare,
+    label: "Prompts",
+    activeColor: "sky",
+  },
+  {
+    type: "number",
+    key: "maxStones",
+    icon: Hash,
+    label: "Max Stones",
+    steps: [0, 5, 10, 20, 50],
+    activeColor: "amber",
+  },
+];
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -340,7 +374,10 @@ export function GratitudeJar({
   onRemoveStone,
   onClear,
   isClinician,
+  toolSettings,
+  onSettingsUpdate,
 }: GratitudeJarProps) {
+  const settings = { ...DEFAULT_GRATITUDE_JAR_SETTINGS, ...toolSettings } as GratitudeJarSettings;
   const [inputText, setInputText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0].label);
   const [selectedColor, setSelectedColor] = useState(CATEGORIES[0].color);
@@ -475,42 +512,33 @@ export function GratitudeJar({
             <span>stone{stones.length !== 1 ? "s" : ""}</span>
           </span>
         </div>
-        {isClinician && stones.length > 0 && (
-          <button
-            onClick={onClear}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs
-              bg-white/8 hover:bg-red-500/20 border border-white/10
-              hover:border-red-400/30 text-white/50 hover:text-red-300
-              transition-all duration-200"
-          >
-            <RotateCcw className="w-3 h-3" />
-            Clear Jar
-          </button>
-        )}
+        {/* Clinician clear moved to toolbar */}
       </div>
 
       {/* ── Gratitude prompt generator ── */}
-      <div
-        className="w-full px-4 py-2.5 rounded-xl bg-white/8 backdrop-blur-sm
-          border border-white/10 flex items-center gap-3"
-      >
-        <motion.p
-          key={promptIndex}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex-1 text-sm text-white/50 italic leading-snug"
+      {settings.showPrompts && (
+        <div
+          className="w-full px-4 py-2.5 rounded-xl bg-white/8 backdrop-blur-sm
+            border border-white/10 flex items-center gap-3"
         >
-          {GRATITUDE_PROMPTS[promptIndex]}
-        </motion.p>
-        <button
-          onClick={rotatePrompt}
-          className="shrink-0 p-1.5 rounded-lg hover:bg-white/10 text-white/40
-            hover:text-white/70 transition-colors"
-          title="Next prompt"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
-      </div>
+          <motion.p
+            key={promptIndex}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex-1 text-sm text-white/50 italic leading-snug"
+          >
+            {GRATITUDE_PROMPTS[promptIndex]}
+          </motion.p>
+          <button
+            onClick={rotatePrompt}
+            className="shrink-0 p-1.5 rounded-lg hover:bg-white/10 text-white/40
+              hover:text-white/70 transition-colors"
+            title="Next prompt"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* ── Jar visualization ── */}
       <div className="relative w-full" style={{ aspectRatio: "3 / 4" }}>
@@ -813,17 +841,17 @@ export function GratitudeJar({
           />
           <motion.button
             onClick={handleAddStone}
-            disabled={!inputText.trim()}
+            disabled={!inputText.trim() || (settings.maxStones > 0 && stones.length >= settings.maxStones)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className={cn(
               "px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-1.5 transition-all duration-200",
-              inputText.trim()
+              inputText.trim() && !(settings.maxStones > 0 && stones.length >= settings.maxStones)
                 ? "text-white shadow-lg"
                 : "bg-white/8 text-white/30 cursor-not-allowed",
             )}
             style={
-              inputText.trim()
+              inputText.trim() && !(settings.maxStones > 0 && stones.length >= settings.maxStones)
                 ? {
                     backgroundColor: `${selectedColor}60`,
                     boxShadow: `0 4px 20px ${selectedColor}25`,
@@ -832,10 +860,19 @@ export function GratitudeJar({
             }
           >
             <Plus className="w-4 h-4" />
-            Add
+            {settings.maxStones > 0 && stones.length >= settings.maxStones ? "Full" : "Add"}
           </motion.button>
         </div>
       </div>
+
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={GRATITUDE_JAR_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
     </div>
   );
 }

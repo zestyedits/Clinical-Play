@@ -2,7 +2,8 @@ import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playClickSound } from "@/lib/audio-feedback";
-import { RotateCcw, Plus, X, ChevronDown, Wind, Sparkles } from "lucide-react";
+import { RotateCcw, Plus, X, ChevronDown, Wind, Sparkles, List } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ─── Data Interfaces ──────────────────────────────────────────────────────────
 
@@ -36,7 +37,26 @@ interface BodyScanMapProps {
   onRemoveMarker: (markerId: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Toolbar Settings ──────────────────────────────────────────────
+
+interface BodyScanSettings {
+  showLegend: boolean;
+  showInsights: boolean;
+}
+
+const DEFAULT_BODY_SCAN_SETTINGS: BodyScanSettings = {
+  showLegend: true,
+  showInsights: true,
+};
+
+const BODY_SCAN_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  { type: "toggle", key: "showLegend", icon: List, label: "Legend", activeColor: "sky" },
+  { type: "toggle", key: "showInsights", icon: Sparkles, label: "Insights", activeColor: "purple" },
+];
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1121,7 +1141,10 @@ export function BodyScanMap({
   onRemoveMarker,
   onClear,
   isClinician,
+  toolSettings,
+  onSettingsUpdate,
 }: BodyScanMapProps) {
+  const settings = { ...DEFAULT_BODY_SCAN_SETTINGS, ...toolSettings } as BodyScanSettings;
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [panelState, setPanelState] = useState<{
     mode: "add" | "edit";
@@ -1192,20 +1215,6 @@ export function BodyScanMap({
             </span>
           )}
         </div>
-        {isClinician && markers.length > 0 && (
-          <motion.button
-            onClick={handleClear}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs
-              bg-white/[0.06] hover:bg-red-500/15 border border-white/[0.08]
-              hover:border-red-400/25 text-white/40 hover:text-red-300
-              transition-all duration-200"
-          >
-            <RotateCcw className="w-3 h-3" />
-            Clear All
-          </motion.button>
-        )}
       </div>
 
       {/* Main layout: body SVG + panel */}
@@ -1306,7 +1315,7 @@ export function BodyScanMap({
       </div>
 
       {/* Legend bar */}
-      <LegendBar markers={markers} />
+      {settings.showLegend && <LegendBar markers={markers} />}
 
       {/* Marker summary list (when panel closed) */}
       <AnimatePresence>
@@ -1342,25 +1351,37 @@ export function BodyScanMap({
       </AnimatePresence>
 
       {/* Session insight (3+ markers) */}
-      <AnimatePresence>
-        {markers.length >= 3 && !panelState && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="rounded-2xl p-4
-              bg-white/[0.04] backdrop-blur-xl border border-white/[0.08]"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-4 h-4 text-purple-400/50" />
-              <span className="text-[11px] uppercase tracking-wider text-white/40 font-medium">
-                Body Scan Insight
-              </span>
-            </div>
-            <BodyInsight markers={markers} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {settings.showInsights && (
+        <AnimatePresence>
+          {markers.length >= 3 && !panelState && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="rounded-2xl p-4
+                bg-white/[0.04] backdrop-blur-xl border border-white/[0.08]"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-4 h-4 text-purple-400/50" />
+                <span className="text-[11px] uppercase tracking-wider text-white/40 font-medium">
+                  Body Scan Insight
+                </span>
+              </div>
+              <BodyInsight markers={markers} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+
+      {/* ── Clinician Toolbar ── */}
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={BODY_SCAN_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
     </div>
   );
 }

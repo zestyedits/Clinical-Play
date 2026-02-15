@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, Wind } from "lucide-react";
+import { Play, Pause, Wind, Type, VolumeX, Hash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { playThemedBreathSound } from "@/lib/audio-feedback";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 import { getTechnique, getTotalCycle, type BreathingTechnique } from "@/lib/breathing-techniques";
 import { BreathingTechniqueSelector } from "./breathing-technique-selector";
 import { OceanWaves } from "./breathing-themes/ocean-waves";
@@ -12,6 +13,46 @@ import { CampfireGlow } from "./breathing-themes/campfire-glow";
 import { NorthernLights } from "./breathing-themes/northern-lights";
 import type { BreathingThemeProps } from "./breathing-themes/types";
 
+// ─── Clinician Toolbar Settings ──────────────────────────────────────────────
+
+interface BreathingGuideSettings {
+  showPhaseText: boolean;
+  muteSounds: boolean;
+  cycleLimit: number;
+}
+
+const DEFAULT_BREATHING_GUIDE_SETTINGS: BreathingGuideSettings = {
+  showPhaseText: true,
+  muteSounds: false,
+  cycleLimit: 0,
+};
+
+const BREATHING_GUIDE_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  {
+    type: "toggle",
+    key: "showPhaseText",
+    icon: Type,
+    label: "Phase Text",
+    activeColor: "sky",
+  },
+  {
+    type: "toggle",
+    key: "muteSounds",
+    icon: VolumeX,
+    label: "Mute",
+    activeLabel: "Muted",
+    activeColor: "rose",
+  },
+  {
+    type: "number",
+    key: "cycleLimit",
+    icon: Hash,
+    label: "Cycle Limit",
+    steps: [0, 3, 5, 8, 12],
+    activeColor: "amber",
+  },
+];
+
 interface BreathingGuideProps {
   isActive: boolean;
   isClinician: boolean;
@@ -19,6 +60,8 @@ interface BreathingGuideProps {
   startTime?: number | null;
   techniqueId: string;
   onTechniqueChange: (id: string) => void;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
 
 const THEMES: Record<string, React.ComponentType<BreathingThemeProps>> = {
@@ -29,7 +72,8 @@ const THEMES: Record<string, React.ComponentType<BreathingThemeProps>> = {
   "northern-lights": NorthernLights,
 };
 
-export function BreathingGuide({ isActive, isClinician, onToggle, startTime, techniqueId, onTechniqueChange }: BreathingGuideProps) {
+export function BreathingGuide({ isActive, isClinician, onToggle, startTime, techniqueId, onTechniqueChange, toolSettings, onSettingsUpdate }: BreathingGuideProps) {
+  const settings = { ...DEFAULT_BREATHING_GUIDE_SETTINGS, ...toolSettings } as BreathingGuideSettings;
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [cycleCount, setCycleCount] = useState(0);
@@ -73,15 +117,22 @@ export function BreathingGuide({ isActive, isClinician, onToggle, startTime, tec
     return () => clearInterval(interval);
   }, [isActive, startTime, totalCycle, phases]);
 
+  // Auto-stop when cycle limit is reached
+  useEffect(() => {
+    if (isActive && settings.cycleLimit > 0 && cycleCount >= settings.cycleLimit) {
+      onToggle();
+    }
+  }, [isActive, cycleCount, settings.cycleLimit, onToggle]);
+
   // Play themed sound on inhale/exhale transitions
   useEffect(() => {
-    if (isActive) {
+    if (isActive && !settings.muteSounds) {
       const phase = phases[phaseIndex];
       if (phase && (phase.type === "inhale" || phase.type === "exhale")) {
         playThemedBreathSound(technique.audioTheme, phase.type);
       }
     }
-  }, [isActive, phaseIndex, technique.audioTheme, phases]);
+  }, [isActive, phaseIndex, technique.audioTheme, phases, settings.muteSounds]);
 
   const currentPhase = phases[phaseIndex];
 
@@ -120,7 +171,7 @@ export function BreathingGuide({ isActive, isClinician, onToggle, startTime, tec
       </AnimatePresence>
 
       {/* Layer 2: Phase HUD overlay */}
-      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pb-28 md:pb-36 pointer-events-none">
         {/* Cycle counter */}
         <AnimatePresence>
           {isActive && cycleCount > 0 && (
@@ -179,16 +230,20 @@ export function BreathingGuide({ isActive, isClinician, onToggle, startTime, tec
           >
             {isActive ? (
               <>
-                <motion.h2
-                  className="font-display text-4xl md:text-5xl tracking-tight mb-1"
-                  animate={{ color: phaseColor }}
-                  transition={{ duration: 1 }}
-                >
-                  {currentPhase.label}
-                </motion.h2>
-                <p className="text-white/50 text-sm">
-                  {technique.name} — {technique.subtitle}
-                </p>
+                {settings.showPhaseText && (
+                  <>
+                    <motion.h2
+                      className="font-display text-4xl md:text-5xl tracking-tight mb-1"
+                      animate={{ color: phaseColor }}
+                      transition={{ duration: 1 }}
+                    >
+                      {currentPhase.label}
+                    </motion.h2>
+                    <p className="text-white/50 text-sm">
+                      {technique.name} — {technique.subtitle}
+                    </p>
+                  </>
+                )}
               </>
             ) : (
               <div className="space-y-1">
@@ -268,6 +323,15 @@ export function BreathingGuide({ isActive, isClinician, onToggle, startTime, tec
           </motion.p>
         )}
       </div>
+
+      {/* Clinician Toolbar */}
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={BREATHING_GUIDE_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+        />
+      )}
     </div>
   );
 }

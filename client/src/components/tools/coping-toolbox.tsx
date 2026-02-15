@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { COPING_STRATEGY_LIBRARY, COPING_CATEGORIES } from "@/lib/coping-strategies-data";
 import { playClickSound } from "@/lib/audio-feedback";
-import { RotateCcw, Plus, X, Star, Pin, ChevronUp, ChevronDown, BookOpen, Sparkles } from "lucide-react";
+import { Plus, X, Star, Pin, ChevronUp, ChevronDown, BookOpen, Sparkles } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -40,7 +41,38 @@ export interface CopingToolboxProps {
   onRemoveStrategy: (strategyId: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Toolbar Settings ─────────────────────────────────────────────
+
+interface CopingToolboxSettings {
+  showLibrary: boolean;
+  allowCustom: boolean;
+}
+
+const DEFAULT_COPING_TOOLBOX_SETTINGS: CopingToolboxSettings = {
+  showLibrary: true,
+  allowCustom: true,
+};
+
+const COPING_TOOLBOX_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  {
+    type: "toggle",
+    key: "showLibrary",
+    icon: BookOpen,
+    label: "Library",
+    activeColor: "sky",
+  },
+  {
+    type: "toggle",
+    key: "allowCustom",
+    icon: Plus,
+    label: "Custom",
+    activeColor: "amber",
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -82,7 +114,10 @@ export function CopingToolbox({
   onRemoveStrategy,
   onClear,
   isClinician,
+  toolSettings,
+  onSettingsUpdate,
 }: CopingToolboxProps) {
+  const settings = { ...DEFAULT_COPING_TOOLBOX_SETTINGS, ...toolSettings } as CopingToolboxSettings;
   const [activeCategory, setActiveCategory] = useState<string>("sensory");
   const [showLibrary, setShowLibrary] = useState(false);
   const [showCreator, setShowCreator] = useState(false);
@@ -515,73 +550,63 @@ export function CopingToolbox({
         {/* ============================================================== */}
         <div className="flex-shrink-0 px-4 pb-3 pt-1 flex gap-2">
           {/* Library toggle */}
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.96 }}
-            onClick={() => {
-              playClickSound();
-              setShowLibrary(!showLibrary);
-              setShowCreator(false);
-            }}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border cursor-pointer transition-all text-sm font-medium",
-              showLibrary
-                ? "bg-blue-50 border-blue-200 text-blue-600"
-                : "bg-white/60 border-gray-200 text-gray-600 hover:bg-white/80",
-            )}
-          >
-            <BookOpen size={15} />
-            Library
-            <motion.span
-              animate={{ rotate: showLibrary ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ChevronUp size={14} />
-            </motion.span>
-          </motion.button>
-
-          {/* Custom creator toggle */}
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.96 }}
-            onClick={() => {
-              playClickSound();
-              setShowCreator(!showCreator);
-              setShowLibrary(false);
-            }}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border cursor-pointer transition-all text-sm font-medium",
-              showCreator
-                ? "bg-purple-50 border-purple-200 text-purple-600"
-                : "bg-white/60 border-gray-200 text-gray-600 hover:bg-white/80",
-            )}
-          >
-            <Plus size={15} />
-            Create
-          </motion.button>
-
-          {/* Clinician clear */}
-          {isClinician && strategies.length > 0 && (
+          {settings.showLibrary && (
             <motion.button
               type="button"
               whileTap={{ scale: 0.96 }}
               onClick={() => {
                 playClickSound();
-                onClear();
+                setShowLibrary(!showLibrary);
+                setShowCreator(false);
               }}
-              className="flex items-center justify-center gap-1 py-2.5 px-3 rounded-xl border border-gray-200 bg-white/60 text-gray-400 hover:text-red-400 hover:border-red-200 cursor-pointer transition-all text-sm"
-              title="Clear all strategies"
+              className={cn(
+                "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border cursor-pointer transition-all text-sm font-medium",
+                showLibrary
+                  ? "bg-blue-50 border-blue-200 text-blue-600"
+                  : "bg-white/60 border-gray-200 text-gray-600 hover:bg-white/80",
+              )}
             >
-              <RotateCcw size={14} />
+              <BookOpen size={15} />
+              Library
+              <motion.span
+                animate={{ rotate: showLibrary ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronUp size={14} />
+              </motion.span>
             </motion.button>
           )}
+
+          {/* Custom creator toggle */}
+          {settings.allowCustom && (
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.96 }}
+              onClick={() => {
+                playClickSound();
+                setShowCreator(!showCreator);
+                setShowLibrary(false);
+              }}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border cursor-pointer transition-all text-sm font-medium",
+                showCreator
+                  ? "bg-purple-50 border-purple-200 text-purple-600"
+                  : "bg-white/60 border-gray-200 text-gray-600 hover:bg-white/80",
+              )}
+            >
+              <Plus size={15} />
+              Create
+            </motion.button>
+          )}
+
+          {/* Clinician clear moved to toolbar */}
         </div>
 
         {/* ============================================================== */}
         {/* Strategy Library Drawer */}
         {/* ============================================================== */}
         <AnimatePresence>
-          {showLibrary && (
+          {settings.showLibrary && showLibrary && (
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
@@ -665,7 +690,7 @@ export function CopingToolbox({
         {/* Custom Strategy Creator Drawer */}
         {/* ============================================================== */}
         <AnimatePresence>
-          {showCreator && (
+          {settings.allowCustom && showCreator && (
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
@@ -839,6 +864,15 @@ export function CopingToolbox({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {isClinician && onSettingsUpdate && (
+          <ClinicianToolbar
+            controls={COPING_TOOLBOX_TOOLBAR_CONTROLS}
+            settings={settings}
+            onUpdate={onSettingsUpdate}
+            onClear={onClear}
+          />
+        )}
       </div>
     </div>
   );

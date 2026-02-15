@@ -2,7 +2,8 @@ import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { DBT_SKILLS, DBT_MODULES } from "@/lib/dbt-skills-data";
-import { X, ChevronRight, Trash2, Sparkles, Star, Pencil, Home, BookOpen } from "lucide-react";
+import { X, ChevronRight, Trash2, Sparkles, Star, Pencil, Home, BookOpen, BarChart3 } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 import { playClickSound } from "@/lib/audio-feedback";
 
 // ---------------------------------------------------------------------------
@@ -34,7 +35,29 @@ export interface DbtHouseProps {
   onRemoveSkill: (skillPlacementId: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Toolbar Settings ─────────────────────────────────────────────
+
+interface DbtHouseSettings {
+  showPracticeTracking: boolean;
+}
+
+const DEFAULT_DBT_HOUSE_SETTINGS: DbtHouseSettings = {
+  showPracticeTracking: true,
+};
+
+const DBT_HOUSE_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  {
+    type: "toggle",
+    key: "showPracticeTracking",
+    icon: BarChart3,
+    label: "Practice",
+    activeColor: "sky",
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -101,9 +124,11 @@ function WiseMindCompass({ fillRatio }: { fillRatio: number }) {
 function PlacedSkillTile({
   placement,
   onClick,
+  showPracticeCount = true,
 }: {
   placement: DbtHouseSkillData;
   onClick: () => void;
+  showPracticeCount?: boolean;
 }) {
   const skill = DBT_SKILLS.find((s) => s.id === placement.skillId);
   if (!skill) return null;
@@ -132,7 +157,7 @@ function PlacedSkillTile({
     >
       <span>{skill.emoji}</span>
       <span className="font-medium text-gray-700 truncate max-w-[60px]">{skill.shortName}</span>
-      {placement.practiceCount > 0 && (
+      {showPracticeCount && placement.practiceCount > 0 && (
         <span className="text-[9px] text-gray-400 ml-0.5">{placement.practiceCount}x</span>
       )}
     </motion.div>
@@ -145,11 +170,13 @@ function SkillDetailPanel({
   onUpdate,
   onRemove,
   onClose,
+  showPracticeTracking = true,
 }: {
   placement: DbtHouseSkillData;
   onUpdate: (id: string, updates: any) => void;
   onRemove: (id: string) => void;
   onClose: () => void;
+  showPracticeTracking?: boolean;
 }) {
   const skill = DBT_SKILLS.find((s) => s.id === placement.skillId);
   const [example, setExample] = useState(placement.personalExample || "");
@@ -247,31 +274,33 @@ function SkillDetailPanel({
         </div>
 
         {/* Practice count */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Star size={14} className="text-amber-500" />
-            <span className="text-sm text-gray-600">
-              Practiced <strong>{placement.practiceCount}</strong> time{placement.practiceCount !== 1 ? "s" : ""}
-            </span>
+        {showPracticeTracking && (
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Star size={14} className="text-amber-500" />
+              <span className="text-sm text-gray-600">
+                Practiced <strong>{placement.practiceCount}</strong> time{placement.practiceCount !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <button
+              onClick={() =>
+                onUpdate(placement.id, { practiceCount: placement.practiceCount + 1 })
+              }
+              className="px-3 py-1 text-xs font-medium rounded-lg text-white"
+              style={{ background: color }}
+            >
+              +1 Practice
+            </button>
           </div>
-          <button
-            onClick={() =>
-              onUpdate(placement.id, { practiceCount: placement.practiceCount + 1 })
-            }
-            className="px-3 py-1 text-xs font-medium rounded-lg text-white"
-            style={{ background: color }}
-          >
-            +1 Practice
-          </button>
-        </div>
+        )}
 
-        {placement.lastPracticedAt && (
+        {showPracticeTracking && placement.lastPracticedAt && (
           <p className="text-xs text-gray-400 mb-3">
             Last practiced: {new Date(placement.lastPracticedAt).toLocaleDateString()}
           </p>
         )}
 
-        {placement.effectivenessAvg != null && (
+        {showPracticeTracking && placement.effectivenessAvg != null && (
           <div className="mb-3">
             <div className="flex justify-between text-xs text-gray-500 mb-1">
               <span>Effectiveness</span>
@@ -742,10 +771,12 @@ function PlacedSkillsOverlay({
   section,
   placements,
   onSelectPlacement,
+  showPracticeCount = true,
 }: {
   section: string;
   placements: DbtHouseSkillData[];
   onSelectPlacement: (p: DbtHouseSkillData) => void;
+  showPracticeCount?: boolean;
 }) {
   // position mapping: percentages relative to the house container
   const positionMap: Record<string, { top: string; left: string; width: string; maxHeight: string }> = {
@@ -774,6 +805,7 @@ function PlacedSkillsOverlay({
             key={p.id}
             placement={p}
             onClick={() => onSelectPlacement(p)}
+            showPracticeCount={showPracticeCount}
           />
         ))}
       </AnimatePresence>
@@ -829,7 +861,10 @@ export function DbtHouse({
   onRemoveSkill,
   onClear,
   isClinician,
+  toolSettings,
+  onSettingsUpdate,
 }: DbtHouseProps) {
+  const settings = { ...DEFAULT_DBT_HOUSE_SETTINGS, ...toolSettings } as DbtHouseSettings;
   const [selectedPlacement, setSelectedPlacement] = useState<DbtHouseSkillData | null>(null);
   const [activeModule, setActiveModule] = useState<string>(DBT_MODULES[0].id);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -960,19 +995,7 @@ export function DbtHouse({
           <div className="flex items-center gap-2">
             {/* Overall progress ring */}
             <ProgressRing ratio={overallFillRatio} color="#60A5FA" size={28} />
-            {isClinician && skills.length > 0 && (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  playClickSound();
-                  onClear();
-                }}
-                className="text-[10px] text-red-400/70 hover:text-red-400 px-2 py-1 rounded-lg bg-white/[0.04] border border-white/[0.06] transition-colors"
-              >
-                Clear All
-              </motion.button>
-            )}
+            {/* Clinician clear moved to toolbar */}
           </div>
         </div>
 
@@ -1212,6 +1235,7 @@ export function DbtHouse({
                 section={section}
                 placements={skillsBySection[section] || []}
                 onSelectPlacement={handleSelectPlacement}
+                showPracticeCount={settings.showPracticeTracking}
               />
             ))}
           </div>
@@ -1403,9 +1427,19 @@ export function DbtHouse({
             onUpdate={onUpdateSkill}
             onRemove={onRemoveSkill}
             onClose={() => setSelectedPlacement(null)}
+            showPracticeTracking={settings.showPracticeTracking}
           />
         )}
       </AnimatePresence>
+
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={DBT_HOUSE_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
     </div>
   );
 }

@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playClickSound } from "@/lib/audio-feedback";
 import {
-  RotateCcw,
   Plus,
   X,
   Droplets,
@@ -14,6 +13,7 @@ import {
   Flower2,
   TreePine,
 } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -73,7 +73,38 @@ export interface GrowthGardenProps {
   onPullWeed: (weedId: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Toolbar Settings ─────────────────────────────────────────────
+
+interface GrowthGardenSettings {
+  showJournal: boolean;
+  showWeeds: boolean;
+}
+
+const DEFAULT_GROWTH_GARDEN_SETTINGS: GrowthGardenSettings = {
+  showJournal: true,
+  showWeeds: true,
+};
+
+const GROWTH_GARDEN_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  {
+    type: "toggle",
+    key: "showJournal",
+    icon: BookOpen,
+    label: "Journal",
+    activeColor: "sky",
+  },
+  {
+    type: "toggle",
+    key: "showWeeds",
+    icon: Leaf,
+    label: "Weeds",
+    activeColor: "emerald",
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -686,6 +717,7 @@ function PlantDetailPanel({
   onRemove,
   onAddWeed,
   onPullWeed,
+  gardenSettings,
 }: {
   plant: GardenPlantData;
   journal: GardenJournalEntryData[];
@@ -698,6 +730,7 @@ function PlantDetailPanel({
   onRemove: () => void;
   onAddWeed: (label: string) => void;
   onPullWeed: (weedId: string) => void;
+  gardenSettings: GrowthGardenSettings;
 }) {
   const meta = getSeedMeta(plant.seedType);
   const [journalText, setJournalText] = useState("");
@@ -848,68 +881,70 @@ function PlantDetailPanel({
         </div>
 
         {/* Weeds section */}
-        <div
-          className="rounded-xl p-3"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-white/70 flex items-center gap-1">
-              <Bug size={12} /> Obstacles (Weeds)
-            </span>
-            <button
-              onClick={() => setShowWeedInput(!showWeedInput)}
-              className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
-            >
-              + Add
-            </button>
-          </div>
-
-          {showWeedInput && (
-            <div className="flex gap-2 mb-2">
-              <input
-                value={weedLabel}
-                onChange={(e) => setWeedLabel(e.target.value)}
-                placeholder="Name this obstacle..."
-                className="flex-1 px-2 py-1.5 rounded-lg text-xs bg-black/30 border border-white/10 text-white placeholder:text-white/30 outline-none focus:border-amber-500/40"
-                onKeyDown={(e) => e.key === "Enter" && handleSubmitWeed()}
-                maxLength={60}
-              />
-              <button onClick={handleSubmitWeed} className="px-2 py-1.5 bg-amber-600/30 rounded-lg text-xs text-amber-300 hover:bg-amber-600/40 transition-colors">
-                Add
+        {gardenSettings.showWeeds && (
+          <div
+            className="rounded-xl p-3"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-white/70 flex items-center gap-1">
+                <Bug size={12} /> Obstacles (Weeds)
+              </span>
+              <button
+                onClick={() => setShowWeedInput(!showWeedInput)}
+                className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                + Add
               </button>
             </div>
-          )}
 
-          {activeWeeds.length === 0 && pulledWeeds.length === 0 && (
-            <p className="text-xs text-white/30 italic">No obstacles added yet</p>
-          )}
-
-          <div className="space-y-1">
-            {activeWeeds.map((w) => (
-              <div key={w.id} className="flex items-center justify-between px-2 py-1 rounded bg-red-900/20 border border-red-500/10">
-                <span className="text-xs text-red-300">{w.label}</span>
-                <button
-                  onClick={() => {
-                    onPullWeed(w.id);
-                    playClickSound();
-                  }}
-                  className="text-[10px] px-2 py-0.5 rounded bg-emerald-600/30 text-emerald-300 hover:bg-emerald-600/40 transition-colors"
-                >
-                  Pull
+            {showWeedInput && (
+              <div className="flex gap-2 mb-2">
+                <input
+                  value={weedLabel}
+                  onChange={(e) => setWeedLabel(e.target.value)}
+                  placeholder="Name this obstacle..."
+                  className="flex-1 px-2 py-1.5 rounded-lg text-xs bg-black/30 border border-white/10 text-white placeholder:text-white/30 outline-none focus:border-amber-500/40"
+                  onKeyDown={(e) => e.key === "Enter" && handleSubmitWeed()}
+                  maxLength={60}
+                />
+                <button onClick={handleSubmitWeed} className="px-2 py-1.5 bg-amber-600/30 rounded-lg text-xs text-amber-300 hover:bg-amber-600/40 transition-colors">
+                  Add
                 </button>
               </div>
-            ))}
-            {pulledWeeds.map((w) => (
-              <div key={w.id} className="flex items-center justify-between px-2 py-1 rounded bg-white/5 opacity-50">
-                <span className="text-xs text-white/50 line-through">{w.label}</span>
-                <span className="text-[10px] text-emerald-400">Pulled</span>
-              </div>
-            ))}
+            )}
+
+            {activeWeeds.length === 0 && pulledWeeds.length === 0 && (
+              <p className="text-xs text-white/30 italic">No obstacles added yet</p>
+            )}
+
+            <div className="space-y-1">
+              {activeWeeds.map((w) => (
+                <div key={w.id} className="flex items-center justify-between px-2 py-1 rounded bg-red-900/20 border border-red-500/10">
+                  <span className="text-xs text-red-300">{w.label}</span>
+                  <button
+                    onClick={() => {
+                      onPullWeed(w.id);
+                      playClickSound();
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-emerald-600/30 text-emerald-300 hover:bg-emerald-600/40 transition-colors"
+                  >
+                    Pull
+                  </button>
+                </div>
+              ))}
+              {pulledWeeds.map((w) => (
+                <div key={w.id} className="flex items-center justify-between px-2 py-1 rounded bg-white/5 opacity-50">
+                  <span className="text-xs text-white/50 line-through">{w.label}</span>
+                  <span className="text-[10px] text-emerald-400">Pulled</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Journal section */}
-        <div
+        {gardenSettings.showJournal && <div
           className="rounded-xl p-3"
           style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
         >
@@ -996,7 +1031,7 @@ function PlantDetailPanel({
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </div>}
 
         {/* Status tags */}
         <div className="flex gap-2 flex-wrap">
@@ -1219,10 +1254,13 @@ export function GrowthGarden({
   onPullWeed,
   onClear,
   isClinician,
+  toolSettings,
+  onSettingsUpdate,
 }: GrowthGardenProps) {
+  const settings = { ...DEFAULT_GROWTH_GARDEN_SETTINGS, ...toolSettings } as GrowthGardenSettings;
   const [selectedPlant, setSelectedPlant] = useState<GardenPlantData | null>(null);
   const [plantingSlot, setPlantingSlot] = useState<{ x: number; y: number } | null>(null);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  // showClearConfirm removed - clear is now handled by ClinicianToolbar
 
   // Build grid lookup
   const plantGrid = useMemo(() => {
@@ -1319,41 +1357,7 @@ export function GrowthGarden({
             Plant goals, nurture growth, and pull the weeds that hold you back
           </p>
         </div>
-        {isClinician && (
-          <div className="relative">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                if (showClearConfirm) {
-                  onClear();
-                  setShowClearConfirm(false);
-                  setSelectedPlant(null);
-                  playClickSound();
-                } else {
-                  setShowClearConfirm(true);
-                }
-              }}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
-                showClearConfirm
-                  ? "bg-red-500/25 border-red-500/40 text-red-300"
-                  : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10",
-              )}
-            >
-              <RotateCcw size={12} />
-              {showClearConfirm ? "Confirm Clear" : "Clear Garden"}
-            </motion.button>
-            {showClearConfirm && (
-              <button
-                onClick={() => setShowClearConfirm(false)}
-                className="absolute -bottom-5 left-0 right-0 text-[9px] text-white/40 hover:text-white/60 transition-colors text-center"
-              >
-                cancel
-              </button>
-            )}
-          </div>
-        )}
+        {/* Clinician clear moved to toolbar */}
       </div>
 
       {/* Stats */}
@@ -1466,6 +1470,7 @@ export function GrowthGarden({
                 }}
                 onAddWeed={(label) => onAddWeed(label, currentSelectedPlant.id)}
                 onPullWeed={onPullWeed}
+                gardenSettings={settings}
               />
             )}
           </AnimatePresence>
@@ -1521,6 +1526,15 @@ export function GrowthGarden({
           </div>
         </div>
       </div>
+
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={GROWTH_GARDEN_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
     </div>
   );
 }

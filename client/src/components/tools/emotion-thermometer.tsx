@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { playClickSound } from "@/lib/audio-feedback";
 import { RotateCcw, Plus, MessageSquare, MapPin, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ─── Data Interfaces ──────────────────────────────────────────────────────────
 
@@ -22,7 +23,29 @@ export interface EmotionThermometerProps {
   onRemoveReading: (readingId: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Toolbar Settings ──────────────────────────────────────────────
+
+interface EmotionThermometerSettings {
+  showBodyLocation: boolean;
+  showTriggerNotes: boolean;
+  showInsights: boolean;
+}
+
+const DEFAULT_EMOTION_THERMOMETER_SETTINGS: EmotionThermometerSettings = {
+  showBodyLocation: true,
+  showTriggerNotes: true,
+  showInsights: true,
+};
+
+const EMOTION_THERMOMETER_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  { type: "toggle", key: "showBodyLocation", icon: MapPin, label: "Body Location", activeColor: "sky" },
+  { type: "toggle", key: "showTriggerNotes", icon: MessageSquare, label: "Trigger Notes", activeColor: "amber" },
+  { type: "toggle", key: "showInsights", icon: Sparkles, label: "Insights", activeColor: "purple" },
+];
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -600,7 +623,11 @@ export function EmotionThermometer({
   onRemoveReading,
   onClear,
   isClinician,
+  toolSettings,
+  onSettingsUpdate,
 }: EmotionThermometerProps) {
+  const settings = { ...DEFAULT_EMOTION_THERMOMETER_SETTINGS, ...toolSettings } as EmotionThermometerSettings;
+
   const [selectedEmotion, setSelectedEmotion] = useState<string>("");
   const [customEmotion, setCustomEmotion] = useState("");
   const [intensity, setIntensity] = useState(5);
@@ -732,19 +759,7 @@ export function EmotionThermometer({
             </span>
           )}
         </div>
-        {isClinician && readings.length > 0 && (
-          <button
-            onClick={handleClear}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs
-              bg-white/8 hover:bg-red-500/20 border border-white/10
-              hover:border-red-400/30 text-white/50 hover:text-red-300
-              transition-all duration-200"
-          >
-            <RotateCcw className="w-3 h-3" />
-            Clear All
-          </button>
-        )}
-      </div>
+        </div>
 
       {/* ── Main visualization area ── */}
       <div className="w-full flex gap-4 items-stretch">
@@ -927,105 +942,113 @@ export function EmotionThermometer({
 
         {/* Optional fields toggle row */}
         <div className="flex gap-2">
-          <button
-            onClick={() => {
-              playClickSound();
-              setShowBodyPicker(!showBodyPicker);
-            }}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all duration-200",
-              showBodyPicker || bodyLocation
-                ? "bg-white/15 text-white/80 border border-white/20"
-                : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 border border-white/8",
-            )}
-          >
-            <MapPin className="w-3.5 h-3.5" />
-            Body location
-            {bodyLocation && (
-              <span className="ml-1 px-1.5 py-0.5 rounded bg-white/10 text-white/60">
-                {bodyLocation}
-              </span>
-            )}
-          </button>
+          {settings.showBodyLocation && (
+            <button
+              onClick={() => {
+                playClickSound();
+                setShowBodyPicker(!showBodyPicker);
+              }}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all duration-200",
+                showBodyPicker || bodyLocation
+                  ? "bg-white/15 text-white/80 border border-white/20"
+                  : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 border border-white/8",
+              )}
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              Body location
+              {bodyLocation && (
+                <span className="ml-1 px-1.5 py-0.5 rounded bg-white/10 text-white/60">
+                  {bodyLocation}
+                </span>
+              )}
+            </button>
+          )}
 
-          <button
-            onClick={() => {
-              playClickSound();
-              setShowTriggerInput(!showTriggerInput);
-            }}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all duration-200",
-              showTriggerInput || triggerNote.trim()
-                ? "bg-white/15 text-white/80 border border-white/20"
-                : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 border border-white/8",
-            )}
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-            Trigger
-          </button>
+          {settings.showTriggerNotes && (
+            <button
+              onClick={() => {
+                playClickSound();
+                setShowTriggerInput(!showTriggerInput);
+              }}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all duration-200",
+                showTriggerInput || triggerNote.trim()
+                  ? "bg-white/15 text-white/80 border border-white/20"
+                  : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 border border-white/8",
+              )}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              Trigger
+            </button>
+          )}
         </div>
 
         {/* Body location picker */}
-        <AnimatePresence>
-          {showBodyPicker && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {BODY_LOCATIONS.map((loc) => (
-                  <motion.button
-                    key={loc.label}
-                    onClick={() => {
-                      playClickSound();
-                      setBodyLocation(
-                        bodyLocation === loc.label ? null : loc.label,
-                      );
-                    }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
-                      bodyLocation === loc.label
-                        ? "bg-white/20 text-white/90 border border-white/25"
-                        : "bg-white/5 text-white/50 hover:bg-white/10 border border-white/8",
-                    )}
-                  >
-                    <span className="mr-1">{loc.icon}</span>
-                    {loc.label}
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {settings.showBodyLocation && (
+          <AnimatePresence>
+            {showBodyPicker && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {BODY_LOCATIONS.map((loc) => (
+                    <motion.button
+                      key={loc.label}
+                      onClick={() => {
+                        playClickSound();
+                        setBodyLocation(
+                          bodyLocation === loc.label ? null : loc.label,
+                        );
+                      }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
+                        bodyLocation === loc.label
+                          ? "bg-white/20 text-white/90 border border-white/25"
+                          : "bg-white/5 text-white/50 hover:bg-white/10 border border-white/8",
+                      )}
+                    >
+                      <span className="mr-1">{loc.icon}</span>
+                      {loc.label}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
 
         {/* Trigger note input */}
-        <AnimatePresence>
-          {showTriggerInput && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <textarea
-                value={triggerNote}
-                onChange={(e) => setTriggerNote(e.target.value)}
-                placeholder="What triggered this feeling?"
-                rows={2}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/8 border border-white/10
-                  text-sm text-white/90 placeholder:text-white/25 resize-none
-                  focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20
-                  transition-all duration-200"
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {settings.showTriggerNotes && (
+          <AnimatePresence>
+            {showTriggerInput && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <textarea
+                  value={triggerNote}
+                  onChange={(e) => setTriggerNote(e.target.value)}
+                  placeholder="What triggered this feeling?"
+                  rows={2}
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/8 border border-white/10
+                    text-sm text-white/90 placeholder:text-white/25 resize-none
+                    focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20
+                    transition-all duration-200"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
 
         {/* Add reading button */}
         <motion.button
@@ -1062,23 +1085,35 @@ export function EmotionThermometer({
       </div>
 
       {/* ── Insight card (shown when 3+ readings) ── */}
-      <AnimatePresence>
-        {readings.length >= 3 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="w-full rounded-2xl p-4
-              bg-white/6 backdrop-blur-xl border border-white/10"
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-4 h-4 text-white/40" />
-              <span className="text-xs font-medium text-white/50">Session Insight</span>
-            </div>
-            <InsightSummary readings={readings} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {settings.showInsights && (
+        <AnimatePresence>
+          {readings.length >= 3 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="w-full rounded-2xl p-4
+                bg-white/6 backdrop-blur-xl border border-white/10"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-4 h-4 text-white/40" />
+                <span className="text-xs font-medium text-white/50">Session Insight</span>
+              </div>
+              <InsightSummary readings={readings} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+
+      {/* ── Clinician Toolbar ── */}
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={EMOTION_THERMOMETER_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
     </div>
   );
 }

@@ -13,7 +13,9 @@ import {
   Sparkles,
   History,
   HelpCircle,
+  Hash,
 } from "lucide-react";
+import { ClinicianToolbar, type ToolbarControl } from "./clinician-toolbar";
 
 // ─── Data Interfaces ──────────────────────────────────────────────────────────
 
@@ -59,7 +61,49 @@ export interface ThoughtBridgeProps {
   onRemoveEvidence: (evidenceId: string) => void;
   onClear: () => void;
   isClinician: boolean;
+  toolSettings?: Record<string, any>;
+  onSettingsUpdate?: (updates: Record<string, any>) => void;
 }
+
+// ─── Clinician Settings ────────────────────────────────────────────────────────
+
+interface ThoughtBridgeSettings {
+  showDistortionTooltips: boolean;
+  maxRecords: number;
+  guidedMode: boolean;
+}
+
+const DEFAULT_THOUGHT_BRIDGE_SETTINGS: ThoughtBridgeSettings = {
+  showDistortionTooltips: true,
+  maxRecords: 0,
+  guidedMode: false,
+};
+
+const THOUGHT_BRIDGE_TOOLBAR_CONTROLS: ToolbarControl[] = [
+  {
+    type: "toggle",
+    key: "showDistortionTooltips",
+    icon: HelpCircle,
+    label: "Tooltips",
+    activeColor: "sky",
+  },
+  {
+    type: "number",
+    key: "maxRecords",
+    icon: Hash,
+    label: "Max Records",
+    steps: [0, 3, 5, 10],
+    activeColor: "amber",
+  },
+  {
+    type: "toggle",
+    key: "guidedMode",
+    icon: ChevronRight,
+    label: "Guided Mode",
+    activeLabel: "Auto-advance",
+    activeColor: "emerald",
+  },
+];
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -474,10 +518,12 @@ function DistortionChip({
   distortion,
   selected,
   onToggle,
+  enableTooltip = true,
 }: {
   distortion: (typeof COGNITIVE_DISTORTIONS)[number];
   selected: boolean;
   onToggle: () => void;
+  enableTooltip?: boolean;
 }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const color = DISTORTION_COLORS[distortion.id] || "#6366F1";
@@ -489,7 +535,7 @@ function DistortionChip({
           playClickSound();
           onToggle();
         }}
-        onMouseEnter={() => setShowTooltip(true)}
+        onMouseEnter={() => enableTooltip && setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
         className={cn(
           "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
@@ -911,7 +957,11 @@ export function ThoughtBridge({
   onRemoveEvidence,
   onClear,
   isClinician,
+  toolSettings,
+  onSettingsUpdate,
 }: ThoughtBridgeProps) {
+  const settings = { ...DEFAULT_THOUGHT_BRIDGE_SETTINGS, ...toolSettings } as ThoughtBridgeSettings;
+
   const [activeRecordId, setActiveRecordId] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
@@ -1125,6 +1175,18 @@ export function ThoughtBridge({
     [activeRecord, activeEvidence]
   );
 
+  // ── Guided mode auto-advance ──────────────────────────────────────────
+
+  useEffect(() => {
+    if (!settings.guidedMode || !activeRecord) return;
+    if (isStepCompleted(activeStep) && activeStep < STEPS.length - 1) {
+      const timer = setTimeout(() => {
+        setActiveStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [settings.guidedMode, activeRecord, activeStep, isStepCompleted]);
+
   // ── Render ────────────────────────────────────────────────────────────
 
   return (
@@ -1170,32 +1232,18 @@ export function ThoughtBridge({
 
             <motion.button
               onClick={handleNewRecord}
+              disabled={settings.maxRecords > 0 && records.length >= settings.maxRecords}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl
                 bg-amber-500/15 border border-amber-400/25 text-amber-300
-                hover:bg-amber-500/25 transition-all text-sm font-medium"
+                hover:bg-amber-500/25 transition-all text-sm font-medium
+                disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">New Record</span>
             </motion.button>
 
-            {isClinician && records.length > 0 && (
-              <motion.button
-                onClick={() => {
-                  playClickSound();
-                  onClear();
-                  setActiveRecordId(null);
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08]
-                  text-white/35 hover:text-red-400 hover:border-red-400/25 transition-all"
-                title="Clear all records"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </motion.button>
-            )}
           </div>
         </div>
 
@@ -1304,11 +1352,13 @@ export function ThoughtBridge({
             </p>
             <motion.button
               onClick={handleNewRecord}
+              disabled={settings.maxRecords > 0 && records.length >= settings.maxRecords}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                 bg-amber-500/15 border border-amber-400/25 text-amber-300
-                hover:bg-amber-500/25 transition-all text-sm font-medium"
+                hover:bg-amber-500/25 transition-all text-sm font-medium
+                disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <Plus className="w-4 h-4" />
               Create First Record
@@ -1497,6 +1547,7 @@ export function ThoughtBridge({
                             distortion={d}
                             selected={activeDistortions.includes(d.id)}
                             onToggle={() => toggleDistortion(d.id)}
+                            enableTooltip={settings.showDistortionTooltips}
                           />
                         ))}
                       </div>
@@ -1907,6 +1958,15 @@ export function ThoughtBridge({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {isClinician && onSettingsUpdate && (
+        <ClinicianToolbar
+          controls={THOUGHT_BRIDGE_TOOLBAR_CONTROLS}
+          settings={settings}
+          onUpdate={onSettingsUpdate}
+          onClear={onClear}
+        />
+      )}
     </div>
   );
 }
