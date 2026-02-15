@@ -39,18 +39,24 @@ export function ModeratorBar({
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className="absolute top-1/2 -translate-y-1/2 right-3 md:right-5 z-40"
     >
-      <div className="bg-primary/90 backdrop-blur-xl text-primary-foreground p-1.5 rounded-2xl shadow-2xl border border-white/10 flex flex-col items-center gap-1 ring-1 ring-black/5">
-        <div className="flex flex-col items-center px-1 pb-1 border-b border-white/10 mb-0.5">
-          <Shield size={12} className="text-accent fill-accent/30 mb-0.5" />
-          <span className="text-[8px] font-bold uppercase tracking-widest text-accent leading-none">Mod</span>
-          <span className="text-[9px] opacity-60 leading-none mt-0.5">{participantCount}</span>
+      <div className="backdrop-blur-xl p-1.5 rounded-2xl shadow-2xl flex flex-col items-center gap-1"
+        style={{
+          background: `repeating-linear-gradient(92deg, transparent, transparent 5px, rgba(101,67,33,0.05) 5px, rgba(101,67,33,0.05) 6px), linear-gradient(180deg, #A0764A 0%, #8B6914 50%, #7A5C2E 100%)`,
+          border: '1px solid rgba(0,0,0,0.1)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.12)',
+        }}
+      >
+        <div className="flex flex-col items-center px-1 pb-1 border-b border-[#F5EDE0]/15 mb-0.5">
+          <Shield size={12} className="text-[#F5EDE0] fill-[#F5EDE0]/30 mb-0.5" />
+          <span className="text-[8px] font-bold uppercase tracking-widest text-[#F5EDE0] leading-none">Mod</span>
+          <span className="text-[9px] text-[#F5EDE0]/60 leading-none mt-0.5">{participantCount}</span>
         </div>
 
         <button
           onClick={onToggleLock}
           className={cn(
             "flex flex-col items-center justify-center w-11 h-11 rounded-xl transition-all active:scale-95 gap-0.5 cursor-pointer",
-            isCanvasLocked ? "bg-destructive text-white shadow-inner shadow-black/20" : "hover:bg-white/10"
+            isCanvasLocked ? "bg-red-800/60 text-[#F5EDE0] shadow-inner shadow-black/20" : "text-[#F5EDE0]/80 hover:bg-[#F5EDE0]/10"
           )}
           data-testid="button-toggle-lock"
         >
@@ -60,7 +66,7 @@ export function ModeratorBar({
 
         <button
           onClick={onClearCanvas}
-          className="flex flex-col items-center justify-center w-11 h-11 rounded-xl hover:bg-white/10 transition-all active:scale-95 gap-0.5 group cursor-pointer"
+          className="flex flex-col items-center justify-center w-11 h-11 rounded-xl text-[#F5EDE0]/80 hover:bg-[#F5EDE0]/10 transition-all active:scale-95 gap-0.5 group cursor-pointer"
           data-testid="button-clear-canvas"
         >
           <RotateCcw size={18} className="group-hover:-rotate-90 transition-transform" />
@@ -72,7 +78,7 @@ export function ModeratorBar({
             onClick={onToggleRakeMode}
             className={cn(
               "flex flex-col items-center justify-center w-11 h-11 rounded-xl transition-all active:scale-95 gap-0.5 cursor-pointer",
-              rakeMode ? "bg-accent/80 text-primary shadow-inner shadow-black/20" : "hover:bg-white/10"
+              rakeMode ? "bg-[#C9A96E]/40 text-[#F5EDE0] shadow-inner shadow-black/20" : "text-[#F5EDE0]/80 hover:bg-[#F5EDE0]/10"
             )}
             data-testid="button-toggle-rake"
           >
@@ -81,13 +87,13 @@ export function ModeratorBar({
           </button>
         )}
 
-        <div className="w-7 h-px bg-white/10 mx-auto" />
+        <div className="w-7 h-px bg-[#F5EDE0]/15 mx-auto" />
 
         <button
           onClick={onToggleAnonymity}
           className={cn(
             "flex flex-col items-center justify-center w-11 h-11 rounded-xl transition-all active:scale-95 gap-0.5 cursor-pointer",
-            isAnonymous ? "bg-purple-500/80 text-white" : "hover:bg-white/10"
+            isAnonymous ? "bg-[#B4A7D6]/40 text-[#F5EDE0]" : "text-[#F5EDE0]/80 hover:bg-[#F5EDE0]/10"
           )}
           data-testid="button-toggle-anonymity"
         >
@@ -100,7 +106,7 @@ export function ModeratorBar({
             onClick={onToggleZenMode}
             className={cn(
               "flex flex-col items-center justify-center w-11 h-11 rounded-xl transition-all active:scale-95 gap-0.5 cursor-pointer",
-              zenMode ? "bg-accent/80 text-primary shadow-inner shadow-black/20" : "hover:bg-white/10"
+              zenMode ? "bg-[#C9A96E]/40 text-[#F5EDE0] shadow-inner shadow-black/20" : "text-[#F5EDE0]/80 hover:bg-[#F5EDE0]/10"
             )}
             data-testid="button-toggle-zen"
           >
@@ -111,10 +117,10 @@ export function ModeratorBar({
 
         {/* Mood Slider */}
         {onLightTemperatureChange && (
-          <div className="flex flex-col items-center gap-1 pt-1 border-t border-white/10 mt-0.5 px-1">
-            <Sun size={12} className="text-accent" />
+          <div className="flex flex-col items-center gap-1 pt-1 border-t border-[#F5EDE0]/15 mt-0.5 px-1">
+            <Sun size={12} className="text-[#F5EDE0]" />
             <div className="flex flex-col items-center gap-0.5">
-              <span className="text-[7px] opacity-50">Cool</span>
+              <span className="text-[7px] text-[#F5EDE0]/50">Cool</span>
               <input
                 type="range"
                 min="0"
@@ -133,7 +139,7 @@ export function ModeratorBar({
                 }}
                 data-testid="slider-mood"
               />
-              <span className="text-[7px] opacity-50">Warm</span>
+              <span className="text-[7px] text-[#F5EDE0]/50">Warm</span>
             </div>
           </div>
         )}

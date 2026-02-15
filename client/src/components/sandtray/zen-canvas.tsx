@@ -241,7 +241,8 @@ function DraggableItem({
       }}
       initial={{ scale: 0, opacity: 0 }}
       animate={{
-        scale: isDragging ? item.scale * 1.12 : item.scale,
+        scale: isDragging ? item.scale * 1.15 : item.scale,
+        y: isDragging ? -6 : 0,
         opacity: 1,
       }}
       exit={{ scale: 0, opacity: 0, transition: { duration: 0.2 } }}
@@ -260,6 +261,29 @@ function DraggableItem({
       onClick={handleClick}
       whileHover={!isSelected ? { scale: item.scale * 1.1 } : undefined}
     >
+      {/* Grounding shadow */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          bottom: -2,
+          left: '20%',
+          width: '60%',
+          height: 8,
+          background: 'radial-gradient(ellipse, rgba(80,60,30,0.15) 0%, transparent 70%)',
+          borderRadius: '50%',
+          filter: 'blur(2px)',
+          opacity: isDragging ? 0 : 1,
+          transition: 'opacity 0.2s ease',
+        }}
+      />
+      {/* Contrast plate */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          inset: -4,
+          background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
+        }}
+      />
       <motion.span
         className="text-5xl md:text-5xl select-none"
         style={{
@@ -380,21 +404,35 @@ export function ZenCanvas({
 
   return (
     <div
-      ref={canvasRef}
-      className={cn(
-        "relative w-full h-full overflow-hidden select-none touch-none",
-        isLocked && "pointer-events-none opacity-80"
-      )}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-      onPointerMove={handlePointerMove}
-      onClick={handleCanvasClick}
-      style={{
-        background: "linear-gradient(145deg, rgba(232,220,200,0.85) 0%, rgba(212,196,168,0.85) 30%, rgba(201,184,150,0.85) 60%, rgba(214,200,170,0.85) 100%)",
-        boxShadow: "inset 0 2px 12px rgba(0,0,0,0.15), inset 0 0 40px rgba(139,119,80,0.1)",
-        borderRadius: "4px",
-      }}
+      className="w-full h-full flex items-center justify-center p-3 md:p-4"
+      style={{ background: 'linear-gradient(145deg, #4A4540 0%, #3A3530 50%, #332F2A 100%)' }}
     >
+      <div
+        style={{
+          background: `repeating-linear-gradient(87deg, transparent, transparent 3px, rgba(101,67,33,0.04) 3px, rgba(101,67,33,0.04) 4px), repeating-linear-gradient(92deg, transparent, transparent 7px, rgba(139,90,43,0.03) 7px, rgba(139,90,43,0.03) 8px), linear-gradient(180deg, #A0764A 0%, #8B6914 15%, #9B7B4A 30%, #7A5C2E 50%, #8B6914 70%, #A0764A 85%, #7A5C2E 100%)`,
+          padding: '10px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.1)',
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        <div
+          ref={canvasRef}
+          className={cn(
+            "relative w-full h-full overflow-hidden select-none touch-none",
+            isLocked && "pointer-events-none opacity-80"
+          )}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onPointerMove={handlePointerMove}
+          onClick={handleCanvasClick}
+          style={{
+            background: "linear-gradient(145deg, rgba(232,220,200,0.85) 0%, rgba(212,196,168,0.85) 30%, rgba(201,184,150,0.85) 60%, rgba(214,200,170,0.85) 100%)",
+            boxShadow: "inset 0 2px 12px rgba(0,0,0,0.15), inset 0 0 40px rgba(139,119,80,0.1)",
+            borderRadius: '4px',
+          }}
+        >
       {/* Ambient Floor — behind everything */}
       <AmbientFloor lightSource={lightSource} />
 
@@ -477,6 +515,15 @@ export function ZenCanvas({
         ))}
       </AnimatePresence>
 
+      {/* Empty state */}
+      {items.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <p className="font-serif text-sm text-[#9B8B6E]/40 select-none">
+            Drag figurines from the library to begin
+          </p>
+        </div>
+      )}
+
       {/* Transform Ring */}
       {selectedItem && !isLocked && (
         <TransformRing
@@ -536,6 +583,8 @@ export function ZenCanvas({
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+      </div>
     </div>
   );
 }
