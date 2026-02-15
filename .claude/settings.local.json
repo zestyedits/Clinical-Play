@@ -9,7 +9,11 @@
       "Bash(npx drizzle-kit push:*)",
       "Bash(node -e:*)",
       "Bash(grep:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(xxd:*)",
+      "Bash(python3:*)"
     ]
   }
 }

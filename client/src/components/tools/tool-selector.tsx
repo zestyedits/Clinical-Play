@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Palette, Wind, Brain, Target, House, Clock, Layers, Theater, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
+import { X, Palette, Wind, Brain, Target, House, Clock, Layers, Theater, MessageSquarePlus, Send, CheckCircle2, Thermometer, Box, Activity, Heart, Puzzle, Shield, TreePine, Lightbulb, Wrench, BookOpen, FlaskConical, Users, Flower2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 
@@ -21,8 +21,19 @@ const TOOLS: Tool[] = [
   { id: "narrative", label: "Narrative Timeline", desc: "Visual life story and event mapping on a river", icon: Clock, status: "active", accentColor: "#67c5c9", iconClass: "icon-timeline" },
   { id: "values-sort", label: "Values Card Sort", desc: "Interactive values identification and prioritization", icon: Layers, status: "active", accentColor: "#e88fa5", iconClass: "icon-values" },
   { id: "parts-theater", label: "Parts Theater", desc: "IFS-inspired internal parts mapping and exploration", icon: Theater, status: "active", accentColor: "#8db4e8", iconClass: "icon-ifs" },
-  { id: "dbt-house", label: "The DBT House", desc: "Room-by-room emotional regulation framework", icon: House, status: "development", accentColor: "#f59e6b", iconClass: "icon-dbt" },
-  { id: "cbt", label: "Thought Bridge (CBT)", desc: "Cognitive restructuring visualization", icon: Brain, status: "planned", accentColor: "#9ca3af", iconClass: "" },
+  { id: "emotion-thermometer", label: "Emotion Thermometer", desc: "Simple intensity tracking with visual scaling", icon: Thermometer, status: "active", accentColor: "#ef4444", iconClass: "icon-thermometer" },
+  { id: "containment-box", label: "Containment Box", desc: "Visual containment for distressing material", icon: Box, status: "active", accentColor: "#78716c", iconClass: "icon-containment" },
+  { id: "body-scan", label: "Body Scan Map", desc: "Interactive body awareness and sensation tracking", icon: Activity, status: "active", accentColor: "#14b8a6", iconClass: "icon-body-scan" },
+  { id: "gratitude-jar", label: "Gratitude Jar", desc: "Cumulative positive experience collection", icon: Heart, status: "active", accentColor: "#f59e0b", iconClass: "icon-gratitude" },
+  { id: "fidget-tools", label: "Fidget Tools", desc: "Calming sensory interactions for regulation", icon: Puzzle, status: "active", accentColor: "#a855f7", iconClass: "icon-fidget" },
+  { id: "safety-map", label: "Safety Map", desc: "Visual safety planning with interactive layers", icon: Shield, status: "active", accentColor: "#0ea5e9", iconClass: "icon-safety" },
+  { id: "worry-tree", label: "Worry Tree", desc: "Decision-based anxiety management flowchart", icon: TreePine, status: "active", accentColor: "#22c55e", iconClass: "icon-worry" },
+  { id: "thought-bridge", label: "Thought Bridge", desc: "Cognitive restructuring visualization", icon: Brain, status: "active", accentColor: "#6366f1", iconClass: "icon-thought" },
+  { id: "coping-toolbox", label: "Coping Toolbox", desc: "Personalized coping strategy organizer", icon: Wrench, status: "active", accentColor: "#f97316", iconClass: "icon-coping" },
+  { id: "dbt-house", label: "The DBT House", desc: "Room-by-room emotional regulation framework", icon: House, status: "active", accentColor: "#f59e6b", iconClass: "icon-dbt" },
+  { id: "strengths-deck", label: "Strengths Deck", desc: "Character strengths identification and sorting", icon: FlaskConical, status: "active", accentColor: "#eab308", iconClass: "icon-strengths" },
+  { id: "social-atom", label: "Social Atom", desc: "Relational mapping and support network visualization", icon: Users, status: "active", accentColor: "#ec4899", iconClass: "icon-social" },
+  { id: "growth-garden", label: "Growth Garden", desc: "Collaborative planting for goals and growth", icon: Flower2, status: "active", accentColor: "#16a34a", iconClass: "icon-garden" },
 ];
 
 interface ToolSelectorProps {

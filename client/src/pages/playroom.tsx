@@ -16,6 +16,19 @@ import { FeelingWheelSVG, type FeelingSelection } from "@/components/tools/feeli
 import { NarrativeTimeline, type TimelineEventData } from "@/components/tools/narrative-timeline";
 import { ValuesCardSort, type CardPlacement } from "@/components/tools/values-card-sort";
 import { PartsTheater, type TheaterPartData, type TheaterConnectionData, type TheaterSettings } from "@/components/tools/parts-theater";
+import { EmotionThermometer, type ThermometerReadingData } from "@/components/tools/emotion-thermometer";
+import { ContainmentBox, type ContainmentContainerData, type ContainmentItemData } from "@/components/tools/containment-box";
+import { BodyScanMap, type BodyScanMarkerData } from "@/components/tools/body-scan-map";
+import { GratitudeJar, type GratitudeStoneData } from "@/components/tools/gratitude-jar";
+import { FidgetTools } from "@/components/tools/fidget-tools";
+import { SafetyMap, type SafetyPlanItemData } from "@/components/tools/safety-map";
+import { WorryTree, type WorryTreeEntryData } from "@/components/tools/worry-tree";
+import { ThoughtBridge, type ThoughtBridgeRecordData, type ThoughtBridgeEvidenceData } from "@/components/tools/thought-bridge";
+import { CopingToolbox } from "@/components/tools/coping-toolbox";
+import { DbtHouse } from "@/components/tools/dbt-house";
+import { StrengthsDeck, type StrengthsPlacementData, type StrengthsSpottingData } from "@/components/tools/strengths-deck";
+import { SocialAtom, type SocialAtomPersonData, type SocialAtomConnectionData } from "@/components/tools/social-atom";
+import { GrowthGarden, type GardenPlantData, type GardenJournalEntryData, type GardenWeedData } from "@/components/tools/growth-garden";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -70,6 +83,26 @@ export default function Playroom() {
   const [theaterSettings, setTheaterSettings] = useState<TheaterSettings>({
     frozen: false, dimInactive: false, metaphor: "parts", partLimit: 0,
   });
+  // New tool state
+  const [thermometerReadings, setThermometerReadings] = useState<ThermometerReadingData[]>([]);
+  const [containmentContainers, setContainmentContainers] = useState<ContainmentContainerData[]>([]);
+  const [containmentItems, setContainmentItems] = useState<ContainmentItemData[]>([]);
+  const [bodyScanMarkers, setBodyScanMarkers] = useState<BodyScanMarkerData[]>([]);
+  const [gratitudeStones, setGratitudeStones] = useState<GratitudeStoneData[]>([]);
+  const [safetyPlanItems, setSafetyPlanItems] = useState<SafetyPlanItemData[]>([]);
+  const [worryTreeEntries, setWorryTreeEntries] = useState<WorryTreeEntryData[]>([]);
+  const [thoughtBridgeRecords, setThoughtBridgeRecords] = useState<ThoughtBridgeRecordData[]>([]);
+  const [thoughtBridgeEvidence, setThoughtBridgeEvidence] = useState<ThoughtBridgeEvidenceData[]>([]);
+  const [copingStrategies, setCopingStrategies] = useState<any[]>([]);
+  const [dbtHouseSkills, setDbtHouseSkills] = useState<any[]>([]);
+  const [strengthsPlacements, setStrengthsPlacements] = useState<StrengthsPlacementData[]>([]);
+  const [strengthsSpottings, setStrengthsSpottings] = useState<StrengthsSpottingData[]>([]);
+  const [socialAtomPeople, setSocialAtomPeople] = useState<SocialAtomPersonData[]>([]);
+  const [socialAtomConnections, setSocialAtomConnections] = useState<SocialAtomConnectionData[]>([]);
+  const [gardenPlants, setGardenPlants] = useState<GardenPlantData[]>([]);
+  const [gardenJournalEntries, setGardenJournalEntries] = useState<GardenJournalEntryData[]>([]);
+  const [gardenWeeds, setGardenWeeds] = useState<GardenWeedData[]>([]);
+
   const [subscriptionType, setSubscriptionType] = useState<string>("free");
   const [sessionEnded, setSessionEnded] = useState(false);
   const [endingSession, setEndingSession] = useState(false);
@@ -191,6 +224,25 @@ export default function Playroom() {
             partLimit: msg.theaterPartLimit ?? 0,
           });
         }
+        // New tool init data
+        if (msg.thermometerReadings) setThermometerReadings(msg.thermometerReadings);
+        if (msg.containmentContainers) setContainmentContainers(msg.containmentContainers);
+        if (msg.containmentItems) setContainmentItems(msg.containmentItems);
+        if (msg.bodyScanMarkers) setBodyScanMarkers(msg.bodyScanMarkers);
+        if (msg.gratitudeStones) setGratitudeStones(msg.gratitudeStones.map((s: any) => ({ ...s, createdAt: s.createdAt || new Date().toISOString() })));
+        if (msg.safetyPlanItems) setSafetyPlanItems(msg.safetyPlanItems);
+        if (msg.worryTreeEntries) setWorryTreeEntries(msg.worryTreeEntries);
+        if (msg.thoughtBridgeRecords) setThoughtBridgeRecords(msg.thoughtBridgeRecords);
+        if (msg.thoughtBridgeEvidence) setThoughtBridgeEvidence(msg.thoughtBridgeEvidence);
+        if (msg.copingStrategies) setCopingStrategies(msg.copingStrategies);
+        if (msg.dbtHouseSkills) setDbtHouseSkills(msg.dbtHouseSkills);
+        if (msg.strengthsPlacements) setStrengthsPlacements(msg.strengthsPlacements);
+        if (msg.strengthsSpottings) setStrengthsSpottings(msg.strengthsSpottings);
+        if (msg.socialAtomPeople) setSocialAtomPeople(msg.socialAtomPeople);
+        if (msg.socialAtomConnections) setSocialAtomConnections(msg.socialAtomConnections);
+        if (msg.gardenPlants) setGardenPlants(msg.gardenPlants);
+        if (msg.gardenJournalEntries) setGardenJournalEntries(msg.gardenJournalEntries);
+        if (msg.gardenWeeds) setGardenWeeds(msg.gardenWeeds);
         break;
       case "item-placed":
         setItems(prev => [...prev, {
@@ -390,6 +442,202 @@ export default function Playroom() {
           partLimit: msg.partLimit,
         });
         break;
+
+      // Emotion Thermometer
+      case "thermometer-reading-added":
+        setThermometerReadings(prev => [...prev, msg.reading]);
+        break;
+      case "thermometer-cleared":
+        setThermometerReadings([]);
+        break;
+
+      // Containment Box
+      case "containment-container-created":
+        setContainmentContainers(prev => [...prev, msg.container]);
+        break;
+      case "containment-item-added":
+        setContainmentItems(prev => [...prev, msg.item]);
+        break;
+      case "containment-item-contained":
+      case "containment-item-dissolved":
+        setContainmentItems(prev => prev.map(i => i.id === msg.item.id ? { ...i, ...msg.item } : i));
+        break;
+      case "containment-locked":
+      case "containment-unlocked":
+        setContainmentContainers(prev => prev.map(c => c.id === msg.container.id ? { ...c, ...msg.container } : c));
+        break;
+      case "containment-cleared":
+        setContainmentContainers([]);
+        setContainmentItems([]);
+        break;
+
+      // Body Scan Map
+      case "body-scan-marker-added":
+        setBodyScanMarkers(prev => [...prev, msg.marker]);
+        break;
+      case "body-scan-marker-updated":
+        setBodyScanMarkers(prev => prev.map(m => m.id === msg.marker.id ? { ...m, ...msg.marker } : m));
+        break;
+      case "body-scan-marker-removed":
+        setBodyScanMarkers(prev => prev.filter(m => m.id !== msg.markerId));
+        break;
+      case "body-scan-cleared":
+        setBodyScanMarkers([]);
+        break;
+
+      // Gratitude Jar
+      case "gratitude-stone-added":
+        setGratitudeStones(prev => [...prev, { ...msg.stone, createdAt: msg.stone.createdAt || new Date().toISOString() }]);
+        break;
+      case "gratitude-stone-starred":
+        setGratitudeStones(prev => prev.map(s => s.id === msg.stone.id ? { ...s, ...msg.stone } : s));
+        break;
+      case "gratitude-stone-removed":
+        setGratitudeStones(prev => prev.filter(s => s.id !== msg.stoneId));
+        break;
+      case "gratitude-cleared":
+        setGratitudeStones([]);
+        break;
+
+      // Safety Map
+      case "safety-item-added":
+        setSafetyPlanItems(prev => [...prev, msg.item]);
+        break;
+      case "safety-item-updated":
+        setSafetyPlanItems(prev => prev.map(i => i.id === msg.item.id ? { ...i, ...msg.item } : i));
+        break;
+      case "safety-item-removed":
+        setSafetyPlanItems(prev => prev.filter(i => i.id !== msg.itemId));
+        break;
+      case "safety-plan-cleared":
+        setSafetyPlanItems([]);
+        break;
+
+      // Worry Tree
+      case "worry-entry-created":
+        setWorryTreeEntries(prev => [...prev, msg.entry]);
+        break;
+      case "worry-entry-updated":
+        setWorryTreeEntries(prev => prev.map(e => e.id === msg.entry.id ? { ...e, ...msg.entry } : e));
+        break;
+      case "worry-entry-removed":
+        setWorryTreeEntries(prev => prev.filter(e => e.id !== msg.entryId));
+        break;
+      case "worry-tree-cleared":
+        setWorryTreeEntries([]);
+        break;
+
+      // Thought Bridge
+      case "thought-bridge-created":
+        setThoughtBridgeRecords(prev => [...prev, msg.record]);
+        break;
+      case "thought-bridge-updated":
+        setThoughtBridgeRecords(prev => prev.map(r => r.id === msg.record.id ? { ...r, ...msg.record } : r));
+        break;
+      case "thought-bridge-evidence-added":
+        setThoughtBridgeEvidence(prev => [...prev, msg.evidence]);
+        break;
+      case "thought-bridge-evidence-removed":
+        setThoughtBridgeEvidence(prev => prev.filter(e => e.id !== msg.evidenceId));
+        break;
+      case "thought-bridge-cleared":
+        setThoughtBridgeRecords([]);
+        setThoughtBridgeEvidence([]);
+        break;
+
+      // Coping Toolbox
+      case "coping-strategy-added":
+        setCopingStrategies(prev => [...prev, msg.strategy]);
+        break;
+      case "coping-strategy-updated":
+        setCopingStrategies(prev => prev.map(s => s.id === msg.strategy.id ? { ...s, ...msg.strategy } : s));
+        break;
+      case "coping-strategy-removed":
+        setCopingStrategies(prev => prev.filter(s => s.id !== msg.strategyId));
+        break;
+      case "coping-cleared":
+        setCopingStrategies([]);
+        break;
+
+      // DBT House
+      case "dbt-skill-placed":
+        setDbtHouseSkills(prev => [...prev, msg.skill]);
+        break;
+      case "dbt-skill-updated":
+        setDbtHouseSkills(prev => prev.map(s => s.id === msg.skill.id ? { ...s, ...msg.skill } : s));
+        break;
+      case "dbt-skill-removed":
+        setDbtHouseSkills(prev => prev.filter(s => s.id !== msg.skillPlacementId));
+        break;
+      case "dbt-house-cleared":
+        setDbtHouseSkills([]);
+        break;
+
+      // Strengths Deck
+      case "strengths-placed":
+        setStrengthsPlacements(prev => [...prev, msg.placement]);
+        break;
+      case "strengths-moved":
+        setStrengthsPlacements(prev => prev.map(p => p.id === msg.placement.id ? { ...p, ...msg.placement } : p));
+        break;
+      case "strengths-removed":
+        setStrengthsPlacements(prev => prev.filter(p => p.id !== msg.placementId));
+        break;
+      case "strengths-spotted":
+        setStrengthsSpottings(prev => [...prev, msg.spotting]);
+        break;
+      case "strengths-cleared":
+        setStrengthsPlacements([]);
+        setStrengthsSpottings([]);
+        break;
+
+      // Social Atom
+      case "social-atom-person-added":
+        setSocialAtomPeople(prev => [...prev, msg.person]);
+        break;
+      case "social-atom-person-moved":
+      case "social-atom-person-updated":
+        setSocialAtomPeople(prev => prev.map(p => p.id === msg.person.id ? { ...p, ...msg.person } : p));
+        break;
+      case "social-atom-person-removed":
+        setSocialAtomPeople(prev => prev.filter(p => p.id !== msg.personId));
+        setSocialAtomConnections(prev => prev.filter(c => c.fromPersonId !== msg.personId && c.toPersonId !== msg.personId));
+        break;
+      case "social-atom-connection-added":
+        setSocialAtomConnections(prev => [...prev, msg.connection]);
+        break;
+      case "social-atom-connection-removed":
+        setSocialAtomConnections(prev => prev.filter(c => c.id !== msg.connectionId));
+        break;
+      case "social-atom-cleared":
+        setSocialAtomPeople([]);
+        setSocialAtomConnections([]);
+        break;
+
+      // Growth Garden
+      case "garden-plant-added":
+        setGardenPlants(prev => [...prev, msg.plant]);
+        break;
+      case "garden-plant-updated":
+        setGardenPlants(prev => prev.map(p => p.id === msg.plant.id ? { ...p, ...msg.plant } : p));
+        break;
+      case "garden-plant-removed":
+        setGardenPlants(prev => prev.filter(p => p.id !== msg.plantId));
+        break;
+      case "garden-journal-added":
+        setGardenJournalEntries(prev => [...prev, msg.entry]);
+        break;
+      case "garden-weed-added":
+        setGardenWeeds(prev => [...prev, msg.weed]);
+        break;
+      case "garden-weed-pulled":
+        setGardenWeeds(prev => prev.map(w => w.id === msg.weed.id ? { ...w, ...msg.weed } : w));
+        break;
+      case "garden-cleared":
+        setGardenPlants([]);
+        setGardenJournalEntries([]);
+        setGardenWeeds([]);
+        break;
     }
   }, []);
 
@@ -566,6 +814,212 @@ export default function Playroom() {
             ...(msg.partLimit !== undefined && { partLimit: msg.partLimit }),
           }));
           break;
+
+        // Demo: Thermometer
+        case "thermometer-reading-add":
+          setThermometerReadings(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, emotionLabel: msg.emotionLabel, intensity: msg.intensity, bodyLocation: msg.bodyLocation || null, triggerNote: msg.triggerNote || null, createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "thermometer-clear":
+          setThermometerReadings([]);
+          break;
+
+        // Demo: Containment Box
+        case "containment-container-create":
+          setContainmentContainers(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, containerType: msg.containerType || "chest", isLocked: false, lockMethod: null, containmentStrength: null, createdBy: pid, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }]);
+          break;
+        case "containment-item-add":
+          setContainmentItems(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, containerId: msg.containerId, label: msg.label, emoji: msg.emoji || null, color: msg.color || null, status: "contained", createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "containment-item-contain":
+          setContainmentItems(prev => prev.map(i => i.id === msg.itemId ? { ...i, status: "contained" } : i));
+          break;
+        case "containment-item-dissolve":
+          setContainmentItems(prev => prev.map(i => i.id === msg.itemId ? { ...i, status: "dissolved" } : i));
+          break;
+        case "containment-lock":
+          setContainmentContainers(prev => prev.map(c => c.id === msg.containerId ? { ...c, isLocked: true, lockMethod: msg.lockMethod, containmentStrength: msg.containmentStrength } : c));
+          break;
+        case "containment-unlock":
+          setContainmentContainers(prev => prev.map(c => c.id === msg.containerId ? { ...c, isLocked: false } : c));
+          break;
+        case "containment-clear":
+          setContainmentContainers([]);
+          setContainmentItems([]);
+          break;
+
+        // Demo: Body Scan
+        case "body-scan-marker-add":
+          setBodyScanMarkers(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, bodyRegion: msg.bodyRegion, sensationType: msg.sensationType, intensity: msg.intensity || 5, emotionLink: msg.emotionLink || null, notes: msg.notes || null, breathReaches: msg.breathReaches ?? null, movementImpulse: msg.movementImpulse || null, color: msg.color || null, createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "body-scan-marker-update":
+          setBodyScanMarkers(prev => prev.map(m => m.id === msg.markerId ? { ...m, ...msg } : m));
+          break;
+        case "body-scan-marker-remove":
+          setBodyScanMarkers(prev => prev.filter(m => m.id !== msg.markerId));
+          break;
+        case "body-scan-clear":
+          setBodyScanMarkers([]);
+          break;
+
+        // Demo: Gratitude Jar
+        case "gratitude-stone-add":
+          setGratitudeStones(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, content: msg.content, category: msg.category || "general", color: msg.color || "#F59E0B", shape: msg.shape || "round", isStarred: false, createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "gratitude-stone-star":
+          setGratitudeStones(prev => prev.map(s => s.id === msg.stoneId ? { ...s, isStarred: msg.isStarred } : s));
+          break;
+        case "gratitude-stone-remove":
+          setGratitudeStones(prev => prev.filter(s => s.id !== msg.stoneId));
+          break;
+        case "gratitude-clear":
+          setGratitudeStones([]);
+          break;
+
+        // Demo: Fidget
+        case "fidget-interaction":
+          break;
+
+        // Demo: Safety Map
+        case "safety-item-add":
+          setSafetyPlanItems(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, step: msg.step, content: msg.content, contactName: msg.contactName || null, contactPhone: msg.contactPhone || null, contactRelationship: msg.contactRelationship || null, orderIndex: msg.orderIndex || 0, createdBy: pid, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }]);
+          break;
+        case "safety-item-update":
+          setSafetyPlanItems(prev => prev.map(i => i.id === msg.itemId ? { ...i, ...msg } : i));
+          break;
+        case "safety-item-remove":
+          setSafetyPlanItems(prev => prev.filter(i => i.id !== msg.itemId));
+          break;
+        case "safety-plan-clear":
+          setSafetyPlanItems([]);
+          break;
+
+        // Demo: Worry Tree
+        case "worry-entry-create":
+          setWorryTreeEntries(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, worryText: msg.worryText, category: msg.category || null, isReal: null, isActionable: null, resolution: null, actionSteps: null, scheduledTime: null, lettingGoMethod: null, createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "worry-entry-update":
+          setWorryTreeEntries(prev => prev.map(e => e.id === msg.entryId ? { ...e, ...msg } : e));
+          break;
+        case "worry-entry-remove":
+          setWorryTreeEntries(prev => prev.filter(e => e.id !== msg.entryId));
+          break;
+        case "worry-tree-clear":
+          setWorryTreeEntries([]);
+          break;
+
+        // Demo: Thought Bridge
+        case "thought-bridge-create":
+          setThoughtBridgeRecords(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, situation: msg.situation || null, automaticThought: null, beliefRatingBefore: null, beliefRatingAfter: null, balancedThought: null, emotionsBefore: null, emotionsAfter: null, distortions: null, status: "incomplete", createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "thought-bridge-update":
+          setThoughtBridgeRecords(prev => prev.map(r => r.id === msg.recordId ? { ...r, ...msg } : r));
+          break;
+        case "thought-bridge-evidence-add":
+          setThoughtBridgeEvidence(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, recordId: msg.recordId, type: msg.evidenceType, content: msg.content, createdBy: pid, orderIndex: msg.orderIndex || 0 }]);
+          break;
+        case "thought-bridge-evidence-remove":
+          setThoughtBridgeEvidence(prev => prev.filter(e => e.id !== msg.evidenceId));
+          break;
+        case "thought-bridge-clear":
+          setThoughtBridgeRecords([]);
+          setThoughtBridgeEvidence([]);
+          break;
+
+        // Demo: Coping Toolbox
+        case "coping-strategy-add":
+          setCopingStrategies(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, name: msg.name, description: msg.description || null, category: msg.category, emoji: msg.emoji || null, isCustom: msg.isCustom ?? true, contextTags: msg.contextTags || null, difficulty: msg.difficulty || null, effectiveness: null, isPinned: msg.isPinned ?? false, usageCount: 0, createdBy: pid, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }]);
+          break;
+        case "coping-strategy-update":
+          setCopingStrategies(prev => prev.map(s => s.id === msg.strategyId ? { ...s, ...msg } : s));
+          break;
+        case "coping-strategy-remove":
+          setCopingStrategies(prev => prev.filter(s => s.id !== msg.strategyId));
+          break;
+        case "coping-clear":
+          setCopingStrategies([]);
+          break;
+
+        // Demo: DBT House
+        case "dbt-skill-place":
+          setDbtHouseSkills(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, skillId: msg.skillId, module: msg.module, houseSection: msg.houseSection, personalExample: msg.personalExample || null, practiceCount: 0, lastPracticedAt: null, effectivenessAvg: null, createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "dbt-skill-update":
+          setDbtHouseSkills(prev => prev.map(s => s.id === msg.skillPlacementId ? { ...s, ...msg } : s));
+          break;
+        case "dbt-skill-remove":
+          setDbtHouseSkills(prev => prev.filter(s => s.id !== msg.skillPlacementId));
+          break;
+        case "dbt-house-clear":
+          setDbtHouseSkills([]);
+          break;
+
+        // Demo: Strengths Deck
+        case "strengths-place":
+          setStrengthsPlacements(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, strengthId: msg.strengthId, tier: msg.tier, orderIndex: msg.orderIndex || 0, scenarioResponse: msg.scenarioResponse || null, createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "strengths-move":
+          setStrengthsPlacements(prev => prev.map(p => p.id === msg.placementId ? { ...p, tier: msg.tier, orderIndex: msg.orderIndex } : p));
+          break;
+        case "strengths-remove":
+          setStrengthsPlacements(prev => prev.filter(p => p.id !== msg.placementId));
+          break;
+        case "strengths-spot":
+          setStrengthsSpottings(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, strengthId: msg.strengthId, note: msg.note, createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "strengths-clear":
+          setStrengthsPlacements([]);
+          setStrengthsSpottings([]);
+          break;
+
+        // Demo: Social Atom
+        case "social-atom-person-add":
+          setSocialAtomPeople(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, name: msg.name, role: msg.role, emoji: msg.emoji || null, color: msg.color || "#3B82F6", distanceRing: msg.distanceRing || 2, angle: msg.angle || 0, groupId: null, isDeceased: msg.isDeceased ?? false, emotionalTone: msg.emotionalTone || null, notes: msg.notes || null, createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "social-atom-person-move":
+          setSocialAtomPeople(prev => prev.map(p => p.id === msg.personId ? { ...p, distanceRing: msg.distanceRing, angle: msg.angle } : p));
+          break;
+        case "social-atom-person-update":
+          setSocialAtomPeople(prev => prev.map(p => p.id === msg.personId ? { ...p, ...msg } : p));
+          break;
+        case "social-atom-person-remove":
+          setSocialAtomPeople(prev => prev.filter(p => p.id !== msg.personId));
+          setSocialAtomConnections(prev => prev.filter(c => c.fromPersonId !== msg.personId && c.toPersonId !== msg.personId));
+          break;
+        case "social-atom-connection-add":
+          setSocialAtomConnections(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, fromPersonId: msg.fromPersonId, toPersonId: msg.toPersonId, style: msg.style || "supportive", label: msg.label || null, directionality: msg.directionality || "bidirectional", createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "social-atom-connection-remove":
+          setSocialAtomConnections(prev => prev.filter(c => c.id !== msg.connectionId));
+          break;
+        case "social-atom-clear":
+          setSocialAtomPeople([]);
+          setSocialAtomConnections([]);
+          break;
+
+        // Demo: Growth Garden
+        case "garden-plant-add":
+          setGardenPlants(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, seedType: msg.seedType, customName: msg.customName, category: msg.category, growthStage: msg.growthStage || 1, gridX: msg.gridX, gridY: msg.gridY, isHarvested: false, isDormant: false, createdBy: pid, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }]);
+          break;
+        case "garden-plant-update":
+          setGardenPlants(prev => prev.map(p => p.id === msg.plantId ? { ...p, ...msg } : p));
+          break;
+        case "garden-plant-remove":
+          setGardenPlants(prev => prev.filter(p => p.id !== msg.plantId));
+          break;
+        case "garden-journal-add":
+          setGardenJournalEntries(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, plantId: msg.plantId, content: msg.content, progressRating: msg.progressRating || null, createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "garden-weed-add":
+          setGardenWeeds(prev => [...prev, { id: `demo-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, label: msg.label, linkedPlantId: msg.linkedPlantId || null, isPulled: false, createdBy: pid, createdAt: new Date().toISOString() }]);
+          break;
+        case "garden-weed-pull":
+          setGardenWeeds(prev => prev.map(w => w.id === msg.weedId ? { ...w, isPulled: true } : w));
+          break;
+        case "garden-clear":
+          setGardenPlants([]);
+          setGardenJournalEntries([]);
+          setGardenWeeds([]);
+          break;
       }
       return;
     }
@@ -655,15 +1109,28 @@ export default function Playroom() {
   }, [activeTool]);
 
   const toolDisplayName = (tool: string) => {
-    switch (tool) {
-      case "sandtray": return "Zen Sandtray";
-      case "breathing": return "Calm Breathing";
-      case "feelings": return "Feeling Wheel";
-      case "narrative": return "Narrative Timeline";
-      case "values-sort": return "Values Card Sort";
-      case "parts-theater": return "Parts Theater";
-      default: return tool;
-    }
+    const names: Record<string, string> = {
+      "sandtray": "Zen Sandtray",
+      "breathing": "Calm Breathing",
+      "feelings": "Feeling Wheel",
+      "narrative": "Narrative Timeline",
+      "values-sort": "Values Card Sort",
+      "parts-theater": "Parts Theater",
+      "emotion-thermometer": "Emotion Thermometer",
+      "containment-box": "Containment Box",
+      "body-scan": "Body Scan Map",
+      "gratitude-jar": "Gratitude Jar",
+      "fidget-tools": "Fidget Tools",
+      "safety-map": "Safety Map",
+      "worry-tree": "Worry Tree",
+      "thought-bridge": "Thought Bridge",
+      "coping-toolbox": "Coping Toolbox",
+      "dbt-house": "The DBT House",
+      "strengths-deck": "Strengths Deck",
+      "social-atom": "Social Atom",
+      "growth-garden": "Growth Garden",
+    };
+    return names[tool] || tool;
   };
 
   // Sandtray handlers
@@ -862,6 +1329,249 @@ export default function Playroom() {
   const handleToggleRakeMode = useCallback(() => {
     setRakeMode(prev => !prev);
   }, []);
+
+  // Emotion Thermometer handlers
+  const handleThermometerAdd = useCallback((emotionLabel: string, intensity: number, bodyLocation: string | null, triggerNote: string | null) => {
+    send({ type: "thermometer-reading-add", emotionLabel, intensity, bodyLocation, triggerNote });
+    send({ type: "activity-pulse" });
+  }, [send]);
+  const handleThermometerRemove = useCallback((readingId: string) => {
+    if (!isDemo) setThermometerReadings(prev => prev.filter(r => r.id !== readingId));
+    send({ type: "thermometer-reading-remove", readingId });
+  }, [send, isDemo]);
+  const handleThermometerClear = useCallback(() => {
+    send({ type: "thermometer-clear" });
+    if (!isDemo) setThermometerReadings([]);
+  }, [send, isDemo]);
+
+  // Containment Box handlers
+  const handleContainmentCreateContainer = useCallback((containerType: string) => {
+    send({ type: "containment-container-create", containerType });
+  }, [send]);
+  const handleContainmentAddItem = useCallback((containerId: string, label: string, emoji: string | null, color: string | null) => {
+    send({ type: "containment-item-add", containerId, label, emoji, color });
+    send({ type: "activity-pulse" });
+  }, [send]);
+  const handleContainmentContainItem = useCallback((itemId: string) => {
+    send({ type: "containment-item-contain", itemId });
+  }, [send]);
+  const handleContainmentDissolveItem = useCallback((itemId: string) => {
+    send({ type: "containment-item-dissolve", itemId });
+  }, [send]);
+  const handleContainmentLock = useCallback((containerId: string, lockMethod: string, containmentStrength: number) => {
+    send({ type: "containment-lock", containerId, lockMethod, containmentStrength });
+  }, [send]);
+  const handleContainmentUnlock = useCallback((containerId: string) => {
+    send({ type: "containment-unlock", containerId });
+  }, [send]);
+  const handleContainmentClear = useCallback(() => {
+    send({ type: "containment-clear" });
+    if (!isDemo) { setContainmentContainers([]); setContainmentItems([]); }
+  }, [send, isDemo]);
+
+  // Body Scan handlers
+  const handleBodyScanAdd = useCallback((bodyRegion: string, sensationType: string, intensity: number, emotionLink: string | null, breathReaches: boolean | null, movementImpulse: string | null, notes: string | null, color: string | null) => {
+    send({ type: "body-scan-marker-add", bodyRegion, sensationType, intensity, emotionLink, breathReaches, movementImpulse, notes, color });
+    send({ type: "activity-pulse" });
+  }, [send]);
+  const handleBodyScanUpdate = useCallback((markerId: string, fields: any) => {
+    send({ type: "body-scan-marker-update", markerId, ...fields });
+  }, [send]);
+  const handleBodyScanRemove = useCallback((markerId: string) => {
+    if (!isDemo) setBodyScanMarkers(prev => prev.filter(m => m.id !== markerId));
+    send({ type: "body-scan-marker-remove", markerId });
+  }, [send, isDemo]);
+  const handleBodyScanClear = useCallback(() => {
+    send({ type: "body-scan-clear" });
+    if (!isDemo) setBodyScanMarkers([]);
+  }, [send, isDemo]);
+
+  // Gratitude Jar handlers
+  const handleGratitudeAdd = useCallback((content: string, category: string, color: string, shape: string) => {
+    send({ type: "gratitude-stone-add", content, category, color, shape });
+    send({ type: "activity-pulse" });
+  }, [send]);
+  const handleGratitudeStar = useCallback((stoneId: string, isStarred: boolean) => {
+    send({ type: "gratitude-stone-star", stoneId, isStarred });
+  }, [send]);
+  const handleGratitudeRemove = useCallback((stoneId: string) => {
+    if (!isDemo) setGratitudeStones(prev => prev.filter(s => s.id !== stoneId));
+    send({ type: "gratitude-stone-remove", stoneId });
+  }, [send, isDemo]);
+  const handleGratitudeClear = useCallback(() => {
+    send({ type: "gratitude-clear" });
+    if (!isDemo) setGratitudeStones([]);
+  }, [send, isDemo]);
+
+  // Fidget handler
+  const handleFidgetInteraction = useCallback((widgetType: string, data: any) => {
+    send({ type: "fidget-interaction", widgetType, data });
+  }, [send]);
+
+  // Safety Map handlers
+  const handleSafetyAdd = useCallback((step: number, content: string, contactName: string | null, contactPhone: string | null, contactRelationship: string | null, orderIndex: number) => {
+    send({ type: "safety-item-add", step, content, contactName, contactPhone, contactRelationship, orderIndex });
+    send({ type: "activity-pulse" });
+  }, [send]);
+  const handleSafetyUpdate = useCallback((itemId: string, fields: any) => {
+    send({ type: "safety-item-update", itemId, ...fields });
+  }, [send]);
+  const handleSafetyRemove = useCallback((itemId: string) => {
+    if (!isDemo) setSafetyPlanItems(prev => prev.filter(i => i.id !== itemId));
+    send({ type: "safety-item-remove", itemId });
+  }, [send, isDemo]);
+  const handleSafetyClear = useCallback(() => {
+    send({ type: "safety-plan-clear" });
+    if (!isDemo) setSafetyPlanItems([]);
+  }, [send, isDemo]);
+
+  // Worry Tree handlers
+  const handleWorryCreate = useCallback((worryText: string, category: string | null) => {
+    send({ type: "worry-entry-create", worryText, category });
+    send({ type: "activity-pulse" });
+  }, [send]);
+  const handleWorryUpdate = useCallback((entryId: string, fields: any) => {
+    send({ type: "worry-entry-update", entryId, ...fields });
+  }, [send]);
+  const handleWorryRemove = useCallback((entryId: string) => {
+    if (!isDemo) setWorryTreeEntries(prev => prev.filter(e => e.id !== entryId));
+    send({ type: "worry-entry-remove", entryId });
+  }, [send, isDemo]);
+  const handleWorryClear = useCallback(() => {
+    send({ type: "worry-tree-clear" });
+    if (!isDemo) setWorryTreeEntries([]);
+  }, [send, isDemo]);
+
+  // Thought Bridge handlers
+  const handleThoughtBridgeCreate = useCallback((situation: string | null) => {
+    send({ type: "thought-bridge-create", situation });
+    send({ type: "activity-pulse" });
+  }, [send]);
+  const handleThoughtBridgeUpdate = useCallback((recordId: string, fields: any) => {
+    send({ type: "thought-bridge-update", recordId, ...fields });
+  }, [send]);
+  const handleThoughtBridgeRemove = useCallback((recordId: string) => {
+    if (!isDemo) { setThoughtBridgeRecords(prev => prev.filter(r => r.id !== recordId)); setThoughtBridgeEvidence(prev => prev.filter(e => e.recordId !== recordId)); }
+    send({ type: "thought-bridge-remove", recordId });
+  }, [send, isDemo]);
+  const handleThoughtBridgeAddEvidence = useCallback((recordId: string, evidenceType: string, content: string, orderIndex: number) => {
+    send({ type: "thought-bridge-evidence-add", recordId, evidenceType, content, orderIndex });
+  }, [send]);
+  const handleThoughtBridgeRemoveEvidence = useCallback((evidenceId: string) => {
+    if (!isDemo) setThoughtBridgeEvidence(prev => prev.filter(e => e.id !== evidenceId));
+    send({ type: "thought-bridge-evidence-remove", evidenceId });
+  }, [send, isDemo]);
+  const handleThoughtBridgeClear = useCallback(() => {
+    send({ type: "thought-bridge-clear" });
+    if (!isDemo) { setThoughtBridgeRecords([]); setThoughtBridgeEvidence([]); }
+  }, [send, isDemo]);
+
+  // Coping Toolbox handlers
+  const handleCopingAdd = useCallback((name: string, description: string, category: string, emoji: string, isCustom?: boolean, difficulty?: string, isPinned?: boolean) => {
+    send({ type: "coping-strategy-add", name, description, category, emoji, isCustom, difficulty, isPinned });
+    send({ type: "activity-pulse" });
+  }, [send]);
+  const handleCopingUpdate = useCallback((strategyId: string, fields: any) => {
+    send({ type: "coping-strategy-update", strategyId, ...fields });
+  }, [send]);
+  const handleCopingRemove = useCallback((strategyId: string) => {
+    if (!isDemo) setCopingStrategies(prev => prev.filter(s => s.id !== strategyId));
+    send({ type: "coping-strategy-remove", strategyId });
+  }, [send, isDemo]);
+  const handleCopingClear = useCallback(() => {
+    send({ type: "coping-clear" });
+    if (!isDemo) setCopingStrategies([]);
+  }, [send, isDemo]);
+
+  // DBT House handlers
+  const handleDbtSkillPlace = useCallback((skillId: string, module: string, houseSection: string, personalExample?: string) => {
+    send({ type: "dbt-skill-place", skillId, module, houseSection, personalExample });
+    send({ type: "activity-pulse" });
+  }, [send]);
+  const handleDbtSkillUpdate = useCallback((skillPlacementId: string, fields: any) => {
+    send({ type: "dbt-skill-update", skillPlacementId, ...fields });
+  }, [send]);
+  const handleDbtSkillRemove = useCallback((skillPlacementId: string) => {
+    if (!isDemo) setDbtHouseSkills(prev => prev.filter(s => s.id !== skillPlacementId));
+    send({ type: "dbt-skill-remove", skillPlacementId });
+  }, [send, isDemo]);
+  const handleDbtHouseClear = useCallback(() => {
+    send({ type: "dbt-house-clear" });
+    if (!isDemo) setDbtHouseSkills([]);
+  }, [send, isDemo]);
+
+  // Strengths Deck handlers
+  const handleStrengthsPlace = useCallback((strengthId: string, tier: string, orderIndex: number, scenarioResponse: string | null) => {
+    send({ type: "strengths-place", strengthId, tier, orderIndex, scenarioResponse });
+    send({ type: "activity-pulse" });
+  }, [send]);
+  const handleStrengthsMove = useCallback((placementId: string, tier: string, orderIndex: number) => {
+    send({ type: "strengths-move", placementId, tier, orderIndex });
+  }, [send]);
+  const handleStrengthsRemove = useCallback((placementId: string) => {
+    if (!isDemo) setStrengthsPlacements(prev => prev.filter(p => p.id !== placementId));
+    send({ type: "strengths-remove", placementId });
+  }, [send, isDemo]);
+  const handleStrengthsSpot = useCallback((strengthId: string, note: string) => {
+    send({ type: "strengths-spot", strengthId, note });
+  }, [send]);
+  const handleStrengthsClear = useCallback(() => {
+    send({ type: "strengths-clear" });
+    if (!isDemo) { setStrengthsPlacements([]); setStrengthsSpottings([]); }
+  }, [send, isDemo]);
+
+  // Social Atom handlers
+  const handleSocialAtomAddPerson = useCallback((name: string, role: string, emoji: string | null, color: string, distanceRing: number, angle: number, isDeceased: boolean, emotionalTone: string | null, notes: string | null) => {
+    send({ type: "social-atom-person-add", name, role, emoji, color, distanceRing, angle, isDeceased, emotionalTone, notes });
+    send({ type: "activity-pulse" });
+  }, [send]);
+  const handleSocialAtomMovePerson = useCallback((personId: string, distanceRing: number, angle: number) => {
+    send({ type: "social-atom-person-move", personId, distanceRing, angle });
+  }, [send]);
+  const handleSocialAtomUpdatePerson = useCallback((personId: string, fields: any) => {
+    send({ type: "social-atom-person-update", personId, ...fields });
+  }, [send]);
+  const handleSocialAtomRemovePerson = useCallback((personId: string) => {
+    if (!isDemo) { setSocialAtomPeople(prev => prev.filter(p => p.id !== personId)); setSocialAtomConnections(prev => prev.filter(c => c.fromPersonId !== personId && c.toPersonId !== personId)); }
+    send({ type: "social-atom-person-remove", personId });
+  }, [send, isDemo]);
+  const handleSocialAtomAddConnection = useCallback((fromPersonId: string, toPersonId: string, style: string, label: string | null, directionality: string) => {
+    send({ type: "social-atom-connection-add", fromPersonId, toPersonId, style, label, directionality });
+  }, [send]);
+  const handleSocialAtomRemoveConnection = useCallback((connectionId: string) => {
+    if (!isDemo) setSocialAtomConnections(prev => prev.filter(c => c.id !== connectionId));
+    send({ type: "social-atom-connection-remove", connectionId });
+  }, [send, isDemo]);
+  const handleSocialAtomClear = useCallback(() => {
+    send({ type: "social-atom-clear" });
+    if (!isDemo) { setSocialAtomPeople([]); setSocialAtomConnections([]); }
+  }, [send, isDemo]);
+
+  // Growth Garden handlers
+  const handleGardenAddPlant = useCallback((seedType: string, customName: string, category: string, gridX: number, gridY: number) => {
+    send({ type: "garden-plant-add", seedType, customName, category, gridX, gridY });
+    send({ type: "activity-pulse" });
+  }, [send]);
+  const handleGardenUpdatePlant = useCallback((plantId: string, fields: any) => {
+    send({ type: "garden-plant-update", plantId, ...fields });
+  }, [send]);
+  const handleGardenRemovePlant = useCallback((plantId: string) => {
+    if (!isDemo) setGardenPlants(prev => prev.filter(p => p.id !== plantId));
+    send({ type: "garden-plant-remove", plantId });
+  }, [send, isDemo]);
+  const handleGardenAddJournal = useCallback((plantId: string, content: string, progressRating: string | null) => {
+    send({ type: "garden-journal-add", plantId, content, progressRating });
+  }, [send]);
+  const handleGardenAddWeed = useCallback((label: string, linkedPlantId: string | null) => {
+    send({ type: "garden-weed-add", label, linkedPlantId });
+  }, [send]);
+  const handleGardenPullWeed = useCallback((weedId: string) => {
+    send({ type: "garden-weed-pull", weedId });
+  }, [send]);
+  const handleGardenClear = useCallback(() => {
+    send({ type: "garden-clear" });
+    if (!isDemo) { setGardenPlants([]); setGardenJournalEntries([]); setGardenWeeds([]); }
+  }, [send, isDemo]);
 
   const handleEndSession = useCallback(async () => {
     if (!sessionId) return;
@@ -1336,6 +2046,86 @@ export default function Playroom() {
                   onClear={handleTheaterClear}
                   onUpdateSettings={handleTheaterSettingsUpdate}
                 />
+              </motion.div>
+            )}
+
+            {activeTool === "emotion-thermometer" && (
+              <motion.div key="emotion-thermometer" className="absolute inset-0" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <EmotionThermometer readings={thermometerReadings} onAddReading={handleThermometerAdd} onRemoveReading={handleThermometerRemove} onClear={handleThermometerClear} isClinician={isClinician} />
+              </motion.div>
+            )}
+
+            {activeTool === "containment-box" && (
+              <motion.div key="containment-box" className="absolute inset-0" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <ContainmentBox containers={containmentContainers} items={containmentItems} onCreateContainer={handleContainmentCreateContainer} onAddItem={handleContainmentAddItem} onContainItem={handleContainmentContainItem} onDissolveItem={handleContainmentDissolveItem} onLock={handleContainmentLock} onUnlock={handleContainmentUnlock} onClear={handleContainmentClear} isClinician={isClinician} />
+              </motion.div>
+            )}
+
+            {activeTool === "body-scan" && (
+              <motion.div key="body-scan" className="absolute inset-0" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <BodyScanMap markers={bodyScanMarkers} onAddMarker={handleBodyScanAdd} onUpdateMarker={handleBodyScanUpdate} onRemoveMarker={handleBodyScanRemove} onClear={handleBodyScanClear} isClinician={isClinician} />
+              </motion.div>
+            )}
+
+            {activeTool === "gratitude-jar" && (
+              <motion.div key="gratitude-jar" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <div className="p-4 flex items-start justify-center min-h-full">
+                  <GratitudeJar stones={gratitudeStones} onAddStone={handleGratitudeAdd} onStarStone={handleGratitudeStar} onRemoveStone={handleGratitudeRemove} onClear={handleGratitudeClear} isClinician={isClinician} />
+                </div>
+              </motion.div>
+            )}
+
+            {activeTool === "fidget-tools" && (
+              <motion.div key="fidget-tools" className="absolute inset-0" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <FidgetTools onInteraction={handleFidgetInteraction} isClinician={isClinician} />
+              </motion.div>
+            )}
+
+            {activeTool === "safety-map" && (
+              <motion.div key="safety-map" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <SafetyMap items={safetyPlanItems} onAddItem={handleSafetyAdd} onUpdateItem={handleSafetyUpdate} onRemoveItem={handleSafetyRemove} onClear={handleSafetyClear} isClinician={isClinician} />
+              </motion.div>
+            )}
+
+            {activeTool === "worry-tree" && (
+              <motion.div key="worry-tree" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <WorryTree entries={worryTreeEntries} onCreateEntry={handleWorryCreate} onUpdateEntry={handleWorryUpdate} onRemoveEntry={handleWorryRemove} onClear={handleWorryClear} isClinician={isClinician} />
+              </motion.div>
+            )}
+
+            {activeTool === "thought-bridge" && (
+              <motion.div key="thought-bridge" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <ThoughtBridge records={thoughtBridgeRecords} evidence={thoughtBridgeEvidence} onCreateRecord={handleThoughtBridgeCreate} onUpdateRecord={handleThoughtBridgeUpdate} onRemoveRecord={handleThoughtBridgeRemove} onAddEvidence={handleThoughtBridgeAddEvidence} onRemoveEvidence={handleThoughtBridgeRemoveEvidence} onClear={handleThoughtBridgeClear} isClinician={isClinician} />
+              </motion.div>
+            )}
+
+            {activeTool === "coping-toolbox" && (
+              <motion.div key="coping-toolbox" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <CopingToolbox strategies={copingStrategies} onAddStrategy={handleCopingAdd} onUpdateStrategy={handleCopingUpdate} onRemoveStrategy={handleCopingRemove} onClear={handleCopingClear} isClinician={isClinician} />
+              </motion.div>
+            )}
+
+            {activeTool === "dbt-house" && (
+              <motion.div key="dbt-house" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <DbtHouse skills={dbtHouseSkills} onPlaceSkill={handleDbtSkillPlace} onUpdateSkill={handleDbtSkillUpdate} onRemoveSkill={handleDbtSkillRemove} onClear={handleDbtHouseClear} isClinician={isClinician} />
+              </motion.div>
+            )}
+
+            {activeTool === "strengths-deck" && (
+              <motion.div key="strengths-deck" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <StrengthsDeck placements={strengthsPlacements} spottings={strengthsSpottings} onPlace={handleStrengthsPlace} onMove={handleStrengthsMove} onRemove={handleStrengthsRemove} onSpot={handleStrengthsSpot} onClear={handleStrengthsClear} isClinician={isClinician} />
+              </motion.div>
+            )}
+
+            {activeTool === "social-atom" && (
+              <motion.div key="social-atom" className="absolute inset-0" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <SocialAtom people={socialAtomPeople} connections={socialAtomConnections} onAddPerson={handleSocialAtomAddPerson} onMovePerson={handleSocialAtomMovePerson} onUpdatePerson={handleSocialAtomUpdatePerson} onRemovePerson={handleSocialAtomRemovePerson} onAddConnection={handleSocialAtomAddConnection} onRemoveConnection={handleSocialAtomRemoveConnection} onClear={handleSocialAtomClear} isClinician={isClinician} />
+              </motion.div>
+            )}
+
+            {activeTool === "growth-garden" && (
+              <motion.div key="growth-garden" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <GrowthGarden plants={gardenPlants} journalEntries={gardenJournalEntries} weeds={gardenWeeds} onAddPlant={handleGardenAddPlant} onUpdatePlant={handleGardenUpdatePlant} onRemovePlant={handleGardenRemovePlant} onAddJournalEntry={handleGardenAddJournal} onAddWeed={handleGardenAddWeed} onPullWeed={handleGardenPullWeed} onClear={handleGardenClear} isClinician={isClinician} />
               </motion.div>
             )}
           </AnimatePresence>

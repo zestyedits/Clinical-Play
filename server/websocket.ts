@@ -107,7 +107,15 @@ export function setupWebSocketServer(server: Server) {
             }
             rooms.get(sessionId)!.add(client);
 
-            const [items, participants, session, feelingSelections, timelineEvts, valuesCards, theaterPartsData, theaterConnsData] = await Promise.all([
+            const [items, participants, session, feelingSelections, timelineEvts, valuesCards, theaterPartsData, theaterConnsData,
+              thermometerData, containmentContainersData, containmentItemsData,
+              bodyScanData, gratitudeData, safetyPlanData,
+              worryTreeData, thoughtBridgeData, thoughtBridgeEvidenceData,
+              copingData, dbtHouseData,
+              strengthsPlacementsData, strengthsSpottingsData,
+              socialAtomPeopleData, socialAtomConnectionsData, socialAtomGroupsData,
+              gardenPlantsData, gardenJournalData, gardenWeedsData,
+            ] = await Promise.all([
               storage.getSandtrayItems(sessionId),
               storage.getParticipantsBySession(sessionId),
               storage.getSession(sessionId),
@@ -116,6 +124,25 @@ export function setupWebSocketServer(server: Server) {
               storage.getValuesCardPlacements(sessionId),
               storage.getTheaterParts(sessionId),
               storage.getTheaterConnections(sessionId),
+              storage.getThermometerReadings(sessionId),
+              storage.getContainmentContainers(sessionId),
+              storage.getContainmentItems(sessionId),
+              storage.getBodyScanMarkers(sessionId),
+              storage.getGratitudeStones(sessionId),
+              storage.getSafetyPlanItems(sessionId),
+              storage.getWorryTreeEntries(sessionId),
+              storage.getThoughtBridgeRecords(sessionId),
+              storage.getThoughtBridgeEvidence(sessionId),
+              storage.getCopingStrategies(sessionId),
+              storage.getDbtHouseSkills(sessionId),
+              storage.getStrengthsPlacements(sessionId),
+              storage.getStrengthsSpottings(sessionId),
+              storage.getSocialAtomPeople(sessionId),
+              storage.getSocialAtomConnections(sessionId),
+              storage.getSocialAtomGroups(sessionId),
+              storage.getGardenPlants(sessionId),
+              storage.getGardenJournalEntries(sessionId),
+              storage.getGardenWeeds(sessionId),
             ]);
             const state = getRoomState(sessionId);
 
@@ -144,6 +171,25 @@ export function setupWebSocketServer(server: Server) {
               theaterDimInactive: state.theaterDimInactive,
               theaterMetaphor: state.theaterMetaphor,
               theaterPartLimit: state.theaterPartLimit,
+              thermometerReadings: thermometerData,
+              containmentContainers: containmentContainersData,
+              containmentItems: containmentItemsData,
+              bodyScanMarkers: bodyScanData,
+              gratitudeStones: gratitudeData,
+              safetyPlanItems: safetyPlanData,
+              worryTreeEntries: worryTreeData,
+              thoughtBridgeRecords: thoughtBridgeData,
+              thoughtBridgeEvidence: thoughtBridgeEvidenceData,
+              copingStrategies: copingData,
+              dbtHouseSkills: dbtHouseData,
+              strengthsPlacements: strengthsPlacementsData,
+              strengthsSpottings: strengthsSpottingsData,
+              socialAtomPeople: socialAtomPeopleData,
+              socialAtomConnections: socialAtomConnectionsData,
+              socialAtomGroups: socialAtomGroupsData,
+              gardenPlants: gardenPlantsData,
+              gardenJournalEntries: gardenJournalData,
+              gardenWeeds: gardenWeedsData,
             }));
 
             broadcast(sessionId, {
@@ -587,6 +633,510 @@ export function setupWebSocketServer(server: Server) {
               enabled: msg.enabled,
               toggledBy: client.participantId,
             });
+            break;
+          }
+
+          // --- Emotion Thermometer ---
+          case "thermometer-reading-add": {
+            if (!client) return;
+            const reading = await storage.addThermometerReading({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              emotionLabel: msg.emotionLabel, intensity: msg.intensity,
+              bodyLocation: msg.bodyLocation || null, triggerNote: msg.triggerNote || null,
+            });
+            broadcast(client.sessionId, { type: "thermometer-reading-added", reading, createdBy: client.participantId, displayName: client.displayName });
+            break;
+          }
+          case "thermometer-clear": {
+            if (!client) return;
+            await storage.clearThermometerReadings(client.sessionId);
+            broadcast(client.sessionId, { type: "thermometer-cleared" });
+            break;
+          }
+
+          // --- Containment Box ---
+          case "containment-container-create": {
+            if (!client) return;
+            const container = await storage.addContainmentContainer({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              containerType: msg.containerType || "chest",
+            });
+            broadcast(client.sessionId, { type: "containment-container-created", container });
+            break;
+          }
+          case "containment-item-add": {
+            if (!client) return;
+            const cItem = await storage.addContainmentItem({
+              containerId: msg.containerId, sessionId: client.sessionId,
+              createdBy: client.participantId, label: msg.label,
+              emoji: msg.emoji || null, color: msg.color || null,
+            });
+            broadcast(client.sessionId, { type: "containment-item-added", item: cItem });
+            break;
+          }
+          case "containment-item-contain": {
+            if (!client) return;
+            const contained = await storage.updateContainmentItem(msg.itemId, { status: "contained" });
+            broadcast(client.sessionId, { type: "containment-item-contained", item: contained });
+            break;
+          }
+          case "containment-item-dissolve": {
+            if (!client) return;
+            const dissolved = await storage.updateContainmentItem(msg.itemId, { status: "dissolved" });
+            broadcast(client.sessionId, { type: "containment-item-dissolved", item: dissolved });
+            break;
+          }
+          case "containment-lock": {
+            if (!client) return;
+            const locked = await storage.updateContainmentContainer(msg.containerId, { isLocked: true, lockMethod: msg.lockMethod || "key", containmentStrength: msg.containmentStrength });
+            broadcast(client.sessionId, { type: "containment-locked", container: locked });
+            break;
+          }
+          case "containment-unlock": {
+            if (!client) return;
+            const unlocked = await storage.updateContainmentContainer(msg.containerId, { isLocked: false });
+            broadcast(client.sessionId, { type: "containment-unlocked", container: unlocked });
+            break;
+          }
+          case "containment-clear": {
+            if (!client) return;
+            await storage.clearContainmentContainers(client.sessionId);
+            broadcast(client.sessionId, { type: "containment-cleared" });
+            break;
+          }
+
+          // --- Body Scan Map ---
+          case "body-scan-marker-add": {
+            if (!client) return;
+            const marker = await storage.addBodyScanMarker({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              bodyRegion: msg.bodyRegion, sensationType: msg.sensationType,
+              intensity: msg.intensity || 5, emotionLink: msg.emotionLink || null,
+              notes: msg.notes || null, breathReaches: msg.breathReaches ?? null,
+              movementImpulse: msg.movementImpulse || null,
+            });
+            broadcast(client.sessionId, { type: "body-scan-marker-added", marker, createdBy: client.participantId });
+            break;
+          }
+          case "body-scan-marker-update": {
+            if (!client) return;
+            const fields: Record<string, any> = {};
+            if (msg.sensationType !== undefined) fields.sensationType = msg.sensationType;
+            if (msg.intensity !== undefined) fields.intensity = msg.intensity;
+            if (msg.emotionLink !== undefined) fields.emotionLink = msg.emotionLink;
+            if (msg.notes !== undefined) fields.notes = msg.notes;
+            const updMarker = await storage.updateBodyScanMarker(msg.markerId, fields);
+            broadcast(client.sessionId, { type: "body-scan-marker-updated", marker: updMarker });
+            break;
+          }
+          case "body-scan-marker-remove": {
+            if (!client) return;
+            await storage.removeBodyScanMarker(msg.markerId);
+            broadcast(client.sessionId, { type: "body-scan-marker-removed", markerId: msg.markerId });
+            break;
+          }
+          case "body-scan-clear": {
+            if (!client) return;
+            await storage.clearBodyScanMarkers(client.sessionId);
+            broadcast(client.sessionId, { type: "body-scan-cleared" });
+            break;
+          }
+
+          // --- Gratitude Jar ---
+          case "gratitude-stone-add": {
+            if (!client) return;
+            const stone = await storage.addGratitudeStone({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              content: msg.content, category: msg.category || "general",
+              color: msg.color || "#F59E0B", shape: msg.shape || "round",
+            });
+            broadcast(client.sessionId, { type: "gratitude-stone-added", stone, createdBy: client.participantId, displayName: client.displayName });
+            break;
+          }
+          case "gratitude-stone-star": {
+            if (!client) return;
+            const starred = await storage.updateGratitudeStone(msg.stoneId, { isStarred: msg.isStarred });
+            broadcast(client.sessionId, { type: "gratitude-stone-starred", stone: starred });
+            break;
+          }
+          case "gratitude-stone-remove": {
+            if (!client) return;
+            await storage.removeGratitudeStone(msg.stoneId);
+            broadcast(client.sessionId, { type: "gratitude-stone-removed", stoneId: msg.stoneId });
+            break;
+          }
+          case "gratitude-clear": {
+            if (!client) return;
+            await storage.clearGratitudeStones(client.sessionId);
+            broadcast(client.sessionId, { type: "gratitude-cleared" });
+            break;
+          }
+
+          // --- Fidget Tools ---
+          case "fidget-interaction": {
+            if (!client) return;
+            broadcast(client.sessionId, { type: "fidget-interaction-sync", widgetType: msg.widgetType, data: msg.data, participantId: client.participantId }, ws);
+            break;
+          }
+
+          // --- Safety Map ---
+          case "safety-item-add": {
+            if (!client) return;
+            const sItem = await storage.addSafetyPlanItem({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              step: msg.step, content: msg.content,
+              contactName: msg.contactName || null, contactPhone: msg.contactPhone || null,
+              contactRelationship: msg.contactRelationship || null, orderIndex: msg.orderIndex || 0,
+            });
+            broadcast(client.sessionId, { type: "safety-item-added", item: sItem, createdBy: client.participantId });
+            break;
+          }
+          case "safety-item-update": {
+            if (!client) return;
+            const sFields: Record<string, any> = {};
+            if (msg.content !== undefined) sFields.content = msg.content;
+            if (msg.contactName !== undefined) sFields.contactName = msg.contactName;
+            if (msg.contactPhone !== undefined) sFields.contactPhone = msg.contactPhone;
+            if (msg.contactRelationship !== undefined) sFields.contactRelationship = msg.contactRelationship;
+            if (msg.orderIndex !== undefined) sFields.orderIndex = msg.orderIndex;
+            const sUpd = await storage.updateSafetyPlanItem(msg.itemId, sFields);
+            broadcast(client.sessionId, { type: "safety-item-updated", item: sUpd });
+            break;
+          }
+          case "safety-item-remove": {
+            if (!client) return;
+            await storage.removeSafetyPlanItem(msg.itemId);
+            broadcast(client.sessionId, { type: "safety-item-removed", itemId: msg.itemId });
+            break;
+          }
+          case "safety-plan-clear": {
+            if (!client) return;
+            await storage.clearSafetyPlanItems(client.sessionId);
+            broadcast(client.sessionId, { type: "safety-plan-cleared" });
+            break;
+          }
+
+          // --- Worry Tree ---
+          case "worry-entry-create": {
+            if (!client) return;
+            const wEntry = await storage.addWorryTreeEntry({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              worryText: msg.worryText, category: msg.category || null,
+            });
+            broadcast(client.sessionId, { type: "worry-entry-created", entry: wEntry, createdBy: client.participantId });
+            break;
+          }
+          case "worry-entry-update": {
+            if (!client) return;
+            const wFields: Record<string, any> = {};
+            if (msg.isReal !== undefined) wFields.isReal = msg.isReal;
+            if (msg.isActionable !== undefined) wFields.isActionable = msg.isActionable;
+            if (msg.resolution !== undefined) wFields.resolution = msg.resolution;
+            if (msg.actionSteps !== undefined) wFields.actionSteps = msg.actionSteps;
+            if (msg.scheduledTime !== undefined) wFields.scheduledTime = msg.scheduledTime;
+            if (msg.lettingGoMethod !== undefined) wFields.lettingGoMethod = msg.lettingGoMethod;
+            if (msg.category !== undefined) wFields.category = msg.category;
+            const wUpd = await storage.updateWorryTreeEntry(msg.entryId, wFields);
+            broadcast(client.sessionId, { type: "worry-entry-updated", entry: wUpd });
+            break;
+          }
+          case "worry-entry-remove": {
+            if (!client) return;
+            await storage.removeWorryTreeEntry(msg.entryId);
+            broadcast(client.sessionId, { type: "worry-entry-removed", entryId: msg.entryId });
+            break;
+          }
+          case "worry-tree-clear": {
+            if (!client) return;
+            await storage.clearWorryTreeEntries(client.sessionId);
+            broadcast(client.sessionId, { type: "worry-tree-cleared" });
+            break;
+          }
+
+          // --- Thought Bridge ---
+          case "thought-bridge-create": {
+            if (!client) return;
+            const tbRecord = await storage.addThoughtBridgeRecord({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              situation: msg.situation || null, status: "incomplete",
+            });
+            broadcast(client.sessionId, { type: "thought-bridge-created", record: tbRecord, createdBy: client.participantId });
+            break;
+          }
+          case "thought-bridge-update": {
+            if (!client) return;
+            const tbFields: Record<string, any> = {};
+            if (msg.situation !== undefined) tbFields.situation = msg.situation;
+            if (msg.automaticThought !== undefined) tbFields.automaticThought = msg.automaticThought;
+            if (msg.beliefRatingBefore !== undefined) tbFields.beliefRatingBefore = msg.beliefRatingBefore;
+            if (msg.beliefRatingAfter !== undefined) tbFields.beliefRatingAfter = msg.beliefRatingAfter;
+            if (msg.balancedThought !== undefined) tbFields.balancedThought = msg.balancedThought;
+            if (msg.emotionsBefore !== undefined) tbFields.emotionsBefore = msg.emotionsBefore;
+            if (msg.emotionsAfter !== undefined) tbFields.emotionsAfter = msg.emotionsAfter;
+            if (msg.distortions !== undefined) tbFields.distortions = msg.distortions;
+            if (msg.status !== undefined) tbFields.status = msg.status;
+            const tbUpd = await storage.updateThoughtBridgeRecord(msg.recordId, tbFields);
+            broadcast(client.sessionId, { type: "thought-bridge-updated", record: tbUpd });
+            break;
+          }
+          case "thought-bridge-evidence-add": {
+            if (!client) return;
+            const tbEvidence = await storage.addThoughtBridgeEvidence({
+              recordId: msg.recordId, sessionId: client.sessionId,
+              type: msg.evidenceType, content: msg.content,
+              createdBy: client.participantId, orderIndex: msg.orderIndex || 0,
+            });
+            broadcast(client.sessionId, { type: "thought-bridge-evidence-added", evidence: tbEvidence });
+            break;
+          }
+          case "thought-bridge-evidence-remove": {
+            if (!client) return;
+            await storage.removeThoughtBridgeEvidence(msg.evidenceId);
+            broadcast(client.sessionId, { type: "thought-bridge-evidence-removed", evidenceId: msg.evidenceId });
+            break;
+          }
+          case "thought-bridge-clear": {
+            if (!client) return;
+            await storage.clearThoughtBridgeRecords(client.sessionId);
+            broadcast(client.sessionId, { type: "thought-bridge-cleared" });
+            break;
+          }
+
+          // --- Coping Toolbox ---
+          case "coping-strategy-add": {
+            if (!client) return;
+            const cStrat = await storage.addCopingStrategy({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              name: msg.name, description: msg.description || null,
+              category: msg.category, emoji: msg.emoji || null,
+              isCustom: msg.isCustom ?? true, contextTags: msg.contextTags || null,
+              difficulty: msg.difficulty || null, isPinned: msg.isPinned ?? false,
+            });
+            broadcast(client.sessionId, { type: "coping-strategy-added", strategy: cStrat, createdBy: client.participantId });
+            break;
+          }
+          case "coping-strategy-update": {
+            if (!client) return;
+            const csFields: Record<string, any> = {};
+            if (msg.name !== undefined) csFields.name = msg.name;
+            if (msg.description !== undefined) csFields.description = msg.description;
+            if (msg.category !== undefined) csFields.category = msg.category;
+            if (msg.effectiveness !== undefined) csFields.effectiveness = msg.effectiveness;
+            if (msg.isPinned !== undefined) csFields.isPinned = msg.isPinned;
+            if (msg.usageCount !== undefined) csFields.usageCount = msg.usageCount;
+            const csUpd = await storage.updateCopingStrategy(msg.strategyId, csFields);
+            broadcast(client.sessionId, { type: "coping-strategy-updated", strategy: csUpd });
+            break;
+          }
+          case "coping-strategy-remove": {
+            if (!client) return;
+            await storage.removeCopingStrategy(msg.strategyId);
+            broadcast(client.sessionId, { type: "coping-strategy-removed", strategyId: msg.strategyId });
+            break;
+          }
+          case "coping-clear": {
+            if (!client) return;
+            await storage.clearCopingStrategies(client.sessionId);
+            broadcast(client.sessionId, { type: "coping-cleared" });
+            break;
+          }
+
+          // --- DBT House ---
+          case "dbt-skill-place": {
+            if (!client) return;
+            const dSkill = await storage.addDbtHouseSkill({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              skillId: msg.skillId, module: msg.module, houseSection: msg.houseSection,
+              personalExample: msg.personalExample || null,
+            });
+            broadcast(client.sessionId, { type: "dbt-skill-placed", skill: dSkill, createdBy: client.participantId });
+            break;
+          }
+          case "dbt-skill-update": {
+            if (!client) return;
+            const dFields: Record<string, any> = {};
+            if (msg.personalExample !== undefined) dFields.personalExample = msg.personalExample;
+            if (msg.practiceCount !== undefined) dFields.practiceCount = msg.practiceCount;
+            if (msg.effectivenessAvg !== undefined) dFields.effectivenessAvg = msg.effectivenessAvg;
+            if (msg.houseSection !== undefined) dFields.houseSection = msg.houseSection;
+            const dUpd = await storage.updateDbtHouseSkill(msg.skillPlacementId, dFields);
+            broadcast(client.sessionId, { type: "dbt-skill-updated", skill: dUpd });
+            break;
+          }
+          case "dbt-skill-remove": {
+            if (!client) return;
+            await storage.removeDbtHouseSkill(msg.skillPlacementId);
+            broadcast(client.sessionId, { type: "dbt-skill-removed", skillPlacementId: msg.skillPlacementId });
+            break;
+          }
+          case "dbt-house-clear": {
+            if (!client) return;
+            await storage.clearDbtHouseSkills(client.sessionId);
+            broadcast(client.sessionId, { type: "dbt-house-cleared" });
+            break;
+          }
+
+          // --- Strengths Deck ---
+          case "strengths-place": {
+            if (!client) return;
+            const sPlace = await storage.addStrengthsPlacement({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              strengthId: msg.strengthId, tier: msg.tier,
+              orderIndex: msg.orderIndex || 0, scenarioResponse: msg.scenarioResponse || null,
+            });
+            broadcast(client.sessionId, { type: "strengths-placed", placement: sPlace, createdBy: client.participantId });
+            break;
+          }
+          case "strengths-move": {
+            if (!client) return;
+            const sMoved = await storage.updateStrengthsPlacement(msg.placementId, { tier: msg.tier, orderIndex: msg.orderIndex });
+            broadcast(client.sessionId, { type: "strengths-moved", placement: sMoved });
+            break;
+          }
+          case "strengths-remove": {
+            if (!client) return;
+            await storage.removeStrengthsPlacement(msg.placementId);
+            broadcast(client.sessionId, { type: "strengths-removed", placementId: msg.placementId });
+            break;
+          }
+          case "strengths-spot": {
+            if (!client) return;
+            const spotting = await storage.addStrengthsSpotting({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              strengthId: msg.strengthId, note: msg.note,
+            });
+            broadcast(client.sessionId, { type: "strengths-spotted", spotting, createdBy: client.participantId });
+            break;
+          }
+          case "strengths-clear": {
+            if (!client) return;
+            await storage.clearStrengthsPlacements(client.sessionId);
+            broadcast(client.sessionId, { type: "strengths-cleared" });
+            break;
+          }
+
+          // --- Social Atom ---
+          case "social-atom-person-add": {
+            if (!client) return;
+            const saPerson = await storage.addSocialAtomPerson({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              name: msg.name, role: msg.role, emoji: msg.emoji || null,
+              color: msg.color || "#3B82F6", distanceRing: msg.distanceRing || 2,
+              angle: msg.angle || 0, isDeceased: msg.isDeceased ?? false,
+              emotionalTone: msg.emotionalTone || null, notes: msg.notes || null,
+            });
+            broadcast(client.sessionId, { type: "social-atom-person-added", person: saPerson, createdBy: client.participantId });
+            break;
+          }
+          case "social-atom-person-move": {
+            if (!client) return;
+            const saMovedP = await storage.updateSocialAtomPerson(msg.personId, { distanceRing: msg.distanceRing, angle: msg.angle });
+            broadcast(client.sessionId, { type: "social-atom-person-moved", person: saMovedP }, ws);
+            break;
+          }
+          case "social-atom-person-update": {
+            if (!client) return;
+            const saFields: Record<string, any> = {};
+            if (msg.name !== undefined) saFields.name = msg.name;
+            if (msg.role !== undefined) saFields.role = msg.role;
+            if (msg.color !== undefined) saFields.color = msg.color;
+            if (msg.emotionalTone !== undefined) saFields.emotionalTone = msg.emotionalTone;
+            if (msg.notes !== undefined) saFields.notes = msg.notes;
+            if (msg.isDeceased !== undefined) saFields.isDeceased = msg.isDeceased;
+            const saUpdP = await storage.updateSocialAtomPerson(msg.personId, saFields);
+            broadcast(client.sessionId, { type: "social-atom-person-updated", person: saUpdP });
+            break;
+          }
+          case "social-atom-person-remove": {
+            if (!client) return;
+            await storage.removeSocialAtomPerson(msg.personId);
+            broadcast(client.sessionId, { type: "social-atom-person-removed", personId: msg.personId });
+            break;
+          }
+          case "social-atom-connection-add": {
+            if (!client) return;
+            const saConn = await storage.addSocialAtomConnection({
+              sessionId: client.sessionId, fromPersonId: msg.fromPersonId,
+              toPersonId: msg.toPersonId, style: msg.style || "supportive",
+              label: msg.label || null, directionality: msg.directionality || "bidirectional",
+              createdBy: client.participantId,
+            });
+            broadcast(client.sessionId, { type: "social-atom-connection-added", connection: saConn });
+            break;
+          }
+          case "social-atom-connection-remove": {
+            if (!client) return;
+            await storage.removeSocialAtomConnection(msg.connectionId);
+            broadcast(client.sessionId, { type: "social-atom-connection-removed", connectionId: msg.connectionId });
+            break;
+          }
+          case "social-atom-clear": {
+            if (!client) return;
+            await storage.clearSocialAtomPeople(client.sessionId);
+            broadcast(client.sessionId, { type: "social-atom-cleared" });
+            break;
+          }
+
+          // --- Growth Garden ---
+          case "garden-plant-add": {
+            if (!client) return;
+            const gPlant = await storage.addGardenPlant({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              seedType: msg.seedType, customName: msg.customName,
+              category: msg.category, growthStage: msg.growthStage || 1,
+              gridX: msg.gridX, gridY: msg.gridY,
+            });
+            broadcast(client.sessionId, { type: "garden-plant-added", plant: gPlant, createdBy: client.participantId });
+            break;
+          }
+          case "garden-plant-update": {
+            if (!client) return;
+            const gFields: Record<string, any> = {};
+            if (msg.growthStage !== undefined) gFields.growthStage = msg.growthStage;
+            if (msg.gridX !== undefined) gFields.gridX = msg.gridX;
+            if (msg.gridY !== undefined) gFields.gridY = msg.gridY;
+            if (msg.isHarvested !== undefined) gFields.isHarvested = msg.isHarvested;
+            if (msg.isDormant !== undefined) gFields.isDormant = msg.isDormant;
+            if (msg.customName !== undefined) gFields.customName = msg.customName;
+            const gUpd = await storage.updateGardenPlant(msg.plantId, gFields);
+            broadcast(client.sessionId, { type: "garden-plant-updated", plant: gUpd });
+            break;
+          }
+          case "garden-plant-remove": {
+            if (!client) return;
+            await storage.removeGardenPlant(msg.plantId);
+            broadcast(client.sessionId, { type: "garden-plant-removed", plantId: msg.plantId });
+            break;
+          }
+          case "garden-journal-add": {
+            if (!client) return;
+            const gJournal = await storage.addGardenJournalEntry({
+              plantId: msg.plantId, sessionId: client.sessionId,
+              content: msg.content, progressRating: msg.progressRating || null,
+              createdBy: client.participantId,
+            });
+            broadcast(client.sessionId, { type: "garden-journal-added", entry: gJournal });
+            break;
+          }
+          case "garden-weed-add": {
+            if (!client) return;
+            const gWeed = await storage.addGardenWeed({
+              sessionId: client.sessionId, createdBy: client.participantId,
+              label: msg.label, linkedPlantId: msg.linkedPlantId || null,
+            });
+            broadcast(client.sessionId, { type: "garden-weed-added", weed: gWeed });
+            break;
+          }
+          case "garden-weed-pull": {
+            if (!client) return;
+            const gPulled = await storage.updateGardenWeed(msg.weedId, { isPulled: true });
+            broadcast(client.sessionId, { type: "garden-weed-pulled", weed: gPulled });
+            break;
+          }
+          case "garden-clear": {
+            if (!client) return;
+            await storage.clearGardenPlants(client.sessionId);
+            broadcast(client.sessionId, { type: "garden-cleared" });
             break;
           }
 

@@ -218,7 +218,7 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "moderate",
     duration: "20-30",
     interactionType: "cognitive",
-    status: "development",
+    status: "active",
     tier: "pro",
     bestUsedFor: [
       "Teaching DBT skills in a spatial, memorable way",
@@ -244,7 +244,7 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "moderate",
     duration: "15-25",
     interactionType: "cognitive",
-    status: "planned",
+    status: "active",
     tier: "pro",
     bestUsedFor: [
       "Cognitive restructuring for depression and anxiety",
@@ -272,7 +272,7 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "gentle",
     duration: "10-20",
     interactionType: "relational",
-    status: "planned",
+    status: "active",
     tier: "pro",
     bestUsedFor: [
       "Collaborative goal-setting in early sessions",
@@ -298,8 +298,8 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "gentle",
     duration: "5-15",
     interactionType: "somatic",
-    status: "planned",
-    tier: "pro",
+    status: "active",
+    tier: "free",
     bestUsedFor: [
       "Reducing session anxiety for new clients",
       "Occupying hands during talk therapy",
@@ -350,8 +350,8 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "moderate",
     duration: "20-30",
     interactionType: "cognitive",
-    status: "planned",
-    tier: "pro",
+    status: "active",
+    tier: "free",
     bestUsedFor: [
       "Safety planning with suicidal clients",
       "Crisis intervention follow-up",
@@ -376,7 +376,7 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "gentle",
     duration: "3-5",
     interactionType: "reflective",
-    status: "planned",
+    status: "active",
     tier: "free",
     bestUsedFor: [
       "Quick check-ins at session start and end",
@@ -402,8 +402,8 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "gentle",
     duration: "5-10",
     interactionType: "reflective",
-    status: "planned",
-    tier: "pro",
+    status: "active",
+    tier: "free",
     bestUsedFor: [
       "Session closers after heavy emotional work",
       "EMDR container exercise",
@@ -428,8 +428,8 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "moderate",
     duration: "10-15",
     interactionType: "somatic",
-    status: "planned",
-    tier: "pro",
+    status: "active",
+    tier: "free",
     bestUsedFor: [
       "Somatic processing and body-based therapy",
       "Identifying where emotions live in the body",
@@ -454,7 +454,7 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "gentle",
     duration: "5-10",
     interactionType: "reflective",
-    status: "planned",
+    status: "active",
     tier: "free",
     bestUsedFor: [
       "Building positive affect tolerance in depressed clients",
@@ -480,8 +480,8 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "gentle",
     duration: "10-15",
     interactionType: "cognitive",
-    status: "planned",
-    tier: "free",
+    status: "active",
+    tier: "pro",
     bestUsedFor: [
       "Teaching worry management in GAD treatment",
       "Distinguishing productive from unproductive worry",
@@ -506,7 +506,7 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "gentle",
     duration: "10-20",
     interactionType: "reflective",
-    status: "planned",
+    status: "active",
     tier: "pro",
     bestUsedFor: [
       "Strengths-based therapy and positive psychology",
@@ -532,7 +532,7 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "gentle",
     duration: "15-20",
     interactionType: "cognitive",
-    status: "planned",
+    status: "active",
     tier: "pro",
     bestUsedFor: [
       "DBT distress tolerance skill building",
@@ -558,7 +558,7 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     intensity: "moderate",
     duration: "15-25",
     interactionType: "relational",
-    status: "planned",
+    status: "active",
     tier: "pro",
     bestUsedFor: [
       "Mapping relational systems and attachment patterns",
