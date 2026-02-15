@@ -150,19 +150,19 @@ function triggerHaptic(style: "light" | "medium" | "heavy" = "light") {
 
 const SAND_TEXTURES: Record<SandTexture, { bg: string; shadow: string; grain: number }> = {
   fine: {
-    bg: "linear-gradient(145deg, rgba(232,220,200,0.85) 0%, rgba(212,196,168,0.85) 30%, rgba(201,184,150,0.85) 60%, rgba(214,200,170,0.85) 100%)",
+    bg: "linear-gradient(145deg, rgba(232,220,200,1) 0%, rgba(218,200,172,1) 25%, rgba(201,184,150,1) 55%, rgba(220,205,178,1) 100%)",
     shadow: "inset 0 2px 12px rgba(0,0,0,0.15), inset 0 0 40px rgba(139,119,80,0.1)",
     grain: 0.18,
   },
   wet: {
-    bg: "linear-gradient(145deg, rgba(160,140,110,0.9) 0%, rgba(130,110,80,0.9) 30%, rgba(110,95,65,0.9) 60%, rgba(140,120,90,0.9) 100%)",
-    shadow: "inset 0 2px 16px rgba(0,0,0,0.25), inset 0 0 50px rgba(80,60,30,0.15)",
-    grain: 0.25,
+    bg: "linear-gradient(145deg, rgba(120,100,70,1) 0%, rgba(95,78,50,1) 25%, rgba(80,65,40,1) 55%, rgba(105,88,60,1) 100%)",
+    shadow: "inset 0 3px 20px rgba(0,0,0,0.35), inset 0 0 60px rgba(40,25,10,0.25), inset 0 0 100px rgba(80,60,30,0.1)",
+    grain: 0.3,
   },
   blue: {
-    bg: "linear-gradient(145deg, rgba(70,130,180,0.85) 0%, rgba(50,110,160,0.85) 30%, rgba(40,90,140,0.85) 60%, rgba(60,120,170,0.85) 100%)",
-    shadow: "inset 0 2px 12px rgba(0,0,0,0.2), inset 0 0 40px rgba(30,60,100,0.15)",
-    grain: 0.08,
+    bg: "linear-gradient(145deg, rgba(35,100,160,1) 0%, rgba(25,80,140,1) 25%, rgba(20,65,120,1) 55%, rgba(30,90,150,1) 100%)",
+    shadow: "inset 0 2px 16px rgba(0,0,0,0.3), inset 0 0 50px rgba(10,30,80,0.2)",
+    grain: 0.05,
   },
 };
 
@@ -178,30 +178,45 @@ function DigRevealCanvas({
   sandTexture: SandTexture;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const ridgeCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const ridgeCanvas = ridgeCanvasRef.current;
+    if (!canvas || !ridgeCanvas) return;
     canvas.width = width;
     canvas.height = height;
+    ridgeCanvas.width = width;
+    ridgeCanvas.height = height;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const tex = SAND_TEXTURES[sandTexture === "blue" ? "fine" : sandTexture];
     const gradient = ctx.createLinearGradient(0, 0, width, height);
     if (sandTexture === "wet") {
-      gradient.addColorStop(0, "rgba(160,140,110,0.95)");
-      gradient.addColorStop(0.5, "rgba(130,110,80,0.95)");
-      gradient.addColorStop(1, "rgba(140,120,90,0.95)");
+      gradient.addColorStop(0, "rgba(160,140,110,0.97)");
+      gradient.addColorStop(0.5, "rgba(130,110,80,0.97)");
+      gradient.addColorStop(1, "rgba(140,120,90,0.97)");
     } else {
-      gradient.addColorStop(0, "rgba(232,220,200,0.95)");
-      gradient.addColorStop(0.5, "rgba(212,196,168,0.95)");
-      gradient.addColorStop(1, "rgba(214,200,170,0.95)");
+      gradient.addColorStop(0, "rgba(232,220,200,0.97)");
+      gradient.addColorStop(0.5, "rgba(212,196,168,0.97)");
+      gradient.addColorStop(1, "rgba(214,200,170,0.97)");
     }
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
+    const ridgeCtx = ridgeCanvas.getContext("2d");
+    if (ridgeCtx) ridgeCtx.clearRect(0, 0, width, height);
   }, [width, height, sandTexture]);
+
+  const getScaledPos = useCallback((e: React.PointerEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: ((e.clientX - rect.left) / rect.width) * canvas.width,
+      y: ((e.clientY - rect.top) / rect.height) * canvas.height,
+    };
+  }, []);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (!isDigMode) return;
@@ -209,31 +224,25 @@ function DigRevealCanvas({
     e.stopPropagation();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
     drawingRef.current = true;
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    lastPointRef.current = { x, y };
-    digAt(x, y);
-  }, [isDigMode]);
+    const pos = getScaledPos(e);
+    lastPointRef.current = pos;
+    digAt(pos.x, pos.y);
+  }, [isDigMode, getScaledPos]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!drawingRef.current) return;
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const pos = getScaledPos(e);
     const last = lastPointRef.current;
     if (last) {
-      const dist = Math.sqrt((x - last.x) ** 2 + (y - last.y) ** 2);
-      const steps = Math.max(1, Math.floor(dist / 4));
+      const dist = Math.sqrt((pos.x - last.x) ** 2 + (pos.y - last.y) ** 2);
+      const steps = Math.max(1, Math.floor(dist / 6));
       for (let i = 1; i <= steps; i++) {
         const t = i / steps;
-        digAt(last.x + (x - last.x) * t, last.y + (y - last.y) * t);
+        digAt(last.x + (pos.x - last.x) * t, last.y + (pos.y - last.y) * t);
       }
     }
-    lastPointRef.current = { x, y };
-  }, []);
+    lastPointRef.current = pos;
+  }, [getScaledPos]);
 
   const handlePointerUp = useCallback(() => {
     drawingRef.current = false;
@@ -242,34 +251,59 @@ function DigRevealCanvas({
 
   const digAt = useCallback((x: number, y: number) => {
     const ctx = canvasRef.current?.getContext("2d");
+    const ridgeCtx = ridgeCanvasRef.current?.getContext("2d");
     if (!ctx) return;
+
+    const baseRadius = 28 + Math.random() * 12;
+
     ctx.save();
     ctx.globalCompositeOperation = "destination-out";
-    const radius = 18 + Math.random() * 8;
-    const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-    gradient.addColorStop(0, "rgba(0,0,0,1)");
-    gradient.addColorStop(0.6, "rgba(0,0,0,0.7)");
-    gradient.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = gradient;
+    const eraseGrad = ctx.createRadialGradient(x, y, 0, x, y, baseRadius);
+    eraseGrad.addColorStop(0, "rgba(0,0,0,1)");
+    eraseGrad.addColorStop(0.5, "rgba(0,0,0,0.9)");
+    eraseGrad.addColorStop(0.75, "rgba(0,0,0,0.4)");
+    eraseGrad.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = eraseGrad;
     ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.arc(x, y, baseRadius, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
+
+    if (ridgeCtx) {
+      const ridgeInner = baseRadius * 0.7;
+      const ridgeOuter = baseRadius * 1.4;
+      const ridgeGrad = ridgeCtx.createRadialGradient(x, y, ridgeInner, x, y, ridgeOuter);
+      ridgeGrad.addColorStop(0, "rgba(0,0,0,0)");
+      ridgeGrad.addColorStop(0.3, "rgba(180,155,110,0.25)");
+      ridgeGrad.addColorStop(0.6, "rgba(160,135,90,0.15)");
+      ridgeGrad.addColorStop(1, "rgba(0,0,0,0)");
+      ridgeCtx.fillStyle = ridgeGrad;
+      ridgeCtx.beginPath();
+      ridgeCtx.arc(x, y, ridgeOuter, 0, Math.PI * 2);
+      ridgeCtx.fill();
+    }
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={cn(
-        "absolute inset-0 z-[3]",
-        isDigMode ? "cursor-crosshair" : "pointer-events-none"
-      )}
-      style={{ width: "100%", height: "100%" }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        className={cn(
+          "absolute inset-0 z-[3]",
+          isDigMode ? "cursor-crosshair" : "pointer-events-none"
+        )}
+        style={{ width: "100%", height: "100%" }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      />
+      <canvas
+        ref={ridgeCanvasRef}
+        className="absolute inset-0 z-[4] pointer-events-none"
+        style={{ width: "100%", height: "100%" }}
+      />
+    </>
   );
 }
 
@@ -861,13 +895,13 @@ export function ZenCanvas({
 
       {sandTexture === "blue" ? (
         <div className="absolute inset-0" style={{
-          background: "linear-gradient(145deg, rgba(70,130,180,0.85) 0%, rgba(50,110,160,0.85) 30%, rgba(40,90,140,0.85) 60%, rgba(60,120,170,0.85) 100%)",
+          background: "linear-gradient(145deg, rgba(35,100,160,1) 0%, rgba(25,80,140,1) 30%, rgba(20,65,120,1) 60%, rgba(30,90,150,1) 100%)",
           boxShadow: tex.shadow,
         }} />
       ) : (
         <>
           <div className="absolute inset-0" style={{
-            background: "linear-gradient(145deg, rgba(70,130,180,0.9) 0%, rgba(50,110,160,0.9) 30%, rgba(40,90,140,0.9) 60%, rgba(60,120,170,0.9) 100%)",
+            background: "linear-gradient(145deg, rgba(30,90,150,1) 0%, rgba(20,75,135,1) 30%, rgba(15,60,115,1) 60%, rgba(25,85,145,1) 100%)",
           }} />
           <div className="absolute inset-0 transition-all duration-700" style={{
             background: tex.bg,

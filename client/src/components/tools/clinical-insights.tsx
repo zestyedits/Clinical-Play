@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Lightbulb, MessageCircle, BookOpen, Sparkles, AlertTriangle } from "lucide-react";
+import { Lightbulb, MessageCircle, BookOpen, Sparkles, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const EMOTION_PROMPTS: Record<string, string[]> = {
@@ -178,22 +178,25 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool, sessionContext 
       <motion.button
         onClick={onToggle}
         className={cn(
-          "absolute top-20 md:top-4 right-4 z-30 min-w-[44px] min-h-[44px] p-3 rounded-2xl shadow-lg transition-all cursor-pointer flex items-center justify-center relative",
+          "absolute top-20 md:top-4 right-4 z-30 min-h-[44px] px-4 py-2.5 rounded-2xl shadow-lg transition-all cursor-pointer flex items-center gap-2.5",
           isOpen
             ? "bg-primary text-primary-foreground"
-            : "bg-white/70 backdrop-blur-xl text-primary hover:bg-white/90 border border-white/30"
+            : "bg-white/80 backdrop-blur-xl text-primary hover:bg-white/95 border border-accent/30"
         )}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
         data-testid="button-toggle-insights"
-        title="Clinical Insights"
+        title="Therapy Prompts — Private clinical prompts to guide your session"
       >
-        {isOpen ? <EyeOff size={18} /> : <Eye size={18} />}
+        <Lightbulb size={18} className={cn(isOpen ? "text-primary-foreground" : "text-accent")} />
+        <span className="text-xs font-semibold tracking-wide whitespace-nowrap">
+          {isOpen ? "Close Prompts" : "Therapy Prompts"}
+        </span>
         {!isOpen && (
           <motion.div
-            className="absolute inset-0 rounded-2xl border-2 border-accent/20 pointer-events-none"
-            animate={{ opacity: [0, 0.5, 0], scale: [1, 1.15, 1] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0 rounded-2xl border-2 border-accent/25 pointer-events-none"
+            animate={{ opacity: [0, 0.6, 0], scale: [1, 1.08, 1] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
           />
         )}
       </motion.button>
@@ -221,8 +224,8 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool, sessionContext 
                   <Lightbulb size={18} className="text-accent" />
                 </div>
                 <div>
-                  <h3 className="font-serif text-base text-primary font-medium">Clinical Insights</h3>
-                  <p className="text-[10px] text-muted-foreground/70">Private to you</p>
+                  <h3 className="font-serif text-base text-primary font-medium">Therapy Prompts</h3>
+                  <p className="text-[10px] text-muted-foreground/70">Private — only you can see these</p>
                 </div>
               </div>
 

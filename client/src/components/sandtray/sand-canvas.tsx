@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import type { LightSource, RakePath } from "@/lib/ambient-types";
 
 interface SandCanvasProps {
@@ -10,10 +10,12 @@ interface SandCanvasProps {
   lightSource: LightSource;
 }
 
-const HEIGHTMAP_W = 200;
-const HEIGHTMAP_H = 150;
-const MOBILE_HEIGHTMAP_W = 100;
-const MOBILE_HEIGHTMAP_H = 75;
+const HEIGHTMAP_W = 400;
+const HEIGHTMAP_H = 300;
+const MOBILE_HEIGHTMAP_W = 200;
+const MOBILE_HEIGHTMAP_H = 150;
+const RAKE_TINES = 5;
+const TINE_SPACING = 0.012;
 
 export function SandCanvas({ width, height, rakePaths, isRakeMode, onRakePathAdd, lightSource }: SandCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -28,23 +30,20 @@ export function SandCanvas({ width, height, rakePaths, isRakeMode, onRakePathAdd
   const hmW = isMobile ? MOBILE_HEIGHTMAP_W : HEIGHTMAP_W;
   const hmH = isMobile ? MOBILE_HEIGHTMAP_H : HEIGHTMAP_H;
 
-  // Initialize heightmap
   useEffect(() => {
     heightmapRef.current = new Float32Array(hmW * hmH);
     dirtyRef.current = true;
   }, [hmW, hmH]);
 
-  // Apply existing rake paths to heightmap
   useEffect(() => {
     if (!heightmapRef.current) return;
     heightmapRef.current.fill(0);
     for (const path of rakePaths) {
-      applyPathToHeightmap(heightmapRef.current, path.points, path.width, hmW, hmH);
+      applyRakePathToHeightmap(heightmapRef.current, path.points, path.width, hmW, hmH);
     }
     dirtyRef.current = true;
   }, [rakePaths, hmW, hmH]);
 
-  // Render loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -87,19 +86,17 @@ export function SandCanvas({ width, height, rakePaths, isRakeMode, onRakePathAdd
     const pos = getCanvasPos(e);
     const last = lastPointRef.current;
 
-    // Throttle point sampling to ~60fps distance
     if (last) {
       const dist = Math.sqrt((pos.x - last.x) ** 2 + (pos.y - last.y) ** 2);
-      if (dist < 0.005) return;
+      if (dist < 0.003) return;
     }
 
     currentPathRef.current.push(pos);
     lastPointRef.current = pos;
 
-    // Apply incrementally
     if (currentPathRef.current.length >= 2) {
       const pts = currentPathRef.current.slice(-2);
-      applyPathToHeightmap(heightmapRef.current, pts, 12, hmW, hmH);
+      applyRakePathToHeightmap(heightmapRef.current, pts, 12, hmW, hmH);
       dirtyRef.current = true;
     }
   }, [getCanvasPos, hmW, hmH]);
@@ -139,38 +136,73 @@ export function SandCanvas({ width, height, rakePaths, isRakeMode, onRakePathAdd
   );
 }
 
-function applyPathToHeightmap(
+function applyRakePathToHeightmap(
   hm: Float32Array,
   points: { x: number; y: number }[],
   width: number,
   hmW: number,
   hmH: number
 ) {
-  const radius = Math.max(1, (width / 200) * hmW * 0.5);
   for (let i = 1; i < points.length; i++) {
     const p0 = points[i - 1];
     const p1 = points[i];
-    const steps = Math.max(1, Math.ceil(Math.sqrt(
-      ((p1.x - p0.x) * hmW) ** 2 + ((p1.y - p0.y) * hmH) ** 2
-    )));
-    for (let s = 0; s <= steps; s++) {
-      const t = s / steps;
-      const cx = (p0.x + (p1.x - p0.x) * t) * hmW;
-      const cy = (p0.y + (p1.y - p0.y) * t) * hmH;
 
-      const minX = Math.max(0, Math.floor(cx - radius));
-      const maxX = Math.min(hmW - 1, Math.ceil(cx + radius));
-      const minY = Math.max(0, Math.floor(cy - radius));
-      const maxY = Math.min(hmH - 1, Math.ceil(cy + radius));
+    const dx = p1.x - p0.x;
+    const dy = p1.y - p0.y;
+    const segLen = Math.sqrt(dx * dx + dy * dy);
+    if (segLen < 0.0001) continue;
 
-      for (let y = minY; y <= maxY; y++) {
-        for (let x = minX; x <= maxX; x++) {
-          const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
-          if (dist < radius) {
-            const falloff = 1 - dist / radius;
-            const idx = y * hmW + x;
-            hm[idx] = Math.min(1, hm[idx] + falloff * 0.4);
-          }
+    const perpX = -dy / segLen;
+    const perpY = dx / segLen;
+
+    for (let tine = 0; tine < RAKE_TINES; tine++) {
+      const offset = (tine - (RAKE_TINES - 1) / 2) * TINE_SPACING;
+      const ox = perpX * offset;
+      const oy = perpY * offset;
+
+      const tp0 = { x: p0.x + ox, y: p0.y + oy };
+      const tp1 = { x: p1.x + ox, y: p1.y + oy };
+
+      applySingleGroove(hm, tp0, tp1, hmW, hmH);
+    }
+  }
+}
+
+function applySingleGroove(
+  hm: Float32Array,
+  p0: { x: number; y: number },
+  p1: { x: number; y: number },
+  hmW: number,
+  hmH: number
+) {
+  const grooveRadius = Math.max(1, hmW * 0.007);
+  const ridgeRadius = grooveRadius * 2.2;
+
+  const steps = Math.max(1, Math.ceil(Math.sqrt(
+    ((p1.x - p0.x) * hmW) ** 2 + ((p1.y - p0.y) * hmH) ** 2
+  )));
+
+  for (let s = 0; s <= steps; s++) {
+    const t = s / steps;
+    const cx = (p0.x + (p1.x - p0.x) * t) * hmW;
+    const cy = (p0.y + (p1.y - p0.y) * t) * hmH;
+
+    const minX = Math.max(0, Math.floor(cx - ridgeRadius));
+    const maxX = Math.min(hmW - 1, Math.ceil(cx + ridgeRadius));
+    const minY = Math.max(0, Math.floor(cy - ridgeRadius));
+    const maxY = Math.min(hmH - 1, Math.ceil(cy + ridgeRadius));
+
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+        const idx = y * hmW + x;
+
+        if (dist < grooveRadius) {
+          const falloff = 1 - dist / grooveRadius;
+          hm[idx] = Math.max(-1, hm[idx] - falloff * 0.7);
+        } else if (dist < ridgeRadius) {
+          const ridgeFalloff = 1 - (dist - grooveRadius) / (ridgeRadius - grooveRadius);
+          hm[idx] = Math.min(1, hm[idx] + ridgeFalloff * 0.3);
         }
       }
     }
@@ -188,8 +220,8 @@ function renderHeightmap(
 ) {
   ctx.clearRect(0, 0, canvasW, canvasH);
 
-  const scaleX = canvasW / hmW;
-  const scaleY = canvasH / hmH;
+  const imgData = ctx.createImageData(hmW, hmH);
+  const data = imgData.data;
   const lightX = lightSource.x;
   const lightY = lightSource.y;
 
@@ -197,9 +229,16 @@ function renderHeightmap(
     for (let x = 0; x < hmW; x++) {
       const idx = y * hmW + x;
       const h = hm[idx];
-      if (h < 0.01) continue;
+      const pi = idx * 4;
 
-      // Compute gradient for shading direction
+      if (Math.abs(h) < 0.005) {
+        data[pi] = 0;
+        data[pi + 1] = 0;
+        data[pi + 2] = 0;
+        data[pi + 3] = 0;
+        continue;
+      }
+
       const hLeft = x > 0 ? hm[idx - 1] : h;
       const hRight = x < hmW - 1 ? hm[idx + 1] : h;
       const hUp = y > 0 ? hm[idx - hmW] : h;
@@ -208,20 +247,52 @@ function renderHeightmap(
       const dx = hRight - hLeft;
       const dy = hDown - hUp;
 
-      // Light direction
       const lx = (x / hmW) - lightX;
       const ly = (y / hmH) - lightY;
-      const dot = -(dx * lx + dy * ly);
+      const lLen = Math.sqrt(lx * lx + ly * ly) || 1;
+      const dot = -(dx * (lx / lLen) + dy * (ly / lLen));
 
-      // Depression = darker, ridge = lighter
-      const shade = dot * 0.5;
-      if (shade > 0) {
-        ctx.fillStyle = `rgba(255, 255, 240, ${Math.min(0.3, shade * h)})`;
+      const absH = Math.abs(h);
+
+      if (h < 0) {
+        const depth = Math.min(1, absH);
+        const shade = dot * 0.6;
+        if (shade > 0) {
+          data[pi] = 100;
+          data[pi + 1] = 80;
+          data[pi + 2] = 50;
+          data[pi + 3] = Math.floor(Math.min(200, (shade * depth * 0.6 + depth * 0.25) * 255));
+        } else {
+          data[pi] = 40;
+          data[pi + 1] = 30;
+          data[pi + 2] = 15;
+          data[pi + 3] = Math.floor(Math.min(220, (Math.abs(shade) * depth * 0.7 + depth * 0.35) * 255));
+        }
       } else {
-        ctx.fillStyle = `rgba(80, 60, 30, ${Math.min(0.35, Math.abs(shade) * h + h * 0.1)})`;
+        const ridge = Math.min(1, absH);
+        const shade = dot * 0.6;
+        if (shade > 0) {
+          data[pi] = 255;
+          data[pi + 1] = 245;
+          data[pi + 2] = 220;
+          data[pi + 3] = Math.floor(Math.min(180, (shade * ridge * 0.5 + ridge * 0.2) * 255));
+        } else {
+          data[pi] = 60;
+          data[pi + 1] = 45;
+          data[pi + 2] = 20;
+          data[pi + 3] = Math.floor(Math.min(160, (Math.abs(shade) * ridge * 0.4 + ridge * 0.15) * 255));
+        }
       }
-
-      ctx.fillRect(x * scaleX, y * scaleY, Math.ceil(scaleX), Math.ceil(scaleY));
     }
   }
+
+  const tempCanvas = document.createElement("canvas");
+  tempCanvas.width = hmW;
+  tempCanvas.height = hmH;
+  const tempCtx = tempCanvas.getContext("2d")!;
+  tempCtx.putImageData(imgData, 0, 0);
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(tempCanvas, 0, 0, canvasW, canvasH);
 }
