@@ -1,0 +1,83 @@
+To turn **ClinicalPlay** into a top-tier therapeutic tool, your AI developer needs to move beyond "drag-and-drop" and into **spatial interaction**.
+
+Below is a master-level technical system prompt designed for **Replit Agent** or **Claude**. This prompt is structured to force the AI to think about the sandtray as a 3D-like interactive canvas rather than a static webpage.
+
+---
+
+## 🛠️ The Master Developer Prompt
+
+**Copy and paste the block below into your AI builder:**
+
+> **System Role:** You are a Senior Full-Stack Engineer specializing in Interactive Canvas UI and Educational/Therapeutic software.
+> **Project Goal:** Upgrade the "Virtual Sandtray" module in ClinicalPlay.app from a basic drag-and-drop tool to a professional-grade clinical environment.
+> **Task 1: The "Living" Canvas (Layout & Navigation)**
+> * **Resizable Asset Library:** Implement a draggable handle on the right edge of the "Choose a Figurine" sidebar. When dragged, the grid should dynamically reflow (e.g., transitioning from a 2-column grid to a 6-column grid).
+> * **Infinite/Large Canvas Logic:** Decouple the tray from the viewport. Implement a `transform: scale()` and `translate()` system.
+> * **Zoom:** Use the mouse wheel or pinch-to-zoom to scale the tray (0.5x to 2x).
+> * **Pan:** Allow users to "grab" the sand (spacebar + drag) to move the tray around.
+> 
+> 
+> * **The "Rake" Animation:** When the "Rake" tool is clicked, trigger a CSS transition that "smooths" the sand texture and clears all figurines with a fade-out effect.
+> 
+> 
+> **Task 2: Advanced Figurine Manipulation (The "Gizmo")**
+> * **Selection State:** When a figurine is clicked, it must show a "Selection Ring."
+> * **Rotation:** Add a rotation handle (small circle above the figurine) allowing 360-degree orientation. This is critical for clinicians to observe where figures are "looking."
+> * **Scaling:** Add a corner handle to resize individual figures to represent power dynamics.
+> * **Z-Index Management:** Implement "Bring to Front" and "Send to Back" so objects can be layered or "hidden" behind others.
+> 
+> 
+> **Task 3: Intelligent Clinical Insights (The "Eye" Icon)**
+> * **Refactor Icon:** Rename the internal component to `InsightDrawer`. Change the icon to a "Sparkle" or "Lightbulb" for better UX.
+> * **Context-Aware Prompts:** Create a logic bridge between the tray state and the prompts.
+> * If `placedItems.length < 3`, prioritize "Getting Started" prompts.
+> * If `placedItems` contains categories like "Fire" or "Fences," prioritize "Conflict/Boundary" prompts.
+> 
+> 
+> * **Visibility:** Add a pulse animation to the icon if the user hasn't opened it after 5 minutes of activity to remind them it’s a resource.
+> 
+> 
+> **Task 4: Aesthetic & Sensory Polish**
+> * **Depth Perception:** Apply a dynamic `drop-shadow` to figurines that changes based on their scale.
+> * **Sand Textures:** Provide a toggle to change the tray background between "Fine Sand," "Wet Sand (darker)," and "Blue Bottom (Water)."
+> * **Snapshot Export:** Create a function to capture the current `Canvas` state as a PNG/PDF, stripping away the UI/Buttons for a clean clinical record.
+> 
+> 
+
+---
+
+## Recommended Feature Enhancements
+
+Beyond the technical code, here are the "Clinical Gold Standard" features you should aim for:
+
+### 1. The "Blue Bottom" Depth
+
+In traditional sandplay, the bottom of the tray is painted blue. When a client "digs" in the sand, they reveal water.
+
+* **Feature Request:** Add a "Dig" tool. Clicking and dragging on the sand reveals a blue layer underneath. This is a massive symbolic feature for therapists.
+
+### 2. Item Categorization (The "Search" Power)
+
+As your library grows, finding a "Mother figure" among 200 items is hard.
+
+* **Feature Request:** Implement a robust tagging system. A figurine of a "Lion" should show up under "Animal," "Aggressive," "Power," and "King."
+
+### 3. The "Clinician's View" vs. "Client's View"
+
+If this is used in telehealth:
+
+* **Feature Request:** A "Sync" toggle. When ON, the client sees exactly what the therapist sees. When OFF, the therapist can open their "Clinical Insights" or take notes without the client seeing the UI overlay.
+
+### 4. Grouping & Scene Saving
+
+* **Feature Request:** Allow the clinician to save a "World" and reload it in the next session. This allows for long-term therapeutic work where a scene evolves over months.
+
+---
+
+### How to use this feedback right now:
+
+1. **Start with the Sidebar:** Ask Replit specifically to "Make the Figurine Library container resizable using a `ResizableBox` component or CSS `resize: horizontal`."
+2. **Move to the Zoom:** Ask for "Canvas-style navigation (pan and zoom) for the `#sandtray-container`."
+3. **Fix the "Eye":** Tell the AI: "Move the prompt logic into a slide-out right-side drawer so it doesn't float over the workspace."
+
+**Would you like me to write out a specific list of "Context-Aware Prompts" that the 'Eye' should display based on different figurine categories?**
