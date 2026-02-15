@@ -175,7 +175,8 @@
     backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
     background: var(--glass-tint);
     border: 0.5px solid var(--glass-border);
-    @apply shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.01];
+    @apply shadow-sm transition-[transform,box-shadow,background-color,border-color] duration-300 hover:shadow-md hover:scale-[1.01];
+    will-change: transform;
   }
 
   .glass-luxury {

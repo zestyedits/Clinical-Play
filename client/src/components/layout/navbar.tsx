@@ -35,7 +35,7 @@ function MobileBottomNav({ items, currentPath }: { items: { label: string; icon:
   const activeIndex = items.findIndex(i => currentPath === i.path);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-t border-border/40 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]" aria-label="Mobile navigation" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-t border-border/40 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] will-change-transform" aria-label="Mobile navigation" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)", transform: "translateZ(0)" }}>
       <div className="relative flex justify-around items-center h-[68px] px-2" role="tablist">
         <motion.div
           className="absolute top-2 rounded-2xl"
@@ -123,10 +123,16 @@ export function Navbar() {
   };
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 20);
+        ticking = false;
+      });
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -171,10 +177,10 @@ export function Navbar() {
         aria-label="Main navigation"
         style={{ top: bannerHeight }}
         className={cn(
-          "fixed left-0 right-0 z-50 hidden md:flex items-center justify-between px-8 py-4 transition-all duration-300",
+          "fixed left-0 right-0 z-50 hidden md:flex items-center justify-between px-8 backdrop-blur-xl will-change-[opacity,background-color] transition-[background-color,padding,border-color,box-shadow] duration-200",
           scrolled
-            ? "bg-background/70 backdrop-blur-xl border-b border-border/30 shadow-sm py-3"
-            : "bg-background/40 backdrop-blur-md py-6"
+            ? "bg-background/70 border-b border-border/30 shadow-sm py-3"
+            : "bg-background/40 border-b border-transparent py-6"
         )}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -293,10 +299,10 @@ export function Navbar() {
 
       <div className="md:hidden fixed left-0 right-0 z-50" style={{ top: bannerHeight }}>
         <div className={cn(
-          "flex justify-between items-center p-4 transition-all duration-300",
+          "flex justify-between items-center p-4 backdrop-blur-xl will-change-[opacity,background-color] transition-[background-color,border-color,box-shadow] duration-200",
           scrolled || mobileMenuOpen
-            ? "bg-background/80 backdrop-blur-xl border-b border-border/30 shadow-sm"
-            : "bg-background/40 backdrop-blur-md"
+            ? "bg-background/80 border-b border-border/30 shadow-sm"
+            : "bg-background/40 border-b border-transparent"
         )}>
           <Link href="/" className="no-underline">
             <LogoMark size="sm" />
