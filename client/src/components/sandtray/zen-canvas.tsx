@@ -149,6 +149,7 @@ function DraggableItem({
   lightSource,
   rakeMode,
   onDragStart,
+  onDragMove,
   onDragEnd,
   onCursorMove,
   onSelect,
@@ -161,6 +162,7 @@ function DraggableItem({
   lightSource: LightSource;
   rakeMode: boolean;
   onDragStart: () => void;
+  onDragMove: (x: number, y: number) => void;
   onDragEnd: (x: number, y: number) => void;
   onCursorMove: (x: number, y: number) => void;
   onSelect: () => void;
@@ -169,8 +171,10 @@ function DraggableItem({
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [longPressActive, setLongPressActive] = useState(false);
   const didDragRef = useRef(false);
-  const dragDistRef = useRef(0);
-  const dragStartPosRef = useRef({ x: 0, y: 0 });
+  const dragActiveRef = useRef(false);
+  const dragStartScreenRef = useRef({ x: 0, y: 0 });
+  const pointerIdRef = useRef<number | null>(null);
+  const elemRef = useRef<HTMLDivElement>(null);
 
   const shadowMultiplier = isDragging ? 35 : 12;
   const shadowOffsetX = (item.x - lightSource.x) * shadowMultiplier;
@@ -184,9 +188,6 @@ function DraggableItem({
   const springOpacity = useSpring(shadowOpacity, { stiffness: 300, damping: 20 });
   const dropShadowFilter = useMotionTemplate`drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${springBlur}px rgba(0,0,0,${springOpacity}))`;
 
-  const dragPower = Math.max(0.08, 0.25 / mass);
-  const dragTimeConstant = mass < 0.3 ? 350 : 80 * mass;
-
   const clearLongPress = useCallback(() => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
@@ -199,30 +200,75 @@ function DraggableItem({
     return () => { clearLongPress(); };
   }, [clearLongPress]);
 
-  const handleDragStart = useCallback((_: any, info: any) => {
-    shadowBlur.set(28);
-    shadowOpacity.set(0.4);
-    didDragRef.current = false;
-    dragDistRef.current = 0;
-    dragStartPosRef.current = { x: info.point.x, y: info.point.y };
-    clearLongPress();
-    playLiftSound();
-    triggerHaptic("light");
-    onDragStart();
-  }, [shadowBlur, shadowOpacity, onDragStart, clearLongPress]);
-
-  const handleDragEnd = useCallback((_: any, info: any) => {
-    shadowBlur.set(5);
-    shadowOpacity.set(0.18);
+  const getRelPos = useCallback((clientX: number, clientY: number) => {
     const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    if (!rect) return { x: 0.5, y: 0.5 };
+    return {
+      x: Math.max(0.03, Math.min(0.97, (clientX - rect.left) / rect.width)),
+      y: Math.max(0.03, Math.min(0.97, (clientY - rect.top) / rect.height)),
+    };
+  }, [canvasRef]);
 
-    const newX = Math.max(0.03, Math.min(0.97, (info.point.x - rect.left) / rect.width));
-    const newY = Math.max(0.03, Math.min(0.97, (info.point.y - rect.top) / rect.height));
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (isLocked || rakeMode) return;
+    e.stopPropagation();
+    e.preventDefault();
 
-    if (dragDistRef.current > 5) {
+    pointerIdRef.current = e.pointerId;
+    elemRef.current?.setPointerCapture(e.pointerId);
+    dragActiveRef.current = false;
+    didDragRef.current = false;
+    dragStartScreenRef.current = { x: e.clientX, y: e.clientY };
+
+    const isTouchDevice = e.pointerType === "touch";
+    if (isTouchDevice && !isSelected) {
+      longPressTimer.current = setTimeout(() => {
+        setLongPressActive(false);
+        if (!dragActiveRef.current) {
+          playSelectSound();
+          triggerHaptic("medium");
+          onSelect();
+        }
+      }, 400);
+      setLongPressActive(true);
+    }
+  }, [isLocked, rakeMode, isSelected, onSelect, clearLongPress]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (isLocked || rakeMode) return;
+    if (pointerIdRef.current !== e.pointerId) return;
+
+    const dx = e.clientX - dragStartScreenRef.current.x;
+    const dy = e.clientY - dragStartScreenRef.current.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (!dragActiveRef.current && dist > 4) {
+      dragActiveRef.current = true;
       didDragRef.current = true;
-      onDragEnd(newX, newY);
+      clearLongPress();
+      shadowBlur.set(28);
+      shadowOpacity.set(0.4);
+      playLiftSound();
+      triggerHaptic("light");
+      onDragStart();
+    }
+
+    if (dragActiveRef.current) {
+      const pos = getRelPos(e.clientX, e.clientY);
+      onDragMove(pos.x, pos.y);
+      onCursorMove(pos.x, pos.y);
+    }
+  }, [isLocked, rakeMode, clearLongPress, shadowBlur, shadowOpacity, onDragStart, onDragMove, onCursorMove, getRelPos]);
+
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    if (pointerIdRef.current !== e.pointerId) return;
+    clearLongPress();
+
+    if (dragActiveRef.current) {
+      shadowBlur.set(5);
+      shadowOpacity.set(0.18);
+      const pos = getRelPos(e.clientX, e.clientY);
+      onDragEnd(pos.x, pos.y);
       playPlaceSound();
       triggerHaptic("medium");
 
@@ -238,160 +284,123 @@ function DraggableItem({
           { duration: 120, iterations: 2 }
         );
       }
+    } else if (!didDragRef.current) {
+      playSelectSound();
+      triggerHaptic("light");
+      onSelect();
     }
-  }, [canvasRef, onDragEnd, shadowBlur, shadowOpacity, mass]);
 
-  const handleDrag = useCallback((_: any, info: any) => {
-    const dx = info.point.x - dragStartPosRef.current.x;
-    const dy = info.point.y - dragStartPosRef.current.y;
-    dragDistRef.current = Math.sqrt(dx * dx + dy * dy);
-    if (dragDistRef.current > 3) didDragRef.current = true;
+    dragActiveRef.current = false;
+    pointerIdRef.current = null;
+  }, [clearLongPress, shadowBlur, shadowOpacity, getRelPos, onDragEnd, onSelect, mass, canvasRef]);
 
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const newX = (info.point.x - rect.left) / rect.width;
-    const newY = (info.point.y - rect.top) / rect.height;
-    onCursorMove(newX, newY);
-  }, [canvasRef, onCursorMove]);
-
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (isLocked || rakeMode) return;
-    const isTouchDevice = e.pointerType === "touch";
-    if (isTouchDevice && !isSelected) {
-      longPressTimer.current = setTimeout(() => {
-        setLongPressActive(false);
-        playSelectSound();
-        triggerHaptic("medium");
-        onSelect();
-      }, 400);
-      setLongPressActive(true);
-    }
-  }, [isLocked, rakeMode, isSelected, onSelect]);
-
-  const handlePointerUp = useCallback(() => {
+  const handlePointerCancel = useCallback(() => {
     clearLongPress();
-  }, [clearLongPress]);
-
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    if (didDragRef.current) {
-      didDragRef.current = false;
-      return;
-    }
-    e.stopPropagation();
-    playSelectSound();
-    triggerHaptic("light");
-    onSelect();
-  }, [onSelect]);
+    dragActiveRef.current = false;
+    pointerIdRef.current = null;
+    shadowBlur.set(5);
+    shadowOpacity.set(0.18);
+  }, [clearLongPress, shadowBlur, shadowOpacity]);
 
   const itemScale = isDragging ? item.scale * 1.12 : item.scale;
-  const liftY = isDragging ? -8 : 0;
 
   return (
-    <motion.div
+    <div
+      ref={elemRef}
       className={cn(
-        "absolute flex items-center justify-center touch-none",
+        "absolute touch-none",
         !isLocked && !rakeMode && "cursor-grab active:cursor-grabbing",
         isDragging ? "z-30" : isSelected ? "z-25" : "z-10"
       )}
       style={{
         left: `${item.x * 100}%`,
         top: `${item.y * 100}%`,
-        transform: `translate(-50%, -50%) rotate(${item.rotation}deg)`,
-        willChange: "transform, filter",
+        transform: 'translate(-50%, -50%)',
       }}
-      initial={{ scale: 0, opacity: 0 }}
-      animate={{
-        scale: itemScale,
-        y: liftY,
-        opacity: 1,
-      }}
-      exit={{ scale: 0, opacity: 0, transition: { duration: 0.2 } }}
-      transition={{ type: "spring", stiffness: 350, damping: 22 }}
-      drag={!isLocked && !rakeMode}
-      dragMomentum={true}
-      dragElastic={0.08}
-      dragTransition={{
-        power: dragPower,
-        timeConstant: dragTimeConstant,
-        modifyTarget: (v) => v,
-      }}
-      dragConstraints={canvasRef}
-      onDragStart={handleDragStart}
-      onDrag={handleDrag}
-      onDragEnd={handleDragEnd}
       onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-      onClick={handleClick}
-      whileHover={!isSelected && !isDragging ? { scale: item.scale * 1.08 } : undefined}
-      whileTap={!isDragging ? { scale: item.scale * 0.95 } : undefined}
+      onPointerCancel={handlePointerCancel}
     >
-      {/* Grounding shadow — fades when lifted */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          bottom: -3,
-          left: '15%',
-          width: '70%',
-          height: 10,
-          background: 'radial-gradient(ellipse, rgba(80,60,30,0.18) 0%, transparent 70%)',
-          borderRadius: '50%',
-          filter: 'blur(3px)',
-          opacity: isDragging ? 0.3 : 1,
-          transform: isDragging ? 'translateY(6px) scale(1.3)' : 'translateY(0) scale(1)',
-          transition: 'all 0.2s ease',
+      <motion.div
+        className="flex items-center justify-center"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{
+          scale: itemScale,
+          y: isDragging ? -8 : 0,
+          opacity: 1,
+          rotate: item.rotation,
         }}
-      />
-      {/* Contrast plate */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          inset: -4,
-          background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
-        }}
-      />
-      {/* Selection ring glow */}
-      {isSelected && !isDragging && (
-        <motion.div
-          className="absolute pointer-events-none rounded-full"
-          style={{
-            inset: -6,
-            border: '2px solid rgba(212, 175, 55, 0.5)',
-            boxShadow: '0 0 12px rgba(212, 175, 55, 0.25)',
-          }}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-        />
-      )}
-      {/* Long-press progress indicator */}
-      {longPressActive && (
-        <motion.div
-          className="absolute pointer-events-none rounded-full"
-          style={{
-            inset: -8,
-            border: '2px solid rgba(212, 175, 55, 0.6)',
-          }}
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1.1, opacity: [0, 0.8, 0] }}
-          transition={{ duration: 0.4 }}
-        />
-      )}
-      <motion.span
-        className="text-5xl select-none"
-        style={{
-          minWidth: '48px',
-          minHeight: '48px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          filter: dropShadowFilter,
-          ...(isDragging ? { WebkitFilter: `brightness(1.05)` } : {}),
-        }}
+        exit={{ scale: 0, opacity: 0, transition: { duration: 0.2 } }}
+        transition={{ type: "spring", stiffness: 350, damping: 22 }}
       >
-        {item.icon}
-      </motion.span>
-    </motion.div>
+        {/* Grounding shadow — fades when lifted */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            bottom: -3,
+            left: '15%',
+            width: '70%',
+            height: 10,
+            background: 'radial-gradient(ellipse, rgba(80,60,30,0.18) 0%, transparent 70%)',
+            borderRadius: '50%',
+            filter: 'blur(3px)',
+            opacity: isDragging ? 0.3 : 1,
+            transform: isDragging ? 'translateY(6px) scale(1.3)' : 'translateY(0) scale(1)',
+            transition: 'all 0.2s ease',
+          }}
+        />
+        {/* Contrast plate */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            inset: -4,
+            background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
+          }}
+        />
+        {/* Selection ring glow */}
+        {isSelected && !isDragging && (
+          <motion.div
+            className="absolute pointer-events-none rounded-full"
+            style={{
+              inset: -6,
+              border: '2px solid rgba(212, 175, 55, 0.5)',
+              boxShadow: '0 0 12px rgba(212, 175, 55, 0.25)',
+            }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+          />
+        )}
+        {/* Long-press progress indicator */}
+        {longPressActive && (
+          <motion.div
+            className="absolute pointer-events-none rounded-full"
+            style={{
+              inset: -8,
+              border: '2px solid rgba(212, 175, 55, 0.6)',
+            }}
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1.1, opacity: [0, 0.8, 0] }}
+            transition={{ duration: 0.4 }}
+          />
+        )}
+        <motion.span
+          className="text-5xl select-none"
+          style={{
+            minWidth: '48px',
+            minHeight: '48px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            filter: dropShadowFilter,
+            ...(isDragging ? { WebkitFilter: `brightness(1.05)` } : {}),
+          }}
+        >
+          {item.icon}
+        </motion.span>
+      </motion.div>
+    </div>
   );
 }
 
@@ -481,6 +490,10 @@ export function ZenCanvas({
     const pos = getRelativePosition(e.clientX, e.clientY);
     onCursorMove(pos.x, pos.y);
   }, [isLocked, getRelativePosition, onCursorMove]);
+
+  const handleItemDragMove = useCallback((itemId: string, x: number, y: number) => {
+    onItemMove(itemId, x, y);
+  }, [onItemMove]);
 
   const handleItemDragEnd = useCallback((itemId: string, x: number, y: number) => {
     setDraggingId(null);
@@ -641,6 +654,7 @@ export function ZenCanvas({
             lightSource={lightSource}
             rakeMode={rakeMode}
             onDragStart={() => { setDraggingId(item.id); setSelectedId(item.id); }}
+            onDragMove={(x, y) => handleItemDragMove(item.id, x, y)}
             onDragEnd={(x, y) => handleItemDragEnd(item.id, x, y)}
             onCursorMove={onCursorMove}
             onSelect={() => setSelectedId(selectedId === item.id ? null : item.id)}
