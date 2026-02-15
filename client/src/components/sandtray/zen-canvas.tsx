@@ -140,6 +140,96 @@ function DustEffect({ particles }: { particles: DustParticle[] }) {
 }
 
 
+function SandAmbience() {
+  const motes = useMemo(() => {
+    const count = 6 + Math.floor(Math.random() * 3); // 6-8
+    return Array.from({ length: count }, (_, i) => ({
+      id: i,
+      x: Math.random() * 90 + 5,
+      y: Math.random() * 90 + 5,
+      size: 2 + Math.random(),
+      opacity: 0.15 + Math.random() * 0.1,
+      duration: 15 + Math.random() * 10,
+      delay: Math.random() * -20,
+      driftX: (Math.random() - 0.5) * 60,
+      driftY: (Math.random() - 0.5) * 40,
+      warm: Math.random() > 0.5,
+    }));
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-[1] overflow-hidden">
+      <style>{`
+        @keyframes sand-mote-drift {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(var(--dx1), var(--dy1)) scale(1.15); }
+          50% { transform: translate(var(--dx2), var(--dy2)) scale(0.9); }
+          75% { transform: translate(var(--dx3), var(--dy3)) scale(1.1); }
+        }
+        @keyframes sand-vignette-breathe {
+          0%, 100% { opacity: 0.04; }
+          50% { opacity: 0.08; }
+        }
+        @keyframes sand-shimmer-slide {
+          0% { transform: translateX(-120%) rotate(-35deg); }
+          100% { transform: translateX(120%) rotate(-35deg); }
+        }
+      `}</style>
+
+      {/* Floating dust motes */}
+      {motes.map((m) => (
+        <div
+          key={m.id}
+          className="absolute rounded-full"
+          style={{
+            left: `${m.x}%`,
+            top: `${m.y}%`,
+            width: m.size,
+            height: m.size,
+            backgroundColor: m.warm
+              ? `rgba(180, 160, 120, ${m.opacity})`
+              : `rgba(160, 140, 100, ${m.opacity})`,
+            animation: `sand-mote-drift ${m.duration}s ease-in-out ${m.delay}s infinite`,
+            '--dx1': `${m.driftX * 0.4}px`,
+            '--dy1': `${m.driftY * 0.6}px`,
+            '--dx2': `${m.driftX}px`,
+            '--dy2': `${m.driftY * 0.3}px`,
+            '--dx3': `${m.driftX * 0.7}px`,
+            '--dy3': `${m.driftY}px`,
+          } as React.CSSProperties}
+        />
+      ))}
+
+      {/* Gentle vignette breathing */}
+      <div
+        className="absolute inset-0"
+        style={{
+          boxShadow: 'inset 0 0 80px rgba(101, 78, 40, 0.06)',
+          animation: 'sand-vignette-breathe 6s ease-in-out infinite',
+        }}
+      />
+
+      {/* Light shimmer band */}
+      <div
+        className="absolute inset-0 overflow-hidden"
+      >
+        <div
+          className="absolute"
+          style={{
+            top: '-20%',
+            left: '-20%',
+            width: '30%',
+            height: '140%',
+            background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.04) 60%, transparent 100%)',
+            animation: 'sand-shimmer-slide 20s linear infinite',
+            transformOrigin: 'center center',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function triggerHaptic(style: "light" | "medium" | "heavy" = "light") {
   try {
     if (navigator.vibrate) {
@@ -977,6 +1067,8 @@ export function ZenCanvas({
             inset 0 -3px 8px rgba(101,78,40,0.08)`,
         }}
       />
+
+      <SandAmbience />
 
       <AnimatePresence>
         {sortedItems.map((item) => (
