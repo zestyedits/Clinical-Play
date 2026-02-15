@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { Lock, Unlock, RotateCcw, Ghost, Eye, Shield, Sun, Brush, Minimize2, Maximize2 } from "lucide-react";
+import { Lock, Unlock, RotateCcw, Ghost, Eye, Shield, Sun, Brush, Minimize2, Maximize2, Shovel, Droplets, Waves, Mountain } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { SandTexture } from "./zen-canvas";
 
 interface ModeratorBarProps {
   isCanvasLocked: boolean;
@@ -15,7 +16,17 @@ interface ModeratorBarProps {
   onToggleRakeMode?: () => void;
   zenMode?: boolean;
   onToggleZenMode?: () => void;
+  sandTexture?: SandTexture;
+  onCycleSandTexture?: () => void;
+  digMode?: boolean;
+  onToggleDigMode?: () => void;
 }
+
+const TEXTURE_LABELS: Record<SandTexture, { icon: typeof Mountain; label: string }> = {
+  fine: { icon: Mountain, label: "Fine" },
+  wet: { icon: Droplets, label: "Wet" },
+  blue: { icon: Waves, label: "Water" },
+};
 
 export function ModeratorBar({
   isCanvasLocked,
@@ -30,6 +41,10 @@ export function ModeratorBar({
   onToggleRakeMode,
   zenMode,
   onToggleZenMode,
+  sandTexture = "fine",
+  onCycleSandTexture,
+  digMode,
+  onToggleDigMode,
 }: ModeratorBarProps) {
   return (
     <motion.div
@@ -84,6 +99,34 @@ export function ModeratorBar({
           >
             <Brush size={18} />
             <span className="text-[8px] font-medium">Rake</span>
+          </button>
+        )}
+
+        {onToggleDigMode && (
+          <button
+            onClick={onToggleDigMode}
+            className={cn(
+              "flex flex-col items-center justify-center w-11 h-11 rounded-xl transition-all active:scale-95 gap-0.5 cursor-pointer",
+              digMode ? "bg-[#6B9BD2]/40 text-[#F5EDE0] shadow-inner shadow-black/20" : "text-[#F5EDE0]/80 hover:bg-[#F5EDE0]/10"
+            )}
+            data-testid="button-toggle-dig"
+          >
+            <Shovel size={18} />
+            <span className="text-[8px] font-medium">Dig</span>
+          </button>
+        )}
+
+        {onCycleSandTexture && (
+          <button
+            onClick={onCycleSandTexture}
+            className="flex flex-col items-center justify-center w-11 h-11 rounded-xl text-[#F5EDE0]/80 hover:bg-[#F5EDE0]/10 transition-all active:scale-95 gap-0.5 cursor-pointer"
+            data-testid="button-cycle-texture"
+          >
+            {(() => {
+              const TexIcon = TEXTURE_LABELS[sandTexture].icon;
+              return <TexIcon size={18} />;
+            })()}
+            <span className="text-[8px] font-medium">{TEXTURE_LABELS[sandTexture].label}</span>
           </button>
         )}
 

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SANDTRAY_ASSETS, CATEGORIES, type SandtrayAsset, type AssetCategory } from "@/lib/sandtray-assets";
 import { cn } from "@/lib/utils";
@@ -134,8 +134,28 @@ function AssetItem({
 export function AssetLibrary({ isOpen, onToggle, disabled, onTapPlace }: AssetLibraryProps) {
   const [activeCategory, setActiveCategory] = useState<AssetCategory>("people");
   const [search, setSearch] = useState("");
+  const [sidebarWidth, setSidebarWidth] = useState(256);
+  const resizingRef = useRef(false);
+  const resizeStartRef = useRef({ x: 0, width: 256 });
 
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
+  const handleResizeStart = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    resizingRef.current = true;
+    resizeStartRef.current = { x: e.clientX, width: sidebarWidth };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }, [sidebarWidth]);
+
+  const handleResizeMove = useCallback((e: React.PointerEvent) => {
+    if (!resizingRef.current) return;
+    const dx = e.clientX - resizeStartRef.current.x;
+    setSidebarWidth(Math.max(200, Math.min(500, resizeStartRef.current.width + dx)));
+  }, []);
+
+  const handleResizeEnd = useCallback(() => {
+    resizingRef.current = false;
+  }, []);
 
   const filtered = useMemo(() => {
     if (search) {
@@ -271,7 +291,8 @@ export function AssetLibrary({ isOpen, onToggle, disabled, onTapPlace }: AssetLi
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -20, opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="hidden md:flex absolute left-6 top-6 bottom-6 z-30 w-64 bg-[#F5EDE0]/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-[#D4C4A8]/50 flex-col overflow-hidden"
+              className="hidden md:flex absolute left-6 top-6 bottom-6 z-30 bg-[#F5EDE0]/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-[#D4C4A8]/50 flex-col overflow-hidden"
+              style={{ width: sidebarWidth }}
             >
               <div className="flex items-center justify-between px-5 py-4">
                 <h3 className="font-serif text-base text-[#5A4A32]">Choose a Figurine</h3>
@@ -339,6 +360,13 @@ export function AssetLibrary({ isOpen, onToggle, disabled, onTapPlace }: AssetLi
                   <p className="text-center text-sm text-[#9B8B6E]/60 py-8">No figurines found</p>
                 )}
               </div>
+              <div
+                className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize z-10 hover:bg-[#D4AF37]/20 transition-colors touch-none"
+                onPointerDown={handleResizeStart}
+                onPointerMove={handleResizeMove}
+                onPointerUp={handleResizeEnd}
+                onPointerCancel={handleResizeEnd}
+              />
             </motion.div>
           </>
         )}

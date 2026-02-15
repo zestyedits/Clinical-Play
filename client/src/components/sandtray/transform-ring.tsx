@@ -8,7 +8,11 @@ interface TransformRingProps {
   onTransform: (scale: number, rotation: number) => void;
   onRemove: () => void;
   onDeselect: () => void;
+  onBringToFront?: () => void;
+  onSendToBack?: () => void;
 }
+
+export type { TransformRingProps };
 
 const MIN_SCALE = 0.3;
 const MAX_SCALE = 4.0;
@@ -29,6 +33,8 @@ export function TransformRing({
   onTransform,
   onRemove,
   onDeselect,
+  onBringToFront,
+  onSendToBack,
 }: TransformRingProps) {
   const isTouch = useIsTouchDevice();
   const handleSize = isTouch ? MOBILE_HANDLE_SIZE : HANDLE_SIZE;
@@ -321,6 +327,48 @@ export function TransformRing({
         >
           ×
         </motion.button>
+
+        {/* Layer controls - 5 o'clock position */}
+        {(onBringToFront || onSendToBack) && (
+          <div
+            className="absolute flex gap-0.5"
+            style={{
+              left: center + ringRadius * 0.5 - handleSize * 0.4,
+              top: center + ringRadius * 0.7 - handleSize * 0.2,
+            }}
+          >
+            {onBringToFront && (
+              <motion.button
+                className="rounded-full bg-white shadow-md flex items-center justify-center cursor-pointer"
+                style={{ border: '2px solid #D4AF37', width: handleSize * 0.85, height: handleSize * 0.85 }}
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.9, backgroundColor: '#FFF8E7' }}
+                onClick={(e) => { e.stopPropagation(); onBringToFront(); }}
+                data-testid="button-bring-front"
+                title="Bring to front"
+              >
+                <svg width={isTouch ? 12 : 9} height={isTouch ? 12 : 9} viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M12 19V5" /><path d="M5 12l7-7 7 7" />
+                </svg>
+              </motion.button>
+            )}
+            {onSendToBack && (
+              <motion.button
+                className="rounded-full bg-white shadow-md flex items-center justify-center cursor-pointer"
+                style={{ border: '2px solid #D4AF37', width: handleSize * 0.85, height: handleSize * 0.85 }}
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.9, backgroundColor: '#FFF8E7' }}
+                onClick={(e) => { e.stopPropagation(); onSendToBack(); }}
+                data-testid="button-send-back"
+                title="Send to back"
+              >
+                <svg width={isTouch ? 12 : 9} height={isTouch ? 12 : 9} viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M12 5v14" /><path d="M19 12l-7 7-7-7" />
+                </svg>
+              </motion.button>
+            )}
+          </div>
+        )}
 
         {/* Scale/rotation info tooltip */}
         {(isResizing || isRotating) && (

@@ -116,6 +116,8 @@ export default function Playroom() {
   const [rakePaths, setRakePaths] = useState<RakePath[]>([]);
   const [zenMode, setZenMode] = useState(false);
   const [rakeMode, setRakeMode] = useState(false);
+  const [sandTexture, setSandTexture] = useState<"fine" | "wet" | "blue">("fine");
+  const [digMode, setDigMode] = useState(false);
   const lightThrottleRef = useRef(0);
   const [, navigate] = useLocation();
   const playroomTour = useTour("playroom");
@@ -1347,7 +1349,22 @@ export default function Playroom() {
 
   const handleToggleRakeMode = useCallback(() => {
     setRakeMode(prev => !prev);
+    setDigMode(false);
   }, []);
+
+  const handleToggleDigMode = useCallback(() => {
+    setDigMode(prev => !prev);
+    setRakeMode(false);
+  }, []);
+
+  const handleCycleSandTexture = useCallback(() => {
+    setSandTexture(prev => prev === "fine" ? "wet" : prev === "wet" ? "blue" : "fine");
+  }, []);
+
+  const handleItemLayerChange = useCallback((id: string, zLayer: number) => {
+    setItems(prev => prev.map(item => item.id === id ? { ...item, zLayer } : item));
+    send({ type: "item-layer-change", id, zLayer });
+  }, [send]);
 
   // Emotion Thermometer handlers
   const handleThermometerAdd = useCallback((emotionLabel: string, intensity: number, bodyLocation: string | null, triggerNote: string | null) => {
@@ -1952,10 +1969,13 @@ export default function Playroom() {
                   onItemDrop={handleItemDrop}
                   onItemRemove={handleItemRemove}
                   onItemTransform={handleItemTransform}
+                  onItemLayerChange={handleItemLayerChange}
                   onCursorMove={handleCursorMove}
                   lightSource={lightSource}
                   rakePaths={rakePaths}
                   zenMode={zenMode}
+                  sandTexture={sandTexture}
+                  digMode={digMode}
                   onLightSourceUpdate={handleLightSourceUpdate}
                   onRakePathAdd={handleRakePathAdd}
                   onRakePathClear={handleRakePathClear}
@@ -2197,6 +2217,10 @@ export default function Playroom() {
                 onToggleRakeMode={handleToggleRakeMode}
                 zenMode={zenMode}
                 onToggleZenMode={handleZenModeToggle}
+                sandTexture={sandTexture}
+                onCycleSandTexture={handleCycleSandTexture}
+                digMode={digMode}
+                onToggleDigMode={handleToggleDigMode}
               />
             )}
           </AnimatePresence>
