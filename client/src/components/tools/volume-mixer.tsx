@@ -11,7 +11,7 @@ import { Plus, Settings, Camera, HelpCircle, X, Volume2, VolumeX, Smartphone } f
 import { cn } from "@/lib/utils";
 import {
   startDrone, updateDrone, stopDrone, stopAllDrones,
-  playSoloPing, playMuteThud, playResetSweep, playFizzle,
+  playSoloPing, playMuteThud, playResetSweep, playFizzle, playBoostChime,
   setDroneResonance as setDroneResonance_audio,
 } from "@/lib/volume-mixer-audio";
 
@@ -113,6 +113,15 @@ function ChannelStrip({
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Boost magnetic tension state
+  const [boostTension, setBoostTension] = useState(0); // 0-1 how hard they're pulling against magnet
+  const [magnetBroken, setMagnetBroken] = useState(false);
+  const magnetBreakTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [rawDragValue, setRawDragValue] = useState<number | null>(null);
+
+  // Random tape tilt for this strip (stable per mount)
+  const tapeTilt = useMemo(() => (Math.random() - 0.5) * 1.2, []);
+
   const isWarmZone = channel.value >= WARM_ZONE_THRESHOLD;
   const warmIntensity = isWarmZone ? (channel.value - WARM_ZONE_THRESHOLD) / (100 - WARM_ZONE_THRESHOLD) : 0;
   const isDimmed = isAnySoloed && !channel.isSoloed;
@@ -143,6 +152,11 @@ function ChannelStrip({
     return () => { stopDrone(channel.id); };
   }, [channel.id]);
 
+  // Reset magnet when boost is toggled
+  useEffect(() => {
+    if (channel.isBoosted) setMagnetBroken(false);
+  }, [channel.isBoosted]);
+
   // Handle fader drag via pointer events
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (channel.isMuted) return;
@@ -156,13 +170,26 @@ function ChannelStrip({
     const y = Math.max(0, Math.min(1, 1 - (e.clientY - rect.top) / rect.height));
     let newVal = Math.round(y * 100);
 
-    // Boost magnetic resistance
-    if (channel.isBoosted && newVal < BOOST_SNAP_THRESHOLD) {
+    // Boost magnetic resistance (unless broken)
+    if (channel.isBoosted && !magnetBroken && newVal < BOOST_SNAP_THRESHOLD) {
+      setRawDragValue(newVal);
+      setBoostTension(1 - newVal / BOOST_SNAP_THRESHOLD);
+      // Start break timer
+      if (!magnetBreakTimer.current) {
+        magnetBreakTimer.current = setTimeout(() => {
+          setMagnetBroken(true);
+          setBoostTension(0);
+          magnetBreakTimer.current = null;
+        }, 1500);
+      }
       newVal = BOOST_SNAP_TARGET;
+    } else {
+      setBoostTension(0);
+      setRawDragValue(null);
     }
 
     onValueChange(channel.id, newVal);
-  }, [channel.isMuted, channel.isBoosted, channel.id, onValueChange]);
+  }, [channel.isMuted, channel.isBoosted, magnetBroken, channel.id, onValueChange]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!isDragging) return;
@@ -172,23 +199,50 @@ function ChannelStrip({
     const y = Math.max(0, Math.min(1, 1 - (e.clientY - rect.top) / rect.height));
     let newVal = Math.round(y * 100);
 
-    if (channel.isBoosted && newVal < BOOST_SNAP_THRESHOLD) {
+    if (channel.isBoosted && !magnetBroken && newVal < BOOST_SNAP_THRESHOLD) {
+      setRawDragValue(newVal);
+      setBoostTension(Math.min(1, 1 - newVal / BOOST_SNAP_THRESHOLD));
+      // Maintain break timer if already started
+      if (!magnetBreakTimer.current) {
+        magnetBreakTimer.current = setTimeout(() => {
+          setMagnetBroken(true);
+          setBoostTension(0);
+          magnetBreakTimer.current = null;
+        }, 1500);
+      }
       newVal = BOOST_SNAP_TARGET;
+    } else {
+      setBoostTension(0);
+      setRawDragValue(null);
+      // Clear break timer if they moved back up
+      if (magnetBreakTimer.current) {
+        clearTimeout(magnetBreakTimer.current);
+        magnetBreakTimer.current = null;
+      }
     }
 
     onValueChange(channel.id, newVal);
-  }, [isDragging, channel.isBoosted, channel.id, onValueChange]);
+  }, [isDragging, channel.isBoosted, magnetBroken, channel.id, onValueChange]);
 
   const handlePointerUp = useCallback((e: React.PointerEvent) => {
     if (!isDragging) return;
     setIsDragging(false);
+    setBoostTension(0);
+    setRawDragValue(null);
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
 
-    // Boost snap-back: if boosted and value dropped below threshold, spring back
-    if (channel.isBoosted && channel.value < BOOST_SNAP_TARGET) {
+    // Clear break timer
+    if (magnetBreakTimer.current) {
+      clearTimeout(magnetBreakTimer.current);
+      magnetBreakTimer.current = null;
+    }
+
+    // Boost snap-back: if boosted and magnet intact, spring back with chime
+    if (channel.isBoosted && !magnetBroken && channel.value < BOOST_SNAP_TARGET) {
+      if (audioEnabled) playBoostChime();
       onValueChange(channel.id, BOOST_SNAP_TARGET);
     }
-  }, [isDragging, channel.isBoosted, channel.value, channel.id, onValueChange]);
+  }, [isDragging, channel.isBoosted, magnetBroken, channel.value, channel.id, onValueChange, audioEnabled]);
 
   // Long press to edit label
   const handleLabelPointerDown = useCallback(() => {
@@ -238,8 +292,8 @@ function ChannelStrip({
       ref={channelRef}
       className={cn(
         stripWidth,
-        "relative flex flex-col items-center select-none transition-all duration-300",
-        isDimmed && "opacity-30 blur-[2px]",
+        "relative flex flex-col items-center select-none transition-all duration-500",
+        isDimmed && "opacity-20 blur-[12px] saturate-[0.2]",
         channel.isMuted && "grayscale",
       )}
       style={{
@@ -267,7 +321,10 @@ function ChannelStrip({
       {/* Fader Track */}
       <div
         ref={trackRef}
-        className="relative w-full rounded-xl cursor-pointer touch-none"
+        className={cn(
+          "relative w-full rounded-xl touch-none",
+          boostTension > 0 ? "cursor-grabbing" : isDragging ? "cursor-grabbing" : "cursor-pointer",
+        )}
         style={{
           height: TRACK_HEIGHT,
           boxShadow: "inset 0 2px 8px rgba(0,0,0,0.6), inset 0 0 2px rgba(0,0,0,0.3)",
@@ -305,32 +362,55 @@ function ChannelStrip({
           </motion.div>
         )}
 
+        {/* Boost tension elastic trail */}
+        {boostTension > 0 && rawDragValue !== null && (
+          <div
+            className="absolute left-1/2 -translate-x-1/2 w-[2px] pointer-events-none z-5"
+            style={{
+              bottom: `${rawDragValue}%`,
+              height: `${fillPercent - rawDragValue}%`,
+              background: `linear-gradient(to top, rgba(212,175,55,${0.1 + boostTension * 0.4}), rgba(212,175,55,${boostTension * 0.6}))`,
+              filter: `blur(${1 + boostTension * 2}px)`,
+              transition: isDragging ? "none" : "all 0.15s ease",
+            }}
+          />
+        )}
+
         {/* Fader Cap */}
         <motion.div
           className={cn(
             "absolute left-1/2 -translate-x-1/2 rounded-lg z-10 pointer-events-none",
             isGuideHighlighted && "ring-2 ring-amber-400/60",
+            boostTension > 0 && "cursor-grabbing",
           )}
           style={{
             width: 44,
             height: 24,
             bottom: `calc(${fillPercent}% - 12px)`,
             background: channel.isBoosted
-              ? "linear-gradient(180deg, #d4a017, #b8860b)"
+              ? `linear-gradient(180deg, ${boostTension > 0 ? '#f0c040' : '#d4a017'}, #b8860b)`
               : "linear-gradient(180deg, #555, #333)",
             boxShadow: channel.isMuted
               ? "0 1px 2px rgba(0,0,0,0.3)"
-              : "0 2px 6px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+              : boostTension > 0
+                ? `0 2px 8px rgba(212,175,55,${0.3 + boostTension * 0.3}), 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)`
+                : "0 2px 6px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
             transition: isDragging ? "none" : "bottom 0.15s ease-out",
           }}
-          animate={isWarmZone && !channel.isMuted ? {
-            x: [0, 1, -1, 0.5, -0.5, 0],
-          } : {}}
-          transition={isWarmZone ? {
-            duration: 0.15,
-            repeat: Infinity,
-            ease: "linear",
-          } : {}}
+          animate={
+            boostTension > 0
+              ? { x: [0, 1.5 * boostTension, -1.5 * boostTension, 1 * boostTension, -1 * boostTension, 0] }
+              : isWarmZone && !channel.isMuted
+                ? { x: [0, 1, -1, 0.5, -0.5, 0] }
+                : {}
+          }
+          transition={
+            boostTension > 0
+              ? { duration: 0.08, repeat: Infinity, ease: "linear" }
+              : isWarmZone
+                ? { duration: 0.15, repeat: Infinity, ease: "linear" }
+                : {}
+          }
         >
           {/* Grip lines */}
           <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex flex-col gap-[2px]">
@@ -420,15 +500,24 @@ function ChannelStrip({
             onBlur={handleLabelSubmit}
             onKeyDown={(e) => e.key === "Enter" && handleLabelSubmit()}
             autoFocus
-            className="w-full bg-[#e0e0e0] text-[#121212] text-[10px] font-mono text-center px-1 py-1 rounded border-none outline-none"
+            className="w-full bg-[#e0e0e0] text-[#121212] text-[10px] font-mono text-center px-2 py-1.5 border-none outline-none"
+            style={{
+              transform: `rotate(${tapeTilt}deg)`,
+              borderRadius: "1px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.15), inset 0 0 0 0.5px rgba(0,0,0,0.05)",
+            }}
           />
         ) : (
           <motion.div
-            className="w-full bg-[#e0e0e0]/90 text-[#121212] text-[10px] font-mono text-center px-1 py-1 rounded truncate select-none cursor-default"
+            className="w-full bg-[#e0e0e0]/90 text-[#121212] text-[10px] font-mono text-center px-2 py-1.5 truncate select-none cursor-default"
             animate={channel.isSoloed ? { scale: [1, 1.05, 1] } : { scale: 1 }}
             transition={channel.isSoloed ? { duration: 0.6, ease: "easeOut" } : {}}
             style={{
-              boxShadow: "inset 0 1px 2px rgba(0,0,0,0.1)",
+              transform: `rotate(${tapeTilt}deg)`,
+              borderRadius: "1px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.15), inset 0 0 0 0.5px rgba(0,0,0,0.05)",
+              // Torn tape edge effect
+              clipPath: "polygon(2% 0%, 98% 1%, 100% 3%, 99% 97%, 97% 100%, 3% 99%, 0% 97%, 1% 2%)",
             }}
           >
             {channel.label}
@@ -874,7 +963,7 @@ export function VolumeMixer({ isClinician }: VolumeMixerProps) {
   const handleSnapshot = useCallback(async () => {
     setSnapshotMode(true);
     // Wait for UI to update (hide chrome)
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise(r => setTimeout(r, 150));
     try {
       const html2canvas = (await import("html2canvas")).default;
       const board = boardRef.current;
@@ -884,7 +973,38 @@ export function VolumeMixer({ isClinician }: VolumeMixerProps) {
         scale: 2,
         ignoreElements: (el) => el.classList.contains("ui-chrome"),
       });
-      const dataUrl = canvas.toDataURL("image/png");
+
+      // Add header with timestamp and client identifier placeholder
+      const finalCanvas = document.createElement("canvas");
+      const headerHeight = 60;
+      finalCanvas.width = canvas.width;
+      finalCanvas.height = canvas.height + headerHeight;
+      const ctx2d = finalCanvas.getContext("2d");
+      if (ctx2d) {
+        // Header background
+        ctx2d.fillStyle = "#121212";
+        ctx2d.fillRect(0, 0, finalCanvas.width, headerHeight);
+        // Separator line
+        ctx2d.strokeStyle = "rgba(255,255,255,0.08)";
+        ctx2d.lineWidth = 1;
+        ctx2d.beginPath();
+        ctx2d.moveTo(0, headerHeight - 1);
+        ctx2d.lineTo(finalCanvas.width, headerHeight - 1);
+        ctx2d.stroke();
+        // Timestamp
+        ctx2d.fillStyle = "rgba(255,255,255,0.35)";
+        ctx2d.font = "20px monospace";
+        const timestamp = new Date().toLocaleString();
+        ctx2d.fillText(timestamp, 24, 25);
+        // Client identifier placeholder
+        ctx2d.fillStyle = "rgba(255,255,255,0.2)";
+        ctx2d.font = "italic 18px Georgia, serif";
+        ctx2d.fillText("Client: ________________", 24, 48);
+        // Draw mixer board below
+        ctx2d.drawImage(canvas, 0, headerHeight);
+      }
+
+      const dataUrl = finalCanvas.toDataURL("image/png");
       window.open(dataUrl, "_blank");
     } catch (err) {
       console.error("Snapshot failed:", err);
@@ -919,7 +1039,7 @@ export function VolumeMixer({ isClinician }: VolumeMixerProps) {
     const light = 7 + volumeRatio * 3;
     return {
       backgroundColor: `hsl(${hue}, ${sat}%, ${light}%)`,
-      transition: "background-color 1s ease",
+      transition: "background-color 3.5s ease",
     };
   }, [volumeRatio]);
 

@@ -340,6 +340,42 @@ export function playResetSweep() {
 }
 
 /**
+ * Harmonic Chime — soft bell for boost spring-back.
+ * 100ms attack, gentle sine at 660Hz with overtone.
+ */
+export function playBoostChime() {
+  try {
+    const ctx = getAudioContext();
+    if (ctx.state === "suspended") ctx.resume();
+    const t = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(660, t);
+    gain.gain.setValueAtTime(0.06, t);
+    gain.gain.exponentialRampToValueAtTime(0.02, t + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
+    osc.connect(gain);
+    gain.connect(getMaster());
+    osc.start(t);
+    osc.stop(t + 0.8);
+
+    // Overtone for shimmer
+    const ov = ctx.createOscillator();
+    const ovGain = ctx.createGain();
+    ov.type = "sine";
+    ov.frequency.setValueAtTime(1320, t);
+    ovGain.gain.setValueAtTime(0.015, t);
+    ovGain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+    ov.connect(ovGain);
+    ovGain.connect(getMaster());
+    ov.start(t);
+    ov.stop(t + 0.6);
+  } catch {}
+}
+
+/**
  * Fizzle — soft dissolve for channel deletion.
  */
 export function playFizzle() {
