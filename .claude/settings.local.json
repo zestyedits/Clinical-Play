@@ -15,7 +15,8 @@
       "Bash(xxd:*)",
       "Bash(python3:*)",
       "Bash(sort:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm ls:*)"
     ]
   }
 }
