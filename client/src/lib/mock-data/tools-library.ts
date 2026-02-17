@@ -74,7 +74,36 @@ export const SORT_OPTIONS = [
 ] as const;
 
 export const TOOLS_LIBRARY: ToolDefinition[] = [
-  // ── ACTIVE TOOLS ──
+  {
+    id: "volume-mixer",
+    name: "Volume Mixer",
+    shortDescription: "Externalize internal parts as tactile audio faders",
+    longDescription: "A high-end mixing-board metaphor where clients create channels for internal 'parts' or 'voices' and adjust their volume using weighted, physics-based faders. Supports mute, solo, and boost controls with optional organic audio feedback.",
+    icon: "🎚️",
+    modalities: ["IFS", "ACT", "Play Therapy", "Somatic"],
+    ageRanges: ["Teens (14-18)", "Young Adults (18-25)", "Adults (25-64)"],
+    intensity: "moderate",
+    duration: "15-30",
+    interactionType: "expressive",
+    status: "active",
+    tier: "free",
+    bestUsedFor: [
+      "Externalizing internal parts or voices (IFS)",
+      "Mapping the relative 'loudness' of competing emotions",
+      "Helping clients identify which parts dominate their experience",
+      "Exploring the relationship between internal parts through volume dynamics",
+    ],
+    adaptations: "For teens, use casual language ('What's loud right now?'). For adults, frame as 'internal landscape mapping.' Use the Boost button for grounding resources like the Wise Self.",
+    pitfalls: "Resist interpreting the mix for the client. If all faders are at 100%, that's data about overwhelm — don't rush to 'fix' it. The mute button is 'acknowledge,' not 'suppress.'",
+    safetyNotes: "The global reset provides immediate de-escalation. If a client becomes flooded, use the reset to return to neutral. Audio can be disabled for sensory-sensitive clients.",
+    producesArtifact: true,
+    lastUsed: null,
+    timesUsed: 0,
+  },
+];
+
+const _REMOVED_TOOLS: ToolDefinition[] = [
+  // ── ARCHIVED — kept for reference ──
   {
     id: "sandtray",
     name: "Zen Sandtray",

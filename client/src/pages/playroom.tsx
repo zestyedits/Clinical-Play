@@ -30,6 +30,7 @@ import { DbtHouse } from "@/components/tools/dbt-house";
 import { StrengthsDeck, type StrengthsPlacementData, type StrengthsSpottingData } from "@/components/tools/strengths-deck";
 import { SocialAtom, type SocialAtomPersonData, type SocialAtomConnectionData } from "@/components/tools/social-atom";
 import { GrowthGarden, type GardenPlantData, type GardenJournalEntryData, type GardenWeedData } from "@/components/tools/growth-garden";
+import { VolumeMixer } from "@/components/tools/volume-mixer";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -68,7 +69,7 @@ export default function Playroom() {
   const [remoteCursors, setRemoteCursors] = useState<RemoteCursor[]>([]);
   const [assetLibraryOpen, setAssetLibraryOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
-  const [activeTool, setActiveTool] = useState("breathing");
+  const [activeTool, setActiveTool] = useState("volume-mixer");
   const [joinNotification, setJoinNotification] = useState<string | null>(null);
   const [toolSelectorOpen, setToolSelectorOpen] = useState(false);
   const [breathingActive, setBreathingActive] = useState(false);
@@ -2180,6 +2181,12 @@ export default function Playroom() {
             {activeTool === "growth-garden" && (
               <motion.div key="growth-garden" className="absolute inset-0 overflow-y-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <GrowthGarden plants={gardenPlants} journalEntries={gardenJournalEntries} weeds={gardenWeeds} onAddPlant={handleGardenAddPlant} onUpdatePlant={handleGardenUpdatePlant} onRemovePlant={handleGardenRemovePlant} onAddJournalEntry={handleGardenAddJournal} onAddWeed={handleGardenAddWeed} onPullWeed={handleGardenPullWeed} onClear={handleGardenClear} isClinician={isClinician} toolSettings={toolSettings["growth-garden"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("growth-garden", u)} />
+              </motion.div>
+            )}
+
+            {activeTool === "volume-mixer" && (
+              <motion.div key="volume-mixer" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <VolumeMixer isClinician={isClinician} toolSettings={toolSettings["volume-mixer"]} onSettingsUpdate={(u) => handleToolSettingsUpdate("volume-mixer", u)} />
               </motion.div>
             )}
           </AnimatePresence>

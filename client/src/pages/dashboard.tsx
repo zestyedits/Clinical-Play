@@ -25,29 +25,14 @@ interface DashboardTool {
 }
 
 const ALL_TOOLS: DashboardTool[] = [
-  { id: "sandtray", label: "Zen Sandtray", desc: "Expressive world-building with drag-and-drop assets", icon: Palette, tier: "free", emoji: "🏖️" },
-  { id: "breathing", label: "Calm Breathing", desc: "Synchronized breathing exercise for the group", icon: Wind, tier: "free", emoji: "🫧" },
-  { id: "feelings", label: "Feeling Wheel", desc: "Multi-layered emotional identification", icon: Target, tier: "free", emoji: "🎯" },
-  { id: "narrative", label: "Narrative Timeline", desc: "Visual life story and event mapping", icon: Clock, tier: "pro", emoji: "🌊" },
-  { id: "values-sort", label: "Values Card Sort", desc: "Interactive values prioritization", icon: Layers, tier: "pro", emoji: "🃏" },
-  { id: "garden", label: "Growth Garden", desc: "Collaborative planting for rapport building", icon: TreePine, tier: "pro", emoji: "🌱" },
-  { id: "fidgets", label: "Fidget Tools", desc: "Calming sensory interactions", icon: Gamepad2, tier: "pro", emoji: "🔮" },
-  { id: "parts-theater", label: "Parts Theater", desc: "IFS-inspired internal parts mapping and exploration", icon: Theater, tier: "free", emoji: "🎭" },
+  { id: "volume-mixer", label: "Volume Mixer", desc: "Externalize internal parts as tactile audio faders", icon: Layers, tier: "free", emoji: "🎚️" },
 ];
 
-const CLINICAL_TIPS = [
-  { tip: "Use the Sandtray at the start of a session to help clients externalize their inner world.", tool: "Zen Sandtray" },
-  { tip: "The Breathing Guide is a great warm-up before diving into deeper therapeutic work.", tool: "Calm Breathing" },
-  { tip: "Try the Feeling Wheel when a client says 'I don't know how I feel' — it gives them language.", tool: "Feeling Wheel" },
-  { tip: "End sessions with the Growth Garden to reinforce progress and build rapport.", tool: "Growth Garden" },
-  { tip: "The Narrative Timeline helps clients see patterns across their life events.", tool: "Narrative Timeline" },
-  { tip: "Fidget Tools can help regulate clients who need sensory input during talk therapy.", tool: "Fidget Tools" },
-  { tip: "Values Card Sort is powerful for clients navigating major life transitions.", tool: "Values Card Sort" },
+const CLINICAL_TIPS: { tip: string; tool: string }[] = [
+  // Tips will be added as tools are developed
 ];
 
-const ACTIVE_TOOLS = ALL_TOOLS.filter(t =>
-  ["sandtray", "breathing", "feelings", "narrative", "values-sort", "parts-theater"].includes(t.id)
-);
+const ACTIVE_TOOLS = ALL_TOOLS.filter(t => t.id !== "_placeholder");
 
 function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
   isOpen: boolean;
@@ -57,7 +42,7 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
 }) {
   const [name, setName] = useState("");
   const [mode, setMode] = useState<"solo" | "group">("solo");
-  const [selectedTool, setSelectedTool] = useState("sandtray");
+  const [selectedTool, setSelectedTool] = useState("volume-mixer");
 
   const containsPotentialName = useMemo(() => {
     return /\b[A-Z][a-z]+\s+[A-Z][a-z]+/.test(name);
@@ -67,7 +52,7 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
     if (isOpen) {
       setName("");
       setMode("solo");
-      setSelectedTool("sandtray");
+      setSelectedTool("volume-mixer");
     }
   }, [isOpen]);
 
