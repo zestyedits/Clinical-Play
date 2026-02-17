@@ -1026,6 +1026,47 @@ function resumeAudio() {
   masterGain.gain.setTargetAtTime(0.3, now, 0.05);
 }
 
+function stopAllAudio() {
+  // Stop all channel audio nodes
+  channelAudioMap.forEach((ch, id) => {
+    ch.nodes.forEach((n) => {
+      try { if (n instanceof OscillatorNode) n.stop(); } catch {}
+      try { if (n instanceof AudioBufferSourceNode) n.stop(); } catch {}
+      try { n.disconnect(); } catch {}
+    });
+    try { ch.gain.disconnect(); } catch {}
+    try { ch.panner.disconnect(); } catch {}
+  });
+  channelAudioMap.clear();
+
+  // Stop drone oscillator and noise
+  try { droneOsc?.stop(); } catch {}
+  try { droneNoiseSource?.stop(); } catch {}
+  try { droneOsc?.disconnect(); } catch {}
+  try { droneOscGain?.disconnect(); } catch {}
+  try { droneNoiseSource?.disconnect(); } catch {}
+  try { droneNoiseGain?.disconnect(); } catch {}
+  try { droneFilter?.disconnect(); } catch {}
+  try { droneGain?.disconnect(); } catch {}
+  try { masterGain?.disconnect(); } catch {}
+
+  // Close the audio context
+  if (audioCtx && audioCtx.state !== "closed") {
+    audioCtx.close().catch(() => {});
+  }
+
+  // Reset all references
+  droneOsc = null;
+  droneOscGain = null;
+  droneNoiseSource = null;
+  droneNoiseGain = null;
+  droneFilter = null;
+  droneGain = null;
+  masterGain = null;
+  audioCtx = null;
+  isAudioInitialized = false;
+}
+
 function playSunsetFade() {
   if (!isAudioInitialized || !masterGain) return;
   const ctx = getAudioContext();
@@ -2867,7 +2908,7 @@ function CrtIntro() {
       setPhase("aha");
       setTimeout(() => {
         setPhase("done");
-        setIntroComplete();
+        setTimeout(() => setIntroComplete(), 600);
       }, 4500);
     }, 1200);
   }, [settings.audioEnabled, setIntroComplete]);
@@ -2896,8 +2937,10 @@ function CrtIntro() {
       setPhase("aha");
       setTimeout(() => {
         setPhase("done");
-        setIntroComplete();
-        setTimeout(() => snapshotInitialState(), 100);
+        setTimeout(() => {
+          setIntroComplete();
+          setTimeout(() => snapshotInitialState(), 100);
+        }, 600);
       }, 4500);
     }, 1200);
   }, [settings.audioEnabled, setIntroComplete, mappedParts, addChannel, snapshotInitialState]);
@@ -4037,6 +4080,7 @@ export function VolumeMixer() {
   }, [channels, masterIntensity]);
 
   useEffect(() => {
+    if (sessionEnded) return;
     const avgIntensity =
       channels.length > 0
         ? channels.reduce((sum, ch) => sum + ch.value, 0) / channels.length
@@ -4044,18 +4088,19 @@ export function VolumeMixer() {
     if (settings.audioEnabled && !globalMuted) {
       updateDrone(avgIntensity, settings.masterPitch, masterIntensity, settings.textureMix);
     }
-  }, [channels, settings.masterPitch, settings.audioEnabled, settings.textureMix, masterIntensity, globalMuted]);
+  }, [channels, settings.masterPitch, settings.audioEnabled, settings.textureMix, masterIntensity, globalMuted, sessionEnded]);
 
   useEffect(() => {
+    if (sessionEnded) return;
     if (globalMuted || systemPaused) {
       emergencySilence();
     } else if (settings.audioEnabled) {
       resumeAudio();
     }
-  }, [globalMuted, systemPaused, settings.audioEnabled]);
+  }, [globalMuted, systemPaused, settings.audioEnabled, sessionEnded]);
 
   useEffect(() => {
-    if (!settings.audioEnabled) return;
+    if (!settings.audioEnabled || sessionEnded) return;
     const totalChannels = channels.length;
     channels.forEach((ch, index) => {
       const panValue = totalChannels <= 1 ? 0 : (index / (totalChannels - 1)) * 2 - 1;
@@ -4069,7 +4114,7 @@ export function VolumeMixer() {
       }
     });
     prevChannelIds.current = currentIds;
-  }, [channels, masterIntensity, settings.audioEnabled]);
+  }, [channels, masterIntensity, settings.audioEnabled, sessionEnded]);
 
   useEffect(() => {
     if (channels.length === 1 && !tutorialCompleted && !showTutorial) {
@@ -4275,9 +4320,11 @@ export function VolumeMixer() {
     if (!sessionEnded || sunsetPhase !== "idle") return;
     setSunsetPhase("fading");
     if (settings.audioEnabled) playSunsetFade();
-    setTimeout(() => {
+    const fadeTimer = setTimeout(() => {
+      stopAllAudio();
       setSunsetPhase("message");
     }, 5000);
+    return () => clearTimeout(fadeTimer);
   }, [sessionEnded, sunsetPhase, settings.audioEnabled]);
 
   const prevRedZoneParts = useRef<Set<string>>(new Set());
@@ -4337,7 +4384,7 @@ export function VolumeMixer() {
   }, [idleQuips.length]);
 
   return (
-    <div data-volume-mixer-root="">
+    <div data-volume-mixer-root="" style={{ position: "fixed", inset: 0, width: "100vw", height: "100vh", overflow: "hidden", background: "#121212", color: "#e5e5e5" }}>
       <CrtIntro />
       <div
         ref={mixerRef}
