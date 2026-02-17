@@ -9,38 +9,40 @@ import {
 import html2canvas from "html2canvas";
 import { create } from "zustand";
 
-type PartTexture = "steady" | "jitter" | "pulse" | "wind" | "tine";
+type PartTexture = "chatter" | "buzz" | "throb" | "shout" | "hum";
+
+const TEXTURE_MIGRATION: Record<string, PartTexture> = { steady: "chatter", jitter: "buzz", pulse: "throb", wind: "shout", tine: "hum" };
 
 const TEXTURE_COLORS: Record<PartTexture, { cap: string; glow: string; track: string; label: string }> = {
-  steady: {
-    cap: "linear-gradient(180deg, #4dd0e1 0%, #00838f 30%, #006064 70%, #004d50 100%)",
-    glow: "rgba(77,208,225,0.4)",
-    track: "#0097a7",
-    label: "Steady",
+  chatter: {
+    cap: "linear-gradient(180deg, #94a3b8 0%, #64748b 30%, #475569 70%, #334155 100%)",
+    glow: "rgba(148,163,184,0.4)",
+    track: "#64748b",
+    label: "Chatter",
   },
-  jitter: {
+  buzz: {
     cap: "linear-gradient(180deg, #ff8a65 0%, #e64a19 30%, #bf360c 70%, #8d2a0b 100%)",
     glow: "rgba(255,138,101,0.4)",
     track: "#e64a19",
-    label: "Jitter",
+    label: "Buzz",
   },
-  pulse: {
+  throb: {
     cap: "linear-gradient(180deg, #b39ddb 0%, #7e57c2 30%, #5e35b1 70%, #4527a0 100%)",
     glow: "rgba(179,157,219,0.4)",
     track: "#7e57c2",
-    label: "Pulse",
+    label: "Throb",
   },
-  wind: {
-    cap: "linear-gradient(180deg, #80cbc4 0%, #26a69a 30%, #00897b 70%, #00695c 100%)",
-    glow: "rgba(128,203,196,0.4)",
-    track: "#26a69a",
-    label: "Wind",
+  shout: {
+    cap: "linear-gradient(180deg, #ff8a80 0%, #e53935 30%, #c62828 70%, #b71c1c 100%)",
+    glow: "rgba(255,138,128,0.4)",
+    track: "#e53935",
+    label: "Shout",
   },
-  tine: {
+  hum: {
     cap: "linear-gradient(180deg, #fff59d 0%, #fdd835 30%, #f9a825 70%, #f57f17 100%)",
     glow: "rgba(255,245,157,0.4)",
     track: "#fdd835",
-    label: "Tine",
+    label: "Hum",
   },
 };
 
@@ -280,7 +282,7 @@ const useMixer = create<MixerState>((set, get) => ({
   activeDragPosition: null,
   isAnyFaderDragging: false,
 
-  addChannel: (name, isWiseSelf = false, texture: PartTexture = "steady") => {
+  addChannel: (name, isWiseSelf = false, texture: PartTexture = "hum") => {
     const id = `ch_${++channelCounter}_${Date.now()}`;
     set((state) => ({
       channels: [
@@ -292,7 +294,7 @@ const useMixer = create<MixerState>((set, get) => ({
           isSoloed: false,
           isWiseSelf,
           magnetBroken: false,
-          texture: isWiseSelf ? "steady" : texture,
+          texture: isWiseSelf ? "hum" : texture,
         },
       ],
     }));
@@ -435,6 +437,7 @@ const useMixer = create<MixerState>((set, get) => ({
     const channels = preset.channels.map((ch) => ({
       ...ch,
       id: `ch_${++channelCounter}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      texture: TEXTURE_MIGRATION[ch.texture] || ch.texture,
     }));
     set({ channels, masterIntensity: preset.masterIntensity });
   },
@@ -468,6 +471,8 @@ const useMixer = create<MixerState>((set, get) => ({
 
   endSession: () => {
     set({ sessionEnded: true });
+    // Immediately kill all audio — don't leave anything playing
+    stopAllAudio();
   },
 
   showCalmRestored: () => {
@@ -749,106 +754,142 @@ function createTextureNodes(ctx: AudioContext, texture: PartTexture, gain: GainN
   const nodes: AudioNode[] = [];
 
   switch (texture) {
-    case "steady": {
-      const osc = ctx.createOscillator();
-      osc.type = "sine";
-      osc.frequency.value = 110 + Math.random() * 30;
-      osc.connect(gain);
-      osc.start();
-      nodes.push(osc);
-      break;
-    }
-    case "jitter": {
+    case "chatter": {
+      // Inner committee meeting — filtered noise through speech formants with murmur rhythm
       const bufferSize = ctx.sampleRate * 2;
       const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-      }
+      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
       const noise = ctx.createBufferSource();
       noise.buffer = noiseBuffer;
       noise.loop = true;
-      const hp = ctx.createBiquadFilter();
-      hp.type = "highpass";
-      hp.frequency.value = 2000;
-      hp.Q.value = 2;
-      const crackleGain = ctx.createGain();
-      crackleGain.gain.value = 0.6;
-      noise.connect(hp);
-      hp.connect(crackleGain);
-      crackleGain.connect(gain);
-      noise.start();
-      nodes.push(noise, hp, crackleGain);
-      break;
-    }
-    case "pulse": {
-      const osc = ctx.createOscillator();
-      osc.type = "triangle";
-      osc.frequency.value = 55 + Math.random() * 15;
+
+      const f1 = ctx.createBiquadFilter();
+      f1.type = "bandpass"; f1.frequency.value = 500; f1.Q.value = 5;
+      const f2 = ctx.createBiquadFilter();
+      f2.type = "bandpass"; f2.frequency.value = 1800; f2.Q.value = 5;
+      const f3 = ctx.createBiquadFilter();
+      f3.type = "bandpass"; f3.frequency.value = 3200; f3.Q.value = 5;
+
+      const g1 = ctx.createGain(); g1.gain.value = 0.4;
+      const g2 = ctx.createGain(); g2.gain.value = 0.3;
+      const g3 = ctx.createGain(); g3.gain.value = 0.2;
+
       const lfo = ctx.createOscillator();
       lfo.type = "sine";
-      lfo.frequency.value = 0.5 + Math.random() * 0.3;
-      const lfoGain = ctx.createGain();
-      lfoGain.gain.value = 0.5;
-      lfo.connect(lfoGain);
-      lfoGain.connect(gain.gain);
-      osc.connect(gain);
-      osc.start();
-      lfo.start();
-      nodes.push(osc, lfo, lfoGain);
+      lfo.frequency.value = 3 + Math.random() * 2;
+      const lfoG = ctx.createGain(); lfoG.gain.value = 0.3;
+      lfo.connect(lfoG); lfoG.connect(gain.gain);
+
+      noise.connect(f1); noise.connect(f2); noise.connect(f3);
+      f1.connect(g1); f2.connect(g2); f3.connect(g3);
+      g1.connect(gain); g2.connect(gain); g3.connect(gain);
+      noise.start(); lfo.start();
+      nodes.push(noise, f1, f2, f3, g1, g2, g3, lfo, lfoG);
       break;
     }
-    case "wind": {
+    case "buzz": {
+      // Wired anxious static — dense high-frequency noise with wavering
       const bufferSize = ctx.sampleRate * 2;
-      const pinkBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const data = pinkBuffer.getChannelData(0);
-      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-      for (let i = 0; i < bufferSize; i++) {
-        const white = Math.random() * 2 - 1;
-        b0 = 0.99886 * b0 + white * 0.0555179;
-        b1 = 0.99332 * b1 + white * 0.0750759;
-        b2 = 0.96900 * b2 + white * 0.1538520;
-        b3 = 0.86650 * b3 + white * 0.3104856;
-        b4 = 0.55000 * b4 + white * 0.5329522;
-        b5 = -0.7616 * b5 - white * 0.0168980;
-        data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
-        b6 = white * 0.115926;
-      }
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
       const noise = ctx.createBufferSource();
-      noise.buffer = pinkBuffer;
+      noise.buffer = noiseBuffer;
       noise.loop = true;
-      const bp = ctx.createBiquadFilter();
-      bp.type = "bandpass";
-      bp.frequency.value = 800;
-      bp.Q.value = 0.8;
-      const sweepLfo = ctx.createOscillator();
-      sweepLfo.type = "sine";
-      sweepLfo.frequency.value = 0.15;
-      const sweepGain = ctx.createGain();
-      sweepGain.gain.value = 400;
-      sweepLfo.connect(sweepGain);
-      sweepGain.connect(bp.frequency);
-      noise.connect(bp);
-      bp.connect(gain);
-      noise.start();
-      sweepLfo.start();
-      nodes.push(noise, bp, sweepLfo, sweepGain);
+
+      const hp = ctx.createBiquadFilter();
+      hp.type = "highpass"; hp.frequency.value = 3000; hp.Q.value = 1.5;
+      const peak = ctx.createBiquadFilter();
+      peak.type = "peaking"; peak.frequency.value = 5000; peak.Q.value = 2; peak.gain.value = 6;
+
+      const lfo = ctx.createOscillator();
+      lfo.type = "sine"; lfo.frequency.value = 0.3 + Math.random() * 0.4;
+      const lfoG = ctx.createGain(); lfoG.gain.value = 500;
+      lfo.connect(lfoG); lfoG.connect(hp.frequency);
+
+      const buzzG = ctx.createGain(); buzzG.gain.value = 0.5;
+      noise.connect(hp); hp.connect(peak); peak.connect(buzzG); buzzG.connect(gain);
+      noise.start(); lfo.start();
+      nodes.push(noise, hp, peak, lfo, lfoG, buzzG);
       break;
     }
-    case "tine": {
-      const fundamentalFreq = 1200 + Math.random() * 300;
-      const partials = [1, 2.756, 5.404];
-      partials.forEach((ratio, i) => {
-        const osc = ctx.createOscillator();
-        osc.type = "sine";
-        osc.frequency.value = fundamentalFreq * ratio;
-        const partialGain = ctx.createGain();
-        partialGain.gain.value = 1 / (i + 1) * 0.5;
-        osc.connect(partialGain);
-        partialGain.connect(gain);
-        osc.start();
-        nodes.push(osc, partialGain);
-      });
+    case "throb": {
+      // Heavy dread / pressure — sub-bass with slow oppressive amplitude modulation
+      const osc1 = ctx.createOscillator();
+      osc1.type = "sine"; osc1.frequency.value = 35 + Math.random() * 15;
+      const osc2 = ctx.createOscillator();
+      osc2.type = "sine"; osc2.frequency.value = osc1.frequency.value + 2;
+
+      const g1 = ctx.createGain(); g1.gain.value = 0.6;
+      const g2 = ctx.createGain(); g2.gain.value = 0.4;
+
+      const lfo = ctx.createOscillator();
+      lfo.type = "sine"; lfo.frequency.value = 0.15 + Math.random() * 0.1;
+      const lfoG = ctx.createGain(); lfoG.gain.value = 0.4;
+      lfo.connect(lfoG); lfoG.connect(gain.gain);
+
+      osc1.connect(g1); osc2.connect(g2);
+      g1.connect(gain); g2.connect(gain);
+      osc1.start(); osc2.start(); lfo.start();
+      nodes.push(osc1, osc2, g1, g2, lfo, lfoG);
+      break;
+    }
+    case "shout": {
+      // Harsh critical yelling — distorted sawtooth with mid-presence boost
+      const osc = ctx.createOscillator();
+      osc.type = "sawtooth"; osc.frequency.value = 220 + Math.random() * 60;
+
+      const ws = ctx.createWaveShaper();
+      const curve = new Float32Array(256);
+      for (let i = 0; i < 256; i++) {
+        const x = (i / 128) - 1;
+        curve[i] = (Math.PI + 3) * x / (Math.PI + 3 * Math.abs(x));
+      }
+      ws.curve = curve; ws.oversample = "2x";
+
+      const mid = ctx.createBiquadFilter();
+      mid.type = "peaking"; mid.frequency.value = 2500; mid.Q.value = 1.5; mid.gain.value = 8;
+
+      const lfo = ctx.createOscillator();
+      lfo.type = "square"; lfo.frequency.value = 0.8 + Math.random() * 0.4;
+      const lfoG = ctx.createGain(); lfoG.gain.value = 0.15;
+      lfo.connect(lfoG); lfoG.connect(gain.gain);
+
+      const shoutG = ctx.createGain(); shoutG.gain.value = 0.35;
+      osc.connect(ws); ws.connect(mid); mid.connect(shoutG); shoutG.connect(gain);
+      osc.start(); lfo.start();
+      nodes.push(osc, ws, mid, lfo, lfoG, shoutG);
+      break;
+    }
+    case "hum": {
+      // Calm wise presence — warm sine/triangle blend with gentle chorus + breath
+      const osc1 = ctx.createOscillator();
+      osc1.type = "sine"; osc1.frequency.value = 174;
+      const osc2 = ctx.createOscillator();
+      osc2.type = "triangle"; osc2.frequency.value = 174.5;
+      const osc3 = ctx.createOscillator();
+      osc3.type = "sine"; osc3.frequency.value = 348;
+
+      const g1 = ctx.createGain(); g1.gain.value = 0.4;
+      const g2 = ctx.createGain(); g2.gain.value = 0.3;
+      const g3 = ctx.createGain(); g3.gain.value = 0.1;
+
+      const chorusLfo = ctx.createOscillator();
+      chorusLfo.type = "sine"; chorusLfo.frequency.value = 0.2;
+      const chorusG = ctx.createGain(); chorusG.gain.value = 1.5;
+      chorusLfo.connect(chorusG); chorusG.connect(osc2.frequency);
+
+      const breathLfo = ctx.createOscillator();
+      breathLfo.type = "sine"; breathLfo.frequency.value = 0.08;
+      const breathG = ctx.createGain(); breathG.gain.value = 0.08;
+      breathLfo.connect(breathG); breathG.connect(gain.gain);
+
+      osc1.connect(g1); osc2.connect(g2); osc3.connect(g3);
+      g1.connect(gain); g2.connect(gain); g3.connect(gain);
+      osc1.start(); osc2.start(); osc3.start();
+      chorusLfo.start(); breathLfo.start();
+      nodes.push(osc1, osc2, osc3, g1, g2, g3, chorusLfo, chorusG, breathLfo, breathG);
       break;
     }
   }
@@ -856,7 +897,7 @@ function createTextureNodes(ctx: AudioContext, texture: PartTexture, gain: GainN
   return nodes;
 }
 
-function updateChannelPan(channelId: string, panValue: number, volume: number, texture: PartTexture = "steady") {
+function updateChannelPan(channelId: string, panValue: number, volume: number, texture: PartTexture = "hum") {
   if (!isAudioInitialized || !masterGain) return;
   const ctx = getAudioContext();
   const now = ctx.currentTime;
@@ -1677,7 +1718,7 @@ function Fader({
   magnetBroken,
   channelCount,
   isMaster = false,
-  texture = "steady",
+  texture = "hum",
   index = 0,
   onDragReorder,
 }: FaderProps) {
@@ -2378,17 +2419,17 @@ const GHOST_SUGGESTIONS = [
 ];
 
 const GHOST_TEXTURES: { key: PartTexture; label: string; desc: string }[] = [
-  { key: "steady", label: "Steady", desc: "Chill vibes only" },
-  { key: "jitter", label: "Jitter", desc: "Caffeinated chaos" },
-  { key: "pulse", label: "Pulse", desc: "Big heartbeat energy" },
-  { key: "wind", label: "Wind", desc: "Dramatic breeze" },
-  { key: "tine", label: "Tine", desc: "Sparkly brain tingles" },
+  { key: "chatter", label: "Chatter", desc: "Inner committee meeting" },
+  { key: "buzz", label: "Buzz", desc: "Wired anxious static" },
+  { key: "throb", label: "Throb", desc: "Heavy pressure / dread" },
+  { key: "shout", label: "Shout", desc: "Harsh critical yelling" },
+  { key: "hum", label: "Hum", desc: "Calm wise presence" },
 ];
 
 function GhostMenu() {
   const { showGhostMenu, setShowGhostMenu, addChannel, channels } = useMixer();
   const [customName, setCustomName] = useState("");
-  const [selectedTexture, setSelectedTexture] = useState<PartTexture>("steady");
+  const [selectedTexture, setSelectedTexture] = useState<PartTexture>("hum");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -2396,7 +2437,7 @@ function GhostMenu() {
       setTimeout(() => inputRef.current?.focus(), 300);
     }
     if (showGhostMenu) {
-      setSelectedTexture("steady");
+      setSelectedTexture("hum");
     }
   }, [showGhostMenu]);
 
@@ -2869,27 +2910,27 @@ const INTRO_QUICK_NAMES = [
 
 const RANDOM_COMBOS: MappedPart[][] = [
   [
-    { name: "Inner Critic", texture: "jitter", priority: "high" },
-    { name: "Anxious Part", texture: "pulse", priority: "high" },
-    { name: "The Protector", texture: "steady", priority: "mid" },
-    { name: "Wise Self", texture: "steady", priority: "low" },
+    { name: "Inner Critic", texture: "shout", priority: "high" },
+    { name: "Anxious Part", texture: "buzz", priority: "high" },
+    { name: "The Protector", texture: "chatter", priority: "mid" },
+    { name: "Wise Self", texture: "hum", priority: "low" },
   ],
   [
-    { name: "People-Pleaser", texture: "wind", priority: "high" },
-    { name: "Angry Part", texture: "jitter", priority: "mid" },
-    { name: "The Perfectionist", texture: "pulse", priority: "mid" },
-    { name: "The Exile", texture: "tine", priority: "low" },
+    { name: "People-Pleaser", texture: "chatter", priority: "high" },
+    { name: "Angry Part", texture: "shout", priority: "mid" },
+    { name: "The Perfectionist", texture: "buzz", priority: "mid" },
+    { name: "The Exile", texture: "throb", priority: "low" },
   ],
   [
-    { name: "The Manager", texture: "steady", priority: "high" },
-    { name: "Gremlin Brain", texture: "jitter", priority: "high" },
-    { name: "Drama Llama", texture: "wind", priority: "mid" },
-    { name: "The Overthinker", texture: "pulse", priority: "low" },
-    { name: "Wise Self", texture: "tine", priority: "low" },
+    { name: "The Manager", texture: "chatter", priority: "high" },
+    { name: "Gremlin Brain", texture: "buzz", priority: "high" },
+    { name: "Drama Llama", texture: "shout", priority: "mid" },
+    { name: "The Overthinker", texture: "chatter", priority: "low" },
+    { name: "Wise Self", texture: "hum", priority: "low" },
   ],
 ];
 
-const INTRO_TEXTURES: PartTexture[] = ["steady", "jitter", "pulse", "wind", "tine"];
+const INTRO_TEXTURES: PartTexture[] = ["chatter", "buzz", "throb", "shout", "hum"];
 
 function CrtIntro() {
   const { introComplete, setIntroComplete, addChannel, settings, updateSettings, snapshotInitialState } = useMixer();
@@ -3306,10 +3347,10 @@ function CrtIntro() {
                         className="w-2 h-2 rounded-full transition-all duration-300"
                         style={{
                           background: i < mappedParts.length
-                            ? TEXTURE_COLORS[mappedParts[i]?.texture || "steady"].track
+                            ? TEXTURE_COLORS[mappedParts[i]?.texture || "hum"].track
                             : "rgba(255,255,255,0.06)",
                           boxShadow: i < mappedParts.length
-                            ? `0 0 6px ${TEXTURE_COLORS[mappedParts[i]?.texture || "steady"].glow}`
+                            ? `0 0 6px ${TEXTURE_COLORS[mappedParts[i]?.texture || "hum"].glow}`
                             : "none",
                         }}
                       />
@@ -4319,13 +4360,11 @@ export function VolumeMixer() {
   useEffect(() => {
     if (!sessionEnded || sunsetPhase !== "idle") return;
     setSunsetPhase("fading");
-    if (settings.audioEnabled) playSunsetFade();
     const fadeTimer = setTimeout(() => {
-      stopAllAudio();
       setSunsetPhase("message");
-    }, 5000);
+    }, 3000);
     return () => clearTimeout(fadeTimer);
-  }, [sessionEnded, sunsetPhase, settings.audioEnabled]);
+  }, [sessionEnded, sunsetPhase]);
 
   const prevRedZoneParts = useRef<Set<string>>(new Set());
   const wasPaused = useRef(false);
@@ -4693,7 +4732,7 @@ export function VolumeMixer() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: globalMuted ? Math.max(masterScale * 0.5, 0.3) : Math.max(masterScale, 0.3) }}
                 exit={{ opacity: 0 }}
-                className={`flex items-end justify-center gap-2 sm:gap-3 px-2 sm:px-4 md:px-6 w-full transition-all duration-500 ${
+                className={`flex items-end justify-center gap-3 sm:gap-4 md:gap-5 px-2 sm:px-4 md:px-6 w-full transition-all duration-500 ${
                   globalMuted ? "muted-board" : ""
                 }`}
                 data-no-reset
@@ -4701,12 +4740,12 @@ export function VolumeMixer() {
                   filter: globalMuted ? "saturate(0.3) hue-rotate(140deg)" : "none",
                   transition: "filter 0.5s ease",
                   maxWidth: "1200px",
-                  overflowX: channels.length > 5 ? "auto" : "visible",
+                  overflowX: "auto",
                   overflowY: "visible",
                   WebkitOverflowScrolling: "touch",
                 }}
               >
-                <div className="flex items-end gap-2 sm:gap-3 flex-1 justify-center min-w-0 relative">
+                <div className="flex items-end gap-3 sm:gap-4 md:gap-5 justify-center min-w-fit relative">
                   <ChannelHalos channels={channels} masterIntensity={masterIntensity} />
                   <ChannelArcs channels={channels} masterIntensity={masterIntensity} />
                   {channels.map((ch, idx) => (
