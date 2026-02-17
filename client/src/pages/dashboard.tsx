@@ -394,7 +394,7 @@ export default function Dashboard() {
     },
   ];
 
-  const [tipIndex] = useState(() => Math.floor(Math.random() * CLINICAL_TIPS.length));
+  const [tipIndex] = useState(() => CLINICAL_TIPS.length > 0 ? Math.floor(Math.random() * CLINICAL_TIPS.length) : 0);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -1032,16 +1032,18 @@ export default function Dashboard() {
         </GlassCard>
       )}
 
-      <GlassCard className="p-5 border-accent/10" hoverEffect={false}>
-        <div className="flex items-center gap-2 mb-3">
-          <Lightbulb size={18} className="text-accent" />
-          <h3 className="font-serif text-sm text-primary">Clinician's Corner</h3>
-        </div>
-        <p className="text-sm text-muted-foreground leading-relaxed italic">
-          "{CLINICAL_TIPS[tipIndex].tip}"
-        </p>
-        <p className="text-xs text-accent font-medium mt-2">— {CLINICAL_TIPS[tipIndex].tool}</p>
-      </GlassCard>
+      {CLINICAL_TIPS.length > 0 && (
+        <GlassCard className="p-5 border-accent/10" hoverEffect={false}>
+          <div className="flex items-center gap-2 mb-3">
+            <Lightbulb size={18} className="text-accent" />
+            <h3 className="font-serif text-sm text-primary">Clinician's Corner</h3>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed italic">
+            "{CLINICAL_TIPS[tipIndex].tip}"
+          </p>
+          <p className="text-xs text-accent font-medium mt-2">— {CLINICAL_TIPS[tipIndex].tool}</p>
+        </GlassCard>
+      )}
 
       <GlassCard className="p-5" hoverEffect={false}>
         <h3 className="font-serif text-sm text-primary mb-3">Quick Stats</h3>
