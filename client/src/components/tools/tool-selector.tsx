@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Palette, Wind, Brain, Target, House, Clock, Layers, Theater, MessageSquarePlus, Send, CheckCircle2, Thermometer, Box, Activity, Heart, Puzzle, Shield, TreePine, Lightbulb, Wrench, BookOpen, FlaskConical, Users, Flower2 } from "lucide-react";
+import { X, Wind, Target, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 
@@ -16,10 +16,7 @@ interface Tool {
 
 const TOOLS: Tool[] = [
   { id: "volume-mixer", label: "Volume Mixer", desc: "Externalize internal parts as tactile audio faders", icon: Wind, status: "active", accentColor: "#d4a017", iconClass: "icon-mixer" },
-  { id: "thought-sieve", label: "The Thought Sieve", desc: "Sort sticky thoughts from flowing ones to externalize obsessive patterns", icon: FlaskConical, status: "planned", accentColor: "#7e57c2", iconClass: "icon-sieve" },
-  { id: "emotion-map", label: "The Emotion Map", desc: "Topographic body-map to track somatic sensations and feeling locations", icon: Activity, status: "planned", accentColor: "#e64a19", iconClass: "icon-map" },
-  { id: "values-sort", label: "Values Card Sort", desc: "Drag-and-drop deck to identify core pillars when feeling lost", icon: Layers, status: "planned", accentColor: "#26a69a", iconClass: "icon-values" },
-  { id: "narrative-timeline", label: "Narrative Timeline", desc: "Plot life events on a scrolling timeline to re-story and process trauma", icon: Clock, status: "planned", accentColor: "#0F52BA", iconClass: "icon-timeline" },
+  { id: "feelings", label: "Feeling Wheel", desc: "Three-tier emotional identification through guided card exploration", icon: Target, status: "active", accentColor: "#8b5cf6", iconClass: "icon-feeling" },
 ];
 
 interface ToolSelectorProps {
@@ -174,7 +171,6 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
                           disabled={!isAvailable}
                           data-testid={`button-select-tool-${tool.id}`}
                         >
-                          {/* Shimmer overlay for disabled tools */}
                           {!isAvailable && (
                             <div className="absolute inset-0 rounded-2xl shimmer-border opacity-20 pointer-events-none" />
                           )}

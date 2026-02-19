@@ -384,60 +384,24 @@ export default function LandingPage() {
             <p className="text-xs font-bold tracking-[0.25em] text-accent uppercase mb-4">Your Digital Office</p>
             <h2 className="text-3xl md:text-5xl font-serif text-primary mb-4">The Clinical Suite</h2>
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Five evidence-based interactive tools — ready on day one. Each one designed to bridge the physical distance without losing the therapeutic connection.
+              Evidence-based interactive tools — built one at a time with clinical depth as the priority. Each one designed to bridge the physical distance without losing the therapeutic connection.
             </p>
           </motion.div>
 
           {(() => {
             const tools = [
               {
-                title: "Zen Sandtray",
-                desc: "A physics-based shared canvas where clients drag emoji assets to build expressive worlds. Features lift shadows, soft collision nudging, sand dust particles, and clinician moderator controls — all synchronized in real-time across devices.",
-                IconComponent: ZenCircleIcon,
-                iconClass: "icon-sandtray",
+                title: "Volume Mixer",
+                desc: "A high-end mixing-board metaphor where clients create channels for internal 'parts' or 'voices' and adjust their volume using weighted, physics-based faders. Supports mute, solo, and boost controls with optional organic audio feedback — built for IFS, ACT, and somatic work.",
+                IconComponent: AuraPulseIcon,
+                iconClass: "icon-mixer",
                 gradient: "from-amber-50 via-amber-100/60 to-orange-50",
                 borderGlow: "hover:shadow-amber-200/40",
-                tags: ["Expressive Arts", "Ages 5+"],
-              },
-              {
-                title: "Calm Breathing Guide",
-                desc: "A beautiful SVG breathing bubble with a 4-phase cycle (inhale, hold, exhale, rest) that the clinician controls and every participant follows in sync. Perfect for grounding, co-regulation, and session warm-ups.",
-                IconComponent: AuraPulseIcon,
-                iconClass: "icon-breathing",
-                gradient: "from-emerald-50 via-green-100/50 to-teal-50",
-                borderGlow: "hover:shadow-emerald-200/40",
-                tags: ["Somatic", "Co-Regulation"],
-              },
-              {
-                title: "Feeling Wheel",
-                desc: "An interactive three-layer emotion wheel that guides clients from broad feelings to nuanced emotions. Selections sync in real-time and feed into Clinical Insights so you always know where the session is headed.",
-                IconComponent: CompassWheelIcon,
-                iconClass: "icon-feeling",
-                gradient: "from-purple-50 via-violet-100/50 to-fuchsia-50",
-                borderGlow: "hover:shadow-purple-200/40",
-                tags: ["Emotional Literacy", "CBT"],
-              },
-              {
-                title: "Narrative Timeline",
-                desc: "A scrollable visual river where clients place event stones to map their life story. Drag to reorder, color-code by theme, and explore patterns across time — a powerful tool for trauma-informed narrative therapy.",
-                IconComponent: TimelineRiverIcon,
-                iconClass: "icon-timeline",
-                gradient: "from-cyan-50 via-teal-100/50 to-sky-50",
-                borderGlow: "hover:shadow-teal-200/40",
-                tags: ["Narrative Therapy", "Trauma-Informed"],
-              },
-              {
-                title: "Values Card Sort",
-                desc: "A tactile drag-and-drop card deck for identifying and prioritizing personal values. Clients sort 30+ value cards into columns — a cornerstone exercise for ACT, motivational interviewing, and life transitions work.",
-                IconComponent: CardStackIcon,
-                iconClass: "icon-values",
-                gradient: "from-rose-50 via-pink-100/50 to-red-50",
-                borderGlow: "hover:shadow-rose-200/40",
-                tags: ["ACT", "Motivational Interviewing"],
+                tags: ["IFS", "Parts Work", "Somatic"],
               },
             ];
-            const topRow = tools.slice(0, 3);
-            const bottomRow = tools.slice(3);
+            const topRow = tools;
+            const bottomRow: typeof tools = [];
             const renderCard = (tool: typeof tools[number], i: number) => (
               <motion.div
                 key={i}

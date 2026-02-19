@@ -15,7 +15,7 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
     items: [
       {
         question: "What is ClinicalPlay?",
-        answer: "ClinicalPlay is a telehealth platform built specifically for licensed mental health professionals. It provides interactive, real-time therapy tools — like a Digital Sandtray, Breathing Guide, Feeling Wheel, Narrative Timeline, and Values Card Sort — that work within a shared virtual Playroom session.",
+        answer: "ClinicalPlay is a telehealth platform built specifically for licensed mental health professionals. It provides interactive, real-time therapy tools — starting with the Volume Mixer for IFS parts work — that work within a shared virtual Playroom session. New tools are added one at a time with clinical depth as the priority.",
       },
       {
         question: "Who is ClinicalPlay designed for?",
@@ -36,15 +36,15 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
     items: [
       {
         question: "What tools are available?",
-        answer: "ClinicalPlay currently includes five interactive clinical tools: the Zen Sandtray for expressive world-building, the Calm Breathing Guide for synchronized breathing exercises, the Feeling Wheel for multi-layered emotional exploration, the Narrative Timeline for mapping life events, and the Values Card Sort for identifying core values. All tools work in real-time between clinician and client.",
+        answer: "ClinicalPlay currently features the Volume Mixer — a physics-based mixing board where clients externalize internal parts as audio faders, built for IFS, ACT, and somatic work. New clinical tools are being developed one at a time to ensure quality and depth. All tools work in real-time between clinician and client.",
       },
       {
-        question: "How does the Zen Sandtray work?",
-        answer: "The Zen Sandtray is a shared digital canvas where participants can drag, drop, and arrange emoji-based therapeutic assets. Clinicians have moderator controls to lock the canvas, clear items, and toggle anonymity. All actions sync in real-time across all connected participants.",
+        question: "How does the Volume Mixer work?",
+        answer: "The Volume Mixer uses a mixing-board metaphor where clients create channels for their internal 'parts' or 'voices' and adjust their volume with physics-based faders. It supports mute, solo, and boost controls with optional organic audio feedback. All actions sync in real-time across all connected participants.",
       },
       {
         question: "Can I use multiple tools in one session?",
-        answer: "Yes. The Playroom has a Tool Selector that allows the clinician to switch between any of the five available tools during a live session. Switching tools is instant and synced to all participants in real-time.",
+        answer: "Yes. The Playroom has a Tool Selector that allows the clinician to switch between available tools during a live session. Switching tools is instant and synced to all participants in real-time. New tools are being added regularly.",
       },
       {
         question: "What are Clinical Insights?",
@@ -61,7 +61,7 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
       },
       {
         question: "What data does ClinicalPlay store?",
-        answer: "ClinicalPlay stores clinician account information (email, name) and session metadata (session names, tool states). Client interactions within sessions (sandtray placements, emotion selections, etc.) are stored only for the duration of the session and are tied to anonymous display names — never to real identities.",
+        answer: "ClinicalPlay stores clinician account information (email, name) and session metadata (session names, tool states). Client interactions within sessions are stored only for the duration of the session and are tied to anonymous display names — never to real identities.",
       },
       {
         question: "Can clients see the clinician's private notes?",
@@ -74,7 +74,7 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
     items: [
       {
         question: "How much does ClinicalPlay cost?",
-        answer: "ClinicalPlay offers three plans: Community at $7/month, Annual at $67/year (save over 20%), and a limited Founding Member tier at $99 one-time for lifetime access. All plans include the full 5-tool clinical suite, unlimited sessions, and real-time collaboration.",
+        answer: "ClinicalPlay offers three plans: Community at $7/month, Annual at $67/year (save over 20%), and a limited Founding Member tier at $99 one-time for lifetime access. All plans include the full clinical tool suite, unlimited sessions, and real-time collaboration.",
       },
       {
         question: "What is the Founding Member plan?",

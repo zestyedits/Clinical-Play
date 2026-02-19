@@ -6,21 +6,16 @@ import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ZenCanvas, type CanvasItem } from "@/components/sandtray/zen-canvas";
-import { AssetLibrary } from "@/components/sandtray/asset-library";
-import type { SandtrayAsset } from "@/lib/sandtray-assets";
-import { ModeratorBar } from "@/components/sandtray/moderator-bar";
 import { ToolSelector } from "@/components/tools/tool-selector";
 import { ClinicalInsights } from "@/components/tools/clinical-insights";
 import { VolumeMixer } from "@/components/tools/volume-mixer";
+import { FeelingWheel } from "@/components/tools/feeling-wheel";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
 import { GuidedTour, useTour, type TourStep } from "@/components/guided-tour";
 import { GlassCard } from "@/components/ui/glass-card";
 import { getSupabase } from "@/lib/supabase";
-import type { LightSource, RakePath } from "@/lib/ambient-types";
-import { DEFAULT_LIGHT_SOURCE } from "@/lib/ambient-types";
 import type { TherapySession, Participant } from "@shared/schema";
 
 interface OnlineUser {
@@ -28,13 +23,6 @@ interface OnlineUser {
   displayName: string;
   lastActive?: number;
   status?: "online" | "disconnected";
-}
-
-interface RemoteCursor {
-  participantId: string;
-  displayName: string;
-  x: number;
-  y: number;
 }
 
 export default function Playroom() {
@@ -47,9 +35,6 @@ export default function Playroom() {
   const [session, setSession] = useState<TherapySession | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
-  const [items, setItems] = useState<CanvasItem[]>([]);
-  const [remoteCursors, setRemoteCursors] = useState<RemoteCursor[]>([]);
-  const [assetLibraryOpen, setAssetLibraryOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [activeTool, setActiveTool] = useState("volume-mixer");
   const [joinNotification, setJoinNotification] = useState<string | null>(null);
@@ -63,14 +48,6 @@ export default function Playroom() {
   const [toolTransitionLabel, setToolTransitionLabel] = useState<string | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
 
-  // Ambient / Zen state
-  const [lightSource, setLightSource] = useState<LightSource>(DEFAULT_LIGHT_SOURCE);
-  const [rakePaths, setRakePaths] = useState<RakePath[]>([]);
-  const [zenMode, setZenMode] = useState(false);
-  const [rakeMode, setRakeMode] = useState(false);
-  const [sandTexture, setSandTexture] = useState<"fine" | "wet" | "blue">("fine");
-  const [digMode, setDigMode] = useState(false);
-  const lightThrottleRef = useRef(0);
   const [, navigate] = useLocation();
   const playroomTour = useTour("playroom");
 
@@ -90,16 +67,9 @@ export default function Playroom() {
       emoji: "🧰",
     },
     {
-      target: "playroom-asset-library",
-      title: "Asset Library",
-      content: "Tap here to open the drag-and-drop asset library. You and your client can place items onto the shared canvas.",
-      position: "top",
-      emoji: "🎨",
-    },
-    {
       target: "button-snapshot",
       title: "Save a Snapshot",
-      content: "Export the current canvas as an image. Useful for session notes or sharing progress with your client.",
+      content: "Export the current tool as an image. Useful for session notes or sharing progress with your client.",
       position: "bottom",
       emoji: "📸",
     },
@@ -112,87 +82,27 @@ export default function Playroom() {
     },
   ] : [];
 
-  const isCanvasLocked = session?.isCanvasLocked ?? false;
   const isAnonymous = session?.isAnonymous ?? false;
 
   const myParticipantId = useRef(`local-${Date.now()}`);
   const myDisplayName = isClinician
     ? (user?.firstName ? `Dr. ${user.firstName}` : "Clinician")
     : "Guest";
-  const throttleRef = useRef(0);
   const toolAreaRef = useRef<HTMLDivElement>(null);
   const peakParticipants = useRef(0);
-  const toolsUsed = useRef<Set<string>>(new Set(["sandtray"]));
+  const toolsUsed = useRef<Set<string>>(new Set(["volume-mixer"]));
 
   const handleMessage = useCallback((msg: any) => {
     switch (msg.type) {
       case "init":
-        setItems(msg.items.map((i: any) => ({
-          id: i.id,
-          icon: i.icon,
-          category: i.category,
-          x: i.x,
-          y: i.y,
-          scale: i.scale,
-          rotation: i.rotation,
-          placedBy: i.placedBy,
-        })));
         setParticipants(msg.participants || []);
         setOnlineUsers(msg.onlineUsers || []);
         if (msg.session) setSession(msg.session);
         if (msg.activeTool) setActiveTool(msg.activeTool);
-        if (msg.lightSource) setLightSource(msg.lightSource);
-        if (msg.rakePaths) setRakePaths(msg.rakePaths);
-        if (msg.zenMode !== undefined) setZenMode(msg.zenMode);
         if (msg.toolSettings) setToolSettings(msg.toolSettings);
-        break;
-      case "item-placed":
-        setItems(prev => [...prev, {
-          id: msg.item.id,
-          icon: msg.item.icon,
-          category: msg.item.category,
-          x: msg.item.x,
-          y: msg.item.y,
-          scale: msg.item.scale,
-          rotation: msg.item.rotation,
-          placedBy: msg.item.placedBy,
-        }]);
-        break;
-      case "item-moved":
-        setItems(prev => prev.map(i =>
-          i.id === msg.itemId ? { ...i, x: msg.x, y: msg.y } : i
-        ));
-        break;
-      case "item-transformed":
-        setItems(prev => prev.map(i =>
-          i.id === msg.itemId ? {
-            ...i,
-            ...(msg.scale !== undefined && { scale: msg.scale }),
-            ...(msg.rotation !== undefined && { rotation: msg.rotation }),
-            ...(msg.x !== undefined && { x: msg.x }),
-            ...(msg.y !== undefined && { y: msg.y }),
-          } : i
-        ));
-        break;
-      case "item-removed":
-        setItems(prev => prev.filter(i => i.id !== msg.itemId));
-        break;
-      case "canvas-cleared":
-        setItems([]);
         break;
       case "session-updated":
         if (msg.session) setSession(msg.session);
-        break;
-      case "cursor-move":
-        setRemoteCursors(prev => {
-          const existing = prev.filter(c => c.participantId !== msg.participantId);
-          return [...existing, {
-            participantId: msg.participantId,
-            displayName: msg.displayName,
-            x: msg.x,
-            y: msg.y,
-          }];
-        });
         break;
       case "user-joined":
         setOnlineUsers(prev => [...prev.filter(u => u.participantId !== msg.participantId), {
@@ -205,7 +115,6 @@ export default function Playroom() {
         break;
       case "user-left":
         setOnlineUsers(prev => prev.filter(u => u.participantId !== msg.participantId));
-        setRemoteCursors(prev => prev.filter(c => c.participantId !== msg.participantId));
         break;
       case "user-disconnected":
         setOnlineUsers(prev => prev.map(u =>
@@ -220,30 +129,12 @@ export default function Playroom() {
           u.participantId === msg.participantId ? { ...u, lastActive: Date.now() } : u
         ));
         break;
-
       case "session-ended":
         setSessionEnded(true);
         break;
-
-      // Ambient / Zen
-      case "light-source-updated":
-        setLightSource({ x: msg.x, y: msg.y, temperature: msg.temperature });
-        break;
-      case "rake-path-added":
-        setRakePaths(prev => [...prev, msg.path]);
-        break;
-      case "rake-paths-cleared":
-        setRakePaths([]);
-        break;
-      case "zen-mode-toggled":
-        setZenMode(msg.enabled);
-        break;
-
-      // Generic Tool Settings
       case "tool-settings-updated":
         setToolSettings(prev => ({ ...prev, [msg.toolId]: msg.settings }));
         break;
-
     }
   }, []);
 
@@ -257,71 +148,21 @@ export default function Playroom() {
   const connected = isDemo ? true : wsConnected;
   const send = useCallback((msg: any) => {
     if (isDemo) {
-      const pid = myParticipantId.current;
-      const dn = myDisplayName;
       switch (msg.type) {
-        case "item-placed": {
-          const newItem = {
-            id: `demo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-            icon: msg.icon,
-            category: msg.category,
-            x: msg.x,
-            y: msg.y,
-            scale: msg.scale ?? 1,
-            rotation: msg.rotation ?? 0,
-            placedBy: pid,
-          };
-          setItems(prev => [...prev, newItem]);
-          break;
-        }
-        case "item-moved":
-          setItems(prev => prev.map(i => i.id === msg.itemId ? { ...i, x: msg.x, y: msg.y } : i));
-          break;
-        case "item-transformed":
-          setItems(prev => prev.map(i =>
-            i.id === msg.itemId ? {
-              ...i,
-              ...(msg.scale !== undefined && { scale: msg.scale }),
-              ...(msg.rotation !== undefined && { rotation: msg.rotation }),
-              ...(msg.x !== undefined && { x: msg.x }),
-              ...(msg.y !== undefined && { y: msg.y }),
-            } : i
-          ));
-          break;
-        case "item-removed":
-          setItems(prev => prev.filter(i => i.id !== msg.itemId));
-          break;
-        case "clear-canvas":
-          setItems([]);
-          break;
         case "session-update":
           if (msg.data) setSession(prev => prev ? { ...prev, ...msg.data } : prev);
           break;
         case "tool-change":
           setActiveTool(msg.tool);
           break;
-        case "light-source-update":
-          setLightSource({ x: msg.x, y: msg.y, temperature: msg.temperature });
-          break;
-        case "rake-path-add":
-          setRakePaths(prev => [...prev, { id: msg.id, points: msg.points, width: msg.width || 12, createdBy: pid, timestamp: Date.now() }]);
-          break;
-        case "rake-path-clear":
-          setRakePaths([]);
-          break;
-        case "zen-mode-toggle":
-          setZenMode(msg.enabled);
-          break;
-        // Demo: Generic tool settings
         case "tool-settings-update":
           setToolSettings(prev => ({ ...prev, [msg.toolId]: { ...(prev[msg.toolId] || {}), ...msg.settings } }));
           break;
-
       }
       return;
     }
     wsSend(msg);
-  }, [isDemo, wsSend, myDisplayName]);
+  }, [isDemo, wsSend]);
 
   useEffect(() => {
     if (isDemo) {
@@ -337,7 +178,7 @@ export default function Playroom() {
         status: "active",
         clinicianId: "demo-clinician",
         createdAt: new Date(),
-        activeTool: toolParam || "sandtray",
+        activeTool: toolParam || "volume-mixer",
         endedAt: null,
       } as TherapySession);
       setOnlineUsers([{
@@ -363,7 +204,6 @@ export default function Playroom() {
       .catch(() => {});
   }, [sessionId, isDemo]);
 
-  // Read ?tool= param and switch tool on first connect (real sessions)
   const initialToolApplied = useRef(false);
   useEffect(() => {
     if (isDemo || !connected || initialToolApplied.current) return;
@@ -407,61 +247,11 @@ export default function Playroom() {
 
   const toolDisplayName = (tool: string) => {
     const names: Record<string, string> = {
-      "sandtray": "Zen Sandtray",
       "volume-mixer": "Volume Mixer",
+      "feelings": "Feeling Wheel",
     };
     return names[tool] || tool;
   };
-
-  // Sandtray handlers
-  const handleItemDrop = useCallback((icon: string, category: string, x: number, y: number) => {
-    send({ type: "item-placed", icon, category, x, y, scale: 1, rotation: 0 });
-    send({ type: "activity-pulse" });
-  }, [send]);
-
-  const handleTapPlace = useCallback((asset: SandtrayAsset) => {
-    const x = 0.3 + Math.random() * 0.4;
-    const y = 0.3 + Math.random() * 0.4;
-    handleItemDrop(asset.icon, asset.category, x, y);
-  }, [handleItemDrop]);
-
-  const handleItemMove = useCallback((itemId: string, x: number, y: number) => {
-    if (!isDemo) setItems(prev => prev.map(i => i.id === itemId ? { ...i, x, y } : i));
-    send({ type: "item-moved", itemId, x, y });
-    send({ type: "activity-pulse" });
-  }, [send, isDemo]);
-
-  const handleItemRemove = useCallback((itemId: string) => {
-    if (!isDemo) setItems(prev => prev.filter(i => i.id !== itemId));
-    send({ type: "item-removed", itemId });
-  }, [send, isDemo]);
-
-  const handleItemTransform = useCallback((itemId: string, scale: number, rotation: number) => {
-    setItems(prev => prev.map(i => i.id === itemId ? { ...i, scale, rotation } : i));
-    send({ type: "item-transformed", itemId, scale, rotation });
-  }, [send]);
-
-  const handleCursorMove = useCallback((x: number, y: number) => {
-    const now = Date.now();
-    if (now - throttleRef.current < 50) return;
-    throttleRef.current = now;
-    send({ type: "cursor-move", x, y });
-  }, [send]);
-
-  const handleToggleLock = useCallback(() => {
-    send({ type: "session-update", data: { isCanvasLocked: !isCanvasLocked } });
-    if (!isDemo) setSession(prev => prev ? { ...prev, isCanvasLocked: !prev.isCanvasLocked } : prev);
-  }, [send, isCanvasLocked, isDemo]);
-
-  const handleToggleAnonymity = useCallback(() => {
-    send({ type: "session-update", data: { isAnonymous: !isAnonymous } });
-    if (!isDemo) setSession(prev => prev ? { ...prev, isAnonymous: !prev.isAnonymous } : prev);
-  }, [send, isAnonymous, isDemo]);
-
-  const handleClearCanvas = useCallback(() => {
-    send({ type: "clear-canvas" });
-    if (!isDemo) setItems([]);
-  }, [send, isDemo]);
 
   const handleSelectTool = useCallback((toolId: string) => {
     if (toolId === activeTool) return;
@@ -472,56 +262,6 @@ export default function Playroom() {
     send({ type: "tool-change", tool: toolId });
   }, [send, isDemo, activeTool]);
 
-  // Ambient / Zen handlers
-  const handleLightSourceUpdate = useCallback((ls: LightSource) => {
-    setLightSource(ls);
-    const now = Date.now();
-    if (now - lightThrottleRef.current < 33) return; // 30fps throttle
-    lightThrottleRef.current = now;
-    send({ type: "light-source-update", x: ls.x, y: ls.y, temperature: ls.temperature });
-  }, [send]);
-
-  const handleLightTemperatureChange = useCallback((temperature: number) => {
-    const newLs = { ...lightSource, temperature };
-    handleLightSourceUpdate(newLs);
-  }, [lightSource, handleLightSourceUpdate]);
-
-  const handleRakePathAdd = useCallback((path: RakePath) => {
-    setRakePaths(prev => [...prev, path]);
-    send({ type: "rake-path-add", id: path.id, points: path.points, width: path.width });
-  }, [send]);
-
-  const handleRakePathClear = useCallback(() => {
-    setRakePaths([]);
-    send({ type: "rake-path-clear" });
-  }, [send]);
-
-  const handleZenModeToggle = useCallback(() => {
-    const next = !zenMode;
-    setZenMode(next);
-    send({ type: "zen-mode-toggle", enabled: next });
-  }, [send, zenMode]);
-
-  const handleToggleRakeMode = useCallback(() => {
-    setRakeMode(prev => !prev);
-    setDigMode(false);
-  }, []);
-
-  const handleToggleDigMode = useCallback(() => {
-    setDigMode(prev => !prev);
-    setRakeMode(false);
-  }, []);
-
-  const handleCycleSandTexture = useCallback(() => {
-    setSandTexture(prev => prev === "fine" ? "wet" : prev === "wet" ? "blue" : "fine");
-  }, []);
-
-  const handleItemLayerChange = useCallback((id: string, zLayer: number) => {
-    setItems(prev => prev.map(item => item.id === id ? { ...item, zLayer } : item));
-    send({ type: "item-layer-change", id, zLayer });
-  }, [send]);
-
-  // Generic tool settings handler
   const handleToolSettingsUpdate = useCallback((toolId: string, updates: Record<string, any>) => {
     setToolSettings(prev => ({ ...prev, [toolId]: { ...(prev[toolId] || {}), ...updates } }));
     send({ type: "tool-settings-update", toolId, settings: updates });
@@ -551,7 +291,6 @@ export default function Playroom() {
     }
   }, [sessionId]);
 
-  // Snapshot export
   const handleSnapshot = useCallback(async () => {
     const el = toolAreaRef.current;
     if (!el) return;
@@ -608,13 +347,10 @@ export default function Playroom() {
   return (
     <div className="h-screen w-full bg-background overflow-hidden flex flex-col font-sans">
       {/* Header */}
-      <AnimatePresence>
-      {!zenMode && (
       <motion.header
         className="h-14 md:h-16 bg-white/60 backdrop-blur-xl border-b border-white/20 flex items-center justify-between px-4 z-20 shrink-0"
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -60, opacity: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="flex items-center gap-3">
@@ -626,11 +362,6 @@ export default function Playroom() {
           <div>
             <h1 className="font-serif text-base md:text-lg text-primary leading-tight flex items-center gap-2">
               {session?.name || `Session ${id}`}
-              {isCanvasLocked && (
-                <span className="inline-flex items-center gap-1 text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">
-                  Locked
-                </span>
-              )}
             </h1>
             <div className="flex items-center gap-2">
               <span className={cn("w-2 h-2 rounded-full", connected ? "bg-green-500 animate-pulse" : "bg-red-400")} />
@@ -841,11 +572,9 @@ export default function Playroom() {
           </Link>
         </div>
       </motion.header>
-      )}
-      </AnimatePresence>
 
       <AnimatePresence>
-      {!zenMode && isDemo && (
+      {isDemo && (
         <div className="bg-amber-50 border-b border-amber-200/60 px-4 py-2 flex items-center justify-center gap-3 shrink-0 z-20" data-testid="banner-demo-mode">
           <span className="text-xs text-amber-700 font-medium">Demo Mode — changes won't be saved</span>
           <Link href="/dashboard" className="no-underline">
@@ -863,49 +592,15 @@ export default function Playroom() {
         {/* Tool Area */}
         <div className="flex-1 relative overflow-hidden" ref={toolAreaRef}>
           <AnimatePresence mode="wait">
-            {activeTool === "sandtray" && (
-              <motion.div
-                key="sandtray"
-                className="absolute inset-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <ZenCanvas
-                  items={items}
-                  isLocked={isCanvasLocked && !isClinician}
-                  isAnonymous={isAnonymous}
-                  remoteCursors={remoteCursors}
-                  onItemMove={handleItemMove}
-                  onItemDrop={handleItemDrop}
-                  onItemRemove={handleItemRemove}
-                  onItemTransform={handleItemTransform}
-                  onItemLayerChange={handleItemLayerChange}
-                  onCursorMove={handleCursorMove}
-                  lightSource={lightSource}
-                  rakePaths={rakePaths}
-                  zenMode={zenMode}
-                  sandTexture={sandTexture}
-                  digMode={digMode}
-                  onLightSourceUpdate={handleLightSourceUpdate}
-                  onRakePathAdd={handleRakePathAdd}
-                  onRakePathClear={handleRakePathClear}
-                />
-                {!zenMode && (
-                  <AssetLibrary
-                    isOpen={assetLibraryOpen}
-                    onToggle={() => setAssetLibraryOpen(!assetLibraryOpen)}
-                    disabled={isCanvasLocked && !isClinician}
-                    onTapPlace={handleTapPlace}
-                  />
-                )}
-              </motion.div>
-            )}
-
             {activeTool === "volume-mixer" && (
               <motion.div key="volume-mixer" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <VolumeMixer />
+              </motion.div>
+            )}
+
+            {activeTool === "feelings" && (
+              <motion.div key="feelings" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <FeelingWheel />
               </motion.div>
             )}
           </AnimatePresence>
@@ -927,46 +622,20 @@ export default function Playroom() {
             )}
           </AnimatePresence>
 
-          {/* Moderator Bar — only on sandtray, hidden in zen mode */}
-          <AnimatePresence>
-            {isClinician && activeTool === "sandtray" && !zenMode && (
-              <ModeratorBar
-                isCanvasLocked={isCanvasLocked}
-                isAnonymous={isAnonymous}
-                onToggleLock={handleToggleLock}
-                onToggleAnonymity={handleToggleAnonymity}
-                onClearCanvas={handleClearCanvas}
-                participantCount={onlineUsers.length}
-                lightTemperature={lightSource.temperature}
-                onLightTemperatureChange={handleLightTemperatureChange}
-                rakeMode={rakeMode}
-                onToggleRakeMode={handleToggleRakeMode}
-                zenMode={zenMode}
-                onToggleZenMode={handleZenModeToggle}
-                sandTexture={sandTexture}
-                onCycleSandTexture={handleCycleSandTexture}
-                digMode={digMode}
-                onToggleDigMode={handleToggleDigMode}
-              />
-            )}
-          </AnimatePresence>
-
           {/* Clinical Insights — clinician only */}
           {isClinician && (
             <ClinicalInsights
               isOpen={insightsOpen}
               onToggle={() => setInsightsOpen(!insightsOpen)}
               activeTool={activeTool}
-              sessionContext={{
-                itemCount: items.length,
-              }}
+              sessionContext={{}}
             />
           )}
         </div>
 
-        {/* Tools Sidebar (Desktop) — hidden in zen mode */}
+        {/* Tools Sidebar (Desktop) */}
         <AnimatePresence>
-          {toolsOpen && !zenMode && (
+          {toolsOpen && (
             <motion.aside
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -1071,8 +740,7 @@ export default function Playroom() {
         />
       )}
 
-      {/* Connection Status — zen mode indicator */}
-      <ConnectionStatus connected={connected} zenMode={zenMode} sessionEnded={sessionEnded} />
+      <ConnectionStatus connected={connected} sessionEnded={sessionEnded} />
 
       {/* Session Ended Overlay */}
       <AnimatePresence>

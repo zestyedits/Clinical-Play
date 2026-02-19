@@ -82,7 +82,7 @@ interface SavedArtifact {
   toolName: string;
   date: string;
   tags: string[];
-  type: "sandtray" | "breathing" | "feelings" | "narrative" | "values";
+  type: "volume-mixer";
 }
 
 const DEFAULT_LOCAL_PROFILE: LocalProfileData = {
@@ -101,19 +101,11 @@ const DEFAULT_LOCAL_PROFILE: LocalProfileData = {
 };
 
 const MOCK_ARTIFACTS: SavedArtifact[] = [
-  { id: "a1", toolName: "Zen Sandtray", date: "2026-02-08T14:30:00Z", tags: ["attachment", "family"], type: "sandtray" },
-  { id: "a2", toolName: "Feeling Wheel", date: "2026-02-06T10:00:00Z", tags: ["emotional-regulation", "progress"], type: "feelings" },
-  { id: "a3", toolName: "Narrative Timeline", date: "2026-02-04T15:00:00Z", tags: ["trauma", "resilience"], type: "narrative" },
-  { id: "a4", toolName: "Values Card Sort", date: "2026-02-01T11:00:00Z", tags: ["identity", "transitions"], type: "values" },
-  { id: "a5", toolName: "Calm Breathing", date: "2026-01-28T09:00:00Z", tags: ["anxiety", "grounding"], type: "breathing" },
+  { id: "a1", toolName: "Volume Mixer", date: "2026-02-08T14:30:00Z", tags: ["IFS", "parts-work"], type: "volume-mixer" },
 ];
 
 const TOOL_COLORS: Record<string, string> = {
-  sandtray: "#D4AF37",
-  breathing: "#2E8B57",
-  feelings: "#E86C5D",
-  narrative: "#0F52BA",
-  values: "#7B52AB",
+  "volume-mixer": "#D4AF37",
 };
 
 function getLocalProfile(): LocalProfileData {
