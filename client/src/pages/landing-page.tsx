@@ -3,25 +3,17 @@ import { LogoMark } from "@/components/shared/logo-mark";
 import { ArrowRight, CheckCircle2, Shield, FileText, Lock, Cookie, Mail, ArrowUp, Sparkles, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
 /* ── Interactive Demo: Feeling Wheel Explorer ── */
 
-interface DemoEmotion {
-  id: string;
-  label: string;
-  emoji: string;
-  color: string;
-  question?: string;
-  children?: { id: string; label: string; emoji: string; children?: { id: string; label: string; emoji: string }[] }[];
-}
-
-const DEMO_EMOTIONS: DemoEmotion[] = [
+/* Emotion data for the demo — trimmed subset of the full 170-emotion tree */
+const DEMO_EMOTIONS = [
   {
-    id: "joy", label: "Joy", emoji: "\u{1F60A}", color: "#f59e0b",
-    question: "What kind of joy are you feeling?",
+    id: "joy", label: "Joy", emoji: "\u{1F60A}", color: "#f59e0b", bg: "#fffbeb", bgDeep: "#fef3c7",
+    question: "What shade of joy is it?",
     children: [
       { id: "happy", label: "Happy", emoji: "\u{1F604}", children: [
         { id: "playful", label: "Playful", emoji: "\u{1F938}" },
@@ -43,8 +35,8 @@ const DEMO_EMOTIONS: DemoEmotion[] = [
     ],
   },
   {
-    id: "sadness", label: "Sadness", emoji: "\u{1F622}", color: "#3b82f6",
-    question: "What kind of sadness is this?",
+    id: "sadness", label: "Sadness", emoji: "\u{1F622}", color: "#3b82f6", bg: "#eff6ff", bgDeep: "#dbeafe",
+    question: "Heavy and deep, or a quiet ache?",
     children: [
       { id: "lonely", label: "Lonely", emoji: "\u{1F614}", children: [
         { id: "isolated", label: "Isolated", emoji: "\u{1F3DD}\uFE0F" },
@@ -61,22 +53,27 @@ const DEMO_EMOTIONS: DemoEmotion[] = [
     ],
   },
   {
-    id: "anger", label: "Anger", emoji: "\u{1F621}", color: "#ef4444",
-    question: "What's driving this anger?",
+    id: "anger", label: "Anger", emoji: "\u{1F621}", color: "#ef4444", bg: "#fef2f2", bgDeep: "#fee2e2",
+    question: "Burning inside, or directed outward?",
     children: [
       { id: "frustrated", label: "Frustrated", emoji: "\u{1F624}", children: [
         { id: "annoyed", label: "Annoyed", emoji: "\u{1F612}" },
         { id: "stuck", label: "Stuck", emoji: "\u{1F9F1}" },
+        { id: "exasperated", label: "Exasperated", emoji: "\u{1F62E}\u200D\u{1F4A8}" },
       ]},
       { id: "resentful", label: "Resentful", emoji: "\u{1F620}", children: [
         { id: "bitter", label: "Bitter", emoji: "\u{1F48A}" },
         { id: "jealous", label: "Jealous", emoji: "\u{1F49A}" },
       ]},
+      { id: "furious", label: "Furious", emoji: "\u{1F525}", children: [
+        { id: "enraged", label: "Enraged", emoji: "\u{1F4A2}" },
+        { id: "hostile", label: "Hostile", emoji: "\u{26A1}" },
+      ]},
     ],
   },
   {
-    id: "fear", label: "Fear", emoji: "\u{1F628}", color: "#8b5cf6",
-    question: "What kind of fear is this?",
+    id: "fear", label: "Fear", emoji: "\u{1F628}", color: "#8b5cf6", bg: "#f5f3ff", bgDeep: "#ede9fe",
+    question: "Something that might happen, or a feeling that won't leave?",
     children: [
       { id: "anxious", label: "Anxious", emoji: "\u{1F630}", children: [
         { id: "worried", label: "Worried", emoji: "\u{1F61F}" },
@@ -84,13 +81,17 @@ const DEMO_EMOTIONS: DemoEmotion[] = [
       ]},
       { id: "insecure", label: "Insecure", emoji: "\u{1F616}", children: [
         { id: "inadequate", label: "Inadequate", emoji: "\u{1F4CF}" },
-        { id: "self-doubting", label: "Self-Doubting", emoji: "\u{2753}" },
+        { id: "vulnerable", label: "Vulnerable", emoji: "\u{1F90D}" },
+      ]},
+      { id: "scared", label: "Scared", emoji: "\u{1F631}", children: [
+        { id: "terrified", label: "Terrified", emoji: "\u{1F480}" },
+        { id: "panicked", label: "Panicked", emoji: "\u{1F6A8}" },
       ]},
     ],
   },
   {
-    id: "surprise", label: "Surprise", emoji: "\u{1F62E}", color: "#f97316",
-    question: "What surprised you?",
+    id: "surprise", label: "Surprise", emoji: "\u{1F62E}", color: "#f97316", bg: "#fff7ed", bgDeep: "#ffedd5",
+    question: "A good surprise or an unsettling one?",
     children: [
       { id: "amazed", label: "Amazed", emoji: "\u{1F929}", children: [
         { id: "awestruck", label: "Awestruck", emoji: "\u{1F31F}" },
@@ -103,12 +104,13 @@ const DEMO_EMOTIONS: DemoEmotion[] = [
     ],
   },
   {
-    id: "love", label: "Love", emoji: "\u{2764}\uFE0F", color: "#ec4899",
-    question: "What does this love feel like?",
+    id: "love", label: "Love", emoji: "\u{2764}\uFE0F", color: "#ec4899", bg: "#fdf2f8", bgDeep: "#fce7f3",
+    question: "Warm and safe, or electric and new?",
     children: [
       { id: "affectionate", label: "Affectionate", emoji: "\u{1F917}", children: [
         { id: "warm", label: "Warm", emoji: "\u{2615}" },
         { id: "tender", label: "Tender", emoji: "\u{1F33C}" },
+        { id: "caring", label: "Caring", emoji: "\u{1F49E}" },
       ]},
       { id: "connected", label: "Connected", emoji: "\u{1F91D}", children: [
         { id: "belonging", label: "Belonging", emoji: "\u{1F3E1}" },
@@ -117,8 +119,8 @@ const DEMO_EMOTIONS: DemoEmotion[] = [
     ],
   },
   {
-    id: "shame", label: "Shame", emoji: "\u{1F636}", color: "#a855f7",
-    question: "Where does this shame come from?",
+    id: "shame", label: "Shame", emoji: "\u{1F636}", color: "#a855f7", bg: "#faf5ff", bgDeep: "#f3e8ff",
+    question: "About being seen, or not measuring up?",
     children: [
       { id: "embarrassed", label: "Embarrassed", emoji: "\u{1F633}", children: [
         { id: "self-conscious", label: "Self-Conscious", emoji: "\u{1F648}" },
@@ -131,8 +133,8 @@ const DEMO_EMOTIONS: DemoEmotion[] = [
     ],
   },
   {
-    id: "disgust", label: "Disgust", emoji: "\u{1F922}", color: "#22c55e",
-    question: "What's triggering this feeling?",
+    id: "disgust", label: "Disgust", emoji: "\u{1F922}", color: "#22c55e", bg: "#f0fdf4", bgDeep: "#dcfce7",
+    question: "A person, a situation, or a memory?",
     children: [
       { id: "repulsed", label: "Repulsed", emoji: "\u{1F92E}", children: [
         { id: "revolted", label: "Revolted", emoji: "\u{1F645}" },
@@ -144,206 +146,357 @@ const DEMO_EMOTIONS: DemoEmotion[] = [
       ]},
     ],
   },
-];
+] as const;
 
-type DemoTier = "primary" | "secondary" | "tertiary";
-
-interface DemoSelection {
-  primary: { label: string; emoji: string; color: string } | null;
-  secondary: { label: string; emoji: string } | null;
-  tertiary: { label: string; emoji: string } | null;
-}
+type DemoEmotionType = (typeof DEMO_EMOTIONS)[number];
+type DemoChild = DemoEmotionType["children"][number];
+type DemoGrandchild = DemoChild["children"][number];
 
 function DemoFeelingWheel() {
-  const [tier, setTier] = useState<DemoTier>("primary");
-  const [selection, setSelection] = useState<DemoSelection>({ primary: null, secondary: null, tertiary: null });
-  const [activeEmotion, setActiveEmotion] = useState<DemoEmotion | null>(null);
-  const [activeSecondary, setActiveSecondary] = useState<DemoEmotion["children"]>(undefined);
-  const [activeQuestion, setActiveQuestion] = useState<string>("");
-  const [completed, setCompleted] = useState(false);
+  const [tier, setTier] = useState<"primary" | "secondary" | "tertiary">("primary");
+  const [activePrimary, setActivePrimary] = useState<DemoEmotionType | null>(null);
+  const [activeSecondary, setActiveSecondary] = useState<DemoChild | null>(null);
+  const [selectedTertiary, setSelectedTertiary] = useState<DemoGrandchild | null>(null);
+  const [animKey, setAnimKey] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const resetDemo = () => {
+  const completed = !!selectedTertiary;
+  const activeColor = activePrimary?.color || "#4A7A56";
+  const activeBg = activePrimary?.bg || "#fafbff";
+  const activeBgDeep = activePrimary?.bgDeep || "#f0f2f8";
+
+  const reset = useCallback(() => {
     setTier("primary");
-    setSelection({ primary: null, secondary: null, tertiary: null });
-    setActiveEmotion(null);
-    setActiveSecondary(undefined);
-    setActiveQuestion("");
-    setCompleted(false);
-  };
+    setActivePrimary(null);
+    setActiveSecondary(null);
+    setSelectedTertiary(null);
+    setAnimKey(k => k + 1);
+  }, []);
 
-  const selectPrimary = (emotion: DemoEmotion) => {
-    setSelection({ primary: { label: emotion.label, emoji: emotion.emoji, color: emotion.color }, secondary: null, tertiary: null });
-    setActiveEmotion(emotion);
-    setActiveQuestion(emotion.question || "");
+  const pickPrimary = (e: DemoEmotionType) => {
+    setActivePrimary(e);
+    setActiveSecondary(null);
+    setSelectedTertiary(null);
     setTier("secondary");
+    setAnimKey(k => k + 1);
   };
 
-  const selectSecondary = (child: NonNullable<DemoEmotion["children"]>[0], color: string) => {
-    setSelection(prev => ({ ...prev, secondary: { label: child.label, emoji: child.emoji }, tertiary: null }));
-    setActiveSecondary(undefined);
-    setActiveQuestion("");
-    if (child.children && child.children.length > 0) {
-      setActiveSecondary(child.children.map(c => ({ ...c })) as DemoEmotion["children"]);
-      setTier("tertiary");
-    } else {
-      setCompleted(true);
-    }
+  const pickSecondary = (c: DemoChild) => {
+    setActiveSecondary(c);
+    setSelectedTertiary(null);
+    setTier("tertiary");
+    setAnimKey(k => k + 1);
   };
 
-  const selectTertiary = (child: { label: string; emoji: string }) => {
-    setSelection(prev => ({ ...prev, tertiary: { label: child.label, emoji: child.emoji } }));
-    setCompleted(true);
+  const pickTertiary = (c: DemoGrandchild) => {
+    setSelectedTertiary(c);
+    setAnimKey(k => k + 1);
   };
 
-  const activeColor = selection.primary?.color || "#4A7A56";
+  const goBack = () => {
+    if (completed) { setSelectedTertiary(null); setTier("tertiary"); setAnimKey(k => k + 1); return; }
+    if (tier === "tertiary") { setActiveSecondary(null); setTier("secondary"); setAnimKey(k => k + 1); return; }
+    if (tier === "secondary") { reset(); return; }
+  };
+
+  /* Breadcrumb pieces */
+  const crumbs: { emoji: string; label: string; onClick?: () => void }[] = [];
+  if (activePrimary) crumbs.push({ emoji: activePrimary.emoji, label: activePrimary.label, onClick: () => { setActiveSecondary(null); setSelectedTertiary(null); setTier("secondary"); setAnimKey(k => k + 1); } });
+  if (activeSecondary) crumbs.push({ emoji: activeSecondary.emoji, label: activeSecondary.label, onClick: () => { setSelectedTertiary(null); setTier("tertiary"); setAnimKey(k => k + 1); } });
+  if (selectedTertiary) crumbs.push({ emoji: selectedTertiary.emoji, label: selectedTertiary.label });
 
   return (
-    <div className="bg-card border border-border rounded-2xl shadow-xl overflow-hidden">
-      {/* Window chrome */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-secondary/50">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-destructive/40" />
-          <div className="w-2.5 h-2.5 rounded-full bg-accent/40" />
-          <div className="w-2.5 h-2.5 rounded-full bg-primary/40" />
+    <div className="rounded-2xl shadow-2xl overflow-hidden border border-border/60" style={{ background: "#fff" }}>
+      {/* ── Toolbar ── */}
+      <div className="flex items-center justify-between px-4 py-2 border-b" style={{ borderColor: `${activeColor}15`, background: `linear-gradient(90deg, ${activeBg}, white)` }}>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-full" style={{ background: "#ff5f57" }} />
+          <div className="w-3 h-3 rounded-full" style={{ background: "#ffbd2e" }} />
+          <div className="w-3 h-3 rounded-full" style={{ background: "#28c840" }} />
         </div>
-        <span className="text-xs text-muted-foreground font-medium">Feeling Wheel — Demo Session</span>
-        <button onClick={resetDemo} className="text-[10px] font-medium text-muted-foreground hover:text-foreground px-2 py-0.5 rounded-md hover:bg-secondary transition-colors cursor-pointer">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500" style={{ boxShadow: "0 0 6px rgba(40,200,64,0.5)" }} />
+          <span className="text-[11px] font-medium" style={{ color: activeColor }}>Feeling Wheel</span>
+          <span className="text-[10px] text-muted-foreground/60">|</span>
+          <span className="text-[10px] text-muted-foreground/50">Demo Session</span>
+        </div>
+        <button onClick={reset} className="text-[10px] font-medium text-muted-foreground/50 hover:text-foreground px-2 py-0.5 rounded-md hover:bg-black/5 transition-all cursor-pointer">
           Reset
         </button>
       </div>
 
-      {/* Content area */}
-      <div className="p-5 md:p-8">
-        {/* Breadcrumb trail */}
-        {selection.primary && (
-          <div className="flex items-center gap-1.5 mb-5 flex-wrap">
-            <button onClick={resetDemo} className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer">All emotions</button>
-            {selection.primary && (
-              <>
-                <span className="text-muted-foreground/40 text-xs">/</span>
-                <button
-                  onClick={() => { if (activeEmotion) { setTier("secondary"); setSelection(s => ({ ...s, secondary: null, tertiary: null })); setActiveSecondary(undefined); setActiveQuestion(activeEmotion.question || ""); setCompleted(false); } }}
-                  className="text-xs font-medium transition-colors cursor-pointer"
-                  style={{ color: activeColor }}
-                >
-                  {selection.primary.emoji} {selection.primary.label}
-                </button>
-              </>
-            )}
-            {selection.secondary && (
-              <>
-                <span className="text-muted-foreground/40 text-xs">/</span>
-                <span className="text-xs font-medium text-foreground">{selection.secondary.emoji} {selection.secondary.label}</span>
-              </>
-            )}
-            {selection.tertiary && (
-              <>
-                <span className="text-muted-foreground/40 text-xs">/</span>
-                <span className="text-xs font-medium text-foreground">{selection.tertiary.emoji} {selection.tertiary.label}</span>
-              </>
-            )}
-          </div>
-        )}
+      {/* ── Main area with color-shifting background ── */}
+      <div
+        ref={containerRef}
+        className="relative overflow-hidden"
+        style={{
+          background: tier === "primary"
+            ? "radial-gradient(ellipse at 30% 20%, rgba(99,102,241,0.06) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(168,85,247,0.04) 0%, transparent 60%), linear-gradient(135deg, #fafbff 0%, #f5f6fa 100%)"
+            : `radial-gradient(ellipse at 25% 15%, ${activeColor}18 0%, transparent 55%), radial-gradient(ellipse at 75% 85%, ${activeColor}0c 0%, transparent 55%), linear-gradient(135deg, ${activeBg} 0%, ${activeBgDeep}88 50%, ${activeBg} 100%)`,
+          transition: "background 600ms ease",
+          minHeight: 340,
+        }}
+      >
+        {/* Floating ambient shapes */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div
+            className="absolute rounded-full opacity-30"
+            style={{
+              width: 220, height: 220, top: "-40px", right: "-60px",
+              background: `radial-gradient(circle, ${activeColor}20 0%, transparent 70%)`,
+              filter: "blur(40px)",
+              transition: "background 600ms ease",
+              animation: "demo-float-1 12s ease-in-out infinite",
+            }}
+          />
+          <div
+            className="absolute rounded-full opacity-20"
+            style={{
+              width: 180, height: 180, bottom: "-30px", left: "-40px",
+              background: `radial-gradient(circle, ${activeColor}18 0%, transparent 70%)`,
+              filter: "blur(50px)",
+              transition: "background 600ms ease",
+              animation: "demo-float-2 15s ease-in-out infinite",
+            }}
+          />
+          <div
+            className="absolute rounded-full opacity-15"
+            style={{
+              width: 120, height: 120, top: "40%", left: "60%",
+              background: `radial-gradient(circle, ${activeColor}15 0%, transparent 70%)`,
+              filter: "blur(35px)",
+              transition: "background 600ms ease",
+              animation: "demo-float-3 10s ease-in-out infinite",
+            }}
+          />
+        </div>
 
-        {/* Question prompt */}
-        {activeQuestion && !completed && (
-          <p className="text-sm text-muted-foreground italic mb-4 text-center">"{activeQuestion}"</p>
-        )}
-
-        {/* Primary tier */}
-        {tier === "primary" && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            {DEMO_EMOTIONS.map((emotion) => (
-              <button
-                key={emotion.id}
-                onClick={() => selectPrimary(emotion)}
-                className="group flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-background hover:shadow-md transition-all duration-150 cursor-pointer"
-                style={{ borderColor: undefined }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = emotion.color + "40"; e.currentTarget.style.backgroundColor = emotion.color + "08"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.backgroundColor = ""; }}
-              >
-                <span className="text-2xl sm:text-3xl transition-transform duration-150 group-hover:scale-110">{emotion.emoji}</span>
-                <span className="text-xs font-medium text-foreground">{emotion.label}</span>
+        <div className="relative z-10 p-5 md:p-7">
+          {/* ── Breadcrumb trail ── */}
+          {crumbs.length > 0 && (
+            <div className="flex items-center gap-1 mb-5 demo-fade-in">
+              <button onClick={goBack} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer mr-1">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                Back
               </button>
-            ))}
-          </div>
-        )}
-
-        {/* Secondary tier */}
-        {tier === "secondary" && activeEmotion?.children && (
-          <div className="grid grid-cols-2 gap-2.5">
-            {activeEmotion.children.map((child) => (
-              <button
-                key={child.id}
-                onClick={() => selectSecondary(child, activeColor)}
-                className="group flex items-center gap-3 p-3.5 rounded-xl border border-border bg-background hover:shadow-md transition-all duration-150 cursor-pointer text-left"
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = activeColor + "40"; e.currentTarget.style.backgroundColor = activeColor + "08"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.backgroundColor = ""; }}
-              >
-                <span className="text-xl transition-transform duration-150 group-hover:scale-110">{child.emoji}</span>
-                <span className="text-sm font-medium text-foreground">{child.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Tertiary tier */}
-        {tier === "tertiary" && activeSecondary && !completed && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {activeSecondary.map((child) => (
-              <button
-                key={child.id}
-                onClick={() => selectTertiary(child)}
-                className="group flex items-center gap-3 p-3.5 rounded-xl border border-border bg-background hover:shadow-md transition-all duration-150 cursor-pointer text-left"
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = activeColor + "40"; e.currentTarget.style.backgroundColor = activeColor + "08"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.backgroundColor = ""; }}
-              >
-                <span className="text-xl transition-transform duration-150 group-hover:scale-110">{child.emoji}</span>
-                <span className="text-sm font-medium text-foreground">{child.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Completed state */}
-        {completed && (
-          <div className="text-center py-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-background mb-4">
-              <span className="text-lg">{selection.primary?.emoji}</span>
-              <span className="text-muted-foreground/40">→</span>
-              {selection.secondary && <span className="text-lg">{selection.secondary.emoji}</span>}
-              {selection.tertiary && (
-                <>
-                  <span className="text-muted-foreground/40">→</span>
-                  <span className="text-lg">{selection.tertiary.emoji}</span>
-                </>
-              )}
+              {crumbs.map((crumb, i) => (
+                <div key={i} className="flex items-center gap-1">
+                  {i > 0 && <div className="w-4 h-0.5 rounded-full mx-0.5" style={{ background: `${activeColor}30` }} />}
+                  <button
+                    onClick={crumb.onClick}
+                    disabled={!crumb.onClick}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
+                    style={{
+                      background: i === crumbs.length - 1 ? `${activeColor}15` : "transparent",
+                      color: activeColor,
+                      cursor: crumb.onClick ? "pointer" : "default",
+                    }}
+                  >
+                    <span>{crumb.emoji}</span>
+                    <span>{crumb.label}</span>
+                  </button>
+                </div>
+              ))}
             </div>
-            <p className="text-sm text-foreground font-medium mb-1">
-              {selection.tertiary?.label || selection.secondary?.label || selection.primary?.label}
-            </p>
-            <p className="text-xs text-muted-foreground mb-4">
-              In a real session, your clinician would see this selection in real-time and guide the conversation.
-            </p>
-            <button
-              onClick={resetDemo}
-              className="text-xs font-medium px-4 py-2 rounded-lg bg-secondary border border-border text-foreground hover:bg-secondary/80 transition-colors cursor-pointer"
-            >
-              Try another emotion
-            </button>
-          </div>
-        )}
+          )}
 
-        {/* Hint bar */}
-        {!completed && (
-          <div className="mt-5 pt-3 border-t border-border flex items-center justify-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: activeColor }} />
-            <span className="text-[10px] text-muted-foreground font-medium tracking-wide uppercase">
-              {tier === "primary" ? "Tap an emotion to explore deeper" : tier === "secondary" ? "Now narrow it down" : "Find the most specific feeling"}
-            </span>
-          </div>
-        )}
+          {/* ── Question ── */}
+          {tier !== "primary" && !completed && (
+            <div key={`q-${animKey}`} className="text-center mb-6 demo-fade-in">
+              <p className="text-base md:text-lg font-serif italic" style={{ color: `${activeColor}cc` }}>
+                {tier === "secondary" && activePrimary?.question}
+                {tier === "tertiary" && "Getting closer\u2026"}
+              </p>
+            </div>
+          )}
+
+          {/* ── PRIMARY GRID ── */}
+          {tier === "primary" && (
+            <div key={`p-${animKey}`}>
+              <p className="text-center text-sm text-muted-foreground mb-5">How are you feeling right now?</p>
+              <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-md mx-auto">
+                {DEMO_EMOTIONS.map((emotion, i) => (
+                  <button
+                    key={emotion.id}
+                    onClick={() => pickPrimary(emotion)}
+                    className="demo-card-enter group relative flex flex-col items-center gap-1.5 py-4 px-2 rounded-2xl cursor-pointer transition-all duration-200 hover:-translate-y-1"
+                    style={{
+                      background: `linear-gradient(135deg, ${emotion.bg} 0%, white 100%)`,
+                      border: `1.5px solid ${emotion.color}20`,
+                      boxShadow: `0 2px 8px ${emotion.color}10`,
+                      animationDelay: `${i * 40}ms`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = `${emotion.color}50`;
+                      e.currentTarget.style.boxShadow = `0 8px 24px ${emotion.color}20, 0 0 0 1px ${emotion.color}15`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = `${emotion.color}20`;
+                      e.currentTarget.style.boxShadow = `0 2px 8px ${emotion.color}10`;
+                    }}
+                  >
+                    <span className="text-3xl sm:text-4xl transition-transform duration-200 group-hover:scale-110 group-active:scale-95 will-change-transform">{emotion.emoji}</span>
+                    <span className="text-[11px] sm:text-xs font-semibold" style={{ color: emotion.color }}>{emotion.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── SECONDARY CARDS ── */}
+          {tier === "secondary" && activePrimary && (
+            <div key={`s-${animKey}`} className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
+              {activePrimary.children.map((child, i) => (
+                <button
+                  key={child.id}
+                  onClick={() => pickSecondary(child)}
+                  className="demo-card-enter group relative flex items-center gap-3 p-4 rounded-2xl cursor-pointer transition-all duration-200 hover:-translate-y-0.5 text-left"
+                  style={{
+                    background: `linear-gradient(135deg, white 0%, ${activeBg} 100%)`,
+                    border: `1.5px solid ${activeColor}20`,
+                    boxShadow: `0 2px 8px ${activeColor}08`,
+                    animationDelay: `${i * 60}ms`,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = `${activeColor}45`;
+                    e.currentTarget.style.boxShadow = `0 8px 20px ${activeColor}18`;
+                    e.currentTarget.style.background = `linear-gradient(135deg, white 0%, ${activeBgDeep}88 100%)`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = `${activeColor}20`;
+                    e.currentTarget.style.boxShadow = `0 2px 8px ${activeColor}08`;
+                    e.currentTarget.style.background = `linear-gradient(135deg, white 0%, ${activeBg} 100%)`;
+                  }}
+                >
+                  <span className="text-2xl transition-transform duration-200 group-hover:scale-110 group-active:scale-90">{child.emoji}</span>
+                  <div>
+                    <span className="text-sm font-semibold text-foreground block">{child.label}</span>
+                    <span className="text-[10px] text-muted-foreground/60">{child.children.length} deeper</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* ── TERTIARY CARDS ── */}
+          {tier === "tertiary" && activeSecondary && !completed && (
+            <div key={`t-${animKey}`} className="flex flex-wrap justify-center gap-2.5 max-w-md mx-auto">
+              {activeSecondary.children.map((child, i) => (
+                <button
+                  key={child.id}
+                  onClick={() => pickTertiary(child)}
+                  className="demo-card-enter group flex items-center gap-2.5 px-5 py-3 rounded-full cursor-pointer transition-all duration-200 hover:-translate-y-0.5"
+                  style={{
+                    background: `linear-gradient(135deg, white 0%, ${activeBg} 100%)`,
+                    border: `1.5px solid ${activeColor}25`,
+                    boxShadow: `0 2px 8px ${activeColor}08`,
+                    animationDelay: `${i * 60}ms`,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = `${activeColor}50`;
+                    e.currentTarget.style.boxShadow = `0 6px 16px ${activeColor}20`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = `${activeColor}25`;
+                    e.currentTarget.style.boxShadow = `0 2px 8px ${activeColor}08`;
+                  }}
+                >
+                  <span className="text-xl transition-transform duration-200 group-hover:scale-110 group-active:scale-90">{child.emoji}</span>
+                  <span className="text-sm font-medium text-foreground">{child.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* ── COMPLETED STATE ── */}
+          {completed && (
+            <div key={`done-${animKey}`} className="demo-fade-in text-center py-3">
+              {/* Emotion journey */}
+              <div className="flex items-center justify-center gap-3 mb-5">
+                {crumbs.map((crumb, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    {i > 0 && (
+                      <div className="flex items-center gap-0.5">
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: `${activeColor}30` }} />
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: `${activeColor}40` }} />
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: `${activeColor}50` }} />
+                      </div>
+                    )}
+                    <div
+                      className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl"
+                      style={{
+                        background: i === crumbs.length - 1
+                          ? `linear-gradient(135deg, ${activeColor}18 0%, ${activeColor}08 100%)`
+                          : `${activeColor}08`,
+                        border: i === crumbs.length - 1 ? `2px solid ${activeColor}30` : `1px solid ${activeColor}15`,
+                        boxShadow: i === crumbs.length - 1 ? `0 4px 16px ${activeColor}15` : "none",
+                      }}
+                    >
+                      <span className={i === crumbs.length - 1 ? "text-3xl" : "text-xl"}>{crumb.emoji}</span>
+                      <span className="text-[11px] font-semibold" style={{ color: activeColor }}>{crumb.label}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-lg font-serif font-medium text-foreground mb-1">
+                {selectedTertiary?.label}
+              </p>
+              <p className="text-xs text-muted-foreground max-w-xs mx-auto mb-5">
+                In a live session, your clinician sees this in real-time — opening the door for deeper conversation.
+              </p>
+              <button
+                onClick={reset}
+                className="text-xs font-semibold px-5 py-2.5 rounded-full transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                style={{
+                  background: `linear-gradient(135deg, ${activeColor} 0%, ${activeColor}dd 100%)`,
+                  color: "white",
+                  boxShadow: `0 4px 12px ${activeColor}30`,
+                }}
+              >
+                Explore again
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* ── Bottom status bar ── */}
+      <div className="flex items-center justify-between px-4 py-2 border-t" style={{ borderColor: `${activeColor}10`, background: `linear-gradient(90deg, ${activeBg}80, white)` }}>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: activeColor }}>C</div>
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border" style={{ borderColor: `${activeColor}30`, color: activeColor }}>P</div>
+          </div>
+          <span className="text-[10px] text-muted-foreground/50">2 participants</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] text-muted-foreground/40">170 emotions</span>
+          <span className="text-[10px] text-muted-foreground/30">|</span>
+          <span className="text-[10px] text-muted-foreground/40">3 tiers deep</span>
+        </div>
+      </div>
+
+      {/* Inline keyframes for the demo */}
+      <style>{`
+        @keyframes demo-float-1 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-15px, 20px) scale(1.1); } }
+        @keyframes demo-float-2 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(20px, -15px) scale(1.05); } }
+        @keyframes demo-float-3 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-10px, -20px) scale(1.15); } }
+        .demo-card-enter {
+          animation: demo-card-pop 350ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        @keyframes demo-card-pop {
+          0% { opacity: 0; transform: scale(0.85) translateY(8px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .demo-fade-in {
+          animation: demo-fade 300ms ease-out both;
+        }
+        @keyframes demo-fade {
+          0% { opacity: 0; transform: translateY(6px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -492,9 +645,10 @@ export default function LandingPage() {
       <section className="pb-16 md:pb-24 px-6" id="features">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-2">Try it yourself</h2>
-            <p className="text-muted-foreground text-sm">
-              Explore our Feeling Wheel — tap an emotion and drill down to name exactly what you're feeling.
+            <p className="text-xs font-semibold tracking-widest uppercase text-primary/60 mb-3">Live Preview</p>
+            <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-2">See what a session feels like</h2>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">
+              This is an actual tool from ClinicalPlay. Tap an emotion, drill deeper, and watch the space transform around your selection.
             </p>
           </div>
           <DemoFeelingWheel />
