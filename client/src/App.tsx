@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { SessionProvider } from "@/hooks/use-auth";
-import { AnimatePresence, motion } from "framer-motion";
 import { Navbar } from "@/components/layout/navbar";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing-page";
@@ -26,52 +25,34 @@ import WorkspacePage from "@/pages/workspace";
 import LibraryPage from "@/pages/library";
 import AccountPage from "@/pages/account";
 
-function PageTransition({ children }: { children: React.ReactNode }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.15, ease: "easeOut" }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
 function Router() {
   const [location] = useLocation();
   const isPlayroom = location.startsWith("/playroom/");
 
-  // Use the base path segment as key so dynamic params don't cause remounts
-  const routeKey = location.split("/").slice(0, 2).join("/") || "/";
-
   return (
     <>
       {!isPlayroom && <Navbar />}
-      <AnimatePresence mode="wait">
-        <Switch key={routeKey}>
-          <Route path="/">{() => <PageTransition><LandingPage /></PageTransition>}</Route>
-          <Route path="/dashboard">{() => <PageTransition><Dashboard /></PageTransition>}</Route>
-          <Route path="/playroom/:id">{(params) => <Playroom />}</Route>
-          <Route path="/join/:code">{() => <PageTransition><JoinSession /></PageTransition>}</Route>
-          <Route path="/privacy">{() => <PageTransition><Privacy /></PageTransition>}</Route>
-          <Route path="/terms">{() => <PageTransition><Terms /></PageTransition>}</Route>
-          <Route path="/cookies">{() => <PageTransition><Cookies /></PageTransition>}</Route>
-          <Route path="/faq">{() => <PageTransition><FAQ /></PageTransition>}</Route>
-          <Route path="/contact">{() => <PageTransition><Contact /></PageTransition>}</Route>
-          <Route path="/login">{() => <PageTransition><Login /></PageTransition>}</Route>
-          <Route path="/signup">{() => <PageTransition><Signup /></PageTransition>}</Route>
-          <Route path="/email-confirmed">{() => <PageTransition><EmailConfirmed /></PageTransition>}</Route>
-          <Route path="/inbox">{() => <PageTransition><InboxPage /></PageTransition>}</Route>
-          <Route path="/admin">{() => <PageTransition><AdminPanel /></PageTransition>}</Route>
-          <Route path="/workspace">{() => <PageTransition><WorkspacePage /></PageTransition>}</Route>
-          <Route path="/profile">{() => <Redirect to="/workspace" />}</Route>
-          <Route path="/library">{() => <PageTransition><LibraryPage /></PageTransition>}</Route>
-          <Route path="/account">{() => <PageTransition><AccountPage /></PageTransition>}</Route>
-          <Route>{() => <PageTransition><NotFound /></PageTransition>}</Route>
-        </Switch>
-      </AnimatePresence>
+      <Switch>
+        <Route path="/">{() => <LandingPage />}</Route>
+        <Route path="/dashboard">{() => <Dashboard />}</Route>
+        <Route path="/playroom/:id">{(params) => <Playroom />}</Route>
+        <Route path="/join/:code">{() => <JoinSession />}</Route>
+        <Route path="/privacy">{() => <Privacy />}</Route>
+        <Route path="/terms">{() => <Terms />}</Route>
+        <Route path="/cookies">{() => <Cookies />}</Route>
+        <Route path="/faq">{() => <FAQ />}</Route>
+        <Route path="/contact">{() => <Contact />}</Route>
+        <Route path="/login">{() => <Login />}</Route>
+        <Route path="/signup">{() => <Signup />}</Route>
+        <Route path="/email-confirmed">{() => <EmailConfirmed />}</Route>
+        <Route path="/inbox">{() => <InboxPage />}</Route>
+        <Route path="/admin">{() => <AdminPanel />}</Route>
+        <Route path="/workspace">{() => <WorkspacePage />}</Route>
+        <Route path="/profile">{() => <Redirect to="/workspace" />}</Route>
+        <Route path="/library">{() => <LibraryPage />}</Route>
+        <Route path="/account">{() => <AccountPage />}</Route>
+        <Route>{() => <NotFound />}</Route>
+      </Switch>
     </>
   );
 }

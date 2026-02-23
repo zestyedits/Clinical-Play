@@ -308,9 +308,9 @@ export default function InboxPage() {
                 </div>
                 <form onSubmit={e => { e.preventDefault(); if (supportSubject.trim() && supportBody.trim()) sendSupport.mutate(); }} className="space-y-3">
                   <input type="text" placeholder="Subject" value={supportSubject} onChange={e => setSupportSubject(e.target.value)}
-                    className="w-full h-10 px-4 rounded-xl border border-white/40 bg-white/60 text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30" required />
+                    className="w-full h-10 px-4 rounded-xl border border-border bg-card text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30" required />
                   <textarea placeholder="How can we help?" value={supportBody} onChange={e => setSupportBody(e.target.value)} rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-white/40 bg-white/60 text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 resize-none" required />
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-card text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 resize-none" required />
                   <div className="flex justify-end gap-2">
                     <button type="button" onClick={() => setShowCompose(null)} className="h-9 px-4 rounded-xl text-sm text-muted-foreground cursor-pointer hover:text-primary">Cancel</button>
                     <button type="submit" disabled={sendSupport.isPending}
@@ -337,13 +337,13 @@ export default function InboxPage() {
                   <div>
                     <label className="text-xs font-medium text-primary block mb-1">Tool Name *</label>
                     <input type="text" value={toolReqTitle} onChange={e => setToolReqTitle(e.target.value)} placeholder="e.g., Emotion Thermometer"
-                      className="w-full h-10 px-4 rounded-xl border border-white/40 bg-white/60 text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30" required />
+                      className="w-full h-10 px-4 rounded-xl border border-border bg-card text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30" required />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-medium text-primary block mb-1">Primary Modality</label>
                       <select value={toolReqModality} onChange={e => setToolReqModality(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-white/40 bg-white/60 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/30 cursor-pointer">
+                        className="w-full h-10 px-3 rounded-xl border border-border bg-card text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/30 cursor-pointer">
                         <option value="">Select...</option>
                         {MODALITY_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
                       </select>
@@ -351,23 +351,23 @@ export default function InboxPage() {
                     <div>
                       <label className="text-xs font-medium text-primary block mb-1">Age Range</label>
                       <input type="text" value={toolReqAge} onChange={e => setToolReqAge(e.target.value)} placeholder="e.g., Teens, Adults"
-                        className="w-full h-10 px-4 rounded-xl border border-white/40 bg-white/60 text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                        className="w-full h-10 px-4 rounded-xl border border-border bg-card text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30" />
                     </div>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-primary block mb-1">Therapeutic Goal</label>
                     <input type="text" value={toolReqGoal} onChange={e => setToolReqGoal(e.target.value)} placeholder="What would this tool help clients do?"
-                      className="w-full h-10 px-4 rounded-xl border border-white/40 bg-white/60 text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                      className="w-full h-10 px-4 rounded-xl border border-border bg-card text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30" />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-primary block mb-1">Additional Notes</label>
                     <textarea value={toolReqNotes} onChange={e => setToolReqNotes(e.target.value)} rows={3} placeholder="Any other details about how you'd use this tool..."
-                      className="w-full px-4 py-3 rounded-xl border border-white/40 bg-white/60 text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 resize-none" />
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-card text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 resize-none" />
                   </div>
                   <div className="flex justify-end gap-2">
                     <button type="button" onClick={() => setShowCompose(null)} className="h-9 px-4 rounded-xl text-sm text-muted-foreground cursor-pointer hover:text-primary">Cancel</button>
                     <button type="submit" disabled={submitToolRequest.isPending || !toolReqTitle.trim()}
-                      className="h-9 px-5 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white text-sm font-medium flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm hover:opacity-90">
+                      className="h-9 px-5 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm hover:opacity-90">
                       <Send size={13} /> {submitToolRequest.isPending ? "Submitting..." : "Submit Request"}
                     </button>
                   </div>
@@ -389,7 +389,7 @@ export default function InboxPage() {
                 onClick={() => setActiveCategory(tab.key)}
                 className={cn(
                   "px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap cursor-pointer transition-colors",
-                  activeCategory === tab.key ? "bg-primary text-white" : "bg-white/60 text-muted-foreground hover:bg-secondary border border-border/20"
+                  activeCategory === tab.key ? "bg-primary text-white" : "bg-card text-muted-foreground hover:bg-secondary border border-border/20"
                 )}
               >
                 {tab.label} {tab.count > 0 && <span className="opacity-60">({tab.count})</span>}
@@ -403,7 +403,7 @@ export default function InboxPage() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search messages..."
-              className="w-full h-9 pl-9 pr-3 rounded-xl bg-white/60 border border-border/30 text-xs text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
+              className="w-full h-9 pl-9 pr-3 rounded-xl bg-card border border-border/30 text-xs text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
           </div>
         </div>
@@ -504,7 +504,7 @@ export default function InboxPage() {
                         onClick={() => openMessage(msg)}
                         className={cn(
                           "group relative p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-sm",
-                          !msg.isRead ? "bg-white/80 border-accent/20 shadow-sm" : "bg-white/40 border-border/20 hover:bg-white/60",
+                          !msg.isRead ? "bg-card border-accent/20 shadow-sm" : "bg-card/60 border-border/20 hover:bg-card",
                           msg.isPinned && "ring-1 ring-accent/20"
                         )}
                       >

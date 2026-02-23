@@ -37,9 +37,9 @@ export interface InboxReply {
 }
 
 export const CATEGORY_CONFIG: Record<MessageCategory, { label: string; color: string; icon: string }> = {
-  support: { label: "Support", color: "#0F52BA", icon: "headphones" },
-  announcement: { label: "Announcements", color: "#2E8B57", icon: "megaphone" },
-  "tool-request": { label: "Tool Requests", color: "#D4AF37", icon: "lightbulb" },
+  support: { label: "Support", color: "hsl(var(--primary))", icon: "headphones" },
+  announcement: { label: "Announcements", color: "hsl(var(--primary))", icon: "megaphone" },
+  "tool-request": { label: "Tool Requests", color: "hsl(var(--accent))", icon: "lightbulb" },
   system: { label: "System", color: "#7B8FA1", icon: "settings" },
   artifact: { label: "Artifacts", color: "#9B59B6", icon: "image" },
 };

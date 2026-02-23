@@ -278,7 +278,7 @@ function Breadcrumb({ nav, onBack, activePrimary, activeSecondary }: BreadcrumbP
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className="flex items-center gap-1.5 px-3 py-2 rounded-xl
-          bg-white/60 backdrop-blur-xl border border-white/30
+          bg-card border border-border
           shadow-sm hover:shadow-md transition-shadow
           text-slate-600 hover:text-slate-800 cursor-pointer"
       >
@@ -304,7 +304,7 @@ function Breadcrumb({ nav, onBack, activePrimary, activeSecondary }: BreadcrumbP
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: i * 0.1 }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl
-                bg-white/50 backdrop-blur-md border shadow-sm"
+                bg-card border shadow-sm"
               style={{
                 borderColor: hexToRgba(crumb.color, 0.25),
               }}
@@ -425,13 +425,13 @@ function EmotionCard({
       onClick={onSelect}
       className={cn(
         "relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl",
-        "bg-white/60 backdrop-blur-xl border shadow-lg",
+        "bg-card border shadow-lg",
         "transition-all duration-200 cursor-pointer",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         sizeClasses[size],
         isSelected
           ? "border-2"
-          : "border border-white/30 hover:border-white/50"
+          : "border border-border hover:border-border"
       )}
       style={{
         borderColor: isSelected ? color : undefined,
@@ -503,7 +503,7 @@ function EmotionCard({
             transition={{ duration: 0.2 }}
             className="absolute -bottom-1 left-1/2 -translate-x-1/2 translate-y-full
               max-w-[220px] px-3 py-2 rounded-xl
-              bg-slate-800/90 backdrop-blur-md text-white text-xs
+              bg-slate-800/90 text-white text-xs
               text-center leading-snug z-50 shadow-xl pointer-events-none"
           >
             <span className="font-serif italic">{question}</span>
@@ -685,7 +685,7 @@ function SelectionPanel({
       transition={{ duration: 0.3 }}
       className="w-full max-w-3xl mx-auto px-4"
     >
-      <div className="bg-white/50 backdrop-blur-xl border border-white/30 rounded-2xl shadow-lg p-4">
+      <div className="bg-card border border-border rounded-2xl shadow-lg p-4">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles size={16} className="text-slate-400" />
           <h3 className="text-sm font-semibold text-slate-600 font-serif">
@@ -715,7 +715,7 @@ function SelectionPanel({
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ type: "spring", stiffness: 300, damping: 25 }}
                   className="group relative flex items-center gap-1.5 px-3 py-2 rounded-xl
-                    bg-white/70 border shadow-sm"
+                    bg-card border shadow-sm"
                   style={{
                     borderColor: hexToRgba(primary.color, 0.25),
                   }}
@@ -749,7 +749,7 @@ function SelectionPanel({
                             }}
                             placeholder="Add a note..."
                             className="w-32 sm:w-40 text-xs px-2 py-1 rounded-lg
-                              bg-white/80 border border-slate-200
+                              bg-card border border-border
                               text-slate-600 placeholder:text-slate-300
                               focus:outline-none focus:ring-1 focus:ring-slate-300"
                           />
@@ -835,7 +835,7 @@ function ClinicianToolbarInternal({ settings, onReset }: ClinicianToolbarInterna
       transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.3 }}
       className="absolute left-3 bottom-3 z-30"
     >
-      <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-2 shadow-lg border border-white/30 flex flex-col gap-1.5">
+      <div className="bg-card rounded-2xl p-2 shadow-lg border border-border flex flex-col gap-1.5">
         {/* Toggle emoji */}
         <ToolbarBtn
           icon={settings.showEmoji ? Smile : EyeOff}

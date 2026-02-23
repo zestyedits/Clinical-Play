@@ -109,7 +109,7 @@ export default function Contact() {
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="Your name"
-                  className="w-full px-4 py-3 rounded-xl border border-border/50 bg-white/50 backdrop-blur-sm text-sm text-primary placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-border/50 bg-card text-sm text-primary placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all"
                   data-testid="input-contact-name"
                 />
               </div>
@@ -123,7 +123,7 @@ export default function Contact() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="your@email.com"
-                  className="w-full px-4 py-3 rounded-xl border border-border/50 bg-white/50 backdrop-blur-sm text-sm text-primary placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-border/50 bg-card text-sm text-primary placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all"
                   data-testid="input-contact-email"
                 />
               </div>
@@ -137,14 +137,14 @@ export default function Contact() {
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
                   placeholder="Tell us how we can help..."
-                  className="w-full px-4 py-3 rounded-xl border border-border/50 bg-white/50 backdrop-blur-sm text-sm text-primary placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-border/50 bg-card text-sm text-primary placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all resize-none"
                   data-testid="input-contact-message"
                 />
               </div>
               <button
                 type="submit"
                 disabled={submitTicket.isPending}
-                className="w-full py-3 rounded-2xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 btn-luxury flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 rounded-2xl bg-primary text-primary-foreground font-medium shadow-lg shadow-primary/20 btn-warm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 data-testid="button-contact-submit"
               >
                 <Send size={16} />

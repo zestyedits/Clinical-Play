@@ -90,10 +90,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   if (!isReady) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#faf9f7] to-[#f0ede8]">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <img src="/images/logo-icon.png" alt="" className="w-14 h-14 mx-auto mb-3 object-contain animate-pulse" />
-          <p className="text-sm text-[#1B2A4A]/40 font-medium">Loading...</p>
+          <img src="/images/logo-icon.png" alt="" className="w-12 h-12 mx-auto mb-4 object-contain" />
+          <div className="flex items-center justify-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" style={{ animationDelay: "150ms" }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" style={{ animationDelay: "300ms" }} />
+          </div>
         </div>
       </div>
     );

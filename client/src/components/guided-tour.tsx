@@ -190,7 +190,7 @@ export function GuidedTour({ steps, tourKey, isActive, onComplete, onSkip }: Gui
           </mask>
         </defs>
         <rect
-          x="0" y="0" width="100%" height="100%" fill="rgba(27, 42, 74, 0.55)"
+          x="0" y="0" width="100%" height="100%" fill="rgba(0, 0, 0, 0.55)"
           mask={`url(#tour-mask-${tourKey})`}
           style={{ pointerEvents: "all" }}
           onClick={(e) => e.stopPropagation()}
@@ -205,7 +205,7 @@ export function GuidedTour({ steps, tourKey, isActive, onComplete, onSkip }: Gui
             top: targetRect.top - padding,
             width: targetRect.width + padding * 2,
             height: targetRect.height + padding * 2,
-            boxShadow: "0 0 0 3px rgba(212, 175, 55, 0.5), 0 0 20px rgba(212, 175, 55, 0.15)",
+            boxShadow: "0 0 0 3px hsl(var(--primary) / 0.5), 0 0 20px hsl(var(--primary) / 0.15)",
             transition: "all 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         />
@@ -219,7 +219,7 @@ export function GuidedTour({ steps, tourKey, isActive, onComplete, onSkip }: Gui
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.96 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute w-[320px] bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/40 overflow-hidden"
+          className="absolute w-[320px] bg-card rounded-2xl shadow-2xl border border-border overflow-hidden"
           style={{
             left: tooltipPos.x,
             top: tooltipPos.y,
@@ -270,7 +270,7 @@ export function GuidedTour({ steps, tourKey, isActive, onComplete, onSkip }: Gui
               )}
               <button
                 onClick={handleNext}
-                className="px-4 py-1.5 bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white text-xs font-medium rounded-lg shadow-sm hover:brightness-110 transition-all cursor-pointer flex items-center gap-1 border border-[#D4AF37]/30"
+                className="px-4 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-lg shadow-sm hover:brightness-110 transition-all cursor-pointer flex items-center gap-1"
                 data-testid="button-tour-next"
               >
                 {currentStep === steps.length - 1 ? "Got it!" : "Next"}

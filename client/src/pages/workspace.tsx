@@ -3,7 +3,7 @@ import { useAuth, createAuthFetch } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft, Save, User, Briefcase, Shield, Eye, EyeOff, CheckCircle2,
   Palette, Check, Heart, Sparkles, SlidersHorizontal,
@@ -105,7 +105,7 @@ const MOCK_ARTIFACTS: SavedArtifact[] = [
 ];
 
 const TOOL_COLORS: Record<string, string> = {
-  "volume-mixer": "#D4AF37",
+  "volume-mixer": "hsl(var(--accent))",
 };
 
 function getLocalProfile(): LocalProfileData {
@@ -137,8 +137,8 @@ const STYLE_LABELS: Record<string, string[]> = {
   humor: ["None", "Light & Occasional", "Playful"],
 };
 
-const inputClass = "w-full px-4 py-3 rounded-xl bg-secondary/30 border border-border/40 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all";
-const labelClass = "text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-2";
+const inputClass = "w-full px-4 py-3 rounded-xl bg-secondary/30 border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all";
+const labelClass = "text-xs font-semibold text-foreground/60 uppercase tracking-[0.15em] block mb-2";
 
 function PhiWarning({ text }: { text: string }) {
   return (
@@ -166,14 +166,14 @@ function ThemeSection() {
                 className={`relative flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer active:scale-95 ${
                   isActive
                     ? "border-accent bg-accent/8 shadow-sm ring-1 ring-accent/20"
-                    : "border-border/40 bg-secondary/20 hover:bg-secondary/40"
+                    : "border-border bg-secondary/20 hover:bg-secondary/40"
                 }`}
               >
                 <div className="flex -space-x-1.5 shrink-0">
                   <div className="w-6 h-6 rounded-full border-2 border-background shadow-sm" style={{ backgroundColor: preset.swatch }} />
                   <div className="w-6 h-6 rounded-full border-2 border-background shadow-sm" style={{ backgroundColor: preset.swatchSecondary }} />
                 </div>
-                <span className={`text-xs font-medium leading-tight ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+                <span className={`text-xs font-medium leading-tight ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
                   {preset.name}
                 </span>
                 {isActive && (
@@ -193,16 +193,15 @@ function ThemeSection() {
   );
 }
 
-function ToggleSwitch({ enabled, onToggle, color = "bg-accent" }: { enabled: boolean; onToggle: () => void; color?: string }) {
+function ToggleSwitch({ enabled, onToggle, color = "bg-primary" }: { enabled: boolean; onToggle: () => void; color?: string }) {
   return (
     <button
       onClick={onToggle}
       className={`relative w-12 h-7 rounded-full transition-all cursor-pointer ${enabled ? color : "bg-secondary/60"}`}
     >
-      <motion.div
-        className="absolute top-0.5 w-6 h-6 rounded-full bg-background shadow-md"
-        animate={{ left: enabled ? 22 : 2 }}
-        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      <div
+        className="absolute top-0.5 w-6 h-6 rounded-full bg-background shadow-md transition-all duration-200"
+        style={{ left: enabled ? 22 : 2 }}
       />
     </button>
   );
@@ -212,8 +211,8 @@ function StyleSlider({ label, value, onChange, labels }: { label: string; value:
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-primary">{label}</span>
-        <span className="text-xs text-accent font-medium">{labels[value]}</span>
+        <span className="text-sm font-medium text-foreground">{label}</span>
+        <span className="text-xs text-primary font-medium">{labels[value]}</span>
       </div>
       <div className="flex gap-1.5">
         {labels.map((l, i) => (
@@ -221,7 +220,7 @@ function StyleSlider({ label, value, onChange, labels }: { label: string; value:
             key={i}
             onClick={() => onChange(i)}
             className={`flex-1 h-2.5 rounded-full transition-all cursor-pointer ${
-              i <= value ? "bg-accent" : "bg-secondary/40"
+              i <= value ? "bg-primary" : "bg-secondary/40"
             }`}
             title={l}
           />
@@ -242,8 +241,8 @@ function MultiSelectChips({ options, selected, onToggle }: { options: string[]; 
             onClick={() => onToggle(opt)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer active:scale-95 ${
               isSelected
-                ? "bg-accent/15 text-accent border border-accent/30"
-                : "bg-secondary/30 text-muted-foreground border border-border/30 hover:bg-secondary/50"
+                ? "bg-primary/10 text-primary border border-primary/20"
+                : "bg-secondary/30 text-muted-foreground border border-border hover:bg-secondary/50"
             }`}
           >
             {opt}
@@ -374,10 +373,10 @@ export default function WorkspacePage() {
 
   if (authLoading || !isAuthenticated || profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-accent/10 flex items-center justify-center animate-pulse">
-            <SlidersHorizontal size={24} className="text-accent" />
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
+            <SlidersHorizontal size={24} className="text-primary" />
           </div>
           <p className="text-muted-foreground font-medium">Loading workspace...</p>
         </div>
@@ -386,21 +385,17 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 pb-10 pt-24 md:pt-32 px-4 md:px-8">
+    <div className="min-h-screen bg-background pb-24 md:pb-10 pt-20 md:pt-24 px-4 md:px-8">
       <div className="max-w-2xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div>
           <div className="flex items-center gap-3 mb-8">
             <Link href="/dashboard" className="no-underline">
               <button className="p-2.5 rounded-xl hover:bg-secondary/50 transition-colors cursor-pointer">
-                <ArrowLeft size={20} className="text-primary" />
+                <ArrowLeft size={20} className="text-foreground" />
               </button>
             </Link>
             <div className="flex-1">
-              <h1 className="text-2xl md:text-3xl font-serif text-primary">Workspace</h1>
+              <h1 className="text-2xl md:text-3xl font-serif text-foreground">Workspace</h1>
               <p className="text-sm text-muted-foreground">Manage your preferences, credentials, and session settings</p>
             </div>
           </div>
@@ -409,10 +404,10 @@ export default function WorkspacePage() {
             {/* Section 1: Personal Information */}
             <GlassCard className="p-6 md:p-8" hoverEffect={false}>
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(27,42,74,0.1), rgba(212,175,55,0.1))" }}>
+                <div className="w-10 h-10 rounded-2xl bg-primary/8 flex items-center justify-center">
                   <User size={18} className="text-primary" />
                 </div>
-                <h2 className="font-serif text-lg text-primary">Personal Information</h2>
+                <h2 className="font-serif text-lg text-foreground">Personal Information</h2>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -475,7 +470,7 @@ export default function WorkspacePage() {
 
               <div className="mt-4">
                 <label className={labelClass}>Email</label>
-                <div className="w-full px-4 py-3 rounded-xl bg-secondary/20 border border-border/30 text-muted-foreground text-sm">
+                <div className="w-full px-4 py-3 rounded-xl bg-secondary/20 border border-border text-muted-foreground text-sm">
                   {profile?.email || user?.email || "\u2014"}
                 </div>
                 <p className="text-[11px] text-muted-foreground/60 mt-1">Email cannot be changed here</p>
@@ -502,25 +497,25 @@ export default function WorkspacePage() {
             <GlassCard className="p-6 md:p-8" hoverEffect={false}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(46,139,87,0.1), rgba(212,175,55,0.1))" }}>
-                    <Briefcase size={18} style={{ color: "#2E8B57" }} />
+                  <div className="w-10 h-10 rounded-2xl bg-primary/8 flex items-center justify-center">
+                    <Briefcase size={18} className="text-primary" />
                   </div>
                   <div>
-                    <h2 className="font-serif text-lg text-primary">Professional Details</h2>
+                    <h2 className="font-serif text-lg text-foreground">Professional Details</h2>
                     <p className="text-xs text-muted-foreground">Credentials for organization and peer verification</p>
                   </div>
                 </div>
                 <ToggleSwitch
                   enabled={showCredentials}
                   onToggle={handleToggleCredentials}
-                  color="bg-[#2E8B57]"
+                  color="bg-primary"
                 />
               </div>
 
               {!showCredentials && (
                 <button
                   onClick={handleToggleCredentials}
-                  className="mt-4 w-full flex items-center justify-between p-3 rounded-xl bg-secondary/15 border border-border/25 hover:bg-secondary/30 transition-all cursor-pointer text-left"
+                  className="mt-4 w-full flex items-center justify-between p-3 rounded-xl bg-secondary/15 border border-border hover:bg-secondary/30 transition-all cursor-pointer text-left"
                 >
                   <span className="text-sm text-muted-foreground">
                     Enable to display professional credentials
@@ -592,11 +587,11 @@ export default function WorkspacePage() {
             {/* Section 3: Clinician Style */}
             <GlassCard className="p-6 md:p-8" hoverEffect={false}>
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(212,175,55,0.1), rgba(123,82,171,0.1))" }}>
-                  <SlidersHorizontal size={18} style={{ color: "#7B52AB" }} />
+                <div className="w-10 h-10 rounded-2xl bg-primary/8 flex items-center justify-center">
+                  <SlidersHorizontal size={18} className="text-primary" />
                 </div>
                 <div>
-                  <h2 className="font-serif text-lg text-primary">Clinician Style</h2>
+                  <h2 className="font-serif text-lg text-foreground">Clinician Style</h2>
                   <p className="text-xs text-muted-foreground">These preferences set defaults for new sessions</p>
                 </div>
               </div>
@@ -621,25 +616,25 @@ export default function WorkspacePage() {
                   labels={STYLE_LABELS.humor}
                 />
 
-                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/20 border border-border/30">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/20 border border-border">
                   <div className="flex items-center gap-3">
                     <Eye size={18} className="text-muted-foreground" />
                     <div>
-                      <p className="text-sm font-medium text-primary">Show Progress Indicators to Clients</p>
+                      <p className="text-sm font-medium text-foreground">Show Progress Indicators to Clients</p>
                       <p className="text-xs text-muted-foreground">Display session progress bars and step counts</p>
                     </div>
                   </div>
                   <ToggleSwitch
                     enabled={localProfile.clinicianStyle.showProgress}
                     onToggle={() => updateStyle("showProgress", !localProfile.clinicianStyle.showProgress)}
-                    color="bg-accent"
+                    color="bg-primary"
                   />
                 </div>
               </div>
 
-              <div className="mt-5 p-3 rounded-xl bg-accent/5 border border-accent/15">
+              <div className="mt-5 p-3 rounded-xl bg-primary/5 border border-primary/15">
                 <p className="text-[11px] text-muted-foreground/80">
-                  <Sparkles size={11} className="inline mr-1 text-accent" />
+                  <Sparkles size={11} className="inline mr-1 text-primary" />
                   These style preferences shape the default feel of your sessions. You can adjust them on a per-session basis.
                 </p>
               </div>
@@ -648,10 +643,10 @@ export default function WorkspacePage() {
             {/* Section 4: Theme & Appearance */}
             <GlassCard className="p-6 md:p-8" hoverEffect={false}>
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(212,175,55,0.1), rgba(139,92,246,0.1))" }}>
-                  <Palette size={18} style={{ color: "#D4AF37" }} />
+                <div className="w-10 h-10 rounded-2xl bg-primary/8 flex items-center justify-center">
+                  <Palette size={18} className="text-primary" />
                 </div>
-                <h2 className="font-serif text-lg text-primary">Theme & Appearance</h2>
+                <h2 className="font-serif text-lg text-foreground">Theme & Appearance</h2>
               </div>
               <ThemeSection />
             </GlassCard>
@@ -659,18 +654,18 @@ export default function WorkspacePage() {
             {/* Section 5: Default Session Settings */}
             <GlassCard className="p-6 md:p-8" hoverEffect={false}>
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(15,82,186,0.1), rgba(212,175,55,0.1))" }}>
-                  <Shield size={18} style={{ color: "#0F52BA" }} />
+                <div className="w-10 h-10 rounded-2xl bg-primary/8 flex items-center justify-center">
+                  <Shield size={18} className="text-primary" />
                 </div>
-                <h2 className="font-serif text-lg text-primary">Default Session Settings</h2>
+                <h2 className="font-serif text-lg text-foreground">Default Session Settings</h2>
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/20 border border-border/30">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/20 border border-border">
                   <div className="flex items-center gap-3">
                     {defaultAnonymous ? <EyeOff size={18} className="text-purple-500" /> : <Eye size={18} className="text-muted-foreground" />}
                     <div>
-                      <p className="text-sm font-medium text-primary">Anonymous Mode</p>
+                      <p className="text-sm font-medium text-foreground">Anonymous Mode</p>
                       <p className="text-xs text-muted-foreground">Start new sessions in anonymous mode by default</p>
                     </div>
                   </div>
@@ -689,11 +684,11 @@ export default function WorkspacePage() {
             {/* Section 6: Session Exports (renamed from Saved Artifacts) */}
             <GlassCard className="p-6 md:p-8" hoverEffect={false}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(232,108,93,0.1), rgba(212,175,55,0.1))" }}>
-                  <FileText size={18} style={{ color: "#E86C5D" }} />
+                <div className="w-10 h-10 rounded-2xl bg-primary/8 flex items-center justify-center">
+                  <FileText size={18} className="text-primary" />
                 </div>
                 <div>
-                  <h2 className="font-serif text-lg text-primary">Session Exports</h2>
+                  <h2 className="font-serif text-lg text-foreground">Session Exports</h2>
                   <p className="text-xs text-muted-foreground">Recent session outputs and exports</p>
                 </div>
               </div>
@@ -709,38 +704,30 @@ export default function WorkspacePage() {
                 {MOCK_ARTIFACTS.map((artifact, i) => {
                   const exportLabel = `Export #${i + 1}`;
                   return (
-                    <motion.div
-                      key={artifact.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.06 }}
-                    >
+                    <div key={artifact.id}>
                       <button
                         onClick={() => setExpandedArtifact(expandedArtifact === artifact.id ? null : artifact.id)}
-                        className="w-full text-left p-3 rounded-xl bg-secondary/15 border border-border/25 hover:bg-secondary/30 transition-all cursor-pointer group"
+                        className="w-full text-left p-3 rounded-xl bg-secondary/15 border border-border hover:bg-secondary/30 transition-all cursor-pointer group"
                       >
                         <div className="flex items-center gap-3">
-                          <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                            style={{ backgroundColor: `${TOOL_COLORS[artifact.type]}15` }}
-                          >
-                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TOOL_COLORS[artifact.type] }} />
+                          <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center shrink-0">
+                            <div className="w-2.5 h-2.5 rounded-full bg-primary" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-primary truncate">{exportLabel}</span>
+                              <span className="text-sm font-medium text-foreground truncate">{exportLabel}</span>
                               <span className="text-[10px] text-muted-foreground/60 shrink-0">{artifact.toolName}</span>
                             </div>
                             <p className="text-xs text-muted-foreground/60">
                               {new Date(artifact.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                             </p>
                           </div>
-                          <motion.div
-                            animate={{ rotate: expandedArtifact === artifact.id ? 180 : 0 }}
-                            transition={{ duration: 0.2 }}
+                          <div
+                            className="transition-transform duration-200"
+                            style={{ transform: expandedArtifact === artifact.id ? "rotate(180deg)" : "rotate(0deg)" }}
                           >
                             <ChevronDown size={16} className="text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
-                          </motion.div>
+                          </div>
                         </div>
                       </button>
 
@@ -768,7 +755,7 @@ export default function WorkspacePage() {
                           </motion.div>
                         )}
                       </AnimatePresence>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
@@ -783,21 +770,13 @@ export default function WorkspacePage() {
             </GlassCard>
 
             {/* Save Button */}
-            <motion.div
-              className="flex gap-3"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
+            <div className="flex gap-3">
               <button
                 onClick={handleSave}
                 disabled={!anyChanges || updateProfile.isPending}
-                className="flex-1 px-6 py-3.5 rounded-2xl text-white font-medium shadow-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 border-2"
-                style={{
-                  background: anyChanges ? "linear-gradient(135deg, #2E8B57 0%, #256D47 100%)" : "#9ca3af",
-                  borderColor: anyChanges ? "#D4AF37" : "transparent",
-                  boxShadow: anyChanges ? "0 4px 16px rgba(46,139,87,0.2)" : "none",
-                }}
+                className={`flex-1 btn-warm px-6 py-3.5 rounded-2xl text-primary-foreground font-medium shadow-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+                  anyChanges ? "bg-primary hover:bg-primary/90" : "bg-muted-foreground"
+                }`}
               >
                 {updateProfile.isPending ? (
                   <>Saving...</>
@@ -807,9 +786,9 @@ export default function WorkspacePage() {
                   <><Save size={18} /> Save Changes</>
                 )}
               </button>
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

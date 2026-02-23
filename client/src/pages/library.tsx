@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { Link } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Search, Grid3X3, List, Star, Filter, X, ChevronDown, ChevronRight,
   Clock, Zap, Play, Eye, Heart, BookOpen, AlertTriangle, Shield, FolderPlus,
@@ -55,8 +55,8 @@ function IntensityBadge({ level }: { level: string }) {
 function StatusBadge({ status }: { status: string }) {
   if (status === "active") return null;
   const cls = status === "development"
-    ? "bg-[#0F52BA]/10 text-[#0F52BA] border-[#0F52BA]/20"
-    : "bg-accent/10 text-accent border-accent/20";
+    ? "bg-primary/10 text-primary border-primary/20"
+    : "bg-primary/10 text-primary border-primary/20";
   const label = status === "development" ? "In Development" : "Coming Soon";
   return <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-semibold border", cls)}>{label}</span>;
 }
@@ -79,19 +79,12 @@ function ToolDetailDrawer({
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50"
+      <div
+        className="fixed inset-0 bg-black/30 z-50"
         onClick={onClose}
       />
-      <motion.div
-        initial={{ x: "100%", opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: "100%", opacity: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed right-0 top-0 bottom-0 w-full max-w-lg z-50 bg-white/95 backdrop-blur-2xl border-l border-white/30 shadow-2xl overflow-y-auto"
+      <div
+        className="fixed right-0 top-0 bottom-0 w-full max-w-lg z-50 bg-card border-l border-border shadow-2xl overflow-y-auto"
       >
         <div className="p-6">
           {/* Header */}
@@ -99,7 +92,7 @@ function ToolDetailDrawer({
             <div className="flex items-center gap-4">
               <div className="text-4xl">{tool.icon}</div>
               <div>
-                <h2 className="font-serif text-2xl text-primary">{tool.name}</h2>
+                <h2 className="font-serif text-2xl text-foreground">{tool.name}</h2>
                 <div className="flex items-center gap-2 mt-1">
                   <IntensityBadge level={tool.intensity} />
                   <StatusBadge status={tool.status} />
@@ -123,7 +116,7 @@ function ToolDetailDrawer({
           <div className="flex gap-2 mb-6">
             {tool.status === "active" && (
               <Link href={`/playroom/demo?tool=${tool.id}`}>
-                <button className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer hover:opacity-90 transition-opacity">
+                <button className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground font-medium text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer hover:opacity-90 transition-opacity">
                   <Play size={15} /> Launch in Demo
                 </button>
               </Link>
@@ -132,7 +125,7 @@ function ToolDetailDrawer({
               onClick={onToggleFavorite}
               className={cn(
                 "h-11 px-4 rounded-xl border text-sm font-medium flex items-center gap-2 cursor-pointer transition-colors",
-                isFavorite ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-white border-border/40 text-muted-foreground hover:bg-secondary"
+                isFavorite ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-card border-border text-muted-foreground hover:bg-secondary"
               )}
             >
               <Star size={15} className={isFavorite ? "fill-amber-400" : ""} />
@@ -140,7 +133,7 @@ function ToolDetailDrawer({
             </button>
             <button
               onClick={() => setShowCollectionPicker(!showCollectionPicker)}
-              className="h-11 px-4 rounded-xl border border-border/40 text-sm font-medium flex items-center gap-2 cursor-pointer hover:bg-secondary transition-colors text-muted-foreground"
+              className="h-11 px-4 rounded-xl border border-border text-sm font-medium flex items-center gap-2 cursor-pointer hover:bg-secondary transition-colors text-muted-foreground"
             >
               <FolderPlus size={15} />
             </button>
@@ -162,7 +155,7 @@ function ToolDetailDrawer({
                     <button
                       key={c.id}
                       onClick={() => { onAddToCollection(c.id); setShowCollectionPicker(false); }}
-                      className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-white/60 transition-colors cursor-pointer text-primary"
+                      className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-secondary transition-colors cursor-pointer text-foreground"
                     >
                       {c.name} ({c.toolIds.length})
                     </button>
@@ -174,13 +167,13 @@ function ToolDetailDrawer({
 
           {/* Description */}
           <div className="mb-6">
-            <h3 className="text-sm font-semibold text-primary mb-2 flex items-center gap-2"><BookOpen size={14} /> What it does</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2"><BookOpen size={14} /> What it does</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">{tool.longDescription}</p>
           </div>
 
           {/* Modalities */}
           <div className="mb-6">
-            <h3 className="text-sm font-semibold text-primary mb-2">Modalities</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2">Modalities</h3>
             <div className="flex flex-wrap gap-1.5">
               {tool.modalities.map(m => (
                 <span key={m} className="text-xs px-2.5 py-1 rounded-full bg-primary/5 text-primary border border-primary/10 font-medium">{m}</span>
@@ -190,7 +183,7 @@ function ToolDetailDrawer({
 
           {/* Age ranges */}
           <div className="mb-6">
-            <h3 className="text-sm font-semibold text-primary mb-2">Age Ranges</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2">Age Ranges</h3>
             <div className="flex flex-wrap gap-1.5">
               {tool.ageRanges.map(a => (
                 <span key={a} className="text-xs px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground font-medium">{a}</span>
@@ -200,7 +193,7 @@ function ToolDetailDrawer({
 
           {/* Best used for */}
           <div className="mb-4">
-            <h3 className="text-sm font-semibold text-primary mb-2 flex items-center gap-2"><Heart size={14} /> Best used for</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2"><Heart size={14} /> Best used for</h3>
             <ul className="space-y-1.5">
               {tool.bestUsedFor.map((item, i) => (
                 <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
@@ -220,7 +213,7 @@ function ToolDetailDrawer({
             <div key={section.key} className="border-t border-border/20 py-3">
               <button
                 onClick={() => toggle(section.key)}
-                className="w-full flex items-center justify-between text-sm font-medium text-primary cursor-pointer"
+                className="w-full flex items-center justify-between text-sm font-medium text-foreground cursor-pointer"
               >
                 <span className="flex items-center gap-2">{section.icon} {section.label}</span>
                 <ChevronDown size={16} className={cn("transition-transform text-muted-foreground", expandedSection === section.key && "rotate-180")} />
@@ -247,7 +240,7 @@ function ToolDetailDrawer({
             </div>
           )}
         </div>
-      </motion.div>
+      </div>
     </>
   );
 }
@@ -365,7 +358,7 @@ export default function Library() {
   }, [searchQuery, sortBy, selectedModalities, selectedAgeRanges, selectedIntensity, selectedInteraction, favoritesOnly, activeOnly, favorites, activeCollection, collections]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-20 md:pt-24 pb-24 md:pb-0">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-6">
@@ -375,14 +368,9 @@ export default function Library() {
         </div>
 
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8"
-        >
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <h1 className="font-serif text-3xl md:text-4xl text-primary mb-1">Tool Library</h1>
+            <h1 className="font-serif text-3xl md:text-4xl text-foreground mb-1">Tool Library</h1>
             <p className="text-muted-foreground text-sm">
               {TOOLS_LIBRARY.length} therapeutic tools — {TOOLS_LIBRARY.filter(t => t.status === "active").length} active, more in development
             </p>
@@ -392,13 +380,13 @@ export default function Library() {
               onClick={() => setShowCollections(!showCollections)}
               className={cn(
                 "h-9 px-3 rounded-xl text-sm font-medium flex items-center gap-2 cursor-pointer transition-colors border",
-                showCollections ? "bg-accent/10 border-accent/30 text-accent" : "bg-white/60 border-border/30 text-muted-foreground hover:bg-white"
+                showCollections ? "bg-primary/10 text-primary border-primary/20" : "bg-card border-border text-muted-foreground hover:bg-secondary"
               )}
             >
               <LayoutGrid size={14} /> Collections
             </button>
           </div>
-        </motion.div>
+        </div>
 
         {/* Collections panel */}
         <AnimatePresence>
@@ -411,7 +399,7 @@ export default function Library() {
             >
               <GlassCard hoverEffect={false} className="p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-primary">Your Collections</h3>
+                  <h3 className="text-sm font-semibold text-foreground">Your Collections</h3>
                   {activeCollection && (
                     <button onClick={() => setActiveCollection(null)} className="text-xs text-accent cursor-pointer hover:underline">Show all tools</button>
                   )}
@@ -423,7 +411,7 @@ export default function Library() {
                         onClick={() => setActiveCollection(activeCollection === c.id ? null : c.id)}
                         className={cn(
                           "px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors border",
-                          activeCollection === c.id ? "bg-primary text-white border-primary" : "bg-white border-border/30 text-primary hover:bg-secondary"
+                          activeCollection === c.id ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:bg-secondary"
                         )}
                       >
                         {c.name} ({c.toolIds.length})
@@ -440,9 +428,9 @@ export default function Library() {
                     onChange={e => setNewCollectionName(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && addCollection()}
                     placeholder="New collection name..."
-                    className="flex-1 h-9 px-3 rounded-xl bg-secondary/30 border border-border/30 text-sm text-primary placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent/20"
+                    className="flex-1 h-9 px-3 rounded-xl bg-secondary/30 border border-border text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
-                  <button onClick={addCollection} disabled={!newCollectionName.trim()} className="h-9 px-4 rounded-xl bg-primary text-white text-xs font-medium cursor-pointer disabled:opacity-40 hover:bg-primary/90 transition-colors">
+                  <button onClick={addCollection} disabled={!newCollectionName.trim()} className="h-9 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-medium cursor-pointer disabled:opacity-40 hover:bg-primary/90 transition-colors">
                     <Plus size={14} />
                   </button>
                 </div>
@@ -452,12 +440,7 @@ export default function Library() {
         </AnimatePresence>
 
         {/* Search & Controls Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="flex flex-col md:flex-row gap-3 mb-6"
-        >
+        <div className="flex flex-col md:flex-row gap-3 mb-6">
           {/* Search */}
           <div className="relative flex-1">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
@@ -466,7 +449,7 @@ export default function Library() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search tools, modalities, techniques..."
-              className="w-full h-11 pl-10 pr-4 rounded-xl bg-white/60 border border-border/30 text-sm text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:bg-white transition-colors"
+              className="w-full h-11 pl-10 pr-4 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-card transition-colors"
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer">
@@ -479,22 +462,22 @@ export default function Library() {
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
-            className="h-11 px-3 rounded-xl bg-white/60 border border-border/30 text-sm text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/20"
+            className="h-11 px-3 rounded-xl bg-card border border-border text-sm text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
 
           {/* View toggle */}
-          <div className="flex h-11 rounded-xl border border-border/30 overflow-hidden bg-white/60">
+          <div className="flex h-11 rounded-xl border border-border overflow-hidden bg-card">
             <button
               onClick={() => setViewMode("grid")}
-              className={cn("px-3 flex items-center cursor-pointer transition-colors", viewMode === "grid" ? "bg-primary text-white" : "text-muted-foreground hover:bg-secondary")}
+              className={cn("px-3 flex items-center cursor-pointer transition-colors", viewMode === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary")}
             >
               <Grid3X3 size={16} />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={cn("px-3 flex items-center cursor-pointer transition-colors", viewMode === "list" ? "bg-primary text-white" : "text-muted-foreground hover:bg-secondary")}
+              className={cn("px-3 flex items-center cursor-pointer transition-colors", viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary")}
             >
               <List size={16} />
             </button>
@@ -505,14 +488,14 @@ export default function Library() {
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
               "h-11 px-4 rounded-xl text-sm font-medium flex items-center gap-2 cursor-pointer transition-colors border",
-              showFilters || hasActiveFilters ? "bg-accent/10 border-accent/30 text-accent" : "bg-white/60 border-border/30 text-muted-foreground hover:bg-white"
+              showFilters || hasActiveFilters ? "bg-primary/10 text-primary border-primary/20" : "bg-card border-border text-muted-foreground hover:bg-secondary"
             )}
           >
             <SlidersHorizontal size={15} />
             Filters
-            {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-accent" />}
+            {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-primary" />}
           </button>
-        </motion.div>
+        </div>
 
         {/* Filters Panel */}
         <AnimatePresence>
@@ -525,7 +508,7 @@ export default function Library() {
             >
               <GlassCard hoverEffect={false} className="p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-primary">Filter Tools</h3>
+                  <h3 className="text-sm font-semibold text-foreground">Filter Tools</h3>
                   {hasActiveFilters && (
                     <button onClick={clearFilters} className="text-xs text-accent cursor-pointer hover:underline">Clear all</button>
                   )}
@@ -542,7 +525,7 @@ export default function Library() {
                           onClick={() => toggleFilter(selectedModalities, m, setSelectedModalities)}
                           className={cn(
                             "text-xs px-2.5 py-1 rounded-full border cursor-pointer transition-colors",
-                            selectedModalities.includes(m) ? "bg-primary text-white border-primary" : "bg-white border-border/30 text-muted-foreground hover:bg-secondary"
+                            selectedModalities.includes(m) ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:bg-secondary"
                           )}
                         >{m}</button>
                       ))}
@@ -559,7 +542,7 @@ export default function Library() {
                           onClick={() => toggleFilter(selectedAgeRanges, a, setSelectedAgeRanges)}
                           className={cn(
                             "text-xs px-2.5 py-1 rounded-full border cursor-pointer transition-colors",
-                            selectedAgeRanges.includes(a) ? "bg-primary text-white border-primary" : "bg-white border-border/30 text-muted-foreground hover:bg-secondary"
+                            selectedAgeRanges.includes(a) ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:bg-secondary"
                           )}
                         >{a}</button>
                       ))}
@@ -577,7 +560,7 @@ export default function Library() {
                             onClick={() => toggleFilter(selectedIntensity, i, setSelectedIntensity)}
                             className={cn(
                               "text-xs px-2.5 py-1 rounded-full border cursor-pointer transition-colors capitalize",
-                              selectedIntensity.includes(i) ? "bg-primary text-white border-primary" : "bg-white border-border/30 text-muted-foreground hover:bg-secondary"
+                              selectedIntensity.includes(i) ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:bg-secondary"
                             )}
                           >{i}</button>
                         ))}
@@ -592,7 +575,7 @@ export default function Library() {
                             onClick={() => toggleFilter(selectedInteraction, i, setSelectedInteraction)}
                             className={cn(
                               "text-xs px-2.5 py-1 rounded-full border cursor-pointer transition-colors capitalize",
-                              selectedInteraction.includes(i) ? "bg-primary text-white border-primary" : "bg-white border-border/30 text-muted-foreground hover:bg-secondary"
+                              selectedInteraction.includes(i) ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:bg-secondary"
                             )}
                           >{i}</button>
                         ))}
@@ -603,12 +586,12 @@ export default function Library() {
 
                 {/* Quick toggles */}
                 <div className="flex gap-4 mt-4 pt-4 border-t border-border/20">
-                  <label className="flex items-center gap-2 text-xs text-primary cursor-pointer">
-                    <input type="checkbox" checked={favoritesOnly} onChange={e => setFavoritesOnly(e.target.checked)} className="rounded accent-accent" />
+                  <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                    <input type="checkbox" checked={favoritesOnly} onChange={e => setFavoritesOnly(e.target.checked)} className="rounded accent-primary" />
                     Favorites only
                   </label>
-                  <label className="flex items-center gap-2 text-xs text-primary cursor-pointer">
-                    <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} className="rounded accent-accent" />
+                  <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                    <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} className="rounded accent-primary" />
                     Active tools only
                   </label>
                 </div>
@@ -625,27 +608,18 @@ export default function Library() {
 
         {/* Tool Grid/List */}
         {filteredTools.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-20"
-          >
+          <div className="text-center py-20">
             <Search size={40} className="mx-auto mb-4 text-muted-foreground/20" />
-            <h3 className="font-serif text-lg text-primary mb-1">No tools match your filters</h3>
+            <h3 className="font-serif text-lg text-foreground mb-1">No tools match your filters</h3>
             <p className="text-sm text-muted-foreground">Try adjusting your search or clearing some filters.</p>
             {hasActiveFilters && (
               <button onClick={clearFilters} className="mt-3 text-sm text-accent cursor-pointer hover:underline">Clear all filters</button>
             )}
-          </motion.div>
+          </div>
         ) : viewMode === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredTools.map((tool, i) => (
-              <motion.div
-                key={tool.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.04, ease: [0.22, 1, 0.36, 1] }}
-              >
+            {filteredTools.map((tool) => (
+              <div key={tool.id}>
                 <GlassCard className="p-5 h-full flex flex-col">
                   {/* Top row */}
                   <div className="flex items-start justify-between mb-3">
@@ -659,7 +633,7 @@ export default function Library() {
                   </div>
 
                   {/* Name & desc */}
-                  <h3 className="font-serif text-base text-primary mb-1">{tool.name}</h3>
+                  <h3 className="font-serif text-base text-foreground mb-1">{tool.name}</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed mb-3 flex-1">{tool.shortDescription}</p>
 
                   {/* Tags */}
@@ -683,13 +657,13 @@ export default function Library() {
                   <div className="flex gap-2 pt-2 border-t border-border/20">
                     <button
                       onClick={() => setDetailTool(tool)}
-                      className="flex-1 h-9 rounded-xl bg-secondary/50 text-primary text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer hover:bg-secondary transition-colors"
+                      className="flex-1 h-9 rounded-xl bg-secondary/50 text-foreground text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer hover:bg-secondary transition-colors"
                     >
                       <Eye size={13} /> Details
                     </button>
                     {tool.status === "active" ? (
                       <Link href="/playroom/demo" className="flex-1">
-                        <button className="w-full h-9 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer shadow-sm hover:opacity-90 transition-opacity">
+                        <button className="w-full h-9 rounded-xl bg-primary text-primary-foreground text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer shadow-sm hover:opacity-90 transition-opacity">
                           <Play size={13} /> Launch
                         </button>
                       </Link>
@@ -700,28 +674,23 @@ export default function Library() {
                     )}
                   </div>
                 </GlassCard>
-              </motion.div>
+              </div>
             ))}
           </div>
         ) : (
           /* List view */
           <div className="space-y-2">
-            {filteredTools.map((tool, i) => (
-              <motion.div
-                key={tool.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.03 }}
-              >
+            {filteredTools.map((tool) => (
+              <div key={tool.id}>
                 <GlassCard className="p-4">
                   <div className="flex items-center gap-4">
                     <div className="text-2xl shrink-0">{tool.icon}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-serif text-sm text-primary">{tool.name}</h3>
+                        <h3 className="font-serif text-sm text-foreground">{tool.name}</h3>
                         <IntensityBadge level={tool.intensity} />
                         <StatusBadge status={tool.status} />
-                        {tool.tier === "pro" && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20 font-bold">PRO</span>}
+                        {tool.tier === "pro" && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold">PRO</span>}
                       </div>
                       <p className="text-xs text-muted-foreground truncate">{tool.shortDescription}</p>
                     </div>
@@ -730,12 +699,12 @@ export default function Library() {
                       <button onClick={() => toggleFavorite(tool.id)} className="p-1.5 cursor-pointer">
                         <Star size={14} className={favorites.has(tool.id) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"} />
                       </button>
-                      <button onClick={() => setDetailTool(tool)} className="h-8 px-3 rounded-lg bg-secondary/50 text-xs font-medium text-primary cursor-pointer hover:bg-secondary transition-colors">
+                      <button onClick={() => setDetailTool(tool)} className="h-8 px-3 rounded-lg bg-secondary/50 text-xs font-medium text-foreground cursor-pointer hover:bg-secondary transition-colors">
                         Details
                       </button>
                       {tool.status === "active" && (
                         <Link href={`/playroom/demo?tool=${tool.id}`}>
-                          <button className="h-8 px-3 rounded-lg bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white text-xs font-medium cursor-pointer shadow-sm hover:opacity-90">
+                          <button className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium cursor-pointer shadow-sm hover:opacity-90">
                             Launch
                           </button>
                         </Link>
@@ -743,7 +712,7 @@ export default function Library() {
                     </div>
                   </div>
                 </GlassCard>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

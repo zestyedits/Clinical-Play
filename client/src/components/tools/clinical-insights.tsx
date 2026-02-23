@@ -65,7 +65,7 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsig
           "absolute top-20 md:top-4 right-4 z-30 min-h-[44px] px-4 py-2.5 rounded-2xl shadow-lg transition-all cursor-pointer flex items-center gap-2.5",
           isOpen
             ? "bg-primary text-primary-foreground"
-            : "bg-white/80 backdrop-blur-xl text-primary hover:bg-white/95 border border-accent/30"
+            : "bg-card text-primary hover:bg-card border border-primary/20"
         )}
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
@@ -78,7 +78,7 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsig
         </span>
         {!isOpen && (
           <motion.div
-            className="absolute inset-0 rounded-2xl border-2 border-accent/25 pointer-events-none"
+            className="absolute inset-0 rounded-2xl border-2 border-primary/20 pointer-events-none"
             animate={{ opacity: [0, 0.6, 0], scale: [1, 1.08, 1] }}
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -103,11 +103,8 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsig
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 bottom-0 z-50 w-80 flex flex-col overflow-hidden"
+              className="fixed top-0 right-0 bottom-0 z-50 w-80 flex flex-col overflow-hidden bg-card border-l border-border"
               style={{
-                backdropFilter: "blur(25px)",
-                background: "rgba(255, 255, 255, 0.88)",
-                borderLeft: "1px solid rgba(212, 175, 55, 0.3)",
                 boxShadow: "-8px 0 40px rgba(0,0,0,0.12)",
               }}
             >
@@ -120,7 +117,7 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsig
                       <Lightbulb size={18} className="text-accent" />
                     </div>
                     <div>
-                      <h3 className="font-serif text-base text-primary font-medium">Therapy Prompts</h3>
+                      <h3 className="font-serif text-base text-foreground font-medium">Therapy Prompts</h3>
                       <p className="text-[10px] text-muted-foreground/70">Private — only you can see these</p>
                     </div>
                   </div>
@@ -150,7 +147,7 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsig
                     initial={{ opacity: 0, y: 10, filter: "blur(2px)" }}
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     transition={{ delay: 0.15 + i * 0.06 }}
-                    className="p-3 rounded-2xl bg-white/60 hover:bg-white/80 border border-black/5 border-l-2 border-l-accent/25 transition-colors group cursor-pointer"
+                    className="p-3 rounded-2xl bg-card hover:bg-card border border-border border-l-2 border-l-primary/20 transition-colors group cursor-pointer"
                   >
                     <div className="flex items-start gap-2.5">
                       <MessageCircle size={14} className="text-accent mt-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />

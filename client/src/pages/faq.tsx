@@ -198,7 +198,7 @@ export default function FAQ() {
           <p className="text-muted-foreground mb-4">Still have questions?</p>
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full text-sm font-medium shadow-lg shadow-primary/20 btn-luxury no-underline"
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full text-sm font-medium shadow-lg shadow-primary/20 btn-warm no-underline"
             data-testid="link-faq-contact"
           >
             Get in Touch

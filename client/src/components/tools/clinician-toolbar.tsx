@@ -125,7 +125,7 @@ function FilterPopover({
       exit={{ opacity: 0, x: 8, scale: 0.95 }}
       transition={{ duration: 0.15 }}
       className="absolute right-12 top-0 z-50 w-48 max-h-64 overflow-y-auto
-        bg-[#1B2A4A]/95 backdrop-blur-xl rounded-xl border border-white/10
+        bg-gray-900/95 rounded-xl border border-white/10
         shadow-2xl p-2 space-y-0.5"
     >
       <div className="flex items-center justify-between px-2 py-1 mb-1">
@@ -205,7 +205,7 @@ export function ClinicianToolbar({
               title={isActive ? (control.activeLabel || control.label) : control.label}
             >
               <Icon size={16} />
-              <span className="absolute right-12 bg-[#1B2A4A] text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">
+              <span className="absolute right-12 bg-gray-900 text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">
                 {isActive ? (control.activeLabel || control.label) : control.label}
               </span>
             </button>
@@ -235,7 +235,7 @@ export function ClinicianToolbar({
               >
                 <Icon size={16} />
               </button>
-              <span className="absolute right-12 bg-[#1B2A4A] text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">
+              <span className="absolute right-12 bg-gray-900 text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">
                 {currentOption.label}
               </span>
               {control.showBadge && isActive && (
@@ -269,7 +269,7 @@ export function ClinicianToolbar({
               >
                 <Icon size={16} />
               </button>
-              <span className="absolute right-12 bg-[#1B2A4A] text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">
+              <span className="absolute right-12 bg-gray-900 text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">
                 {control.label}: {isActive ? currentVal : "Off"}
               </span>
               {isActive && (
@@ -303,7 +303,7 @@ export function ClinicianToolbar({
                 <Icon size={16} />
               </button>
               {!isOpen && (
-                <span className="absolute right-12 bg-[#1B2A4A] text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">
+                <span className="absolute right-12 bg-gray-900 text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">
                   {control.label}{!allEnabled ? ` (${currentVal.length}/${control.allOptions.length})` : ""}
                 </span>
               )}
@@ -338,7 +338,7 @@ export function ClinicianToolbar({
       transition={{ type: "spring", stiffness: 300, damping: 25 }}
       className="absolute right-3 top-1/2 -translate-y-1/2 z-30"
     >
-      <div className="bg-[#1B2A4A]/90 backdrop-blur-xl rounded-2xl p-2 shadow-2xl border border-white/10 flex flex-col gap-1.5">
+      <div className="bg-gray-900/95 rounded-2xl p-2 shadow-2xl border border-white/10 flex flex-col gap-1.5">
         {controls.map((control) => renderControl(control))}
 
         {onClear && (
@@ -359,7 +359,7 @@ export function ClinicianToolbar({
                   title="Clear All"
                 >
                   <Trash2 size={16} />
-                  <span className="absolute right-12 bg-[#1B2A4A] text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">
+                  <span className="absolute right-12 bg-gray-900 text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">
                     Clear All
                   </span>
                 </motion.button>

@@ -33,15 +33,10 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-background to-secondary/20">
+    <div className="min-h-screen bg-background">
       <div className="flex items-center justify-center min-h-screen px-4 pt-24 pb-12">
-        <motion.div
-          className="w-full max-w-md"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <div className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl shadow-primary/5 p-8 md:p-10">
+        <div className="w-full max-w-md">
+          <div className="bg-card border border-border rounded-2xl shadow-lg p-8 md:p-10">
             <div className="text-center mb-8">
               <img src="/images/logo-icon.png" alt="ClinicalPlay" className="w-18 h-18 mx-auto mb-5 object-contain" />
               <h1 className="text-3xl font-serif text-primary mb-2" data-testid="text-login-title">Welcome Back</h1>
@@ -59,7 +54,7 @@ export default function Login() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
                     required
-                    className="w-full h-12 pl-11 pr-4 rounded-xl bg-white/80 border border-border/50 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+                    className="w-full h-12 pl-11 pr-4 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     data-testid="input-email"
                   />
                 </div>
@@ -75,7 +70,7 @@ export default function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                     required
-                    className="w-full h-12 pl-11 pr-12 rounded-xl bg-white/80 border border-border/50 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+                    className="w-full h-12 pl-11 pr-12 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     data-testid="input-password"
                   />
                   <button
@@ -103,7 +98,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 btn-luxury cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-medium btn-warm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 data-testid="button-login"
               >
                 {loading ? (
@@ -117,7 +112,7 @@ export default function Login() {
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{" "}
-                <Link href="/signup" className="text-accent font-medium hover:underline no-underline" data-testid="link-signup">
+                <Link href="/signup" className="text-primary underline font-medium" data-testid="link-signup">
                   Create one
                 </Link>
               </p>
@@ -129,7 +124,7 @@ export default function Login() {
             <Link href="/terms" className="underline hover:text-foreground">Terms</Link> and{" "}
             <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>.
           </p>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

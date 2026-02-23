@@ -32,7 +32,7 @@ export default function JoinSession() {
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-secondary/20 flex items-center justify-center px-6 pt-24 pb-12">
       <motion.div
-        className="max-w-md w-full bg-white/60 backdrop-blur-md border border-white/40 rounded-3xl shadow-lg p-10 text-center"
+        className="max-w-md w-full bg-card border border-border rounded-3xl shadow-lg p-10 text-center"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -47,14 +47,14 @@ export default function JoinSession() {
         )}
         {status === "found" && session && (
           <>
-            <div className="w-12 h-12 mx-auto mb-6 rounded-full bg-[#2E8B57]/10 flex items-center justify-center">
-              <span className="text-2xl text-[#2E8B57]">✓</span>
+            <div className="w-12 h-12 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-2xl text-primary">✓</span>
             </div>
             <h2 className="font-serif text-2xl text-primary mb-2">{session.name}</h2>
             <p className="text-muted-foreground mb-6">You've been invited to a therapy session</p>
             <button
               onClick={joinRoom}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium text-lg shadow-lg shadow-[#2E8B57]/20 hover:shadow-xl hover:shadow-[#2E8B57]/30 border border-[#D4AF37]/30 btn-luxury cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-medium text-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 btn-warm cursor-pointer flex items-center justify-center gap-2"
               data-testid="button-join-session"
             >
               Enter Session Room

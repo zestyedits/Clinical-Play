@@ -348,7 +348,7 @@ export default function Playroom() {
     <div className="h-screen w-full bg-background overflow-hidden flex flex-col font-sans">
       {/* Header */}
       <motion.header
-        className="h-14 md:h-16 bg-white/60 backdrop-blur-xl border-b border-white/20 flex items-center justify-between px-4 z-20 shrink-0"
+        className="h-14 md:h-16 bg-card border-b border-border flex items-center justify-between px-4 z-20 shrink-0"
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -360,7 +360,7 @@ export default function Playroom() {
             </button>
           </Link>
           <div>
-            <h1 className="font-serif text-base md:text-lg text-primary leading-tight flex items-center gap-2">
+            <h1 className="font-serif text-base md:text-lg text-foreground leading-tight flex items-center gap-2">
               {session?.name || `Session ${id}`}
             </h1>
             <div className="flex items-center gap-2">
@@ -431,7 +431,7 @@ export default function Playroom() {
 
               <motion.button
                 onClick={handleSnapshot}
-                className="p-2.5 rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary/50 transition-colors cursor-pointer"
+                className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors cursor-pointer"
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.92 }}
                 data-testid="button-snapshot"
@@ -475,7 +475,7 @@ export default function Playroom() {
             </SheetTrigger>
             <SheetContent side="bottom" className="h-[60vh] rounded-t-3xl">
               <SheetHeader className="mb-6">
-                <SheetTitle className="font-serif text-xl text-primary text-left">Participants</SheetTitle>
+                <SheetTitle className="font-serif text-xl text-foreground text-left">Participants</SheetTitle>
               </SheetHeader>
               <div className="space-y-3">
                 {onlineUsers.map(u => {
@@ -484,18 +484,18 @@ export default function Playroom() {
                   return (
                     <div key={u.participantId} className="flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/30 transition-colors">
                       <div className="relative">
-                        <Avatar className="h-11 w-11 border-2 border-white shadow-sm">
-                          <AvatarFallback className={cn("bg-secondary text-primary", isAnonymous && "bg-neutral-200")}>
+                        <Avatar className="h-11 w-11 border-2 border-border shadow-sm">
+                          <AvatarFallback className={cn("bg-secondary text-foreground", isAnonymous && "bg-neutral-200")}>
                             {isAnonymous ? <Ghost size={18} className="text-muted-foreground" /> : u.displayName.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <span className={cn(
-                          "absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full",
+                          "absolute bottom-0 right-0 w-3 h-3 border-2 border-border rounded-full",
                           isDisconnected ? "bg-red-500" : isActive ? "bg-accent animate-pulse" : "bg-green-500"
                         )} />
                       </div>
                       <div>
-                        <div className="font-medium text-primary text-sm flex items-center gap-2">
+                        <div className="font-medium text-foreground text-sm flex items-center gap-2">
                           {isAnonymous ? "Anonymous" : u.displayName}
                           {u.displayName.startsWith("Dr") && <Shield size={12} className="text-accent fill-accent/20" />}
                         </div>
@@ -539,9 +539,9 @@ export default function Playroom() {
                   <Square size={18} className="fill-destructive/20" />
                 </button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="bg-white/95 backdrop-blur-xl border border-white/30 shadow-2xl">
+              <AlertDialogContent className="bg-card border border-border shadow-2xl">
                 <AlertDialogHeader>
-                  <AlertDialogTitle className="font-serif text-primary">End This Session?</AlertDialogTitle>
+                  <AlertDialogTitle className="font-serif text-foreground">End This Session?</AlertDialogTitle>
                   <AlertDialogDescription className="text-muted-foreground leading-relaxed">
                     This will end the session for all participants. Everyone will be disconnected and the session will be marked as complete. This cannot be undone.
                   </AlertDialogDescription>
@@ -615,8 +615,8 @@ export default function Playroom() {
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
               >
-                <div className="bg-white/70 backdrop-blur-xl px-8 py-4 rounded-2xl shadow-xl border border-white/30">
-                  <p className="font-serif text-lg text-primary tracking-tight">{toolTransitionLabel}</p>
+                <div className="bg-card px-8 py-4 rounded-2xl shadow-xl border border-border">
+                  <p className="font-serif text-lg text-foreground tracking-tight">{toolTransitionLabel}</p>
                 </div>
               </motion.div>
             )}
@@ -641,10 +641,10 @@ export default function Playroom() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="w-72 bg-white/60 backdrop-blur-2xl border-l border-white/20 shadow-2xl z-30 hidden md:flex flex-col"
+              className="w-72 bg-card border-l border-border shadow-2xl z-30 hidden md:flex flex-col"
             >
-              <div className="p-5 border-b border-white/20">
-                <h2 className="font-serif text-primary text-lg">Session Panel</h2>
+              <div className="p-5 border-b border-border">
+                <h2 className="font-serif text-foreground text-lg">Session Panel</h2>
               </div>
 
               <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -656,20 +656,20 @@ export default function Playroom() {
                     const isDisconnected = u.status === "disconnected";
                     const isActive = !isDisconnected && u.lastActive && (Date.now() - u.lastActive < 5000);
                     return (
-                      <div key={u.participantId} className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-white/50 transition-colors">
+                      <div key={u.participantId} className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-secondary transition-colors">
                         <div className="relative">
-                          <Avatar className="h-9 w-9 border border-white shadow-sm">
-                            <AvatarFallback className={cn("bg-secondary text-primary text-xs", isAnonymous && "bg-neutral-200")}>
+                          <Avatar className="h-9 w-9 border border-border shadow-sm">
+                            <AvatarFallback className={cn("bg-secondary text-foreground text-xs", isAnonymous && "bg-neutral-200")}>
                               {isAnonymous ? <Ghost size={13} className="text-muted-foreground" /> : u.displayName.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
                           <span className={cn(
-                            "absolute bottom-0 right-0 w-2.5 h-2.5 border-2 border-white rounded-full",
+                            "absolute bottom-0 right-0 w-2.5 h-2.5 border-2 border-border rounded-full",
                             isDisconnected ? "bg-red-500" : isActive ? "bg-accent animate-pulse" : "bg-green-500"
                           )} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className="text-sm font-medium text-primary truncate block">
+                          <span className="text-sm font-medium text-foreground truncate block">
                             {isAnonymous ? "Anonymous" : u.displayName}
                           </span>
                           <span className={cn("text-[10px]", isDisconnected ? "text-red-500 font-medium" : isActive ? "text-accent" : "text-green-600")}>
@@ -687,13 +687,13 @@ export default function Playroom() {
                 {session?.inviteCode && (
                   <div className="mt-4 p-4 rounded-2xl bg-accent/5 border border-accent/20">
                     <p className="text-[10px] uppercase tracking-widest font-bold text-accent mb-1">Invite Code</p>
-                    <p className="text-lg font-mono font-bold text-primary tracking-widest" data-testid="text-invite-code">{session.inviteCode}</p>
+                    <p className="text-lg font-mono font-bold text-foreground tracking-widest" data-testid="text-invite-code">{session.inviteCode}</p>
                   </div>
                 )}
 
-                <div className="mt-4 p-4 rounded-2xl bg-white/40">
+                <div className="mt-4 p-4 rounded-2xl bg-secondary">
                   <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-2">Active Tool</p>
-                  <p className="text-sm font-medium text-primary">{toolDisplayName(activeTool)}</p>
+                  <p className="text-sm font-medium text-foreground">{toolDisplayName(activeTool)}</p>
                 </div>
               </div>
             </motion.aside>
@@ -718,7 +718,7 @@ export default function Playroom() {
             exit={{ y: -60, opacity: 0 }}
             className="absolute top-20 left-1/2 -translate-x-1/2 z-50"
           >
-            <div className="bg-white/80 backdrop-blur-xl px-5 py-2.5 rounded-full shadow-xl text-primary text-sm font-medium border border-white/30 flex items-center gap-2">
+            <div className="bg-card px-5 py-2.5 rounded-full shadow-xl text-foreground text-sm font-medium border border-border flex items-center gap-2">
               <motion.span
                 animate={{ scale: [1, 1.4, 1] }}
                 transition={{ duration: 0.6 }}
@@ -761,11 +761,11 @@ export default function Playroom() {
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.4, type: "spring", stiffness: 300, damping: 20 }}
-                className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[#2E8B57]/5 border border-[#2E8B57]/10 flex items-center justify-center"
+                className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center"
               >
-                <CheckCircle2 size={32} className="text-[#2E8B57]" />
+                <CheckCircle2 size={32} className="text-primary" />
               </motion.div>
-              <h2 className="font-serif text-2xl text-primary mb-2" data-testid="text-session-complete">Session Complete</h2>
+              <h2 className="font-serif text-2xl text-foreground mb-2" data-testid="text-session-complete">Session Complete</h2>
               <p className="text-muted-foreground text-sm leading-relaxed mb-6">
                 {isClinician
                   ? "The session has been ended successfully. All participants have been disconnected."
@@ -773,20 +773,20 @@ export default function Playroom() {
               </p>
 
               <GlassCard hoverEffect={false} className="text-left p-5 mb-6" data-testid="card-session-summary">
-                <h3 className="font-serif text-sm font-semibold text-primary mb-3">Session Summary</h3>
+                <h3 className="font-serif text-sm font-semibold text-foreground mb-3">Session Summary</h3>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
                     <Shield size={14} className="text-muted-foreground mt-0.5 shrink-0" />
                     <div>
                       <p className="text-xs text-muted-foreground">Session Name</p>
-                      <p className="text-sm font-medium text-primary" data-testid="text-session-name">{session?.name || "Untitled Session"}</p>
+                      <p className="text-sm font-medium text-foreground" data-testid="text-session-name">{session?.name || "Untitled Session"}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <Clock size={14} className="text-muted-foreground mt-0.5 shrink-0" />
                     <div>
                       <p className="text-xs text-muted-foreground">Date & Time</p>
-                      <p className="text-sm font-medium text-primary" data-testid="text-session-datetime">
+                      <p className="text-sm font-medium text-foreground" data-testid="text-session-datetime">
                         {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         {" at "}
                         {new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
@@ -810,7 +810,7 @@ export default function Playroom() {
                     <Users size={14} className="text-muted-foreground mt-0.5 shrink-0" />
                     <div>
                       <p className="text-xs text-muted-foreground">Participants</p>
-                      <p className="text-sm font-medium text-primary" data-testid="text-participant-count">
+                      <p className="text-sm font-medium text-foreground" data-testid="text-participant-count">
                         {peakParticipants.current > 0 ? `${peakParticipants.current} (peak)` : "No participants joined"}
                       </p>
                     </div>
@@ -822,7 +822,7 @@ export default function Playroom() {
                 {isClinician && (
                   <button
                     onClick={handleSnapshot}
-                    className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-primary px-6 py-3 rounded-xl text-sm font-medium transition-colors cursor-pointer w-full sm:w-auto justify-center"
+                    className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-foreground px-6 py-3 rounded-xl text-sm font-medium transition-colors cursor-pointer w-full sm:w-auto justify-center"
                     data-testid="button-save-snapshot"
                   >
                     <Download size={16} />
@@ -831,7 +831,7 @@ export default function Playroom() {
                 )}
                 <button
                   onClick={() => navigate(isClinician ? "/dashboard" : "/")}
-                  className="btn-luxury bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white border border-[#D4AF37]/30 px-8 py-3 rounded-xl text-sm font-medium shadow-lg cursor-pointer w-full sm:w-auto"
+                  className="btn-warm bg-primary text-primary-foreground px-8 py-3 rounded-xl text-sm font-medium shadow-lg cursor-pointer w-full sm:w-auto"
                   data-testid="button-session-ended-navigate"
                 >
                   {isClinician ? "Back to Dashboard" : "Return Home"}

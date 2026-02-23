@@ -35,7 +35,7 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href={isAuthenticated ? "/dashboard" : "/"}
-            className="bg-primary text-primary-foreground px-8 py-3 rounded-full text-sm font-medium shadow-lg shadow-primary/20 btn-luxury no-underline"
+            className="bg-primary text-primary-foreground px-8 py-3 rounded-full text-sm font-medium shadow-lg shadow-primary/20 btn-warm no-underline"
             data-testid="link-404-home"
           >
             {isAuthenticated ? "Back to Dashboard" : "Back to Home"}

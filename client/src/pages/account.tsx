@@ -119,8 +119,8 @@ function PlanBillingSection() {
       {/* Current Plan */}
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))" }}>
-            <Crown size={18} style={{ color: "#D4AF37" }} />
+          <div className="w-10 h-10 rounded-2xl bg-accent/10 flex items-center justify-center">
+            <Crown size={18} className="text-accent" />
           </div>
           <div>
             <h2 className="font-serif text-lg text-primary">Your Plan</h2>
@@ -152,8 +152,8 @@ function PlanBillingSection() {
       {/* Payment Method */}
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(15,82,186,0.1), rgba(212,175,55,0.1))" }}>
-            <CreditCard size={18} style={{ color: "#0F52BA" }} />
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <CreditCard size={18} className="text-primary" />
           </div>
           <h2 className="font-serif text-lg text-primary">Payment Method</h2>
         </div>
@@ -188,8 +188,8 @@ function PlanBillingSection() {
           onClick={() => setShowInvoices(!showInvoices)}
           className="w-full flex items-center gap-3 cursor-pointer"
         >
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(46,139,87,0.1), rgba(212,175,55,0.1))" }}>
-            <Receipt size={18} style={{ color: "#2E8B57" }} />
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Receipt size={18} className="text-primary" />
           </div>
           <h2 className="font-serif text-lg text-primary flex-1 text-left">Billing History</h2>
           <motion.div animate={{ rotate: showInvoices ? 180 : 0 }} transition={{ duration: 0.2 }}>
@@ -257,8 +257,8 @@ function OrganizationSection() {
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(123,82,171,0.1), rgba(212,175,55,0.1))" }}>
-              <Users size={18} style={{ color: "#7B52AB" }} />
+            <div className="w-10 h-10 rounded-2xl bg-secondary flex items-center justify-center">
+              <Users size={18} className="text-primary" />
             </div>
             <div>
               <h2 className="font-serif text-lg text-primary">Team Members</h2>
@@ -314,8 +314,7 @@ function OrganizationSection() {
                 <div className="flex gap-2">
                   <button
                     onClick={handleInvite}
-                    className="flex-1 px-4 py-2.5 rounded-xl text-xs font-medium text-white cursor-pointer active:scale-95 transition-all"
-                    style={{ background: "linear-gradient(135deg, #2E8B57 0%, #256D47 100%)" }}
+                    className="flex-1 px-4 py-2.5 rounded-xl text-xs font-medium bg-primary text-primary-foreground cursor-pointer active:scale-95 transition-all"
                   >
                     <Mail size={12} className="inline mr-1" /> Send Invitation
                   </button>
@@ -344,7 +343,7 @@ function OrganizationSection() {
                 className="w-full text-left p-3 rounded-xl bg-secondary/10 border border-border/20 hover:bg-secondary/25 transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, rgba(27,42,74,0.1), rgba(212,175,55,0.1))" }}>
+                  <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center shrink-0">
                     <span className="text-sm font-serif font-bold text-primary">{member.avatarInitial}</span>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -417,8 +416,8 @@ function PreferencesSection() {
     <div className="space-y-6">
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(212,175,55,0.1), rgba(46,139,87,0.1))" }}>
-            <Zap size={18} style={{ color: "#D4AF37" }} />
+          <div className="w-10 h-10 rounded-2xl bg-accent/10 flex items-center justify-center">
+            <Zap size={18} className="text-accent" />
           </div>
           <h2 className="font-serif text-lg text-primary">Experience Preferences</h2>
         </div>
@@ -480,8 +479,8 @@ function SecuritySection() {
       {/* Password */}
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(15,82,186,0.1), rgba(212,175,55,0.1))" }}>
-            <KeyRound size={18} style={{ color: "#0F52BA" }} />
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <KeyRound size={18} className="text-primary" />
           </div>
           <h2 className="font-serif text-lg text-primary">Password</h2>
         </div>
@@ -502,8 +501,8 @@ function SecuritySection() {
       {/* Two-Factor Authentication */}
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(46,139,87,0.1), rgba(212,175,55,0.1))" }}>
-            <Shield size={18} style={{ color: "#2E8B57" }} />
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Shield size={18} className="text-primary" />
           </div>
           <h2 className="font-serif text-lg text-primary">Two-Factor Authentication</h2>
         </div>
@@ -529,8 +528,8 @@ function SecuritySection() {
           onClick={() => setShowDevices(!showDevices)}
           className="w-full flex items-center gap-3 cursor-pointer"
         >
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(123,82,171,0.1), rgba(212,175,55,0.1))" }}>
-            <Smartphone size={18} style={{ color: "#7B52AB" }} />
+          <div className="w-10 h-10 rounded-2xl bg-secondary flex items-center justify-center">
+            <Smartphone size={18} className="text-primary" />
           </div>
           <div className="flex-1 text-left">
             <h2 className="font-serif text-lg text-primary">Active Devices</h2>
@@ -602,8 +601,8 @@ function DataPrivacySection() {
       {/* PHI Statement */}
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(15,82,186,0.1), rgba(46,139,87,0.1))" }}>
-            <Shield size={18} style={{ color: "#0F52BA" }} />
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Shield size={18} className="text-primary" />
           </div>
           <h2 className="font-serif text-lg text-primary">Protected Health Information</h2>
         </div>
@@ -624,8 +623,8 @@ function DataPrivacySection() {
       {/* Export Data */}
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(46,139,87,0.1), rgba(212,175,55,0.1))" }}>
-            <Download size={18} style={{ color: "#2E8B57" }} />
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Download size={18} className="text-primary" />
           </div>
           <h2 className="font-serif text-lg text-primary">Export Your Data</h2>
         </div>

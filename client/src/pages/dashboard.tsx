@@ -4,10 +4,9 @@ import {
   Plus, Users, Calendar, ArrowRight, Copy, CheckCircle2, Crown, Flame,
   CreditCard, Star, Lock, Sparkles, Lightbulb, ExternalLink, HelpCircle, AlertTriangle,
   Palette, Wind, Target, Clock, Layers, House, Brain, Gamepad2, TreePine, Theater,
-  X, UserPlus, Mail, RefreshCw, User, Square
+  X, UserPlus, Mail, RefreshCw, User, Square, Zap, BookOpen, Play
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth, createAuthFetch } from "@/hooks/use-auth";
@@ -25,7 +24,7 @@ interface DashboardTool {
 }
 
 const ALL_TOOLS: DashboardTool[] = [
-  { id: "volume-mixer", label: "Volume Mixer", desc: "Externalize internal parts as tactile audio faders", icon: Layers, tier: "free", emoji: "🎚️" },
+  { id: "volume-mixer", label: "Volume Mixer", desc: "Externalize internal parts as tactile audio faders", icon: Layers, tier: "free", emoji: "\u{1F39A}\uFE0F" },
 ];
 
 const CLINICAL_TIPS: { tip: string; tool: string }[] = [
@@ -34,12 +33,36 @@ const CLINICAL_TIPS: { tip: string; tool: string }[] = [
 
 const ACTIVE_TOOLS = ALL_TOOLS.filter(t => t.id !== "_placeholder");
 
-function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
+// ---------- Session Creation Modal (3-path design) ----------
+
+type SessionPath = "menu" | "guided" | "template";
+
+interface SessionTemplate {
+  id: string;
+  name: string;
+  description: string;
+  tool: string;
+  mode: "solo" | "group";
+  emoji: string;
+}
+
+const SESSION_TEMPLATES: SessionTemplate[] = [
+  { id: "parts-work", name: "Parts Work", description: "Explore internal parts with the Volume Mixer tool in a focused solo session.", tool: "volume-mixer", mode: "solo", emoji: "\u{1F39A}\uFE0F" },
+  { id: "emotion-checkin", name: "Emotion Check-in", description: "Use the Feeling Wheel for a quick emotional temperature check.", tool: "feeling-wheel", mode: "solo", emoji: "\u{1F3A8}" },
+  { id: "free-play", name: "Free Play", description: "Open-ended group exploration with no specific tool pre-selected.", tool: "", mode: "group", emoji: "\u{1F3B2}" },
+  { id: "full-assessment", name: "Full Assessment", description: "Comprehensive solo assessment using the Volume Mixer.", tool: "volume-mixer", mode: "solo", emoji: "\u{1F4CB}" },
+];
+
+function SessionCreationModal({ isOpen, onClose, onSubmit, isPending }: {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (name: string, mode: "solo" | "group", tool: string) => void;
   isPending: boolean;
 }) {
+  const [path, setPath] = useState<SessionPath>("menu");
+  const [wizardStep, setWizardStep] = useState(0);
+
+  // Guided form state
   const [name, setName] = useState("");
   const [mode, setMode] = useState<"solo" | "group">("solo");
   const [selectedTool, setSelectedTool] = useState("volume-mixer");
@@ -50,298 +73,423 @@ function NewSessionModal({ isOpen, onClose, onSubmit, isPending }: {
 
   useEffect(() => {
     if (isOpen) {
+      setPath("menu");
+      setWizardStep(0);
       setName("");
       setMode("solo");
       setSelectedTool("volume-mixer");
     }
   }, [isOpen]);
 
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50"
-            onClick={onClose}
+  if (!isOpen) return null;
+
+  const todayStr = new Date().toLocaleDateString();
+  const defaultName = `Session \u2014 ${todayStr}`;
+
+  const handleQuickStart = () => {
+    onSubmit(defaultName, "solo", "");
+  };
+
+  const handleTemplateUse = (template: SessionTemplate) => {
+    const tName = `${template.name} \u2014 ${todayStr}`;
+    onSubmit(tName, template.mode, template.tool);
+  };
+
+  const handleGuidedSubmit = () => {
+    onSubmit(name || defaultName, mode, selectedTool);
+  };
+
+  // --- Menu view (default) ---
+  const MenuView = () => (
+    <div className="p-6 space-y-5">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="font-serif text-2xl text-foreground" data-testid="text-new-session-title">New Session</h2>
+        <button onClick={onClose} className="p-2 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer" data-testid="button-close-new-session">
+          <X size={20} className="text-muted-foreground" />
+        </button>
+      </div>
+
+      {/* Quick Start — primary action */}
+      <button
+        onClick={handleQuickStart}
+        disabled={isPending}
+        className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2.5 text-base btn-warm"
+        data-testid="button-quick-start"
+      >
+        <Zap size={18} />
+        {isPending ? "Creating..." : "Quick Start"}
+      </button>
+      <p className="text-xs text-muted-foreground text-center -mt-2">Solo session with defaults — jump right in</p>
+
+      <div className="grid grid-cols-2 gap-3 pt-1">
+        {/* Guided Setup card */}
+        <button
+          onClick={() => setPath("guided")}
+          className="p-5 rounded-2xl bg-secondary border border-border text-left hover:border-primary/30 transition-colors cursor-pointer group"
+          data-testid="button-guided-setup"
+        >
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+            <BookOpen size={18} className="text-primary" />
+          </div>
+          <h3 className="text-sm font-medium text-foreground mb-1">Guided Setup</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">Step-by-step configuration</p>
+        </button>
+
+        {/* From Template card */}
+        <button
+          onClick={() => setPath("template")}
+          className="p-5 rounded-2xl bg-secondary border border-border text-left hover:border-primary/30 transition-colors cursor-pointer group"
+          data-testid="button-from-template"
+        >
+          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center mb-3">
+            <Layers size={18} className="text-accent" />
+          </div>
+          <h3 className="text-sm font-medium text-foreground mb-1">From Template</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">Pre-configured presets</p>
+        </button>
+      </div>
+    </div>
+  );
+
+  // --- Guided wizard ---
+  const GuidedView = () => (
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <button onClick={() => { if (wizardStep > 0) setWizardStep(wizardStep - 1); else setPath("menu"); }} className="p-2 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer" data-testid="button-guided-back">
+            <ArrowRight size={18} className="text-muted-foreground rotate-180" />
+          </button>
+          <h2 className="font-serif text-xl text-foreground">
+            {wizardStep === 0 ? "Name & Mode" : wizardStep === 1 ? "Starting Tool" : "Review"}
+          </h2>
+        </div>
+        <button onClick={onClose} className="p-2 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer">
+          <X size={20} className="text-muted-foreground" />
+        </button>
+      </div>
+
+      {/* Step indicators */}
+      <div className="flex gap-2 mb-6">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              i === wizardStep ? "w-8 bg-primary" : i < wizardStep ? "w-4 bg-accent" : "w-4 bg-primary/15"
+            }`}
           />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed inset-x-4 top-[10%] bottom-auto max-h-[85vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[460px] md:max-h-[90vh] z-50 bg-white/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/40"
-          >
-            <div className="p-6 pb-4">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-serif text-2xl text-primary" data-testid="text-new-session-title">New Session</h2>
-                <button onClick={onClose} className="p-2 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer" data-testid="button-close-new-session">
-                  <X size={20} className="text-muted-foreground" />
-                </button>
-              </div>
+        ))}
+      </div>
 
-              <div className="space-y-5">
-                <div>
-                  <label className="text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-2">Session Name</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder={`Session — ${new Date().toLocaleDateString()}`}
-                    className="w-full px-4 py-3.5 rounded-2xl bg-white/60 border border-white/40 text-primary placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 text-sm"
-                    autoFocus
-                    data-testid="input-session-name"
-                  />
-                  <p
-                    className="mt-2 text-xs text-muted-foreground/70 leading-relaxed"
-                    data-testid="text-phi-reminder"
-                  >
-                    Reminder: Do not include client names. Use initials or session codes only.
-                  </p>
-                  <AnimatePresence>
-                    {containsPotentialName && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="mt-2 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs leading-relaxed flex items-start gap-2"
-                        data-testid="warning-phi-name-detected"
-                      >
-                        <span className="mt-0.5 shrink-0">⚠️</span>
-                        <span>This may contain a client name. Consider using initials instead.</span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-2">Session Type</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => setMode("solo")}
-                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
-                        mode === "solo"
-                          ? "border-[#2E8B57] bg-[#2E8B57]/5 shadow-md"
-                          : "border-white/40 bg-white/40 hover:border-primary/30"
-                      }`}
-                      data-testid="button-mode-solo"
-                    >
-                      <User size={24} className={mode === "solo" ? "text-[#2E8B57] mb-2" : "text-muted-foreground mb-2"} />
-                      <div className="font-medium text-sm text-primary">Solo</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">1-on-1 session</div>
-                    </button>
-                    <button
-                      onClick={() => setMode("group")}
-                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
-                        mode === "group"
-                          ? "border-[#2E8B57] bg-[#2E8B57]/5 shadow-md"
-                          : "border-white/40 bg-white/40 hover:border-primary/30"
-                      }`}
-                      data-testid="button-mode-group"
-                    >
-                      <UserPlus size={24} className={mode === "group" ? "text-[#2E8B57] mb-2" : "text-muted-foreground mb-2"} />
-                      <div className="font-medium text-sm text-primary">Group</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">Multiple clients</div>
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-primary/60 uppercase tracking-[0.15em] block mb-2">Starting Tool</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {ACTIVE_TOOLS.map((tool) => (
-                      <button
-                        key={tool.id}
-                        onClick={() => setSelectedTool(tool.id)}
-                        className={`p-3 rounded-2xl border-2 transition-all cursor-pointer text-center ${
-                          selectedTool === tool.id
-                            ? "border-[#2E8B57] bg-[#2E8B57]/5 shadow-md"
-                            : "border-white/40 bg-white/40 hover:border-primary/30"
-                        }`}
-                        data-testid={`button-tool-${tool.id}`}
-                      >
-                        <span className="text-xl block mb-1">{tool.emoji}</span>
-                        <div className="text-[11px] font-medium text-primary leading-tight">{tool.label}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 pt-2">
-              <button
-                onClick={() => onSubmit(name || `Session — ${new Date().toLocaleDateString()}`, mode, selectedTool)}
-                disabled={isPending}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-                data-testid="button-create-session-submit"
+      {wizardStep === 0 && (
+        <div className="space-y-5">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.15em] block mb-2">Session Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={defaultName}
+              className="w-full px-4 py-3.5 rounded-2xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm"
+              autoFocus
+              data-testid="input-session-name"
+            />
+            <p className="mt-2 text-xs text-muted-foreground/70 leading-relaxed" data-testid="text-phi-reminder">
+              Reminder: Do not include client names. Use initials or session codes only.
+            </p>
+            {containsPotentialName && (
+              <div
+                className="mt-2 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs leading-relaxed flex items-start gap-2"
+                data-testid="warning-phi-name-detected"
               >
-                <Sparkles size={16} />
-                {isPending ? "Creating..." : "Start Session"}
+                <span className="mt-0.5 shrink-0">{"\u26A0\uFE0F"}</span>
+                <span>This may contain a client name. Consider using initials instead.</span>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.15em] block mb-2">Session Type</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setMode("solo")}
+                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
+                  mode === "solo"
+                    ? "border-primary bg-primary/5 shadow-md"
+                    : "border-border bg-secondary hover:border-primary/30"
+                }`}
+                data-testid="button-mode-solo"
+              >
+                <User size={24} className={mode === "solo" ? "text-primary mb-2" : "text-muted-foreground mb-2"} />
+                <div className="font-medium text-sm text-foreground">Solo</div>
+                <div className="text-xs text-muted-foreground mt-0.5">1-on-1 session</div>
+              </button>
+              <button
+                onClick={() => setMode("group")}
+                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
+                  mode === "group"
+                    ? "border-primary bg-primary/5 shadow-md"
+                    : "border-border bg-secondary hover:border-primary/30"
+                }`}
+                data-testid="button-mode-group"
+              >
+                <UserPlus size={24} className={mode === "group" ? "text-primary mb-2" : "text-muted-foreground mb-2"} />
+                <div className="font-medium text-sm text-foreground">Group</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Multiple clients</div>
               </button>
             </div>
-          </motion.div>
-        </>
+          </div>
+
+          <button
+            onClick={() => setWizardStep(1)}
+            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-medium hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 btn-warm"
+            data-testid="button-guided-next-1"
+          >
+            Continue <ArrowRight size={16} />
+          </button>
+        </div>
       )}
-    </AnimatePresence>
+
+      {wizardStep === 1 && (
+        <div className="space-y-5">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.15em] block mb-2">Starting Tool</label>
+            <div className="grid grid-cols-3 gap-2">
+              {ACTIVE_TOOLS.map((tool) => (
+                <button
+                  key={tool.id}
+                  onClick={() => setSelectedTool(tool.id)}
+                  className={`p-3 rounded-2xl border-2 transition-all cursor-pointer text-center ${
+                    selectedTool === tool.id
+                      ? "border-primary bg-primary/5 shadow-md"
+                      : "border-border bg-secondary hover:border-primary/30"
+                  }`}
+                  data-testid={`button-tool-${tool.id}`}
+                >
+                  <span className="text-xl block mb-1">{tool.emoji}</span>
+                  <div className="text-[11px] font-medium text-foreground leading-tight">{tool.label}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={() => setWizardStep(2)}
+            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-medium hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 btn-warm"
+            data-testid="button-guided-next-2"
+          >
+            Continue <ArrowRight size={16} />
+          </button>
+        </div>
+      )}
+
+      {wizardStep === 2 && (
+        <div className="space-y-5">
+          <div className="rounded-2xl bg-secondary border border-border p-5 space-y-3">
+            <h3 className="text-sm font-semibold text-foreground">Review</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Name</span>
+                <span className="text-foreground font-medium">{name || defaultName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Mode</span>
+                <span className="text-foreground font-medium capitalize">{mode}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Tool</span>
+                <span className="text-foreground font-medium">{ACTIVE_TOOLS.find(t => t.id === selectedTool)?.label || "None"}</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={handleGuidedSubmit}
+            disabled={isPending}
+            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 btn-warm"
+            data-testid="button-create-session-submit"
+          >
+            <Sparkles size={16} />
+            {isPending ? "Creating..." : "Start Session"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  // --- Template view ---
+  const TemplateView = () => (
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setPath("menu")} className="p-2 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer" data-testid="button-template-back">
+            <ArrowRight size={18} className="text-muted-foreground rotate-180" />
+          </button>
+          <h2 className="font-serif text-xl text-foreground">Templates</h2>
+        </div>
+        <button onClick={onClose} className="p-2 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer">
+          <X size={20} className="text-muted-foreground" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {SESSION_TEMPLATES.map((template) => (
+          <div
+            key={template.id}
+            className="rounded-2xl bg-secondary border border-border p-4 flex flex-col"
+          >
+            <span className="text-2xl mb-2">{template.emoji}</span>
+            <h3 className="text-sm font-medium text-foreground mb-1">{template.name}</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed mb-3 flex-1">{template.description}</p>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium capitalize">{template.mode}</span>
+            </div>
+            <button
+              onClick={() => handleTemplateUse(template)}
+              disabled={isPending}
+              className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-medium hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 btn-warm"
+              data-testid={`button-template-${template.id}`}
+            >
+              <Play size={12} />
+              {isPending ? "Creating..." : "Use Template"}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-black/30 z-50"
+        onClick={onClose}
+      />
+      <div
+        className="fixed inset-x-4 top-[10%] bottom-auto max-h-[85vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[500px] md:max-h-[90vh] z-50 bg-card border border-border rounded-2xl shadow-2xl"
+      >
+        {path === "menu" && <MenuView />}
+        {path === "guided" && <GuidedView />}
+        {path === "template" && <TemplateView />}
+      </div>
+    </>
   );
 }
+
+// ---------- Onboarding Modal ----------
 
 function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [step, setStep] = useState(0);
 
+  if (!isOpen) return null;
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-md z-50"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 30 }}
-            transition={{ type: "spring", stiffness: 280, damping: 24 }}
-            className="fixed inset-x-4 top-[8%] bottom-auto max-h-[88vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[500px] md:max-h-[90vh] z-50 bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/40"
-          >
-            <div className="relative">
-              <div className="flex justify-center gap-2 pt-6 pb-2">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className={`h-1.5 rounded-full transition-all duration-500 ${
-                      i === step ? "w-8 bg-[#2E8B57]" : i < step ? "w-4 bg-accent" : "w-4 bg-primary/15"
-                    }`}
-                  />
-                ))}
+    <>
+      <div className="fixed inset-0 bg-black/40 z-50" />
+      <div className="fixed inset-x-4 top-[8%] bottom-auto max-h-[88vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[500px] md:max-h-[90vh] z-50 bg-card border border-border rounded-2xl shadow-2xl">
+        <div className="relative">
+          <div className="flex justify-center gap-2 pt-6 pb-2">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className={`h-1.5 rounded-full transition-all duration-500 ${
+                  i === step ? "w-8 bg-primary" : i < step ? "w-4 bg-accent" : "w-4 bg-primary/15"
+                }`}
+              />
+            ))}
+          </div>
+
+          {step === 0 && (
+            <div className="p-8 pt-4 text-center">
+              <div className="w-20 h-20 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                <span className="text-4xl">{"\u2728"}</span>
               </div>
-
-              <AnimatePresence mode="wait">
-                {step === 0 && (
-                  <motion.div
-                    key="step0"
-                    initial={{ opacity: 0, x: 40 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -40 }}
-                    className="p-8 pt-4 text-center"
-                  >
-                    <div className="w-20 h-20 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-                      <span className="text-4xl">✨</span>
-                    </div>
-                    <h2 className="font-serif text-2xl text-primary mb-3" data-testid="text-onboarding-welcome">Welcome to the Community</h2>
-                    <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
-                      ClinicalPlay gives you interactive therapy tools that work in real time with your clients. No downloads, no installs — just share an invite code and you're connected.
-                    </p>
-                  </motion.div>
-                )}
-
-                {step === 1 && (
-                  <motion.div
-                    key="step1"
-                    initial={{ opacity: 0, x: 40 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -40 }}
-                    className="p-8 pt-4 text-center"
-                  >
-                    <div className="w-full max-w-[280px] mx-auto mb-5 rounded-2xl bg-gradient-to-br from-[#E8F0E6] to-[#D4E4D1] p-6 relative overflow-hidden">
-                      <div className="text-5xl mb-3 animate-bounce" style={{ animationDuration: "3s" }}>🏖️</div>
-                      <div className="flex flex-wrap justify-center gap-2">
-                        {["🌲", "🌸", "⛰️", "🌊", "☀️", "🏠"].map((emoji, i) => (
-                          <motion.span
-                            key={i}
-                            className="text-2xl"
-                            initial={{ opacity: 0, scale: 0 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.3 + i * 0.15 }}
-                          >
-                            {emoji}
-                          </motion.span>
-                        ))}
-                      </div>
-                      <div className="absolute -bottom-2 -right-2 w-24 h-24 bg-accent/10 rounded-full blur-xl" />
-                    </div>
-                    <h2 className="font-serif text-2xl text-primary mb-3">The Zen Sandtray</h2>
-                    <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
-                      Your clients drag and drop expressive items onto a shared canvas. Watch their world unfold in real time — no words needed.
-                    </p>
-                  </motion.div>
-                )}
-
-                {step === 2 && (
-                  <motion.div
-                    key="step2"
-                    initial={{ opacity: 0, x: 40 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -40 }}
-                    className="p-8 pt-4 text-center"
-                  >
-                    <div className="w-20 h-20 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center">
-                      <Sparkles size={36} className="text-accent" />
-                    </div>
-                    <h2 className="font-serif text-2xl text-primary mb-3">You're All Set</h2>
-                    <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
-                      Create your first session, share the invite code with a client, and start exploring together. It's that simple.
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="p-6 pt-0 flex gap-3">
-                {step > 0 && (
-                  <button
-                    onClick={() => setStep(step - 1)}
-                    className="px-5 py-3 rounded-2xl bg-secondary/50 text-primary font-medium text-sm hover:bg-secondary transition-colors cursor-pointer"
-                    data-testid="button-onboarding-back"
-                  >
-                    Back
-                  </button>
-                )}
-                <button
-                  onClick={() => {
-                    if (step < 2) setStep(step + 1);
-                    else onClose();
-                  }}
-                  className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 hover:brightness-110 transition-all cursor-pointer flex items-center justify-center gap-2"
-                  data-testid="button-onboarding-next"
-                >
-                  {step === 2 ? (
-                    <>
-                      <Sparkles size={16} />
-                      Start Your First Session
-                    </>
-                  ) : (
-                    <>
-                      Continue
-                      <ArrowRight size={16} />
-                    </>
-                  )}
-                </button>
-              </div>
-              {step === 2 && (
-                <div className="px-6 pb-6 pt-0 text-center">
-                  <Link href="/playroom/demo" className="no-underline">
-                    <button
-                      className="text-sm text-accent hover:text-accent/80 transition-colors cursor-pointer underline underline-offset-2"
-                      data-testid="button-try-demo-onboarding"
-                    >
-                      Or try a demo first
-                    </button>
-                  </Link>
-                </div>
-              )}
+              <h2 className="font-serif text-2xl text-foreground mb-3" data-testid="text-onboarding-welcome">Welcome to the Community</h2>
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
+                ClinicalPlay gives you interactive therapy tools that work in real time with your clients. No downloads, no installs — just share an invite code and you're connected.
+              </p>
             </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+          )}
+
+          {step === 1 && (
+            <div className="p-8 pt-4 text-center">
+              <div className="w-full max-w-[280px] mx-auto mb-5 rounded-2xl bg-gradient-to-br from-secondary to-secondary/60 p-6 relative overflow-hidden">
+                <div className="text-5xl mb-3">{"\u{1F3D6}\uFE0F"}</div>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {["\u{1F332}", "\u{1F338}", "\u26F0\uFE0F", "\u{1F30A}", "\u2600\uFE0F", "\u{1F3E0}"].map((emoji, i) => (
+                    <span key={i} className="text-2xl">{emoji}</span>
+                  ))}
+                </div>
+                <div className="absolute -bottom-2 -right-2 w-24 h-24 bg-accent/10 rounded-full blur-xl" />
+              </div>
+              <h2 className="font-serif text-2xl text-foreground mb-3">The Zen Sandtray</h2>
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
+                Your clients drag and drop expressive items onto a shared canvas. Watch their world unfold in real time — no words needed.
+              </p>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="p-8 pt-4 text-center">
+              <div className="w-20 h-20 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center">
+                <Sparkles size={36} className="text-accent" />
+              </div>
+              <h2 className="font-serif text-2xl text-foreground mb-3">You're All Set</h2>
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
+                Create your first session, share the invite code with a client, and start exploring together. It's that simple.
+              </p>
+            </div>
+          )}
+
+          <div className="p-6 pt-0 flex gap-3">
+            {step > 0 && (
+              <button
+                onClick={() => setStep(step - 1)}
+                className="px-5 py-3 rounded-2xl bg-secondary/50 text-foreground font-medium text-sm hover:bg-secondary transition-colors cursor-pointer"
+                data-testid="button-onboarding-back"
+              >
+                Back
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (step < 2) setStep(step + 1);
+                else onClose();
+              }}
+              className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 btn-warm"
+              data-testid="button-onboarding-next"
+            >
+              {step === 2 ? (
+                <>
+                  <Sparkles size={16} />
+                  Start Your First Session
+                </>
+              ) : (
+                <>
+                  Continue
+                  <ArrowRight size={16} />
+                </>
+              )}
+            </button>
+          </div>
+          {step === 2 && (
+            <div className="px-6 pb-6 pt-0 text-center">
+              <Link href="/playroom/demo" className="no-underline">
+                <button
+                  className="text-sm text-accent hover:text-accent/80 transition-colors cursor-pointer underline underline-offset-2"
+                  data-testid="button-try-demo-onboarding"
+                >
+                  Or try a demo first
+                </button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
+
+// ---------- Main Dashboard ----------
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
@@ -367,30 +515,30 @@ export default function Dashboard() {
     {
       target: "button-new-session",
       title: "Start a Session",
-      content: "Create a new session room here. You'll get a unique invite code to share with your client — they just click the link to join.",
+      content: "Create a new session room here. You'll get a unique invite code to share with your client \u2014 they just click the link to join.",
       position: "bottom",
-      emoji: "🎮",
+      emoji: "\u{1F3AE}",
     },
     {
       target: "dashboard-sessions",
       title: "Your Sessions",
       content: "All your active and past sessions live here. Copy an invite code or jump right back into a session with one tap.",
       position: "top",
-      emoji: "📋",
+      emoji: "\u{1F4CB}",
     },
     {
       target: "dashboard-tools",
       title: "Clinical Tool Library",
       content: "Browse all 8 interactive therapy tools. Star your favorites for quick access, and try new ones in any session.",
       position: "top",
-      emoji: "🧰",
+      emoji: "\u{1F9F0}",
     },
     {
       target: "dashboard-account",
       title: "Your Account",
       content: "Manage your subscription, view session stats, and get quick clinical tips right from your sidebar.",
       position: "left",
-      emoji: "👤",
+      emoji: "\u{1F464}",
     },
   ];
 
@@ -591,10 +739,10 @@ export default function Dashboard() {
 
   if (authLoading || !isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-accent/10 flex items-center justify-center animate-pulse">
-            <span className="text-2xl">✨</span>
+            <span className="text-2xl">{"\u2728"}</span>
           </div>
           <p className="text-muted-foreground font-medium" data-testid="text-loading">Loading...</p>
         </div>
@@ -604,13 +752,13 @@ export default function Dashboard() {
 
   if (accessDenied) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center min-h-screen px-6">
           <GlassCard className="max-w-md w-full p-10 text-center" hoverEffect={false}>
             <div className="w-16 h-16 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
               <Lock size={28} className="text-primary/60" />
             </div>
-            <h2 className="text-2xl font-serif text-primary mb-3">We Haven't Launched Yet</h2>
+            <h2 className="text-2xl font-serif text-foreground mb-3">We Haven't Launched Yet</h2>
             <p className="text-muted-foreground leading-relaxed mb-6">
               ClinicalPlay is currently in private preview. We're putting the finishing touches on the platform and will be opening access soon.
             </p>
@@ -633,7 +781,7 @@ export default function Dashboard() {
   const SessionsView = () => (
     <div className="space-y-6" data-tour="dashboard-sessions">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium text-primary flex items-center gap-2">
+        <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
           <Users size={18} className="text-accent" /> Active Sessions
         </h2>
         <span className="text-xs text-muted-foreground bg-secondary/50 px-3 py-1 rounded-full">{activeSessions.length} active</span>
@@ -658,18 +806,13 @@ export default function Dashboard() {
       ) : activeSessions.length === 0 ? (
         <GlassCard className="p-10 text-center" hoverEffect={false}>
           <div className="w-16 h-16 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-primary/5 to-accent/10 flex items-center justify-center">
-            <span className="text-3xl">🏖️</span>
+            <span className="text-3xl">{"\u{1F3D6}\uFE0F"}</span>
           </div>
-          <h3 className="text-xl font-serif text-primary mb-2">No active sessions</h3>
+          <h3 className="text-xl font-serif text-foreground mb-2">No active sessions</h3>
           <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">Create a session room and share the invite code with your client to get started.</p>
           <button
             onClick={() => setShowNewSession(true)}
-            className="px-6 py-3 rounded-2xl inline-flex items-center gap-2 shadow-lg cursor-pointer hover:brightness-110 transition-all text-white font-medium border-2"
-            style={{
-              background: "linear-gradient(135deg, #2E8B57 0%, #256D47 100%)",
-              borderColor: "#D4AF37",
-              boxShadow: "0 4px 16px rgba(46,139,87,0.2)",
-            }}
+            className="px-6 py-3 rounded-2xl inline-flex items-center gap-2 shadow-md cursor-pointer hover:brightness-105 transition-all bg-primary text-primary-foreground font-medium btn-warm"
             data-testid="button-new-session-empty"
           >
             <Plus size={18} /> Create Session
@@ -685,44 +828,34 @@ export default function Dashboard() {
           </div>
         </GlassCard>
       ) : (
-        activeSessions.map((sess, i) => (
-          <motion.div
-            key={sess.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: i * 0.08 }}
-          >
+        activeSessions.map((sess) => (
+          <div key={sess.id}>
             <GlassCard className="p-5 flex flex-col md:flex-row items-center gap-5" hoverEffect={true}>
               <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
-                <span className="text-xl">🎮</span>
+                <span className="text-xl">{"\u{1F3AE}"}</span>
               </div>
               <div className="flex-1 text-center md:text-left">
-                <h3 className="text-base font-serif text-primary">{sess.name}</h3>
+                <h3 className="text-base font-serif text-foreground">{sess.name}</h3>
                 <div className="flex items-center justify-center md:justify-start gap-3 mt-1 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar size={13} />
                     {new Date(sess.createdAt).toLocaleDateString()}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "rgba(46,139,87,0.12)", color: "#2E8B57" }}>active</span>
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">active</span>
                 </div>
               </div>
               <div className="flex gap-2 w-full md:w-auto flex-col sm:flex-row items-center">
                 <button
                   onClick={() => copyInvite(sess.inviteCode)}
-                  className="min-h-[48px] px-4 py-3 bg-white/80 backdrop-blur-sm border border-white/40 text-foreground rounded-2xl text-sm font-medium hover:bg-white transition-colors flex items-center justify-center gap-2 cursor-pointer font-mono tracking-wider"
+                  className="min-h-[48px] px-4 py-3 bg-secondary border border-border text-foreground rounded-2xl text-sm font-medium hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2 cursor-pointer font-mono tracking-wider"
                   data-testid={`button-copy-invite-${sess.id}`}
                 >
-                  {copied === sess.inviteCode ? <CheckCircle2 size={16} className="text-green-600" /> : <Copy size={16} />}
+                  {copied === sess.inviteCode ? <CheckCircle2 size={16} className="text-primary" /> : <Copy size={16} />}
                   {copied === sess.inviteCode ? "Copied!" : sess.inviteCode}
                 </button>
                 <Link href={`/playroom/${sess.id}`} className="flex-1 no-underline">
                   <button
-                    className="w-full min-h-[48px] px-5 py-3 text-white rounded-2xl text-sm font-medium shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2 cursor-pointer border"
-                    style={{
-                      background: "linear-gradient(135deg, #2E8B57 0%, #256D47 100%)",
-                      borderColor: "rgba(212,175,55,0.4)",
-                      boxShadow: "0 4px 12px rgba(46,139,87,0.2)",
-                    }}
+                    className="w-full min-h-[48px] px-5 py-3 bg-primary text-primary-foreground rounded-2xl text-sm font-medium shadow-md hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer btn-warm"
                     data-testid={`button-join-${sess.id}`}
                   >
                     Enter <ArrowRight size={16} />
@@ -732,7 +865,7 @@ export default function Dashboard() {
                   <div className="flex gap-1.5">
                     <button
                       onClick={() => setEndingSessionId(null)}
-                      className="min-h-[48px] px-3 py-3 bg-white/80 border border-white/40 text-muted-foreground rounded-2xl text-xs font-medium cursor-pointer hover:bg-white transition-colors"
+                      className="min-h-[48px] px-3 py-3 bg-secondary border border-border text-muted-foreground rounded-2xl text-xs font-medium cursor-pointer hover:bg-secondary/80 transition-colors"
                     >
                       Cancel
                     </button>
@@ -757,33 +890,28 @@ export default function Dashboard() {
                 )}
               </div>
             </GlassCard>
-          </motion.div>
+          </div>
         ))
       )}
 
       {pastSessions.length > 0 && (
         <div className="mt-8 space-y-4">
-          <h2 className="text-lg font-medium text-primary flex items-center gap-2">
+          <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
             <Calendar size={18} className="text-muted-foreground" /> Past Sessions
           </h2>
-          {pastSessions.slice(0, 5).map((sess, i) => (
-            <motion.div
-              key={sess.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.05 }}
-            >
+          {pastSessions.slice(0, 5).map((sess) => (
+            <div key={sess.id}>
               <GlassCard className="p-4 flex items-center gap-4 opacity-80" hoverEffect={false}>
                 <div className="w-10 h-10 rounded-xl bg-secondary/50 flex items-center justify-center shrink-0">
                   <Calendar size={18} className="text-muted-foreground" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-sm font-medium text-primary">{sess.name}</h4>
+                  <h4 className="text-sm font-medium text-foreground">{sess.name}</h4>
                   <p className="text-xs text-muted-foreground">{new Date(sess.createdAt).toLocaleDateString()}</p>
                 </div>
                 <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">{sess.status}</span>
               </GlassCard>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}
@@ -794,7 +922,7 @@ export default function Dashboard() {
     <div className="space-y-6" data-tour="dashboard-tools">
       {favoritedTools.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-medium text-primary flex items-center gap-2">
+          <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
             <Star size={18} className="text-amber-500 fill-amber-500" /> Frequently Used
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -810,7 +938,7 @@ export default function Dashboard() {
                     <Star size={14} className="text-amber-500 fill-amber-500" />
                   </button>
                   <span className="text-2xl mb-2 block">{tool.emoji}</span>
-                  <h4 className="text-sm font-medium text-primary">{tool.label}</h4>
+                  <h4 className="text-sm font-medium text-foreground">{tool.label}</h4>
                   {isLocked ? (
                     <button
                       onClick={() => checkout.mutate("monthly")}
@@ -834,7 +962,7 @@ export default function Dashboard() {
       )}
 
       <div className="space-y-3">
-        <h2 className="text-lg font-medium text-primary flex items-center gap-2">
+        <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
           <Palette size={18} className="text-accent" /> All Tools
         </h2>
         <div className="columns-1 sm:columns-2 gap-3 space-y-3">
@@ -844,19 +972,16 @@ export default function Dashboard() {
             const isExpanded = i === 0 || i === 3 || i === 5;
 
             return (
-              <motion.div
+              <div
                 key={tool.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.05 }}
                 className="break-inside-avoid"
               >
                 <GlassCard className={`relative ${isLocked ? "opacity-75" : ""} ${isExpanded ? "p-6" : "p-5"}`} hoverEffect={!isLocked}>
                   {isLocked && (
-                    <div className="absolute inset-0 bg-white/30 backdrop-blur-[1px] rounded-3xl z-10 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-card/60 rounded-2xl z-10 flex items-center justify-center">
                       <button
                         onClick={() => checkout.mutate("monthly")}
-                        className="bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white px-5 py-2.5 rounded-2xl text-sm font-medium shadow-lg flex items-center gap-2 cursor-pointer hover:brightness-110 transition-all border border-[#D4AF37]/30"
+                        className="bg-primary text-primary-foreground px-5 py-2.5 rounded-2xl text-sm font-medium shadow-md flex items-center gap-2 cursor-pointer hover:brightness-105 transition-all btn-warm"
                         data-testid={`button-upgrade-${tool.id}`}
                       >
                         <Lock size={14} /> Upgrade to Unlock
@@ -878,9 +1003,9 @@ export default function Dashboard() {
                   </div>
 
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-medium text-primary text-sm">{tool.label}</h3>
+                    <h3 className="font-medium text-foreground text-sm">{tool.label}</h3>
                     {tool.tier === "pro" && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold border" style={{ backgroundColor: "rgba(15,82,186,0.08)", color: "#0F52BA", borderColor: "rgba(15,82,186,0.2)" }}>PRO</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold border bg-primary/10 text-primary border-primary/20">PRO</span>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">{tool.desc}</p>
@@ -888,19 +1013,14 @@ export default function Dashboard() {
                   {!isLocked && (
                     <button
                       onClick={() => setShowNewSession(true)}
-                      className="w-full px-4 py-2.5 rounded-xl text-xs font-medium transition-colors cursor-pointer flex items-center justify-center gap-1 border"
-                      style={{
-                        backgroundColor: "rgba(46,139,87,0.08)",
-                        color: "#2E8B57",
-                        borderColor: "rgba(46,139,87,0.15)",
-                      }}
+                      className="w-full px-4 py-2.5 rounded-xl text-xs font-medium transition-colors cursor-pointer flex items-center justify-center gap-1 border bg-primary/10 text-primary border-primary/15 hover:bg-primary/15"
                       data-testid={`button-launch-${tool.id}`}
                     >
                       Launch <ArrowRight size={12} />
                     </button>
                   )}
                 </GlassCard>
-              </motion.div>
+              </div>
             );
           })}
         </div>
@@ -914,15 +1034,15 @@ export default function Dashboard() {
         <GlassCard className="p-5" hoverEffect={false}>
           <div className="flex items-center gap-4 mb-4">
             {user.profileImageUrl ? (
-              <img src={user.profileImageUrl} alt="" className="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-sm" />
+              <img src={user.profileImageUrl} alt="" className="w-14 h-14 rounded-2xl object-cover border-2 border-border shadow-sm" />
             ) : (
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-serif text-xl shadow-md">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-serif text-xl shadow-md">
                 {user.firstName?.charAt(0) || "C"}
               </div>
             )}
             <div>
               <div className="flex items-center gap-2">
-                <p className="font-serif text-primary font-medium">{user.firstName} {user.lastName}</p>
+                <p className="font-serif text-foreground font-medium">{user.firstName} {user.lastName}</p>
                 {subscriptionType === "founding" && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-amber-100 to-yellow-50 text-amber-700 border border-amber-200/60 shadow-sm" data-testid="badge-founding-member">
                     <Crown size={10} className="text-amber-600" />
@@ -941,7 +1061,7 @@ export default function Dashboard() {
           </div>
           <div className="space-y-2">
             <Link href="/workspace" className="no-underline">
-              <button className="w-full py-2.5 rounded-xl bg-secondary/50 text-primary text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2" data-testid="button-workspace">
+              <button className="w-full py-2.5 rounded-xl bg-secondary/50 text-foreground text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2" data-testid="button-workspace">
                 <User size={14} />
                 Workspace
               </button>
@@ -950,7 +1070,7 @@ export default function Dashboard() {
               <button
                 onClick={() => manageSubscription.mutate()}
                 disabled={manageSubscription.isPending}
-                className="w-full py-2.5 rounded-xl bg-secondary/50 text-primary text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-2.5 rounded-xl bg-secondary/50 text-foreground text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2"
                 data-testid="button-manage-billing"
               >
                 <CreditCard size={14} />
@@ -958,7 +1078,7 @@ export default function Dashboard() {
               </button>
             )}
             <Link href="/contact" className="no-underline">
-              <button className="w-full py-2.5 rounded-xl bg-secondary/50 text-primary text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2" data-testid="button-support-link">
+              <button className="w-full py-2.5 rounded-xl bg-secondary/50 text-foreground text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2" data-testid="button-support-link">
                 <HelpCircle size={14} />
                 Support
               </button>
@@ -971,29 +1091,27 @@ export default function Dashboard() {
         <GlassCard className="p-5 border-primary/20 bg-primary/[0.02]" hoverEffect={false}>
           <div className="flex items-center gap-2 mb-3">
             <Flame size={18} className="text-accent" />
-            <h3 className="font-serif text-lg text-primary">Founding Member</h3>
+            <h3 className="font-serif text-lg text-foreground">Founding Member</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Lifetime access for a one-time <span className="font-bold text-primary">$99</span>.
+            Lifetime access for a one-time <span className="font-bold text-foreground">$99</span>.
           </p>
           <div className="mb-4">
             <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
               <span>{percentClaimed}% claimed</span>
-              <span className="font-semibold text-primary" data-testid="text-founding-remaining">{remaining} left</span>
+              <span className="font-semibold text-foreground" data-testid="text-founding-remaining">{remaining} left</span>
             </div>
             <div className="w-full bg-primary/10 rounded-full h-2 overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-accent to-primary rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${percentClaimed}%` }}
-                transition={{ duration: 1, delay: 0.3 }}
+              <div
+                className="h-full bg-gradient-to-r from-accent to-primary rounded-full transition-all duration-1000"
+                style={{ width: `${percentClaimed}%` }}
               />
             </div>
           </div>
           <button
             onClick={() => checkout.mutate("founding")}
             disabled={checkout.isPending}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 btn-warm"
             data-testid="button-checkout-founding"
           >
             <Crown size={16} />
@@ -1016,7 +1134,7 @@ export default function Dashboard() {
         <GlassCard className="p-5 border-accent/20" hoverEffect={false}>
           <div className="flex items-center gap-2 mb-3">
             <CreditCard size={18} className="text-accent" />
-            <h3 className="font-serif text-lg text-primary">Upgrade to Pro</h3>
+            <h3 className="font-serif text-lg text-foreground">Upgrade to Pro</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
             Unlock all tools for <span className="font-bold text-accent">$7/month</span>.
@@ -1024,7 +1142,7 @@ export default function Dashboard() {
           <button
             onClick={() => checkout.mutate("monthly")}
             disabled={checkout.isPending}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#2E8B57] to-[#236B43] text-white font-medium shadow-lg shadow-[#2E8B57]/20 border border-[#D4AF37]/30 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 btn-warm"
             data-testid="button-checkout-community-only"
           >
             {checkout.isPending ? "Loading..." : "Start Community Plan"}
@@ -1036,7 +1154,7 @@ export default function Dashboard() {
         <GlassCard className="p-5 border-accent/10" hoverEffect={false}>
           <div className="flex items-center gap-2 mb-3">
             <Lightbulb size={18} className="text-accent" />
-            <h3 className="font-serif text-sm text-primary">Clinician's Corner</h3>
+            <h3 className="font-serif text-sm text-foreground">Clinician's Corner</h3>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed italic">
             "{CLINICAL_TIPS[tipIndex].tip}"
@@ -1046,14 +1164,14 @@ export default function Dashboard() {
       )}
 
       <GlassCard className="p-5" hoverEffect={false}>
-        <h3 className="font-serif text-sm text-primary mb-3">Quick Stats</h3>
+        <h3 className="font-serif text-sm text-foreground mb-3">Quick Stats</h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="text-center p-3 rounded-2xl bg-secondary/30">
-            <p className="text-2xl font-serif text-primary" data-testid="text-session-count">{sessions.length}</p>
+            <p className="text-2xl font-serif text-foreground" data-testid="text-session-count">{sessions.length}</p>
             <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Total Sessions</p>
           </div>
           <div className="text-center p-3 rounded-2xl bg-secondary/30">
-            <p className="text-2xl font-serif text-primary" data-testid="text-active-count">{activeSessions.length}</p>
+            <p className="text-2xl font-serif text-foreground" data-testid="text-active-count">{activeSessions.length}</p>
             <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Active</p>
           </div>
         </div>
@@ -1062,13 +1180,11 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 pb-28 md:pb-10 pt-24 md:pt-32 px-4 md:px-8">
+    <div className="min-h-screen bg-background pb-24 md:pb-0 pt-20 md:pt-24 px-4 md:px-8">
       {isAuthenticated && !emailConfirmed && (
         <div className="max-w-7xl mx-auto mb-4">
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/60 backdrop-blur-sm"
+          <div
+            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/60"
             data-testid="banner-email-verification"
           >
             <div className="shrink-0 w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
@@ -1087,16 +1203,14 @@ export default function Dashboard() {
               <RefreshCw size={12} className={resendVerification.isPending ? "animate-spin" : ""} />
               Resend
             </button>
-          </motion.div>
+          </div>
         </div>
       )}
 
       {billingStatus?.paymentFailed && (
         <div className="max-w-7xl mx-auto mb-4">
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-red-50/80 border border-red-200/60 backdrop-blur-sm"
+          <div
+            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-red-50/80 border border-red-200/60"
             data-testid="banner-payment-failed"
           >
             <div className="shrink-0 w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center">
@@ -1115,19 +1229,14 @@ export default function Dashboard() {
               <CreditCard size={12} />
               Update Payment
             </button>
-          </motion.div>
+          </div>
         </div>
       )}
 
       <div className="max-w-7xl mx-auto">
-        <motion.div
-          className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-serif text-primary mb-1" data-testid="text-dashboard-title">
+            <h1 className="text-3xl md:text-4xl font-serif text-foreground mb-1" data-testid="text-dashboard-title">
               Welcome back{user?.firstName ? `, ${user.firstName}` : ""}
             </h1>
             <p className="text-muted-foreground text-sm flex items-center gap-2">
@@ -1144,55 +1253,42 @@ export default function Dashboard() {
               )}
             </p>
           </div>
-          <motion.button
+          <button
             onClick={() => setShowNewSession(true)}
             disabled={createSession.isPending}
-            className="px-7 py-3.5 rounded-2xl flex items-center gap-2.5 shadow-lg cursor-pointer w-full md:w-auto justify-center disabled:opacity-50 text-white font-medium border-2"
-            style={{
-              background: "linear-gradient(135deg, #2E8B57 0%, #256D47 100%)",
-              borderColor: "#D4AF37",
-              boxShadow: "0 4px 20px rgba(46,139,87,0.25), 0 0 0 1px rgba(212,175,55,0.15)",
-            }}
-            whileHover={{ scale: 1.02, boxShadow: "0 6px 24px rgba(46,139,87,0.35), 0 0 0 1px rgba(212,175,55,0.3)" }}
-            whileTap={{ scale: 0.97 }}
+            className="px-7 py-3.5 rounded-2xl flex items-center gap-2.5 shadow-md cursor-pointer w-full md:w-auto justify-center disabled:opacity-50 bg-primary text-primary-foreground font-medium btn-warm"
             data-testid="button-new-session"
           >
             <Plus size={20} /> Start New Session
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
 
         <div className="hidden md:grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <SessionsView />
             <ToolLibraryView />
           </div>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
+          <div>
             <AccountSidebar />
-          </motion.div>
+          </div>
         </div>
 
         <div className="md:hidden">
-          <AnimatePresence mode="wait">
-            {mobileTab === "sessions" && (
-              <motion.div key="sessions" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                <SessionsView />
-              </motion.div>
-            )}
-            {mobileTab === "library" && (
-              <motion.div key="library" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                <ToolLibraryView />
-              </motion.div>
-            )}
-            {mobileTab === "account" && (
-              <motion.div key="account" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                <AccountSidebar />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {mobileTab === "sessions" && (
+            <div>
+              <SessionsView />
+            </div>
+          )}
+          {mobileTab === "library" && (
+            <div>
+              <ToolLibraryView />
+            </div>
+          )}
+          {mobileTab === "account" && (
+            <div>
+              <AccountSidebar />
+            </div>
+          )}
         </div>
       </div>
 
@@ -1200,7 +1296,7 @@ export default function Dashboard() {
         <LegalDisclaimer />
       </div>
 
-      <NewSessionModal
+      <SessionCreationModal
         isOpen={showNewSession}
         onClose={() => setShowNewSession(false)}
         onSubmit={(name, mode, tool) => createSession.mutate({ name, mode, tool })}
