@@ -3,138 +3,346 @@ import { LogoMark } from "@/components/shared/logo-mark";
 import { ArrowRight, CheckCircle2, Shield, FileText, Lock, Cookie, Mail, ArrowUp, Sparkles, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
-/* ── Interactive Demo: Mini Volume Mixer ── */
+/* ── Interactive Demo: Feeling Wheel Explorer ── */
 
-interface DemoFader {
+interface DemoEmotion {
   id: string;
-  name: string;
-  value: number;
+  label: string;
+  emoji: string;
   color: string;
-  glowColor: string;
+  question?: string;
+  children?: { id: string; label: string; emoji: string; children?: { id: string; label: string; emoji: string }[] }[];
 }
 
-const DEMO_PARTS: DemoFader[] = [
-  { id: "protector", name: "Protector", value: 72, color: "#64748b", glowColor: "rgba(100,116,139,0.3)" },
-  { id: "inner-child", name: "Inner Child", value: 35, color: "#7e57c2", glowColor: "rgba(126,87,194,0.3)" },
-  { id: "critic", name: "Critic", value: 85, color: "#e53935", glowColor: "rgba(229,57,53,0.3)" },
-  { id: "caretaker", name: "Caretaker", value: 50, color: "#4A7A56", glowColor: "rgba(74,122,86,0.3)" },
-  { id: "exile", name: "Exile", value: 20, color: "#C8836A", glowColor: "rgba(200,131,106,0.3)" },
+const DEMO_EMOTIONS: DemoEmotion[] = [
+  {
+    id: "joy", label: "Joy", emoji: "\u{1F60A}", color: "#f59e0b",
+    question: "What kind of joy are you feeling?",
+    children: [
+      { id: "happy", label: "Happy", emoji: "\u{1F604}", children: [
+        { id: "playful", label: "Playful", emoji: "\u{1F938}" },
+        { id: "content", label: "Content", emoji: "\u{263A}\uFE0F" },
+        { id: "cheerful", label: "Cheerful", emoji: "\u{1F31E}" },
+      ]},
+      { id: "grateful", label: "Grateful", emoji: "\u{1F64F}", children: [
+        { id: "thankful", label: "Thankful", emoji: "\u{1F49B}" },
+        { id: "appreciative", label: "Appreciative", emoji: "\u{2728}" },
+      ]},
+      { id: "proud", label: "Proud", emoji: "\u{1F4AA}", children: [
+        { id: "accomplished", label: "Accomplished", emoji: "\u{1F3C6}" },
+        { id: "confident", label: "Confident", emoji: "\u{1F451}" },
+      ]},
+      { id: "peaceful", label: "Peaceful", emoji: "\u{1F54A}\uFE0F", children: [
+        { id: "calm", label: "Calm", emoji: "\u{1F30A}" },
+        { id: "serene", label: "Serene", emoji: "\u{1F338}" },
+      ]},
+    ],
+  },
+  {
+    id: "sadness", label: "Sadness", emoji: "\u{1F622}", color: "#3b82f6",
+    question: "What kind of sadness is this?",
+    children: [
+      { id: "lonely", label: "Lonely", emoji: "\u{1F614}", children: [
+        { id: "isolated", label: "Isolated", emoji: "\u{1F3DD}\uFE0F" },
+        { id: "invisible", label: "Invisible", emoji: "\u{1F47B}" },
+      ]},
+      { id: "hurt", label: "Hurt", emoji: "\u{1F494}", children: [
+        { id: "disappointed", label: "Disappointed", emoji: "\u{1F61E}" },
+        { id: "let-down", label: "Let Down", emoji: "\u{1F4A7}" },
+      ]},
+      { id: "grief", label: "Grief", emoji: "\u{1F5A4}", children: [
+        { id: "mourning", label: "Mourning", emoji: "\u{1F3B5}" },
+        { id: "heartbroken", label: "Heartbroken", emoji: "\u{1F48D}" },
+      ]},
+    ],
+  },
+  {
+    id: "anger", label: "Anger", emoji: "\u{1F621}", color: "#ef4444",
+    question: "What's driving this anger?",
+    children: [
+      { id: "frustrated", label: "Frustrated", emoji: "\u{1F624}", children: [
+        { id: "annoyed", label: "Annoyed", emoji: "\u{1F612}" },
+        { id: "stuck", label: "Stuck", emoji: "\u{1F9F1}" },
+      ]},
+      { id: "resentful", label: "Resentful", emoji: "\u{1F620}", children: [
+        { id: "bitter", label: "Bitter", emoji: "\u{1F48A}" },
+        { id: "jealous", label: "Jealous", emoji: "\u{1F49A}" },
+      ]},
+    ],
+  },
+  {
+    id: "fear", label: "Fear", emoji: "\u{1F628}", color: "#8b5cf6",
+    question: "What kind of fear is this?",
+    children: [
+      { id: "anxious", label: "Anxious", emoji: "\u{1F630}", children: [
+        { id: "worried", label: "Worried", emoji: "\u{1F61F}" },
+        { id: "overwhelmed", label: "Overwhelmed", emoji: "\u{1F32A}\uFE0F" },
+      ]},
+      { id: "insecure", label: "Insecure", emoji: "\u{1F616}", children: [
+        { id: "inadequate", label: "Inadequate", emoji: "\u{1F4CF}" },
+        { id: "self-doubting", label: "Self-Doubting", emoji: "\u{2753}" },
+      ]},
+    ],
+  },
+  {
+    id: "surprise", label: "Surprise", emoji: "\u{1F62E}", color: "#f97316",
+    question: "What surprised you?",
+    children: [
+      { id: "amazed", label: "Amazed", emoji: "\u{1F929}", children: [
+        { id: "awestruck", label: "Awestruck", emoji: "\u{1F31F}" },
+        { id: "astonished", label: "Astonished", emoji: "\u{1F4AB}" },
+      ]},
+      { id: "confused", label: "Confused", emoji: "\u{1F615}", children: [
+        { id: "disoriented", label: "Disoriented", emoji: "\u{1F300}" },
+        { id: "perplexed", label: "Perplexed", emoji: "\u{1F914}" },
+      ]},
+    ],
+  },
+  {
+    id: "love", label: "Love", emoji: "\u{2764}\uFE0F", color: "#ec4899",
+    question: "What does this love feel like?",
+    children: [
+      { id: "affectionate", label: "Affectionate", emoji: "\u{1F917}", children: [
+        { id: "warm", label: "Warm", emoji: "\u{2615}" },
+        { id: "tender", label: "Tender", emoji: "\u{1F33C}" },
+      ]},
+      { id: "connected", label: "Connected", emoji: "\u{1F91D}", children: [
+        { id: "belonging", label: "Belonging", emoji: "\u{1F3E1}" },
+        { id: "accepted", label: "Accepted", emoji: "\u{1F49C}" },
+      ]},
+    ],
+  },
+  {
+    id: "shame", label: "Shame", emoji: "\u{1F636}", color: "#a855f7",
+    question: "Where does this shame come from?",
+    children: [
+      { id: "embarrassed", label: "Embarrassed", emoji: "\u{1F633}", children: [
+        { id: "self-conscious", label: "Self-Conscious", emoji: "\u{1F648}" },
+        { id: "exposed", label: "Exposed", emoji: "\u{1F4A2}" },
+      ]},
+      { id: "worthless", label: "Worthless", emoji: "\u{1F614}", children: [
+        { id: "not-enough", label: "Not Enough", emoji: "\u{1F4A7}" },
+        { id: "broken", label: "Broken", emoji: "\u{1FAE5}" },
+      ]},
+    ],
+  },
+  {
+    id: "disgust", label: "Disgust", emoji: "\u{1F922}", color: "#22c55e",
+    question: "What's triggering this feeling?",
+    children: [
+      { id: "repulsed", label: "Repulsed", emoji: "\u{1F92E}", children: [
+        { id: "revolted", label: "Revolted", emoji: "\u{1F645}" },
+        { id: "appalled", label: "Appalled", emoji: "\u{1F627}" },
+      ]},
+      { id: "contempt", label: "Contemptuous", emoji: "\u{1F612}", children: [
+        { id: "judgmental", label: "Judgmental", emoji: "\u{2696}\uFE0F" },
+        { id: "disdainful", label: "Disdainful", emoji: "\u{1F44E}" },
+      ]},
+    ],
+  },
 ];
 
-function DemoFaderComponent({ fader, onChange }: { fader: DemoFader; onChange: (value: number) => void }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
+type DemoTier = "primary" | "secondary" | "tertiary";
 
-  const updateValue = useCallback((clientY: number) => {
-    if (!trackRef.current) return;
-    const rect = trackRef.current.getBoundingClientRect();
-    const y = clientY - rect.top;
-    const pct = Math.max(0, Math.min(100, 100 - (y / rect.height) * 100));
-    onChange(Math.round(pct));
-  }, [onChange]);
-
-  useEffect(() => {
-    if (!isDragging) return;
-    const handleMove = (e: MouseEvent | TouchEvent) => {
-      e.preventDefault();
-      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-      updateValue(clientY);
-    };
-    const handleUp = () => setIsDragging(false);
-    window.addEventListener("mousemove", handleMove);
-    window.addEventListener("mouseup", handleUp);
-    window.addEventListener("touchmove", handleMove, { passive: false });
-    window.addEventListener("touchend", handleUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseup", handleUp);
-      window.removeEventListener("touchmove", handleMove);
-      window.removeEventListener("touchend", handleUp);
-    };
-  }, [isDragging, updateValue]);
-
-  const fillHeight = `${fader.value}%`;
-  const thumbPosition = `${100 - fader.value}%`;
-
-  return (
-    <div className="flex flex-col items-center gap-2 select-none">
-      <div className="text-xs font-mono text-white/50 tabular-nums">{fader.value}</div>
-      <div
-        ref={trackRef}
-        className="relative w-3 rounded-full cursor-pointer"
-        style={{ height: 140, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
-        onMouseDown={(e) => { setIsDragging(true); updateValue(e.clientY); }}
-        onTouchStart={(e) => { setIsDragging(true); updateValue(e.touches[0].clientY); }}
-      >
-        {/* Fill */}
-        <div
-          className="absolute bottom-0 left-0 right-0 rounded-full transition-all"
-          style={{
-            height: fillHeight,
-            background: `linear-gradient(to top, ${fader.color}, ${fader.color}88)`,
-            boxShadow: isDragging ? `0 0 12px ${fader.glowColor}` : "none",
-            transitionDuration: isDragging ? "0ms" : "150ms",
-          }}
-        />
-        {/* Thumb */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 w-7 h-3 rounded-sm transition-all"
-          style={{
-            top: thumbPosition,
-            transform: `translate(-50%, -50%)`,
-            background: `linear-gradient(180deg, ${fader.color}cc 0%, ${fader.color} 100%)`,
-            boxShadow: isDragging
-              ? `0 0 16px ${fader.glowColor}, 0 2px 8px rgba(0,0,0,0.4)`
-              : `0 1px 4px rgba(0,0,0,0.3)`,
-            transitionDuration: isDragging ? "0ms" : "150ms",
-          }}
-        />
-      </div>
-      <div className="text-[10px] font-medium text-white/70 text-center leading-tight max-w-[60px]">
-        {fader.name}
-      </div>
-    </div>
-  );
+interface DemoSelection {
+  primary: { label: string; emoji: string; color: string } | null;
+  secondary: { label: string; emoji: string } | null;
+  tertiary: { label: string; emoji: string } | null;
 }
 
-function DemoVolumeMixer() {
-  const [parts, setParts] = useState<DemoFader[]>(DEMO_PARTS);
+function DemoFeelingWheel() {
+  const [tier, setTier] = useState<DemoTier>("primary");
+  const [selection, setSelection] = useState<DemoSelection>({ primary: null, secondary: null, tertiary: null });
+  const [activeEmotion, setActiveEmotion] = useState<DemoEmotion | null>(null);
+  const [activeSecondary, setActiveSecondary] = useState<DemoEmotion["children"]>(undefined);
+  const [activeQuestion, setActiveQuestion] = useState<string>("");
+  const [completed, setCompleted] = useState(false);
 
-  const updatePart = (id: string, value: number) => {
-    setParts(prev => prev.map(p => p.id === id ? { ...p, value } : p));
+  const resetDemo = () => {
+    setTier("primary");
+    setSelection({ primary: null, secondary: null, tertiary: null });
+    setActiveEmotion(null);
+    setActiveSecondary(undefined);
+    setActiveQuestion("");
+    setCompleted(false);
   };
+
+  const selectPrimary = (emotion: DemoEmotion) => {
+    setSelection({ primary: { label: emotion.label, emoji: emotion.emoji, color: emotion.color }, secondary: null, tertiary: null });
+    setActiveEmotion(emotion);
+    setActiveQuestion(emotion.question || "");
+    setTier("secondary");
+  };
+
+  const selectSecondary = (child: NonNullable<DemoEmotion["children"]>[0], color: string) => {
+    setSelection(prev => ({ ...prev, secondary: { label: child.label, emoji: child.emoji }, tertiary: null }));
+    setActiveSecondary(undefined);
+    setActiveQuestion("");
+    if (child.children && child.children.length > 0) {
+      setActiveSecondary(child.children.map(c => ({ ...c })) as DemoEmotion["children"]);
+      setTier("tertiary");
+    } else {
+      setCompleted(true);
+    }
+  };
+
+  const selectTertiary = (child: { label: string; emoji: string }) => {
+    setSelection(prev => ({ ...prev, tertiary: { label: child.label, emoji: child.emoji } }));
+    setCompleted(true);
+  };
+
+  const activeColor = selection.primary?.color || "#4A7A56";
 
   return (
     <div className="bg-card border border-border rounded-2xl shadow-xl overflow-hidden">
-      {/* Fake toolbar */}
+      {/* Window chrome */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-secondary/50">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-destructive/40" />
           <div className="w-2.5 h-2.5 rounded-full bg-accent/40" />
           <div className="w-2.5 h-2.5 rounded-full bg-primary/40" />
         </div>
-        <span className="text-xs text-muted-foreground font-medium">Volume Mixer — Demo Session</span>
-        <div className="w-16" />
+        <span className="text-xs text-muted-foreground font-medium">Feeling Wheel — Demo Session</span>
+        <button onClick={resetDemo} className="text-[10px] font-medium text-muted-foreground hover:text-foreground px-2 py-0.5 rounded-md hover:bg-secondary transition-colors cursor-pointer">
+          Reset
+        </button>
       </div>
-      {/* Mixer area */}
-      <div className="p-6 md:p-8" style={{ background: "linear-gradient(180deg, #1a1a1c 0%, #121214 100%)" }}>
-        <div className="flex items-end justify-center gap-6 md:gap-8">
-          {parts.map((fader) => (
-            <DemoFaderComponent
-              key={fader.id}
-              fader={fader}
-              onChange={(value) => updatePart(fader.id, value)}
-            />
-          ))}
-        </div>
-        <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-[10px] text-white/30 font-medium tracking-wide uppercase">Drag the faders to adjust each part's volume</span>
-        </div>
+
+      {/* Content area */}
+      <div className="p-5 md:p-8">
+        {/* Breadcrumb trail */}
+        {selection.primary && (
+          <div className="flex items-center gap-1.5 mb-5 flex-wrap">
+            <button onClick={resetDemo} className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer">All emotions</button>
+            {selection.primary && (
+              <>
+                <span className="text-muted-foreground/40 text-xs">/</span>
+                <button
+                  onClick={() => { if (activeEmotion) { setTier("secondary"); setSelection(s => ({ ...s, secondary: null, tertiary: null })); setActiveSecondary(undefined); setActiveQuestion(activeEmotion.question || ""); setCompleted(false); } }}
+                  className="text-xs font-medium transition-colors cursor-pointer"
+                  style={{ color: activeColor }}
+                >
+                  {selection.primary.emoji} {selection.primary.label}
+                </button>
+              </>
+            )}
+            {selection.secondary && (
+              <>
+                <span className="text-muted-foreground/40 text-xs">/</span>
+                <span className="text-xs font-medium text-foreground">{selection.secondary.emoji} {selection.secondary.label}</span>
+              </>
+            )}
+            {selection.tertiary && (
+              <>
+                <span className="text-muted-foreground/40 text-xs">/</span>
+                <span className="text-xs font-medium text-foreground">{selection.tertiary.emoji} {selection.tertiary.label}</span>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Question prompt */}
+        {activeQuestion && !completed && (
+          <p className="text-sm text-muted-foreground italic mb-4 text-center">"{activeQuestion}"</p>
+        )}
+
+        {/* Primary tier */}
+        {tier === "primary" && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {DEMO_EMOTIONS.map((emotion) => (
+              <button
+                key={emotion.id}
+                onClick={() => selectPrimary(emotion)}
+                className="group flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-background hover:shadow-md transition-all duration-150 cursor-pointer"
+                style={{ borderColor: undefined }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = emotion.color + "40"; e.currentTarget.style.backgroundColor = emotion.color + "08"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.backgroundColor = ""; }}
+              >
+                <span className="text-2xl sm:text-3xl transition-transform duration-150 group-hover:scale-110">{emotion.emoji}</span>
+                <span className="text-xs font-medium text-foreground">{emotion.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Secondary tier */}
+        {tier === "secondary" && activeEmotion?.children && (
+          <div className="grid grid-cols-2 gap-2.5">
+            {activeEmotion.children.map((child) => (
+              <button
+                key={child.id}
+                onClick={() => selectSecondary(child, activeColor)}
+                className="group flex items-center gap-3 p-3.5 rounded-xl border border-border bg-background hover:shadow-md transition-all duration-150 cursor-pointer text-left"
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = activeColor + "40"; e.currentTarget.style.backgroundColor = activeColor + "08"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.backgroundColor = ""; }}
+              >
+                <span className="text-xl transition-transform duration-150 group-hover:scale-110">{child.emoji}</span>
+                <span className="text-sm font-medium text-foreground">{child.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Tertiary tier */}
+        {tier === "tertiary" && activeSecondary && !completed && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            {activeSecondary.map((child) => (
+              <button
+                key={child.id}
+                onClick={() => selectTertiary(child)}
+                className="group flex items-center gap-3 p-3.5 rounded-xl border border-border bg-background hover:shadow-md transition-all duration-150 cursor-pointer text-left"
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = activeColor + "40"; e.currentTarget.style.backgroundColor = activeColor + "08"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.backgroundColor = ""; }}
+              >
+                <span className="text-xl transition-transform duration-150 group-hover:scale-110">{child.emoji}</span>
+                <span className="text-sm font-medium text-foreground">{child.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Completed state */}
+        {completed && (
+          <div className="text-center py-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-background mb-4">
+              <span className="text-lg">{selection.primary?.emoji}</span>
+              <span className="text-muted-foreground/40">→</span>
+              {selection.secondary && <span className="text-lg">{selection.secondary.emoji}</span>}
+              {selection.tertiary && (
+                <>
+                  <span className="text-muted-foreground/40">→</span>
+                  <span className="text-lg">{selection.tertiary.emoji}</span>
+                </>
+              )}
+            </div>
+            <p className="text-sm text-foreground font-medium mb-1">
+              {selection.tertiary?.label || selection.secondary?.label || selection.primary?.label}
+            </p>
+            <p className="text-xs text-muted-foreground mb-4">
+              In a real session, your clinician would see this selection in real-time and guide the conversation.
+            </p>
+            <button
+              onClick={resetDemo}
+              className="text-xs font-medium px-4 py-2 rounded-lg bg-secondary border border-border text-foreground hover:bg-secondary/80 transition-colors cursor-pointer"
+            >
+              Try another emotion
+            </button>
+          </div>
+        )}
+
+        {/* Hint bar */}
+        {!completed && (
+          <div className="mt-5 pt-3 border-t border-border flex items-center justify-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: activeColor }} />
+            <span className="text-[10px] text-muted-foreground font-medium tracking-wide uppercase">
+              {tier === "primary" ? "Tap an emotion to explore deeper" : tier === "secondary" ? "Now narrow it down" : "Find the most specific feeling"}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -286,10 +494,10 @@ export default function LandingPage() {
           <div className="text-center mb-8">
             <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-2">Try it yourself</h2>
             <p className="text-muted-foreground text-sm">
-              Drag the faders to explore our Volume Mixer — an IFS-inspired tool for parts work.
+              Explore our Feeling Wheel — tap an emotion and drill down to name exactly what you're feeling.
             </p>
           </div>
-          <DemoVolumeMixer />
+          <DemoFeelingWheel />
         </div>
       </section>
 
