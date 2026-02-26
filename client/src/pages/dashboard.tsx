@@ -24,7 +24,9 @@ interface DashboardTool {
 }
 
 const ALL_TOOLS: DashboardTool[] = [
-  { id: "volume-mixer", label: "Volume Mixer", desc: "Externalize internal parts as tactile audio faders", icon: Layers, tier: "free", emoji: "\u{1F39A}\uFE0F" },
+  { id: "volume-mixer", label: "Volume Mixer", desc: "Externalize internal parts as tactile audio faders", icon: Layers, tier: "free", emoji: "🎚️" },
+  { id: "feelings", label: "Feeling Wheel", desc: "Three-tier emotional identification through guided card exploration", icon: Layers, tier: "free", emoji: "🎯" },
+  { id: "thought-bridge", label: "Thought Bridge", desc: "CBT thought record — examine evidence and build balanced perspectives", icon: Layers, tier: "free", emoji: "🧠" },
 ];
 
 const CLINICAL_TIPS: { tip: string; tool: string }[] = [

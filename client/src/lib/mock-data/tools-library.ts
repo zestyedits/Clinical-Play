@@ -105,6 +105,32 @@ export const TOOLS_LIBRARY: ToolDefinition[] = [
     lastUsed: null,
     timesUsed: 0,
   },
+  {
+    id: "thought-bridge",
+    name: "Thought Bridge",
+    shortDescription: "CBT thought record — examine evidence and build balanced perspectives",
+    longDescription: "A guided 6-step CBT Thought Record that walks clients through capturing a situation, identifying the 'hot thought,' rating emotions and belief strength, spotting cognitive distortions (thinking traps), weighing evidence for and against, and building a balanced alternative thought. Includes a pre-filled example walkthrough for first-timers and a satisfying before/after belief comparison at the end.",
+    icon: "🧠",
+    modalities: ["CBT", "ACT", "Solution-Focused", "Psychoeducation"],
+    ageRanges: ["Teens (14-18)", "Young Adults (18-25)", "Adults (25-64)", "Older Adults (65+)"],
+    intensity: "moderate",
+    duration: "15-30",
+    interactionType: "cognitive",
+    status: "active",
+    tier: "free",
+    bestUsedFor: [
+      "Challenging automatic negative thoughts in real-time",
+      "Teaching cognitive restructuring as a portable skill",
+      "Identifying recurring cognitive distortion patterns",
+      "Building metacognitive awareness ('thinking about thinking')",
+    ],
+    adaptations: "For teens, use the example walkthrough first and keep language casual. For adults, frame as 'putting the thought on trial.' For clients who intellectualize, focus on the emotion ratings rather than the evidence columns.",
+    pitfalls: "Don't rush to the balanced thought — the evidence-gathering step is where the real work happens. Avoid turning this into a 'positive thinking' exercise; balanced doesn't mean optimistic, it means accurate. If a client's belief doesn't drop, that's useful clinical data.",
+    safetyNotes: "The tool is clinician-visible only in terms of clinical prompts. Thought records involving trauma or suicidal ideation should be handled with standard safety protocols. The reset button clears all data immediately.",
+    producesArtifact: true,
+    lastUsed: null,
+    timesUsed: 0,
+  },
 ];
 
 /**

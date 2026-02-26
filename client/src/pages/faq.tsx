@@ -36,7 +36,7 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
     items: [
       {
         question: "What tools are available?",
-        answer: "ClinicalPlay currently features the Volume Mixer — a physics-based mixing board where clients can externalize internal experiences as audio faders. It's useful across many disciplines, from parts work in therapy to self-regulation exercises in speech or behavioral sessions. New tools are being developed one at a time to ensure quality. All tools work in real-time between provider and client.",
+        answer: "ClinicalPlay currently features three interactive tools: the Volume Mixer, the Feeling Wheel, and the Thought Bridge. The Volume Mixer is a physics-based mixing board for externalizing internal experiences. The Feeling Wheel guides three-tier emotional identification through card exploration. The Thought Bridge is a guided CBT thought record that helps clients examine automatic thoughts, spot thinking traps, weigh evidence, and build more balanced perspectives. All tools work in real-time between provider and client, and new ones are in development.",
       },
       {
         question: "How does the Volume Mixer work?",
