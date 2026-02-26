@@ -470,9 +470,8 @@ const useMixer = create<MixerState>((set, get) => ({
   },
 
   endSession: () => {
-    set({ sessionEnded: true });
-    // Immediately kill all audio — don't leave anything playing
     stopAllAudio();
+    set({ sessionEnded: true, globalMuted: true, systemPaused: true });
   },
 
   showCalmRestored: () => {
@@ -750,146 +749,236 @@ function updateDrone(
   }
 }
 
+function makeNoiseBuffer(ctx: AudioContext): AudioBuffer {
+  const len = ctx.sampleRate * 2;
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  return buf;
+}
+
+function createVoiceLayer(
+  ctx: AudioContext,
+  noiseBuf: AudioBuffer,
+  formants: { freq: number; Q: number; gain: number }[],
+  syllableRate: number,
+  modDepth: number,
+  output: GainNode,
+): AudioNode[] {
+  const nodes: AudioNode[] = [];
+  const noise = ctx.createBufferSource();
+  noise.buffer = noiseBuf;
+  noise.loop = true;
+
+  const mix = ctx.createGain();
+  mix.gain.value = 1.0;
+
+  formants.forEach((f) => {
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = f.freq;
+    bp.Q.value = f.Q;
+    const g = ctx.createGain();
+    g.gain.value = f.gain;
+    noise.connect(bp);
+    bp.connect(g);
+    g.connect(mix);
+    nodes.push(bp, g);
+  });
+
+  const syllableLfo = ctx.createOscillator();
+  syllableLfo.type = "sine";
+  syllableLfo.frequency.value = syllableRate;
+  const syllableDepth = ctx.createGain();
+  syllableDepth.gain.value = modDepth;
+  syllableLfo.connect(syllableDepth);
+  syllableDepth.connect(mix.gain);
+
+  const pauseLfo = ctx.createOscillator();
+  pauseLfo.type = "sine";
+  pauseLfo.frequency.value = 0.3 + Math.random() * 0.4;
+  const pauseDepth = ctx.createGain();
+  pauseDepth.gain.value = 0.3;
+  pauseLfo.connect(pauseDepth);
+  pauseDepth.connect(mix.gain);
+
+  mix.connect(output);
+  noise.start();
+  syllableLfo.start();
+  pauseLfo.start();
+  nodes.push(noise, mix, syllableLfo, syllableDepth, pauseLfo, pauseDepth);
+  return nodes;
+}
+
 function createTextureNodes(ctx: AudioContext, texture: PartTexture, gain: GainNode): AudioNode[] {
   const nodes: AudioNode[] = [];
+  const noiseBuf = makeNoiseBuffer(ctx);
 
   switch (texture) {
     case "chatter": {
-      // Inner committee meeting — filtered noise through speech formants with murmur rhythm
-      const bufferSize = ctx.sampleRate * 2;
-      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const data = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-      const noise = ctx.createBufferSource();
-      noise.buffer = noiseBuffer;
-      noise.loop = true;
+      const v1 = createVoiceLayer(ctx, noiseBuf, [
+        { freq: 400 + Math.random() * 200, Q: 8, gain: 0.5 },
+        { freq: 1400 + Math.random() * 400, Q: 6, gain: 0.35 },
+        { freq: 2800 + Math.random() * 400, Q: 5, gain: 0.15 },
+      ], 3.5 + Math.random() * 1.5, 0.4, gain);
 
-      const f1 = ctx.createBiquadFilter();
-      f1.type = "bandpass"; f1.frequency.value = 500; f1.Q.value = 5;
-      const f2 = ctx.createBiquadFilter();
-      f2.type = "bandpass"; f2.frequency.value = 1800; f2.Q.value = 5;
-      const f3 = ctx.createBiquadFilter();
-      f3.type = "bandpass"; f3.frequency.value = 3200; f3.Q.value = 5;
+      const v2Gain = ctx.createGain();
+      v2Gain.gain.value = 0.7;
+      v2Gain.connect(gain);
+      const v2 = createVoiceLayer(ctx, noiseBuf, [
+        { freq: 500 + Math.random() * 200, Q: 7, gain: 0.45 },
+        { freq: 1600 + Math.random() * 400, Q: 5, gain: 0.3 },
+        { freq: 3000 + Math.random() * 300, Q: 4, gain: 0.12 },
+      ], 4.0 + Math.random() * 2, 0.35, v2Gain);
 
-      const g1 = ctx.createGain(); g1.gain.value = 0.4;
-      const g2 = ctx.createGain(); g2.gain.value = 0.3;
-      const g3 = ctx.createGain(); g3.gain.value = 0.2;
+      const v3Gain = ctx.createGain();
+      v3Gain.gain.value = 0.5;
+      v3Gain.connect(gain);
+      const v3 = createVoiceLayer(ctx, noiseBuf, [
+        { freq: 350 + Math.random() * 150, Q: 9, gain: 0.4 },
+        { freq: 1200 + Math.random() * 300, Q: 6, gain: 0.25 },
+        { freq: 2600 + Math.random() * 400, Q: 5, gain: 0.1 },
+      ], 3.0 + Math.random() * 1.0, 0.45, v3Gain);
 
-      const lfo = ctx.createOscillator();
-      lfo.type = "sine";
-      lfo.frequency.value = 3 + Math.random() * 2;
-      const lfoG = ctx.createGain(); lfoG.gain.value = 0.3;
-      lfo.connect(lfoG); lfoG.connect(gain.gain);
-
-      noise.connect(f1); noise.connect(f2); noise.connect(f3);
-      f1.connect(g1); f2.connect(g2); f3.connect(g3);
-      g1.connect(gain); g2.connect(gain); g3.connect(gain);
-      noise.start(); lfo.start();
-      nodes.push(noise, f1, f2, f3, g1, g2, g3, lfo, lfoG);
+      nodes.push(...v1, ...v2, v2Gain, ...v3, v3Gain);
       break;
     }
     case "buzz": {
-      // Wired anxious static — dense high-frequency noise with wavering
-      const bufferSize = ctx.sampleRate * 2;
-      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const data = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-      const noise = ctx.createBufferSource();
-      noise.buffer = noiseBuffer;
-      noise.loop = true;
+      const v1 = createVoiceLayer(ctx, noiseBuf, [
+        { freq: 600 + Math.random() * 100, Q: 10, gain: 0.4 },
+        { freq: 2000 + Math.random() * 300, Q: 8, gain: 0.5 },
+        { freq: 3800 + Math.random() * 400, Q: 6, gain: 0.3 },
+        { freq: 5000 + Math.random() * 500, Q: 4, gain: 0.15 },
+      ], 6 + Math.random() * 3, 0.3, gain);
 
-      const hp = ctx.createBiquadFilter();
-      hp.type = "highpass"; hp.frequency.value = 3000; hp.Q.value = 1.5;
-      const peak = ctx.createBiquadFilter();
-      peak.type = "peaking"; peak.frequency.value = 5000; peak.Q.value = 2; peak.gain.value = 6;
+      const v2Gain = ctx.createGain();
+      v2Gain.gain.value = 0.6;
+      v2Gain.connect(gain);
+      const v2 = createVoiceLayer(ctx, noiseBuf, [
+        { freq: 700 + Math.random() * 150, Q: 9, gain: 0.35 },
+        { freq: 2200 + Math.random() * 300, Q: 7, gain: 0.45 },
+        { freq: 4200 + Math.random() * 400, Q: 5, gain: 0.25 },
+      ], 7 + Math.random() * 3, 0.25, v2Gain);
 
-      const lfo = ctx.createOscillator();
-      lfo.type = "sine"; lfo.frequency.value = 0.3 + Math.random() * 0.4;
-      const lfoG = ctx.createGain(); lfoG.gain.value = 500;
-      lfo.connect(lfoG); lfoG.connect(hp.frequency);
+      const jitterLfo = ctx.createOscillator();
+      jitterLfo.type = "sawtooth";
+      jitterLfo.frequency.value = 0.15 + Math.random() * 0.1;
+      const jitterG = ctx.createGain();
+      jitterG.gain.value = 0.15;
+      jitterLfo.connect(jitterG);
+      jitterG.connect(gain.gain);
+      jitterLfo.start();
 
-      const buzzG = ctx.createGain(); buzzG.gain.value = 0.5;
-      noise.connect(hp); hp.connect(peak); peak.connect(buzzG); buzzG.connect(gain);
-      noise.start(); lfo.start();
-      nodes.push(noise, hp, peak, lfo, lfoG, buzzG);
+      nodes.push(...v1, ...v2, v2Gain, jitterLfo, jitterG);
       break;
     }
     case "throb": {
-      // Heavy dread / pressure — sub-bass with slow oppressive amplitude modulation
-      const osc1 = ctx.createOscillator();
-      osc1.type = "sine"; osc1.frequency.value = 35 + Math.random() * 15;
-      const osc2 = ctx.createOscillator();
-      osc2.type = "sine"; osc2.frequency.value = osc1.frequency.value + 2;
+      const v1 = createVoiceLayer(ctx, noiseBuf, [
+        { freq: 200 + Math.random() * 80, Q: 12, gain: 0.6 },
+        { freq: 700 + Math.random() * 200, Q: 8, gain: 0.3 },
+        { freq: 1800 + Math.random() * 300, Q: 5, gain: 0.1 },
+      ], 1.5 + Math.random() * 0.5, 0.5, gain);
 
-      const g1 = ctx.createGain(); g1.gain.value = 0.6;
-      const g2 = ctx.createGain(); g2.gain.value = 0.4;
+      const sub = ctx.createOscillator();
+      sub.type = "sine";
+      sub.frequency.value = 40 + Math.random() * 20;
+      const subG = ctx.createGain();
+      subG.gain.value = 0.15;
+      sub.connect(subG);
+      subG.connect(gain);
+      sub.start();
 
-      const lfo = ctx.createOscillator();
-      lfo.type = "sine"; lfo.frequency.value = 0.15 + Math.random() * 0.1;
-      const lfoG = ctx.createGain(); lfoG.gain.value = 0.4;
-      lfo.connect(lfoG); lfoG.connect(gain.gain);
+      const pulseLfo = ctx.createOscillator();
+      pulseLfo.type = "sine";
+      pulseLfo.frequency.value = 0.8 + Math.random() * 0.4;
+      const pulseG = ctx.createGain();
+      pulseG.gain.value = 0.4;
+      pulseLfo.connect(pulseG);
+      pulseG.connect(gain.gain);
+      pulseLfo.start();
 
-      osc1.connect(g1); osc2.connect(g2);
-      g1.connect(gain); g2.connect(gain);
-      osc1.start(); osc2.start(); lfo.start();
-      nodes.push(osc1, osc2, g1, g2, lfo, lfoG);
+      nodes.push(...v1, sub, subG, pulseLfo, pulseG);
       break;
     }
     case "shout": {
-      // Harsh critical yelling — distorted sawtooth with mid-presence boost
-      const osc = ctx.createOscillator();
-      osc.type = "sawtooth"; osc.frequency.value = 220 + Math.random() * 60;
+      const v1 = createVoiceLayer(ctx, noiseBuf, [
+        { freq: 500 + Math.random() * 100, Q: 6, gain: 0.5 },
+        { freq: 1800 + Math.random() * 300, Q: 5, gain: 0.55 },
+        { freq: 2800 + Math.random() * 400, Q: 4, gain: 0.4 },
+        { freq: 4000 + Math.random() * 500, Q: 3, gain: 0.2 },
+      ], 2.5 + Math.random() * 1.5, 0.35, gain);
 
+      const harsh = ctx.createOscillator();
+      harsh.type = "sawtooth";
+      harsh.frequency.value = 180 + Math.random() * 60;
       const ws = ctx.createWaveShaper();
       const curve = new Float32Array(256);
       for (let i = 0; i < 256; i++) {
         const x = (i / 128) - 1;
         curve[i] = (Math.PI + 3) * x / (Math.PI + 3 * Math.abs(x));
       }
-      ws.curve = curve; ws.oversample = "2x";
+      ws.curve = curve;
+      ws.oversample = "2x";
+      const harshBp = ctx.createBiquadFilter();
+      harshBp.type = "bandpass";
+      harshBp.frequency.value = 2500;
+      harshBp.Q.value = 2;
+      const harshG = ctx.createGain();
+      harshG.gain.value = 0.12;
+      harsh.connect(ws);
+      ws.connect(harshBp);
+      harshBp.connect(harshG);
+      harshG.connect(gain);
+      harsh.start();
 
-      const mid = ctx.createBiquadFilter();
-      mid.type = "peaking"; mid.frequency.value = 2500; mid.Q.value = 1.5; mid.gain.value = 8;
+      const burstLfo = ctx.createOscillator();
+      burstLfo.type = "square";
+      burstLfo.frequency.value = 0.6 + Math.random() * 0.4;
+      const burstG = ctx.createGain();
+      burstG.gain.value = 0.2;
+      burstLfo.connect(burstG);
+      burstG.connect(gain.gain);
+      burstLfo.start();
 
-      const lfo = ctx.createOscillator();
-      lfo.type = "square"; lfo.frequency.value = 0.8 + Math.random() * 0.4;
-      const lfoG = ctx.createGain(); lfoG.gain.value = 0.15;
-      lfo.connect(lfoG); lfoG.connect(gain.gain);
-
-      const shoutG = ctx.createGain(); shoutG.gain.value = 0.35;
-      osc.connect(ws); ws.connect(mid); mid.connect(shoutG); shoutG.connect(gain);
-      osc.start(); lfo.start();
-      nodes.push(osc, ws, mid, lfo, lfoG, shoutG);
+      nodes.push(...v1, harsh, ws, harshBp, harshG, burstLfo, burstG);
       break;
     }
     case "hum": {
-      // Calm wise presence — warm sine/triangle blend with gentle chorus + breath
+      const v1 = createVoiceLayer(ctx, noiseBuf, [
+        { freq: 300 + Math.random() * 50, Q: 12, gain: 0.3 },
+        { freq: 900 + Math.random() * 100, Q: 8, gain: 0.15 },
+        { freq: 2200 + Math.random() * 200, Q: 6, gain: 0.05 },
+      ], 1.0 + Math.random() * 0.5, 0.15, gain);
+
       const osc1 = ctx.createOscillator();
-      osc1.type = "sine"; osc1.frequency.value = 174;
+      osc1.type = "sine";
+      osc1.frequency.value = 174;
       const osc2 = ctx.createOscillator();
-      osc2.type = "triangle"; osc2.frequency.value = 174.5;
-      const osc3 = ctx.createOscillator();
-      osc3.type = "sine"; osc3.frequency.value = 348;
+      osc2.type = "triangle";
+      osc2.frequency.value = 174.5;
 
-      const g1 = ctx.createGain(); g1.gain.value = 0.4;
-      const g2 = ctx.createGain(); g2.gain.value = 0.3;
-      const g3 = ctx.createGain(); g3.gain.value = 0.1;
-
-      const chorusLfo = ctx.createOscillator();
-      chorusLfo.type = "sine"; chorusLfo.frequency.value = 0.2;
-      const chorusG = ctx.createGain(); chorusG.gain.value = 1.5;
-      chorusLfo.connect(chorusG); chorusG.connect(osc2.frequency);
+      const g1 = ctx.createGain();
+      g1.gain.value = 0.15;
+      const g2 = ctx.createGain();
+      g2.gain.value = 0.08;
 
       const breathLfo = ctx.createOscillator();
-      breathLfo.type = "sine"; breathLfo.frequency.value = 0.08;
-      const breathG = ctx.createGain(); breathG.gain.value = 0.08;
-      breathLfo.connect(breathG); breathG.connect(gain.gain);
+      breathLfo.type = "sine";
+      breathLfo.frequency.value = 0.08 + Math.random() * 0.04;
+      const breathG = ctx.createGain();
+      breathG.gain.value = 0.06;
+      breathLfo.connect(breathG);
+      breathG.connect(gain.gain);
 
-      osc1.connect(g1); osc2.connect(g2); osc3.connect(g3);
-      g1.connect(gain); g2.connect(gain); g3.connect(gain);
-      osc1.start(); osc2.start(); osc3.start();
-      chorusLfo.start(); breathLfo.start();
-      nodes.push(osc1, osc2, osc3, g1, g2, g3, chorusLfo, chorusG, breathLfo, breathG);
+      osc1.connect(g1);
+      osc2.connect(g2);
+      g1.connect(gain);
+      g2.connect(gain);
+      osc1.start();
+      osc2.start();
+      breathLfo.start();
+
+      nodes.push(...v1, osc1, osc2, g1, g2, breathLfo, breathG);
       break;
     }
   }
@@ -1106,29 +1195,6 @@ function stopAllAudio() {
   masterGain = null;
   audioCtx = null;
   isAudioInitialized = false;
-}
-
-function playSunsetFade() {
-  if (!isAudioInitialized || !masterGain) return;
-  const ctx = getAudioContext();
-  const now = ctx.currentTime;
-
-  const osc = ctx.createOscillator();
-  osc.type = "sine";
-  osc.frequency.setValueAtTime(80, now);
-  osc.frequency.exponentialRampToValueAtTime(30, now + 5);
-
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.15, now);
-  gain.gain.linearRampToValueAtTime(0.2, now + 1);
-  gain.gain.linearRampToValueAtTime(0, now + 5);
-
-  osc.connect(gain);
-  gain.connect(masterGain);
-  osc.start(now);
-  osc.stop(now + 5.5);
-
-  masterGain.gain.setTargetAtTime(0, now + 0.5, 1.5);
 }
 
 function triggerHaptic(pattern: number[] = [10]) {
@@ -3935,10 +4001,16 @@ function CommandCenter() {
                       Live preview from current faders. No client names stored — only part names.
                     </p>
                   </div>
+                </div>
+              )}
+
+              {channels.length > 0 && (
+                <div>
                   <button
                     onClick={() => { endSession(); setShowCommandCenter(false); }}
                     className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-all"
                     style={{ background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.12)" }}
+                    data-testid="button-end-session"
                   >
                     <span className="text-[10px] text-indigo-300/50 font-medium uppercase tracking-wider">End Session</span>
                   </button>
@@ -4156,6 +4228,12 @@ export function VolumeMixer() {
     });
     prevChannelIds.current = currentIds;
   }, [channels, masterIntensity, settings.audioEnabled, sessionEnded]);
+
+  useEffect(() => {
+    return () => {
+      stopAllAudio();
+    };
+  }, []);
 
   useEffect(() => {
     if (channels.length === 1 && !tutorialCompleted && !showTutorial) {
