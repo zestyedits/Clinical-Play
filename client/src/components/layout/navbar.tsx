@@ -14,7 +14,9 @@ function MobileBottomNav({ items, currentPath, unreadCount }: { items: { label: 
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border" aria-label="Mobile navigation" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div className="flex justify-around items-center h-16 px-2" role="tablist">
         {items.map((item) => {
-          const isActive = currentPath === item.path;
+          const isActive = item.path === "/settings"
+            ? currentPath.startsWith("/settings")
+            : currentPath === item.path;
           return (
             <button
               key={item.tab}
@@ -90,7 +92,7 @@ export function Navbar() {
     { label: "Sessions", path: "/dashboard", icon: LayoutDashboard, tab: "sessions" },
     { label: "Library", path: "/library", icon: Library, tab: "library" },
     { label: "Inbox", path: "/inbox", icon: Inbox, tab: "inbox" },
-    { label: "Settings", path: "/workspace", icon: SlidersHorizontal, tab: "settings" },
+    { label: "Settings", path: "/settings", icon: SlidersHorizontal, tab: "settings" },
   ];
 
   const handleAnchorClick = (path: string, e: React.MouseEvent) => {
@@ -123,7 +125,9 @@ export function Navbar() {
               {/* Tab-style navigation */}
               <div className="flex items-center h-16">
                 {loggedInItems.map((item) => {
-                  const isActive = location === item.path;
+                  const isActive = item.path === "/settings"
+                    ? location.startsWith("/settings")
+                    : location === item.path;
                   return (
                     <Link
                       key={item.path}
@@ -249,13 +253,17 @@ export function Navbar() {
               <div className="p-3 space-y-0.5">
                 {isAuthenticated ? (
                   <>
-                    {loggedInItems.map((item) => (
+                    {loggedInItems.map((item) => {
+                      const isMobileActive = item.path === "/settings"
+                        ? location.startsWith("/settings")
+                        : location === item.path;
+                      return (
                       <Link
                         key={item.path}
                         href={item.path}
                         className={cn(
                           "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors no-underline",
-                          location === item.path
+                          isMobileActive
                             ? "bg-primary/8 text-primary"
                             : "text-muted-foreground hover:bg-secondary"
                         )}
@@ -269,7 +277,8 @@ export function Navbar() {
                           </span>
                         )}
                       </Link>
-                    ))}
+                      );
+                    })}
                     {isAdminUser && (
                       <Link
                         href="/admin"

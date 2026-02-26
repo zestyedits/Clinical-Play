@@ -46,8 +46,16 @@ Preferred communication style: Simple, everyday language.
 - **ORM**: Drizzle ORM with `drizzle-zod` for schema validation.
 - **Schema**: Shared `shared/schema.ts` defining 10 tables including `users`, `therapy_sessions`, `participants`, `sandtrayItems`, `waitlist_entries`, and tables for other therapeutic tools (e.g., `feeling_wheel_selections`).
 
+### Settings Architecture
+- **Unified Settings**: `/settings` hub page with 7 sub-pages, replacing the old separate Workspace and Account pages
+- **Sub-pages**: `/settings/profile`, `/settings/appearance`, `/settings/sessions`, `/settings/billing`, `/settings/team`, `/settings/security`, `/settings/privacy`
+- **Layout**: Shared `SettingsLayout` component with back-arrow navigation
+- **Wired features**: Password reset (Supabase `resetPasswordForEmail`), account deletion (`DELETE /api/account` + Supabase admin delete)
+- **Old routes**: `/workspace`, `/account`, `/profile` all redirect to `/settings`
+
 ### Project Structure Highlights
 - **`client/`**: Frontend React application.
+- **`client/src/pages/settings/`**: Settings hub and sub-pages (profile, appearance, sessions, billing, team, security, privacy).
 - **`server/`**: Express backend, including API routes, WebSocket handling, and database interaction.
 - **`shared/`**: Common code like database schemas and validation.
 

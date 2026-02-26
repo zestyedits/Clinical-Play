@@ -492,6 +492,22 @@ export async function registerRoutes(
     res.json({ isAdmin: isAdmin(req) });
   });
 
+  app.delete("/api/account", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authUser.id;
+      const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+      if (error) {
+        console.error("Supabase delete error:", error);
+        return res.status(500).json({ message: "Failed to delete authentication account" });
+      }
+      await db.delete(users).where(eq(users.id, userId));
+      res.json({ message: "Account deleted successfully" });
+    } catch (error) {
+      console.error("Account deletion error:", error);
+      res.status(500).json({ message: "Failed to delete account" });
+    }
+  });
+
   // --- Stripe Billing Routes ---
   registerStripeRoutes(app);
 

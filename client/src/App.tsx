@@ -21,9 +21,15 @@ import Signup from "@/pages/signup";
 import EmailConfirmed from "@/pages/email-confirmed";
 import InboxPage from "@/pages/inbox";
 import AdminPanel from "@/pages/admin";
-import WorkspacePage from "@/pages/workspace";
 import LibraryPage from "@/pages/library";
-import AccountPage from "@/pages/account";
+import SettingsHub from "@/pages/settings/index";
+import ProfileSettings from "@/pages/settings/profile";
+import AppearanceSettings from "@/pages/settings/appearance";
+import SessionSettings from "@/pages/settings/sessions";
+import BillingSettings from "@/pages/settings/billing";
+import TeamSettings from "@/pages/settings/team";
+import SecuritySettings from "@/pages/settings/security";
+import PrivacySettings from "@/pages/settings/privacy";
 
 function Router() {
   const [location] = useLocation();
@@ -47,10 +53,18 @@ function Router() {
         <Route path="/email-confirmed">{() => <EmailConfirmed />}</Route>
         <Route path="/inbox">{() => <InboxPage />}</Route>
         <Route path="/admin">{() => <AdminPanel />}</Route>
-        <Route path="/workspace">{() => <WorkspacePage />}</Route>
-        <Route path="/profile">{() => <Redirect to="/workspace" />}</Route>
+        <Route path="/settings/profile">{() => <ProfileSettings />}</Route>
+        <Route path="/settings/appearance">{() => <AppearanceSettings />}</Route>
+        <Route path="/settings/sessions">{() => <SessionSettings />}</Route>
+        <Route path="/settings/billing">{() => <BillingSettings />}</Route>
+        <Route path="/settings/team">{() => <TeamSettings />}</Route>
+        <Route path="/settings/security">{() => <SecuritySettings />}</Route>
+        <Route path="/settings/privacy">{() => <PrivacySettings />}</Route>
+        <Route path="/settings">{() => <SettingsHub />}</Route>
+        <Route path="/workspace">{() => <Redirect to="/settings" />}</Route>
+        <Route path="/profile">{() => <Redirect to="/settings" />}</Route>
         <Route path="/library">{() => <LibraryPage />}</Route>
-        <Route path="/account">{() => <AccountPage />}</Route>
+        <Route path="/account">{() => <Redirect to="/settings" />}</Route>
         <Route>{() => <NotFound />}</Route>
       </Switch>
     </>

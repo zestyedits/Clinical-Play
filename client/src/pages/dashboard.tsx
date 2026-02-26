@@ -1060,10 +1060,10 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="space-y-2">
-            <Link href="/workspace" className="no-underline">
-              <button className="w-full py-2.5 rounded-xl bg-secondary/50 text-foreground text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2" data-testid="button-workspace">
+            <Link href="/settings" className="no-underline">
+              <button className="w-full py-2.5 rounded-xl bg-secondary/50 text-foreground text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2" data-testid="button-settings">
                 <User size={14} />
-                Workspace
+                Settings
               </button>
             </Link>
             {isPro && (subscriptionType === "community" || subscriptionType === "annual") && (
