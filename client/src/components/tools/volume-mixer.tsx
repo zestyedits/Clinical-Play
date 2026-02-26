@@ -749,218 +749,130 @@ function updateDrone(
   }
 }
 
-function makeNoiseBuffer(ctx: AudioContext): AudioBuffer {
-  const len = ctx.sampleRate * 2;
-  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-  const d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
-  return buf;
+let crowdBuffer: AudioBuffer | null = null;
+let crowdBufferLoading = false;
+
+async function loadCrowdBuffer(ctx: AudioContext): Promise<AudioBuffer | null> {
+  if (crowdBuffer) return crowdBuffer;
+  if (crowdBufferLoading) {
+    while (crowdBufferLoading) await new Promise((r) => setTimeout(r, 50));
+    return crowdBuffer;
+  }
+  crowdBufferLoading = true;
+  try {
+    const resp = await fetch("/crowd-ambience.mp3");
+    const arrayBuf = await resp.arrayBuffer();
+    crowdBuffer = await ctx.decodeAudioData(arrayBuf);
+    return crowdBuffer;
+  } catch (e) {
+    console.error("Failed to load crowd ambience:", e);
+    return null;
+  } finally {
+    crowdBufferLoading = false;
+  }
 }
 
-function createVoiceLayer(
+function createCrowdLayer(
   ctx: AudioContext,
-  noiseBuf: AudioBuffer,
-  formants: { freq: number; Q: number; gain: number }[],
-  syllableRate: number,
-  modDepth: number,
+  buffer: AudioBuffer,
   output: GainNode,
+  playbackRate: number,
+  layerGain: number,
 ): AudioNode[] {
   const nodes: AudioNode[] = [];
-  const noise = ctx.createBufferSource();
-  noise.buffer = noiseBuf;
-  noise.loop = true;
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  src.loop = true;
+  src.playbackRate.value = playbackRate;
+  src.loopStart = Math.random() * Math.max(0, buffer.duration - 2);
+  src.loopEnd = buffer.duration;
 
-  const mix = ctx.createGain();
-  mix.gain.value = 1.0;
-
-  formants.forEach((f) => {
-    const bp = ctx.createBiquadFilter();
-    bp.type = "bandpass";
-    bp.frequency.value = f.freq;
-    bp.Q.value = f.Q;
-    const g = ctx.createGain();
-    g.gain.value = f.gain;
-    noise.connect(bp);
-    bp.connect(g);
-    g.connect(mix);
-    nodes.push(bp, g);
-  });
-
-  const syllableLfo = ctx.createOscillator();
-  syllableLfo.type = "sine";
-  syllableLfo.frequency.value = syllableRate;
-  const syllableDepth = ctx.createGain();
-  syllableDepth.gain.value = modDepth;
-  syllableLfo.connect(syllableDepth);
-  syllableDepth.connect(mix.gain);
-
-  const pauseLfo = ctx.createOscillator();
-  pauseLfo.type = "sine";
-  pauseLfo.frequency.value = 0.3 + Math.random() * 0.4;
-  const pauseDepth = ctx.createGain();
-  pauseDepth.gain.value = 0.3;
-  pauseLfo.connect(pauseDepth);
-  pauseDepth.connect(mix.gain);
-
-  mix.connect(output);
-  noise.start();
-  syllableLfo.start();
-  pauseLfo.start();
-  nodes.push(noise, mix, syllableLfo, syllableDepth, pauseLfo, pauseDepth);
+  const g = ctx.createGain();
+  g.gain.value = layerGain;
+  src.connect(g);
+  g.connect(output);
+  src.start(0, Math.random() * buffer.duration);
+  nodes.push(src, g);
   return nodes;
 }
 
-function createTextureNodes(ctx: AudioContext, texture: PartTexture, gain: GainNode): AudioNode[] {
+async function createTextureNodes(ctx: AudioContext, texture: PartTexture, gain: GainNode): Promise<AudioNode[]> {
+  const buffer = await loadCrowdBuffer(ctx);
+  if (!buffer) return [];
   const nodes: AudioNode[] = [];
-  const noiseBuf = makeNoiseBuffer(ctx);
 
   switch (texture) {
     case "chatter": {
-      const v1 = createVoiceLayer(ctx, noiseBuf, [
-        { freq: 400 + Math.random() * 200, Q: 8, gain: 0.5 },
-        { freq: 1400 + Math.random() * 400, Q: 6, gain: 0.35 },
-        { freq: 2800 + Math.random() * 400, Q: 5, gain: 0.15 },
-      ], 3.5 + Math.random() * 1.5, 0.4, gain);
-
-      const v2Gain = ctx.createGain();
-      v2Gain.gain.value = 0.7;
-      v2Gain.connect(gain);
-      const v2 = createVoiceLayer(ctx, noiseBuf, [
-        { freq: 500 + Math.random() * 200, Q: 7, gain: 0.45 },
-        { freq: 1600 + Math.random() * 400, Q: 5, gain: 0.3 },
-        { freq: 3000 + Math.random() * 300, Q: 4, gain: 0.12 },
-      ], 4.0 + Math.random() * 2, 0.35, v2Gain);
-
-      const v3Gain = ctx.createGain();
-      v3Gain.gain.value = 0.5;
-      v3Gain.connect(gain);
-      const v3 = createVoiceLayer(ctx, noiseBuf, [
-        { freq: 350 + Math.random() * 150, Q: 9, gain: 0.4 },
-        { freq: 1200 + Math.random() * 300, Q: 6, gain: 0.25 },
-        { freq: 2600 + Math.random() * 400, Q: 5, gain: 0.1 },
-      ], 3.0 + Math.random() * 1.0, 0.45, v3Gain);
-
-      nodes.push(...v1, ...v2, v2Gain, ...v3, v3Gain);
+      nodes.push(...createCrowdLayer(ctx, buffer, gain, 1.0, 0.7));
+      nodes.push(...createCrowdLayer(ctx, buffer, gain, 0.95 + Math.random() * 0.1, 0.5));
+      nodes.push(...createCrowdLayer(ctx, buffer, gain, 1.05 + Math.random() * 0.1, 0.3));
       break;
     }
     case "buzz": {
-      const v1 = createVoiceLayer(ctx, noiseBuf, [
-        { freq: 600 + Math.random() * 100, Q: 10, gain: 0.4 },
-        { freq: 2000 + Math.random() * 300, Q: 8, gain: 0.5 },
-        { freq: 3800 + Math.random() * 400, Q: 6, gain: 0.3 },
-        { freq: 5000 + Math.random() * 500, Q: 4, gain: 0.15 },
-      ], 6 + Math.random() * 3, 0.3, gain);
-
-      const v2Gain = ctx.createGain();
-      v2Gain.gain.value = 0.6;
-      v2Gain.connect(gain);
-      const v2 = createVoiceLayer(ctx, noiseBuf, [
-        { freq: 700 + Math.random() * 150, Q: 9, gain: 0.35 },
-        { freq: 2200 + Math.random() * 300, Q: 7, gain: 0.45 },
-        { freq: 4200 + Math.random() * 400, Q: 5, gain: 0.25 },
-      ], 7 + Math.random() * 3, 0.25, v2Gain);
-
-      const jitterLfo = ctx.createOscillator();
-      jitterLfo.type = "sawtooth";
-      jitterLfo.frequency.value = 0.15 + Math.random() * 0.1;
-      const jitterG = ctx.createGain();
-      jitterG.gain.value = 0.15;
-      jitterLfo.connect(jitterG);
-      jitterG.connect(gain.gain);
-      jitterLfo.start();
-
-      nodes.push(...v1, ...v2, v2Gain, jitterLfo, jitterG);
+      const hp = ctx.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 800;
+      hp.Q.value = 0.7;
+      const hpGain = ctx.createGain();
+      hpGain.gain.value = 1.0;
+      hp.connect(hpGain);
+      hpGain.connect(gain);
+      nodes.push(hp, hpGain);
+      nodes.push(...createCrowdLayer(ctx, buffer, hpGain, 1.3 + Math.random() * 0.2, 0.6));
+      nodes.push(...createCrowdLayer(ctx, buffer, hpGain, 1.5 + Math.random() * 0.2, 0.4));
       break;
     }
     case "throb": {
-      const v1 = createVoiceLayer(ctx, noiseBuf, [
-        { freq: 200 + Math.random() * 80, Q: 12, gain: 0.6 },
-        { freq: 700 + Math.random() * 200, Q: 8, gain: 0.3 },
-        { freq: 1800 + Math.random() * 300, Q: 5, gain: 0.1 },
-      ], 1.5 + Math.random() * 0.5, 0.5, gain);
-
-      const sub = ctx.createOscillator();
-      sub.type = "sine";
-      sub.frequency.value = 40 + Math.random() * 20;
-      const subG = ctx.createGain();
-      subG.gain.value = 0.15;
-      sub.connect(subG);
-      subG.connect(gain);
-      sub.start();
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 600;
+      lp.Q.value = 1;
+      const lpGain = ctx.createGain();
+      lpGain.gain.value = 1.0;
+      lp.connect(lpGain);
+      lpGain.connect(gain);
+      nodes.push(lp, lpGain);
+      nodes.push(...createCrowdLayer(ctx, buffer, lpGain, 0.7, 0.8));
 
       const pulseLfo = ctx.createOscillator();
       pulseLfo.type = "sine";
       pulseLfo.frequency.value = 0.8 + Math.random() * 0.4;
       const pulseG = ctx.createGain();
-      pulseG.gain.value = 0.4;
+      pulseG.gain.value = 0.35;
       pulseLfo.connect(pulseG);
       pulseG.connect(gain.gain);
       pulseLfo.start();
-
-      nodes.push(...v1, sub, subG, pulseLfo, pulseG);
+      nodes.push(pulseLfo, pulseG);
       break;
     }
     case "shout": {
-      const v1 = createVoiceLayer(ctx, noiseBuf, [
-        { freq: 500 + Math.random() * 100, Q: 6, gain: 0.5 },
-        { freq: 1800 + Math.random() * 300, Q: 5, gain: 0.55 },
-        { freq: 2800 + Math.random() * 400, Q: 4, gain: 0.4 },
-        { freq: 4000 + Math.random() * 500, Q: 3, gain: 0.2 },
-      ], 2.5 + Math.random() * 1.5, 0.35, gain);
+      nodes.push(...createCrowdLayer(ctx, buffer, gain, 1.1, 0.9));
+      nodes.push(...createCrowdLayer(ctx, buffer, gain, 1.25 + Math.random() * 0.15, 0.5));
 
-      const harsh = ctx.createOscillator();
-      harsh.type = "sawtooth";
-      harsh.frequency.value = 180 + Math.random() * 60;
-      const ws = ctx.createWaveShaper();
-      const curve = new Float32Array(256);
-      for (let i = 0; i < 256; i++) {
-        const x = (i / 128) - 1;
-        curve[i] = (Math.PI + 3) * x / (Math.PI + 3 * Math.abs(x));
-      }
-      ws.curve = curve;
-      ws.oversample = "2x";
-      const harshBp = ctx.createBiquadFilter();
-      harshBp.type = "bandpass";
-      harshBp.frequency.value = 2500;
-      harshBp.Q.value = 2;
-      const harshG = ctx.createGain();
-      harshG.gain.value = 0.12;
-      harsh.connect(ws);
-      ws.connect(harshBp);
-      harshBp.connect(harshG);
-      harshG.connect(gain);
-      harsh.start();
-
-      const burstLfo = ctx.createOscillator();
-      burstLfo.type = "square";
-      burstLfo.frequency.value = 0.6 + Math.random() * 0.4;
-      const burstG = ctx.createGain();
-      burstG.gain.value = 0.2;
-      burstLfo.connect(burstG);
-      burstG.connect(gain.gain);
-      burstLfo.start();
-
-      nodes.push(...v1, harsh, ws, harshBp, harshG, burstLfo, burstG);
+      const hp = ctx.createBiquadFilter();
+      hp.type = "highshelf";
+      hp.frequency.value = 2000;
+      hp.gain.value = 6;
+      const hpGain = ctx.createGain();
+      hpGain.gain.value = 0.4;
+      hp.connect(hpGain);
+      hpGain.connect(gain);
+      nodes.push(hp, hpGain);
+      nodes.push(...createCrowdLayer(ctx, buffer, hpGain, 1.4, 0.5));
       break;
     }
     case "hum": {
-      const v1 = createVoiceLayer(ctx, noiseBuf, [
-        { freq: 300 + Math.random() * 50, Q: 12, gain: 0.3 },
-        { freq: 900 + Math.random() * 100, Q: 8, gain: 0.15 },
-        { freq: 2200 + Math.random() * 200, Q: 6, gain: 0.05 },
-      ], 1.0 + Math.random() * 0.5, 0.15, gain);
-
-      const osc1 = ctx.createOscillator();
-      osc1.type = "sine";
-      osc1.frequency.value = 174;
-      const osc2 = ctx.createOscillator();
-      osc2.type = "triangle";
-      osc2.frequency.value = 174.5;
-
-      const g1 = ctx.createGain();
-      g1.gain.value = 0.15;
-      const g2 = ctx.createGain();
-      g2.gain.value = 0.08;
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 400;
+      lp.Q.value = 0.5;
+      const lpGain = ctx.createGain();
+      lpGain.gain.value = 1.0;
+      lp.connect(lpGain);
+      lpGain.connect(gain);
+      nodes.push(lp, lpGain);
+      nodes.push(...createCrowdLayer(ctx, buffer, lpGain, 0.5, 0.6));
+      nodes.push(...createCrowdLayer(ctx, buffer, lpGain, 0.55, 0.3));
 
       const breathLfo = ctx.createOscillator();
       breathLfo.type = "sine";
@@ -969,16 +881,8 @@ function createTextureNodes(ctx: AudioContext, texture: PartTexture, gain: GainN
       breathG.gain.value = 0.06;
       breathLfo.connect(breathG);
       breathG.connect(gain.gain);
-
-      osc1.connect(g1);
-      osc2.connect(g2);
-      g1.connect(gain);
-      g2.connect(gain);
-      osc1.start();
-      osc2.start();
       breathLfo.start();
-
-      nodes.push(...v1, osc1, osc2, g1, g2, breathLfo, breathG);
+      nodes.push(breathLfo, breathG);
       break;
     }
   }
@@ -986,7 +890,7 @@ function createTextureNodes(ctx: AudioContext, texture: PartTexture, gain: GainN
   return nodes;
 }
 
-function updateChannelPan(channelId: string, panValue: number, volume: number, texture: PartTexture = "hum") {
+async function updateChannelPan(channelId: string, panValue: number, volume: number, texture: PartTexture = "hum") {
   if (!isAudioInitialized || !masterGain) return;
   const ctx = getAudioContext();
   const now = ctx.currentTime;
@@ -1008,7 +912,9 @@ function updateChannelPan(channelId: string, panValue: number, volume: number, t
     const gain = ctx.createGain();
     gain.gain.value = 0;
 
-    const nodes = createTextureNodes(ctx, texture, gain);
+    const nodes = await createTextureNodes(ctx, texture, gain);
+
+    if (!isAudioInitialized || !masterGain) return;
 
     gain.connect(panner);
     panner.connect(masterGain);
@@ -1017,6 +923,7 @@ function updateChannelPan(channelId: string, panValue: number, volume: number, t
   }
 
   const ch = channelAudioMap.get(channelId)!;
+  if (!ch) return;
   ch.panner.pan.setTargetAtTime(Math.max(-1, Math.min(1, panValue)), now, 0.05);
   ch.gain.gain.setTargetAtTime(Math.min(volume / 100 * 0.06, 0.05), now, 0.1);
 }
@@ -1185,7 +1092,6 @@ function stopAllAudio() {
     audioCtx.close().catch(() => {});
   }
 
-  // Reset all references
   droneOsc = null;
   droneOscGain = null;
   droneNoiseSource = null;
@@ -1194,6 +1100,7 @@ function stopAllAudio() {
   droneGain = null;
   masterGain = null;
   audioCtx = null;
+  crowdBuffer = null;
   isAudioInitialized = false;
 }
 

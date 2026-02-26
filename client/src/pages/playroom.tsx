@@ -268,6 +268,12 @@ export default function Playroom() {
   }, [send]);
 
   const handleEndSession = useCallback(async () => {
+    if (isDemo) {
+      setEndingSession(true);
+      setSessionEnded(true);
+      setEndingSession(false);
+      return;
+    }
     if (!sessionId) return;
     setEndingSession(true);
     try {
@@ -289,7 +295,7 @@ export default function Playroom() {
     } finally {
       setEndingSession(false);
     }
-  }, [sessionId]);
+  }, [sessionId, isDemo]);
 
   const handleSnapshot = useCallback(async () => {
     const el = toolAreaRef.current;

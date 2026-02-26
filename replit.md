@@ -38,7 +38,8 @@ Preferred communication style: Simple, everyday language.
 - **Pre-launch & Waitlist**: Restricted access, waitlist signup, and admin panel for user/waitlist management.
 - **Session Lifecycle**: End session functionality with confirmation, session summary, and PHI safety warnings for new session names.
 - **Snapshot Watermarking**: Exported session PNGs include metadata footer.
-- **Demo Mode**: Local-only sandbox sessions for clinicians to explore tools without data persistence.
+- **Volume Mixer Audio**: Uses an MP3 recording of crowd ambience (`client/public/crowd-ambience.mp3`) loaded as an AudioBuffer. Each texture type (chatter, buzz, throb, shout, hum) applies different playback rates and filters to the same recording. Audio is managed via Web Audio API with per-channel gain/pan nodes connected through a master compressor.
+- **Demo Mode**: Local-only sandbox sessions for clinicians to explore tools without data persistence. End session works without API calls.
 - **Guided Tours**: Interactive, spotlight-based onboarding tours for new users.
 
 ### Data Storage
