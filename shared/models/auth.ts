@@ -28,6 +28,7 @@ export const users = pgTable("users", {
   subscriptionType: varchar("subscription_type").default("free"),
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
+  themePreference: varchar("theme_preference").default("sage"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

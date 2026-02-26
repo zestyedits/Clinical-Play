@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from "react";
 
 export interface AccentPreset {
   id: string;
@@ -7,6 +7,11 @@ export interface AccentPreset {
   accent: string;
   swatch: string;
   swatchSecondary: string;
+  secondary: string;
+  muted: string;
+  mutedForeground: string;
+  border: string;
+  card: string;
 }
 
 export const accentPresets: AccentPreset[] = [
@@ -17,6 +22,11 @@ export const accentPresets: AccentPreset[] = [
     accent: "15 45% 62%",
     swatch: "#4A7A56",
     swatchSecondary: "#C8836A",
+    secondary: "35 25% 93%",
+    muted: "35 15% 93%",
+    mutedForeground: "160 8% 45%",
+    border: "35 15% 88%",
+    card: "40 25% 99%",
   },
   {
     id: "ocean",
@@ -25,6 +35,11 @@ export const accentPresets: AccentPreset[] = [
     accent: "35 35% 60%",
     swatch: "#3E8C8C",
     swatchSecondary: "#C4A46A",
+    secondary: "175 12% 93%",
+    muted: "175 8% 93%",
+    mutedForeground: "175 8% 45%",
+    border: "175 8% 88%",
+    card: "175 10% 99%",
   },
   {
     id: "lavender",
@@ -33,6 +48,11 @@ export const accentPresets: AccentPreset[] = [
     accent: "145 20% 50%",
     swatch: "#7B6BA0",
     swatchSecondary: "#6B9F75",
+    secondary: "260 12% 94%",
+    muted: "260 8% 93%",
+    mutedForeground: "260 8% 45%",
+    border: "260 8% 88%",
+    card: "260 10% 99%",
   },
   {
     id: "clay",
@@ -41,6 +61,11 @@ export const accentPresets: AccentPreset[] = [
     accent: "150 20% 45%",
     swatch: "#8B6347",
     swatchSecondary: "#5C8C6B",
+    secondary: "20 18% 93%",
+    muted: "20 12% 93%",
+    mutedForeground: "20 10% 45%",
+    border: "20 10% 88%",
+    card: "25 15% 99%",
   },
   {
     id: "dusty-rose",
@@ -49,6 +74,11 @@ export const accentPresets: AccentPreset[] = [
     accent: "85 20% 45%",
     swatch: "#8F5A6E",
     swatchSecondary: "#6A7D4F",
+    secondary: "345 12% 94%",
+    muted: "345 8% 93%",
+    mutedForeground: "345 8% 45%",
+    border: "345 8% 88%",
+    card: "345 10% 99%",
   },
   {
     id: "forest",
@@ -57,6 +87,11 @@ export const accentPresets: AccentPreset[] = [
     accent: "30 30% 55%",
     swatch: "#365C42",
     swatchSecondary: "#B5956B",
+    secondary: "150 12% 93%",
+    muted: "40 10% 93%",
+    mutedForeground: "150 10% 45%",
+    border: "40 10% 88%",
+    card: "40 15% 99%",
   },
 ];
 
@@ -64,6 +99,7 @@ interface ThemeContextType {
   accentId: string;
   setAccentId: (id: string) => void;
   currentAccent: AccentPreset;
+  initFromServer: (id: string) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
@@ -75,8 +111,35 @@ function getStoredAccent(): string {
   return "sage";
 }
 
+function applyThemeVars(preset: AccentPreset) {
+  const root = document.documentElement;
+  root.style.setProperty("--primary", preset.primary);
+  root.style.setProperty("--ring", preset.primary);
+  root.style.setProperty("--accent", preset.accent);
+  root.style.setProperty("--primary-foreground", "40 30% 97%");
+  root.style.setProperty("--accent-foreground", "40 30% 98%");
+  root.style.setProperty("--secondary", preset.secondary);
+  root.style.setProperty("--muted", preset.muted);
+  root.style.setProperty("--muted-foreground", preset.mutedForeground);
+  root.style.setProperty("--border", preset.border);
+  root.style.setProperty("--input", preset.border);
+  root.style.setProperty("--card", preset.card);
+  root.style.setProperty("--popover", preset.card);
+}
+
+function injectTransition() {
+  const existing = document.getElementById("theme-transition-style");
+  if (existing) existing.remove();
+  const style = document.createElement("style");
+  style.id = "theme-transition-style";
+  style.textContent = `*, *::before, *::after { transition: background-color 0.35s ease, border-color 0.35s ease, color 0.25s ease, box-shadow 0.3s ease, fill 0.3s ease !important; }`;
+  document.head.appendChild(style);
+  setTimeout(() => style.remove(), 500);
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [accentId, setAccentIdState] = useState<string>(getStoredAccent);
+  const isFirstRender = useRef(true);
 
   const currentAccent = accentPresets.find((p) => p.id === accentId) || accentPresets[0];
 
@@ -85,10 +148,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.style.setProperty("--primary", currentAccent.primary);
-    root.style.setProperty("--ring", currentAccent.primary);
-    root.style.setProperty("--accent", currentAccent.accent);
+    if (isFirstRender.current) {
+      applyThemeVars(currentAccent);
+      isFirstRender.current = false;
+    } else {
+      injectTransition();
+      applyThemeVars(currentAccent);
+    }
   }, [currentAccent]);
 
   const setAccentId = useCallback((id: string) => {
@@ -96,8 +162,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem("cp_theme_accent", id); } catch {}
   }, []);
 
+  const initFromServer = useCallback((id: string) => {
+    if (id && accentPresets.some(p => p.id === id)) {
+      setAccentIdState(id);
+      try { localStorage.setItem("cp_theme_accent", id); } catch {}
+    }
+  }, []);
+
   return (
-    <ThemeContext.Provider value={{ accentId, setAccentId, currentAccent }}>
+    <ThemeContext.Provider value={{ accentId, setAccentId, currentAccent, initFromServer }}>
       {children}
     </ThemeContext.Provider>
   );

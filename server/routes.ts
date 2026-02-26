@@ -147,6 +147,7 @@ export async function registerRoutes(
         clinicalSpecialty: user.clinicalSpecialty,
         defaultAnonymous: user.defaultAnonymous,
         profileImageUrl: user.profileImageUrl,
+        themePreference: user.themePreference,
       });
     } catch (error) {
       console.error("Error fetching workspace:", error);
@@ -157,7 +158,7 @@ export async function registerRoutes(
   app.patch("/api/workspace", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.authUser.id;
-      const { firstName, lastName, professionalTitle, clinicalSpecialty, defaultAnonymous } = req.body;
+      const { firstName, lastName, professionalTitle, clinicalSpecialty, defaultAnonymous, themePreference } = req.body;
       const [updated] = await db
         .update(users)
         .set({
@@ -166,6 +167,7 @@ export async function registerRoutes(
           ...(professionalTitle !== undefined && { professionalTitle }),
           ...(clinicalSpecialty !== undefined && { clinicalSpecialty }),
           ...(defaultAnonymous !== undefined && { defaultAnonymous }),
+          ...(themePreference !== undefined && { themePreference }),
           updatedAt: new Date(),
         })
         .where(eq(users.id, userId))
@@ -177,6 +179,7 @@ export async function registerRoutes(
         professionalTitle: updated.professionalTitle,
         clinicalSpecialty: updated.clinicalSpecialty,
         defaultAnonymous: updated.defaultAnonymous,
+        themePreference: updated.themePreference,
       });
     } catch (error) {
       console.error("Error updating workspace:", error);
