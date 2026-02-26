@@ -645,6 +645,7 @@ interface ChannelAudio {
 }
 
 const channelAudioMap: Map<string, ChannelAudio> = new Map();
+const pendingChannels: Set<string> = new Set();
 
 function getAudioContext(): AudioContext {
   if (!audioCtx) {
@@ -779,13 +780,23 @@ async function createTextureNodes(ctx: AudioContext, texture: PartTexture, gain:
 }
 
 async function updateChannelPan(channelId: string, panValue: number, volume: number, texture: PartTexture = "hum") {
-  if (!isAudioInitialized || !masterGain) return;
-  const ctx = getAudioContext();
-  const now = ctx.currentTime;
+  if (!isAudioInitialized) initAudio();
+  if (!masterGain) return;
 
   const existing = channelAudioMap.get(channelId);
 
-  if (!existing || existing.texture !== texture) {
+  if (existing && existing.texture === texture) {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    existing.panner.pan.setTargetAtTime(Math.max(-1, Math.min(1, panValue)), now, 0.05);
+    existing.gain.gain.setTargetAtTime(volume / 100, now, 0.1);
+    return;
+  }
+
+  if (pendingChannels.has(channelId)) return;
+  pendingChannels.add(channelId);
+
+  try {
     if (existing) {
       existing.nodes.forEach((n) => {
         try { if (n instanceof OscillatorNode) n.stop(); } catch {}
@@ -794,26 +805,26 @@ async function updateChannelPan(channelId: string, panValue: number, volume: num
       });
       try { existing.gain.disconnect(); } catch {}
       try { existing.panner.disconnect(); } catch {}
+      channelAudioMap.delete(channelId);
     }
 
+    const ctx = getAudioContext();
     const panner = ctx.createStereoPanner();
     const gain = ctx.createGain();
-    gain.gain.value = 0;
+    gain.gain.value = volume / 100;
 
     const nodes = await createTextureNodes(ctx, texture, gain);
 
     if (!isAudioInitialized || !masterGain) return;
 
+    panner.pan.value = Math.max(-1, Math.min(1, panValue));
     gain.connect(panner);
     panner.connect(masterGain);
 
     channelAudioMap.set(channelId, { panner, gain, nodes, texture });
+  } finally {
+    pendingChannels.delete(channelId);
   }
-
-  const ch = channelAudioMap.get(channelId)!;
-  if (!ch) return;
-  ch.panner.pan.setTargetAtTime(Math.max(-1, Math.min(1, panValue)), now, 0.05);
-  ch.gain.gain.setTargetAtTime(volume / 100, now, 0.1);
 }
 
 function removeChannelAudio(channelId: string) {
