@@ -734,86 +734,43 @@ async function createTextureNodes(ctx: AudioContext, texture: PartTexture, gain:
 
   switch (texture) {
     case "chatter": {
-      nodes.push(...createCrowdLayer(ctx, buffer, gain, 1.0, 0.7));
-      nodes.push(...createCrowdLayer(ctx, buffer, gain, 0.95 + Math.random() * 0.1, 0.5));
-      nodes.push(...createCrowdLayer(ctx, buffer, gain, 1.05 + Math.random() * 0.1, 0.3));
+      nodes.push(...createCrowdLayer(ctx, buffer, gain, 1.0, 1.0));
+      nodes.push(...createCrowdLayer(ctx, buffer, gain, 0.95 + Math.random() * 0.1, 0.6));
       break;
     }
     case "buzz": {
       const hp = ctx.createBiquadFilter();
       hp.type = "highpass";
-      hp.frequency.value = 800;
-      hp.Q.value = 0.7;
-      const hpGain = ctx.createGain();
-      hpGain.gain.value = 1.0;
-      hp.connect(hpGain);
-      hpGain.connect(gain);
-      nodes.push(hp, hpGain);
-      nodes.push(...createCrowdLayer(ctx, buffer, hpGain, 1.3 + Math.random() * 0.2, 0.6));
-      nodes.push(...createCrowdLayer(ctx, buffer, hpGain, 1.5 + Math.random() * 0.2, 0.4));
+      hp.frequency.value = 600;
+      hp.Q.value = 0.5;
+      hp.connect(gain);
+      nodes.push(hp);
+      nodes.push(...createCrowdLayer(ctx, buffer, hp, 1.3 + Math.random() * 0.2, 1.0));
       break;
     }
     case "throb": {
       const lp = ctx.createBiquadFilter();
       lp.type = "lowpass";
-      lp.frequency.value = 600;
-      lp.Q.value = 1;
-      const lpGain = ctx.createGain();
-      lpGain.gain.value = 1.0;
-      lp.connect(lpGain);
-      lpGain.connect(gain);
-      nodes.push(lp, lpGain);
-      nodes.push(...createCrowdLayer(ctx, buffer, lpGain, 0.7, 0.8));
-
-      const pulseLfo = ctx.createOscillator();
-      pulseLfo.type = "sine";
-      pulseLfo.frequency.value = 0.8 + Math.random() * 0.4;
-      const pulseG = ctx.createGain();
-      pulseG.gain.value = 0.35;
-      pulseLfo.connect(pulseG);
-      pulseG.connect(gain.gain);
-      pulseLfo.start();
-      nodes.push(pulseLfo, pulseG);
+      lp.frequency.value = 500;
+      lp.Q.value = 0.7;
+      lp.connect(gain);
+      nodes.push(lp);
+      nodes.push(...createCrowdLayer(ctx, buffer, lp, 0.75, 1.0));
       break;
     }
     case "shout": {
-      nodes.push(...createCrowdLayer(ctx, buffer, gain, 1.1, 0.9));
-      nodes.push(...createCrowdLayer(ctx, buffer, gain, 1.25 + Math.random() * 0.15, 0.5));
-
-      const hp = ctx.createBiquadFilter();
-      hp.type = "highshelf";
-      hp.frequency.value = 2000;
-      hp.gain.value = 6;
-      const hpGain = ctx.createGain();
-      hpGain.gain.value = 0.4;
-      hp.connect(hpGain);
-      hpGain.connect(gain);
-      nodes.push(hp, hpGain);
-      nodes.push(...createCrowdLayer(ctx, buffer, hpGain, 1.4, 0.5));
+      nodes.push(...createCrowdLayer(ctx, buffer, gain, 1.15, 1.0));
+      nodes.push(...createCrowdLayer(ctx, buffer, gain, 1.35, 0.4));
       break;
     }
     case "hum": {
       const lp = ctx.createBiquadFilter();
       lp.type = "lowpass";
-      lp.frequency.value = 400;
+      lp.frequency.value = 350;
       lp.Q.value = 0.5;
-      const lpGain = ctx.createGain();
-      lpGain.gain.value = 1.0;
-      lp.connect(lpGain);
-      lpGain.connect(gain);
-      nodes.push(lp, lpGain);
-      nodes.push(...createCrowdLayer(ctx, buffer, lpGain, 0.5, 0.6));
-      nodes.push(...createCrowdLayer(ctx, buffer, lpGain, 0.55, 0.3));
-
-      const breathLfo = ctx.createOscillator();
-      breathLfo.type = "sine";
-      breathLfo.frequency.value = 0.08 + Math.random() * 0.04;
-      const breathG = ctx.createGain();
-      breathG.gain.value = 0.06;
-      breathLfo.connect(breathG);
-      breathG.connect(gain.gain);
-      breathLfo.start();
-      nodes.push(breathLfo, breathG);
+      lp.connect(gain);
+      nodes.push(lp);
+      nodes.push(...createCrowdLayer(ctx, buffer, lp, 0.5, 1.0));
       break;
     }
   }
@@ -856,7 +813,7 @@ async function updateChannelPan(channelId: string, panValue: number, volume: num
   const ch = channelAudioMap.get(channelId)!;
   if (!ch) return;
   ch.panner.pan.setTargetAtTime(Math.max(-1, Math.min(1, panValue)), now, 0.05);
-  ch.gain.gain.setTargetAtTime(Math.min(volume / 100 * 0.06, 0.05), now, 0.1);
+  ch.gain.gain.setTargetAtTime(volume / 100, now, 0.1);
 }
 
 function removeChannelAudio(channelId: string) {
