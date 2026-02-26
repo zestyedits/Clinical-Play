@@ -1,6 +1,6 @@
 import { LegalDisclaimer } from "@/components/shared/legal-disclaimer";
 import { LogoMark } from "@/components/shared/logo-mark";
-import { ArrowRight, CheckCircle2, Shield, FileText, Lock, Cookie, Mail, ArrowUp, Sparkles, Heart } from "lucide-react";
+import { ArrowRight, CheckCircle2, Shield, Lock, Mail, ArrowUp, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -1226,21 +1226,22 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background">
 
       {/* ── Hero ── */}
-      <section className="pt-28 md:pt-36 pb-16 md:pb-24 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/8 border border-primary/15 text-primary text-xs font-medium tracking-wide uppercase mb-6">
-            <Sparkles size={12} />
-            Built for Clinicians & Therapists
-          </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-medium leading-[1.1] text-foreground mb-5">
+      <section className="pt-32 md:pt-40 pb-20 md:pb-28 px-6">
+        <div className="max-w-2xl mx-auto text-center">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-medium leading-[1.08] text-foreground mb-6" data-testid="text-hero-heading">
             Therapy tools<br />
             <span className="text-primary">that connect.</span>
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto mb-10">
-            Interactive tools designed for real therapeutic engagement — whether you're a psychologist, LCSW, SLP, BCBA, or OT. Share your screen, share an invite code, and start working together.
+          <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-md mx-auto mb-10">
+            Interactive digital tools for clinicians who want telehealth sessions that actually engage.
           </p>
-          <div className="max-w-md mx-auto">
+          <div className="max-w-sm mx-auto mb-14">
             <WaitlistForm />
+          </div>
+          <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground/50 font-medium">
+            <span className="flex items-center gap-1.5"><Shield size={12} className="text-primary/40" /> HIPAA-ready</span>
+            <span className="flex items-center gap-1.5"><Lock size={12} className="text-primary/40" /> End-to-end encrypted</span>
+            <span className="flex items-center gap-1.5"><Heart size={12} className="text-primary/40" /> Built by a clinician</span>
           </div>
         </div>
       </section>
@@ -1299,31 +1300,23 @@ export default function LandingPage() {
       </section>
 
       {/* ── What's Coming ── */}
-      <section className="py-16 md:py-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/8 border border-accent/15 text-accent text-xs font-medium tracking-wide uppercase mb-4">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-              Actively Building
-            </div>
-            <h2 className="text-2xl md:text-4xl font-serif text-foreground mb-3">What's coming next</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Our clinical library keeps growing. These tools are actively in development and will be included with every plan at launch.
+      <section className="py-20 md:py-28 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-primary/50 mb-2">Coming soon</p>
+            <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-3">More tools on the way</h2>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              Every tool included with your plan at launch.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 gap-3">
             {upcomingTools.map((tool) => (
-              <div key={tool.name} className="bg-card border border-border rounded-2xl p-5 hover:shadow-md hover:border-border/80 transition-[box-shadow,border-color] duration-200">
-                <div className="text-3xl mb-3">{tool.emoji}</div>
-                <h3 className="text-base font-serif text-foreground mb-1.5">{tool.name}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-3">{tool.desc}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {tool.tags.map((tag) => (
-                    <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-muted text-muted-foreground border border-border">
-                      {tag}
-                    </span>
-                  ))}
+              <div key={tool.name} className="flex items-start gap-4 p-4 rounded-xl bg-card/60 border border-border/60 hover:border-border transition-colors duration-200" data-testid={`card-tool-${tool.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                <span className="text-2xl shrink-0 mt-0.5">{tool.emoji}</span>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-foreground mb-0.5">{tool.name}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{tool.desc}</p>
                 </div>
               </div>
             ))}
@@ -1331,94 +1324,44 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── About ── */}
-      <section className="py-16 md:py-24 px-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-card border border-border rounded-2xl p-8 md:p-10 text-center">
-            <div className="w-14 h-14 mx-auto mb-5 rounded-full bg-primary/10 flex items-center justify-center">
-              <Heart size={24} className="text-primary" />
-            </div>
-            <h3 className="text-xl md:text-2xl font-serif text-foreground mb-3" data-testid="text-about-founder">About the Founder</h3>
-            <p className="text-muted-foreground leading-relaxed max-w-lg mx-auto mb-3">
-              Created by a licensed clinical social worker and veteran with a mission to make telehealth sessions more engaging, interactive, and clinically effective — for every provider who works with people.
-            </p>
-            <p className="text-sm text-muted-foreground/70 italic">
-              "I got tired of boring telehealth sessions, so I built us a digital playroom."
-            </p>
-          </div>
+      {/* ── Quote ── */}
+      <section className="py-16 md:py-20 px-6">
+        <div className="max-w-xl mx-auto text-center">
+          <p className="text-lg md:text-xl font-serif italic text-foreground/70 leading-relaxed mb-4" data-testid="text-founder-quote">
+            "I got tired of boring telehealth sessions, so I built us a digital playroom."
+          </p>
+          <p className="text-xs text-muted-foreground/50 font-medium uppercase tracking-wider">
+            — Licensed Clinical Social Worker &amp; Founder
+          </p>
         </div>
       </section>
 
       {/* ── Bottom Waitlist CTA ── */}
-      <section className="py-16 md:py-24 px-6 bg-secondary/30" id="waitlist">
-        <div className="max-w-lg mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-3">Be the first to know</h2>
-          <p className="text-muted-foreground mb-8">
-            Join our waitlist and get notified when ClinicalPlay launches. Early supporters get founding member pricing.
+      <section className="py-16 md:py-20 px-6" id="waitlist">
+        <div className="max-w-sm mx-auto text-center">
+          <h2 className="text-xl md:text-2xl font-serif text-foreground mb-2">Be the first to know</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            Early supporters get founding member pricing.
           </p>
           <WaitlistForm variant="bottom" />
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-border bg-muted/30 py-12 md:py-16 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <div className="mb-4">
-                <LogoMark size="sm" />
-              </div>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-                Interactive therapy tools for evidence-based clinical engagement.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-medium tracking-[0.08em] uppercase text-muted-foreground mb-4">Legal</h4>
-              <div className="space-y-3">
-                <Link href="/privacy" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline" data-testid="link-footer-privacy">
-                  <Shield size={13} className="shrink-0" />
-                  Privacy Policy
-                </Link>
-                <Link href="/terms" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline" data-testid="link-footer-terms">
-                  <FileText size={13} className="shrink-0" />
-                  Terms of Service
-                </Link>
-                <Link href="/cookies" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline" data-testid="link-footer-cookies">
-                  <Cookie size={13} className="shrink-0" />
-                  Cookie Policy
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-medium tracking-[0.08em] uppercase text-muted-foreground mb-4">Platform</h4>
-              <div className="space-y-3">
-                <Link href="/login" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline" data-testid="link-footer-signin">
-                  Clinician Sign In
-                </Link>
-                <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Lock size={13} className="shrink-0 text-muted-foreground/50" />
-                  No PHI Collected
-                </p>
-                <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Shield size={13} className="shrink-0 text-muted-foreground/50" />
-                  256-bit TLS Encryption
-                </p>
-              </div>
-            </div>
+      <footer className="border-t border-border/60 py-8 px-6">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <LogoMark size="sm" />
+            <span className="text-xs text-muted-foreground/50">&copy; {new Date().getFullYear()}</span>
           </div>
-
-          <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground/70">
-              &copy; {new Date().getFullYear()} ClinicalPlay. All rights reserved.
-            </p>
-            <div className="flex items-center gap-4">
-              <Link href="/privacy" className="text-xs text-muted-foreground/70 hover:text-foreground transition-colors no-underline">Privacy</Link>
-              <Link href="/terms" className="text-xs text-muted-foreground/70 hover:text-foreground transition-colors no-underline">Terms</Link>
-              <Link href="/cookies" className="text-xs text-muted-foreground/70 hover:text-foreground transition-colors no-underline">Cookies</Link>
-            </div>
+          <div className="flex items-center gap-5">
+            <Link href="/login" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors no-underline" data-testid="link-footer-signin">Sign In</Link>
+            <Link href="/privacy" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors no-underline" data-testid="link-footer-privacy">Privacy</Link>
+            <Link href="/terms" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors no-underline" data-testid="link-footer-terms">Terms</Link>
+            <Link href="/cookies" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors no-underline" data-testid="link-footer-cookies">Cookies</Link>
           </div>
+        </div>
+        <div className="max-w-4xl mx-auto mt-4">
           <LegalDisclaimer />
         </div>
       </footer>
