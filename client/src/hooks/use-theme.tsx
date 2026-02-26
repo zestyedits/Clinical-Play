@@ -112,19 +112,37 @@ function getStoredAccent(): string {
 }
 
 function applyThemeVars(preset: AccentPreset) {
-  const root = document.documentElement;
-  root.style.setProperty("--primary", preset.primary);
-  root.style.setProperty("--ring", preset.primary);
-  root.style.setProperty("--accent", preset.accent);
-  root.style.setProperty("--primary-foreground", "40 30% 97%");
-  root.style.setProperty("--accent-foreground", "40 30% 98%");
-  root.style.setProperty("--secondary", preset.secondary);
-  root.style.setProperty("--muted", preset.muted);
-  root.style.setProperty("--muted-foreground", preset.mutedForeground);
-  root.style.setProperty("--border", preset.border);
-  root.style.setProperty("--input", preset.border);
-  root.style.setProperty("--card", preset.card);
-  root.style.setProperty("--popover", preset.card);
+  const vars: Record<string, string> = {
+    "--primary": preset.primary,
+    "--ring": preset.primary,
+    "--accent": preset.accent,
+    "--primary-foreground": "40 30% 97%",
+    "--accent-foreground": "40 30% 98%",
+    "--secondary": preset.secondary,
+    "--secondary-foreground": "160 10% 25%",
+    "--muted": preset.muted,
+    "--muted-foreground": preset.mutedForeground,
+    "--border": preset.border,
+    "--input": preset.border,
+    "--card": preset.card,
+    "--card-foreground": "160 10% 20%",
+    "--popover": preset.card,
+    "--popover-foreground": "160 10% 20%",
+  };
+
+  let css = ":root {\n";
+  for (const [prop, val] of Object.entries(vars)) {
+    css += `  ${prop}: ${val} !important;\n`;
+  }
+  css += "}";
+
+  let styleEl = document.getElementById("cp-theme-vars") as HTMLStyleElement | null;
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = "cp-theme-vars";
+    document.head.appendChild(styleEl);
+  }
+  styleEl.textContent = css;
 }
 
 function injectTransition() {
