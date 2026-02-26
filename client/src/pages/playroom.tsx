@@ -250,6 +250,7 @@ export default function Playroom() {
     const names: Record<string, string> = {
       "volume-mixer": "Volume Mixer",
       "feelings": "Feeling Wheel",
+      "thought-bridge": "Thought Bridge",
     };
     return names[tool] || tool;
   };
@@ -259,8 +260,8 @@ export default function Playroom() {
     const label = toolDisplayName(toolId);
     setToolTransitionLabel(label);
     setTimeout(() => setToolTransitionLabel(null), 900);
-    if (!isDemo) setActiveTool(toolId);
-    send({ type: "tool-change", tool: toolId });
+    setActiveTool(toolId);
+    if (!isDemo) send({ type: "tool-change", tool: toolId });
   }, [send, isDemo, activeTool]);
 
   const handleToolSettingsUpdate = useCallback((toolId: string, updates: Record<string, any>) => {
