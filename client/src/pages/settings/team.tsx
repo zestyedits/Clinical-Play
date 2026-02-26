@@ -44,7 +44,7 @@ export default function TeamSettings() {
   };
 
   return (
-    <SettingsLayout title="Team" subtitle="Organization members & invitations" icon={Users} iconColor="bg-blue-500/10 text-blue-600">
+    <SettingsLayout title="Team" subtitle="Organization members & invitations" icon={Users} iconColor="bg-gradient-to-br from-blue-500/15 to-blue-500/5 text-blue-600">
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">

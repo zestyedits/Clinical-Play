@@ -112,7 +112,7 @@ export default function AppearanceSettings() {
   }, []);
 
   return (
-    <SettingsLayout title="Appearance" subtitle="Theme, style & display preferences" icon={Palette} iconColor="bg-accent/10 text-accent">
+    <SettingsLayout title="Appearance" subtitle="Theme, style & display preferences" icon={Palette} iconColor="bg-gradient-to-br from-accent/15 to-accent/5 text-accent">
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-2xl bg-accent/10 flex items-center justify-center">

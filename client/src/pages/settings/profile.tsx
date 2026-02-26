@@ -215,13 +215,13 @@ export default function ProfileSettings() {
   const anyChanges = hasChanges || hasLocalChanges;
 
   return (
-    <SettingsLayout title="Profile" subtitle="Personal information & professional details" icon={User} iconColor="bg-primary/10 text-primary">
+    <SettingsLayout title="Profile" subtitle="Personal information & professional details" icon={User} iconColor="bg-gradient-to-br from-primary/15 to-primary/5 text-primary">
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-2xl bg-primary/8 flex items-center justify-center">
-            <User size={18} className="text-primary" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/12 to-primary/4 flex items-center justify-center shadow-sm">
+            <User size={18} className="text-primary" strokeWidth={1.8} />
           </div>
-          <h2 className="font-serif text-lg text-foreground">Personal Information</h2>
+          <h2 className="font-serif text-lg text-foreground tracking-tight">Personal Information</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -285,8 +285,8 @@ export default function ProfileSettings() {
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary/8 flex items-center justify-center">
-              <Briefcase size={18} className="text-primary" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/12 to-primary/4 flex items-center justify-center shadow-sm">
+              <Briefcase size={18} className="text-primary" strokeWidth={1.8} />
             </div>
             <div>
               <h2 className="font-serif text-lg text-foreground">Professional Details</h2>
@@ -347,24 +347,27 @@ export default function ProfileSettings() {
         </AnimatePresence>
       </GlassCard>
 
-      <div className="flex gap-3">
-        <button
-          onClick={handleSave}
-          disabled={!anyChanges || updateProfile.isPending}
-          className={`flex-1 btn-warm px-6 py-3.5 rounded-2xl text-primary-foreground font-medium shadow-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
-            anyChanges ? "bg-primary hover:bg-primary/90" : "bg-muted-foreground"
-          }`}
-          data-testid="button-save-profile"
-        >
-          {updateProfile.isPending ? (
-            <>Saving...</>
-          ) : updateProfile.isSuccess && !anyChanges ? (
-            <><CheckCircle2 size={18} /> Saved</>
-          ) : (
-            <><Save size={18} /> Save Changes</>
-          )}
-        </button>
-      </div>
+      {anyChanges && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+          <button
+            onClick={handleSave}
+            disabled={updateProfile.isPending}
+            className="w-full btn-warm px-6 py-3.5 rounded-2xl bg-primary text-primary-foreground font-medium shadow-lg hover:shadow-xl transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:bg-primary/90 active:scale-[0.98]"
+            data-testid="button-save-profile"
+          >
+            {updateProfile.isPending ? (
+              <>Saving...</>
+            ) : (
+              <><Save size={16} strokeWidth={1.8} /> Save Changes</>
+            )}
+          </button>
+        </motion.div>
+      )}
+      {!anyChanges && updateProfile.isSuccess && (
+        <div className="flex items-center justify-center gap-2 py-3 text-emerald-600 text-sm font-medium">
+          <CheckCircle2 size={16} /> All changes saved
+        </div>
+      )}
     </SettingsLayout>
   );
 }

@@ -47,7 +47,7 @@ export default function SecuritySettings() {
   };
 
   return (
-    <SettingsLayout title="Security" subtitle="Password, two-factor & active devices" icon={Shield} iconColor="bg-emerald-500/10 text-emerald-600">
+    <SettingsLayout title="Security" subtitle="Password, two-factor & active devices" icon={Shield} iconColor="bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 text-emerald-600">
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">

@@ -28,7 +28,7 @@ export default function BillingSettings() {
   const paymentMethod = MOCK_PAYMENT_METHODS[0];
 
   return (
-    <SettingsLayout title="Plan & Billing" subtitle="Subscription, payment method & invoices" icon={Crown} iconColor="bg-amber-500/10 text-amber-600">
+    <SettingsLayout title="Plan & Billing" subtitle="Subscription, payment method & invoices" icon={Crown} iconColor="bg-gradient-to-br from-amber-500/15 to-amber-500/5 text-amber-600">
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-2xl bg-accent/10 flex items-center justify-center">

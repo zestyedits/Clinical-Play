@@ -37,7 +37,7 @@ export default function PrivacySettings() {
   };
 
   return (
-    <SettingsLayout title="Data & Privacy" subtitle="PHI policy, data export & account deletion" icon={Lock} iconColor="bg-red-500/10 text-red-500">
+    <SettingsLayout title="Data & Privacy" subtitle="PHI policy, data export & account deletion" icon={Lock} iconColor="bg-gradient-to-br from-rose-500/15 to-rose-500/5 text-rose-500">
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">

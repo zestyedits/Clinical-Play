@@ -92,7 +92,7 @@ export default function SessionSettings() {
   };
 
   return (
-    <SettingsLayout title="Session Defaults" subtitle="Default session behavior & export history" icon={Play} iconColor="bg-purple-500/10 text-purple-600">
+    <SettingsLayout title="Session Defaults" subtitle="Default session behavior & export history" icon={Play} iconColor="bg-gradient-to-br from-purple-500/15 to-purple-500/5 text-purple-600">
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center">
