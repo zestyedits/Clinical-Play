@@ -635,11 +635,11 @@ export default function Dashboard() {
     staleTime: 5 * 60_000,
   });
 
-  const [pendingTool, setPendingTool] = useState("sandtray");
+  const [pendingTool, setPendingTool] = useState("volume-mixer");
 
   const createSession = useMutation({
     mutationFn: async ({ name, mode, tool }: { name: string; mode: string; tool: string }) => {
-      setPendingTool(tool);
+      setPendingTool(tool || "volume-mixer");
       const res = await authFetch("/api/therapy-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

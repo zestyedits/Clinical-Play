@@ -47,7 +47,7 @@ const roomStates = new Map<string, RoomState>();
 function getRoomState(sessionId: string): RoomState {
   if (!roomStates.has(sessionId)) {
     roomStates.set(sessionId, {
-      activeTool: "sandtray",
+      activeTool: "volume-mixer",
       breathingActive: false,
       breathingStartTime: null,
       breathingTechnique: "ocean-waves",
