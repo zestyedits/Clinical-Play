@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User, Palette, Play, Crown, Users, Shield, Lock,
-  ChevronRight, Settings, Sparkles, Search, X
+  ChevronRight, Settings, Sparkles, Search, X, Briefcase
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
@@ -16,7 +16,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/profile",
     iconBg: "bg-gradient-to-br from-primary/15 to-primary/5",
     iconText: "text-primary",
-    keywords: ["name", "first", "last", "email", "bio", "pronouns", "location", "practice", "title", "specialty", "modalities", "credentials", "professional", "populations"],
+    keywords: ["name", "first", "last", "email", "bio", "pronouns", "location", "practice"],
   },
   {
     id: "appearance",
@@ -26,7 +26,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/appearance",
     iconBg: "bg-gradient-to-br from-accent/15 to-accent/5",
     iconText: "text-accent",
-    keywords: ["theme", "color", "palette", "dark", "light", "animations", "sound", "motion", "reduced", "style", "tone", "immersion", "humor", "display"],
+    keywords: ["theme", "color", "palette", "dark", "light", "animations", "sound", "motion", "style", "tone"],
   },
   {
     id: "sessions",
@@ -36,7 +36,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/sessions",
     iconBg: "bg-gradient-to-br from-purple-500/15 to-purple-500/5",
     iconText: "text-purple-600",
-    keywords: ["session", "anonymous", "default", "export", "artifact", "tool", "timer", "progress"],
+    keywords: ["session", "anonymous", "default", "export", "artifact"],
   },
   {
     id: "billing",
@@ -46,7 +46,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/billing",
     iconBg: "bg-gradient-to-br from-amber-500/15 to-amber-500/5",
     iconText: "text-amber-600",
-    keywords: ["plan", "billing", "subscription", "payment", "card", "invoice", "receipt", "price", "founding", "stripe", "upgrade", "downgrade"],
+    keywords: ["plan", "billing", "subscription", "payment", "card", "invoice", "stripe", "upgrade"],
   },
   {
     id: "team",
@@ -56,7 +56,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/team",
     iconBg: "bg-gradient-to-br from-blue-500/15 to-blue-500/5",
     iconText: "text-blue-600",
-    keywords: ["team", "organization", "member", "invite", "role", "admin", "clinician", "colleague", "staff"],
+    keywords: ["team", "organization", "member", "invite", "role", "admin"],
   },
   {
     id: "security",
@@ -66,7 +66,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/security",
     iconBg: "bg-gradient-to-br from-emerald-500/15 to-emerald-500/5",
     iconText: "text-emerald-600",
-    keywords: ["password", "reset", "two-factor", "2fa", "device", "session", "revoke", "sign out", "authentication", "login"],
+    keywords: ["password", "reset", "two-factor", "2fa", "device", "login"],
   },
   {
     id: "privacy",
@@ -76,7 +76,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/privacy",
     iconBg: "bg-gradient-to-br from-rose-500/15 to-rose-500/5",
     iconText: "text-rose-500",
-    keywords: ["privacy", "data", "delete", "account", "export", "download", "phi", "hipaa", "health", "remove", "erase"],
+    keywords: ["privacy", "data", "delete", "account", "export", "phi", "hipaa"],
   },
 ];
 
@@ -85,24 +85,19 @@ function UserHeader({ user }: { user: any }) {
   const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Clinician";
 
   return (
-    <div className="relative mb-8 p-6 md:p-8 rounded-3xl overflow-hidden border border-border/50 bg-gradient-to-br from-card via-card to-secondary/30">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_hsl(var(--primary)/0.04),_transparent_60%)]" />
-      <div className="absolute top-0 right-0 w-48 h-48 bg-[radial-gradient(circle,_hsl(var(--accent)/0.06),_transparent_70%)] blur-2xl" />
-
-      <div className="relative flex items-center gap-4">
-        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/15 flex items-center justify-center shadow-sm">
-          <span className="text-lg md:text-xl font-serif font-bold text-primary">{initials}</span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl md:text-2xl font-serif text-foreground tracking-tight" data-testid="text-settings-title">{displayName}</h1>
-          <p className="text-xs text-muted-foreground mt-0.5 truncate">{user?.email || ""}</p>
-          {user?.professionalTitle && (
-            <div className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/8 border border-primary/10">
-              <Sparkles size={10} className="text-primary" />
-              <span className="text-[10px] font-medium text-primary">{user.professionalTitle}</span>
-            </div>
-          )}
-        </div>
+    <div className="flex items-center gap-4 mb-6">
+      <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/15 flex items-center justify-center shadow-sm">
+        <span className="text-base md:text-lg font-serif font-bold text-primary">{initials}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <h1 className="text-xl md:text-2xl font-serif text-foreground tracking-tight" data-testid="text-settings-title">{displayName}</h1>
+        <p className="text-xs text-muted-foreground mt-0.5 truncate">{user?.email || ""}</p>
+        {user?.professionalTitle && (
+          <div className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/8 border border-primary/10">
+            <Sparkles size={10} className="text-primary" />
+            <span className="text-[10px] font-medium text-primary">{user.professionalTitle}</span>
+          </div>
+        )}
       </div>
     </div>
   );
