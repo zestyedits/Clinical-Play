@@ -10,6 +10,7 @@ import { ToolSelector } from "@/components/tools/tool-selector";
 import { ClinicalInsights } from "@/components/tools/clinical-insights";
 import { VolumeMixer } from "@/components/tools/volume-mixer";
 import { FeelingWheel } from "@/components/tools/feeling-wheel";
+import { ThoughtBridge } from "@/components/tools/thought-bridge";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -607,6 +608,12 @@ export default function Playroom() {
             {activeTool === "feelings" && (
               <motion.div key="feelings" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <FeelingWheel />
+              </motion.div>
+            )}
+
+            {activeTool === "thought-bridge" && (
+              <motion.div key="thought-bridge" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <ThoughtBridge />
               </motion.div>
             )}
           </AnimatePresence>

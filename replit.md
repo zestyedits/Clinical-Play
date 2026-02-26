@@ -41,11 +41,12 @@ Preferred communication style: Simple, everyday language.
 - **Volume Mixer Audio**: Uses an MP3 recording of crowd ambience (`client/public/crowd-ambience.mp3`) loaded as an AudioBuffer. Each texture type (chatter, buzz, throb, shout, hum) applies different playback rates and filters to the same recording. Audio is managed via Web Audio API with per-channel gain/pan nodes connected through a master compressor.
 - **Demo Mode**: Local-only sandbox sessions for clinicians to explore tools without data persistence. End session works without API calls.
 - **Guided Tours**: Interactive, spotlight-based onboarding tours for new users.
+- **Thought Bridge**: CBT Thought Record tool — 6-step guided flow (Situation → Hot Thought → Emotions & Belief Rating → Thinking Traps → Evidence For/Against → Balanced Thought). Includes pre-filled example walkthrough for first-timers, before/after belief comparison, 12 cognitive distortion cards with descriptions and examples, and emotion intensity re-rating on the final step. Component: `client/src/components/tools/thought-bridge.tsx`.
 
 ### Data Storage
 - **Database**: PostgreSQL
 - **ORM**: Drizzle ORM with `drizzle-zod` for schema validation.
-- **Schema**: Shared `shared/schema.ts` defining 10 tables including `users`, `therapy_sessions`, `participants`, `sandtrayItems`, `waitlist_entries`, and tables for other therapeutic tools (e.g., `feeling_wheel_selections`).
+- **Schema**: Shared `shared/schema.ts` defining 12 tables including `users`, `therapy_sessions`, `participants`, `sandtrayItems`, `waitlist_entries`, `thought_bridge_records`, `thought_bridge_evidence`, and tables for other therapeutic tools (e.g., `feeling_wheel_selections`).
 
 ### Settings Architecture
 - **Unified single page**: `/settings` — one scrollable page with all 8 sections, file: `client/src/pages/settings.tsx`

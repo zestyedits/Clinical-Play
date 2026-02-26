@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Wind, Target, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
+import { X, Wind, Target, Brain, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 
@@ -17,6 +17,7 @@ interface Tool {
 const TOOLS: Tool[] = [
   { id: "volume-mixer", label: "Volume Mixer", desc: "Externalize internal parts as tactile audio faders", icon: Wind, status: "active", accentColor: "#d4a017", iconClass: "icon-mixer" },
   { id: "feelings", label: "Feeling Wheel", desc: "Three-tier emotional identification through guided card exploration", icon: Target, status: "active", accentColor: "#8b5cf6", iconClass: "icon-feeling" },
+  { id: "thought-bridge", label: "Thought Bridge", desc: "CBT thought record — examine evidence and build balanced perspectives", icon: Brain, status: "active", accentColor: "#0891b2", iconClass: "icon-thought" },
 ];
 
 interface ToolSelectorProps {

@@ -44,6 +44,19 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; mod
       { text: "What triggered this emotion? Can you trace it back?", modality: "CBT" },
     ],
   },
+  "thought-bridge": {
+    title: "Thought Bridge Prompts",
+    prompts: [
+      { text: "What evidence is strongest against the automatic thought? Can they expand on it?", modality: "CBT" },
+      { text: "Which cognitive distortion pattern shows up most often for this client?", modality: "CBT" },
+      { text: "Where do they feel the hot thought in their body? Any tension, tightness, or heat?", modality: "Somatic" },
+      { text: "What would they tell a close friend who had this same thought?", modality: "CBT" },
+      { text: "Is this thought protecting them from something? What's the function?", modality: "ACT" },
+      { text: "How old does this thought feel? Does it remind them of an earlier experience?", modality: "Psychodynamic" },
+      { text: "Can they hold this thought lightly — like a leaf on a stream — without fusing with it?", modality: "ACT" },
+      { text: "What would 'good enough' look like here, instead of perfect?", modality: "Solution-Focused" },
+    ],
+  },
 };
 
 interface ClinicalInsightsProps {
