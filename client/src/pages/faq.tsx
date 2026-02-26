@@ -15,40 +15,40 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
     items: [
       {
         question: "What is ClinicalPlay?",
-        answer: "ClinicalPlay is a telehealth platform built specifically for licensed mental health professionals. It provides interactive, real-time therapy tools — starting with the Volume Mixer for IFS parts work — that work within a shared virtual Playroom session. New tools are added one at a time with clinical depth as the priority.",
+        answer: "ClinicalPlay is a telehealth platform built for professionals who work directly with clients — therapists, psychologists, psychiatrists, SLPs, RBTs, BCBAs, NPs, counselors, social workers, and more. It provides interactive, real-time tools within a shared virtual Playroom session. New tools are added one at a time with clinical depth as the priority.",
       },
       {
         question: "Who is ClinicalPlay designed for?",
-        answer: "ClinicalPlay is designed for licensed clinicians, therapists, counselors, and other mental health professionals who want to bring evidence-informed interactive tools into their telehealth sessions. Clients join anonymously via a simple invite code — no accounts or downloads required.",
+        answer: "ClinicalPlay is designed for any professional who conducts sessions with clients and wants to bring interactive, engaging tools into their telehealth practice. Whether you're a psychologist, speech-language pathologist, behavior technician, nurse practitioner, or counselor — if you work with people, ClinicalPlay is built for you. Clients join anonymously via a simple invite code — no accounts or downloads required.",
       },
       {
         question: "How do clients join a session?",
-        answer: "Clients receive a 6-character invite code from their clinician. They visit the join link, enter a display name, and are instantly connected to the live Playroom. No sign-up, no app downloads, no personal information required.",
+        answer: "Clients receive a 6-character invite code from their provider. They visit the join link, enter a display name, and are instantly connected to the live Playroom. No sign-up, no app downloads, no personal information required.",
       },
       {
         question: "Do I need to install any software?",
-        answer: "No. ClinicalPlay runs entirely in the browser. Clinicians sign in to their dashboard, and clients join via a link. It works on desktops, tablets, and mobile devices.",
+        answer: "No. ClinicalPlay runs entirely in the browser. Providers sign in to their dashboard, and clients join via a link. It works on desktops, tablets, and mobile devices.",
       },
     ],
   },
   {
-    title: "Clinical Tools",
+    title: "Tools & Features",
     items: [
       {
         question: "What tools are available?",
-        answer: "ClinicalPlay currently features the Volume Mixer — a physics-based mixing board where clients externalize internal parts as audio faders, built for IFS, ACT, and somatic work. New clinical tools are being developed one at a time to ensure quality and depth. All tools work in real-time between clinician and client.",
+        answer: "ClinicalPlay currently features the Volume Mixer — a physics-based mixing board where clients can externalize internal experiences as audio faders. It's useful across many disciplines, from parts work in therapy to self-regulation exercises in speech or behavioral sessions. New tools are being developed one at a time to ensure quality. All tools work in real-time between provider and client.",
       },
       {
         question: "How does the Volume Mixer work?",
-        answer: "The Volume Mixer uses a mixing-board metaphor where clients create channels for their internal 'parts' or 'voices' and adjust their volume with physics-based faders. It supports mute, solo, and boost controls with optional organic audio feedback. All actions sync in real-time across all connected participants.",
+        answer: "The Volume Mixer uses a mixing-board metaphor where clients create channels for different internal experiences, thoughts, or feelings and adjust their intensity with physics-based faders. It supports mute, solo, and boost controls with optional audio feedback. All actions sync in real-time across all connected participants.",
       },
       {
         question: "Can I use multiple tools in one session?",
-        answer: "Yes. The Playroom has a Tool Selector that allows the clinician to switch between available tools during a live session. Switching tools is instant and synced to all participants in real-time. New tools are being added regularly.",
+        answer: "Yes. The Playroom has a Tool Selector that allows the provider to switch between available tools during a live session. Switching tools is instant and synced to all participants in real-time. New tools are being added regularly.",
       },
       {
         question: "What are Clinical Insights?",
-        answer: "Clinical Insights is a private panel visible only to the clinician. It provides contextual therapeutic prompts, reflection questions, and clinical guidance based on which tool is currently active. Clients never see this panel.",
+        answer: "Clinical Insights is a private panel visible only to the provider. It provides contextual prompts, reflection questions, and professional guidance based on which tool is currently active. Clients never see this panel.",
       },
     ],
   },
@@ -61,11 +61,11 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
       },
       {
         question: "What data does ClinicalPlay store?",
-        answer: "ClinicalPlay stores clinician account information (email, name) and session metadata (session names, tool states). Client interactions within sessions are stored only for the duration of the session and are tied to anonymous display names — never to real identities.",
+        answer: "ClinicalPlay stores provider account information (email, name) and session metadata (session names, tool states). Client interactions within sessions are stored only for the duration of the session and are tied to anonymous display names — never to real identities.",
       },
       {
-        question: "Can clients see the clinician's private notes?",
-        answer: "No. The Clinical Insights panel is private to the clinician and is never visible to or shared with clients. It exists solely to support the clinician's therapeutic process.",
+        question: "Can clients see the provider's private notes?",
+        answer: "No. The Clinical Insights panel is private to the provider and is never visible to or shared with clients. It exists solely to support the provider's professional process.",
       },
     ],
   },
@@ -74,7 +74,7 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
     items: [
       {
         question: "How much does ClinicalPlay cost?",
-        answer: "ClinicalPlay offers three plans: Community at $7/month, Annual at $67/year (save over 20%), and a limited Founding Member tier at $99 one-time for lifetime access. All plans include the full clinical tool suite, unlimited sessions, and real-time collaboration.",
+        answer: "ClinicalPlay offers three plans: Community at $7/month, Annual at $67/year (save over 20%), and a limited Founding Member tier at $99 one-time for lifetime access. All plans include the full tool suite, unlimited sessions, and real-time collaboration.",
       },
       {
         question: "What is the Founding Member plan?",
