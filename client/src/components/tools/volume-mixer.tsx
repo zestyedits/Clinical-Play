@@ -635,12 +635,6 @@ const useMixer = create<MixerState>((set, get) => ({
 
 let audioCtx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
-let droneOsc: OscillatorNode | null = null;
-let droneOscGain: GainNode | null = null;
-let droneNoiseSource: AudioBufferSourceNode | null = null;
-let droneNoiseGain: GainNode | null = null;
-let droneFilter: BiquadFilterNode | null = null;
-let droneGain: GainNode | null = null;
 let isAudioInitialized = false;
 
 interface ChannelAudio {
@@ -670,83 +664,20 @@ function initAudio() {
   masterGain.gain.value = 0.3;
   masterGain.connect(ctx.destination);
 
-  droneGain = ctx.createGain();
-  droneGain.gain.value = 0;
-
-  droneFilter = ctx.createBiquadFilter();
-  droneFilter.type = "lowpass";
-  droneFilter.frequency.value = 200;
-  droneFilter.Q.value = 1;
-
-  droneOsc = ctx.createOscillator();
-  droneOsc.type = "triangle";
-  droneOsc.frequency.value = 80;
-  droneOscGain = ctx.createGain();
-  droneOscGain.gain.value = 0.5;
-  droneOsc.connect(droneOscGain);
-  droneOscGain.connect(droneFilter);
-  droneOsc.start();
-
-  const bufferSize = ctx.sampleRate * 2;
-  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const output = noiseBuffer.getChannelData(0);
-  let lastOut = 0;
-  for (let i = 0; i < bufferSize; i++) {
-    const white = Math.random() * 2 - 1;
-    output[i] = (lastOut + 0.02 * white) / 1.02;
-    lastOut = output[i];
-    output[i] *= 3.5;
-  }
-
-  droneNoiseSource = ctx.createBufferSource();
-  droneNoiseSource.buffer = noiseBuffer;
-  droneNoiseSource.loop = true;
-
-  droneNoiseGain = ctx.createGain();
-  droneNoiseGain.gain.value = 0.15;
-  droneNoiseSource.connect(droneNoiseGain);
-  droneNoiseGain.connect(droneFilter);
-  droneNoiseSource.start();
-
-  droneFilter.connect(droneGain);
-  droneGain.connect(masterGain);
-
   isAudioInitialized = true;
 }
 
 function updateDrone(
-  intensity: number,
-  masterPitch: number,
+  _intensity: number,
+  _masterPitch: number,
   masterIntensityVal: number = 80,
-  textureMix: number = 0.5
+  _textureMix: number = 0.5
 ) {
-  if (!isAudioInitialized || !droneGain || !droneFilter || !droneOsc || !masterGain) return;
+  if (!isAudioInitialized || !masterGain) return;
   const ctx = getAudioContext();
   const now = ctx.currentTime;
-
-  const normalizedIntensity = intensity / 100;
   const mScale = masterIntensityVal / 100;
-
   masterGain.gain.setTargetAtTime(0.3 * mScale, now, 0.1);
-
-  droneGain.gain.setTargetAtTime(
-    Math.min(normalizedIntensity * 0.4, 0.35),
-    now,
-    0.1
-  );
-
-  const basePitch = 60 + masterPitch * 120;
-  droneOsc.frequency.setTargetAtTime(basePitch, now, 0.2);
-
-  const filterFreq = 200 + normalizedIntensity * 2800;
-  droneFilter.frequency.setTargetAtTime(filterFreq, now, 0.1);
-
-  if (droneOscGain) {
-    droneOscGain.gain.setTargetAtTime(1 - textureMix * 0.7, now, 0.1);
-  }
-  if (droneNoiseGain) {
-    droneNoiseGain.gain.setTargetAtTime(textureMix * 0.3, now, 0.1);
-  }
 }
 
 let crowdBuffer: AudioBuffer | null = null;
@@ -1076,28 +1007,12 @@ function stopAllAudio() {
   });
   channelAudioMap.clear();
 
-  // Stop drone oscillator and noise
-  try { droneOsc?.stop(); } catch {}
-  try { droneNoiseSource?.stop(); } catch {}
-  try { droneOsc?.disconnect(); } catch {}
-  try { droneOscGain?.disconnect(); } catch {}
-  try { droneNoiseSource?.disconnect(); } catch {}
-  try { droneNoiseGain?.disconnect(); } catch {}
-  try { droneFilter?.disconnect(); } catch {}
-  try { droneGain?.disconnect(); } catch {}
   try { masterGain?.disconnect(); } catch {}
 
-  // Close the audio context
   if (audioCtx && audioCtx.state !== "closed") {
     audioCtx.close().catch(() => {});
   }
 
-  droneOsc = null;
-  droneOscGain = null;
-  droneNoiseSource = null;
-  droneNoiseGain = null;
-  droneFilter = null;
-  droneGain = null;
   masterGain = null;
   audioCtx = null;
   crowdBuffer = null;
