@@ -47,16 +47,16 @@ Preferred communication style: Simple, everyday language.
 - **Schema**: Shared `shared/schema.ts` defining 10 tables including `users`, `therapy_sessions`, `participants`, `sandtrayItems`, `waitlist_entries`, and tables for other therapeutic tools (e.g., `feeling_wheel_selections`).
 
 ### Settings Architecture
-- **Hub + Sub-pages**: `/settings` hub with search bar and 2-column card grid; each section is its own page under `/settings/:section`
-- **Sub-pages**: `profile`, `appearance`, `sessions`, `billing`, `team`, `security`, `privacy` — each in `client/src/pages/settings/`
-- **Shared layout**: `SettingsLayout` component wraps sub-pages with back-arrow nav, icon header, max-w-3xl
-- **Search**: Hub page has keyword-based filtering across all section cards
-- **Wired features**: Password reset (Supabase `resetPasswordForEmail`), account deletion (`DELETE /api/account` + Supabase admin delete)
-- **Old routes**: `/workspace`, `/account`, `/profile` all redirect to `/settings`
+- **Unified single page**: `/settings` — one scrollable page with all 8 sections, file: `client/src/pages/settings.tsx`
+- **Sections**: Profile, Professional, Appearance, Session Defaults, Plan & Billing, Team, Security, Data & Privacy
+- **Navigation**: Desktop sticky sidebar + mobile horizontal scrollable tabs; IntersectionObserver highlights active section on scroll; click-to-scroll-to-section
+- **Wired features**: Password reset (Supabase `resetPasswordForEmail`), account deletion (`DELETE /api/account` + Supabase admin delete), theme persistence (server + localStorage), profile save (API), session defaults (API)
+- **Old routes**: `/workspace`, `/account`, `/profile`, `/settings/:section` all redirect to `/settings`
+- **Legacy files**: `client/src/pages/settings/` directory contains old sub-page files (no longer imported)
 
 ### Project Structure Highlights
 - **`client/`**: Frontend React application.
-- **`client/src/pages/settings/`**: Settings hub and sub-pages (profile, appearance, sessions, billing, team, security, privacy).
+- **`client/src/pages/settings.tsx`**: Unified settings page with all sections.
 - **`server/`**: Express backend, including API routes, WebSocket handling, and database interaction.
 - **`shared/`**: Common code like database schemas and validation.
 
