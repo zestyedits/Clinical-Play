@@ -22,14 +22,7 @@ import EmailConfirmed from "@/pages/email-confirmed";
 import InboxPage from "@/pages/inbox";
 import AdminPanel from "@/pages/admin";
 import LibraryPage from "@/pages/library";
-import SettingsHub from "@/pages/settings/index";
-import ProfileSettings from "@/pages/settings/profile";
-import AppearanceSettings from "@/pages/settings/appearance";
-import SessionSettings from "@/pages/settings/sessions";
-import BillingSettings from "@/pages/settings/billing";
-import TeamSettings from "@/pages/settings/team";
-import SecuritySettings from "@/pages/settings/security";
-import PrivacySettings from "@/pages/settings/privacy";
+import SettingsPage from "@/pages/settings";
 
 function Router() {
   const [location] = useLocation();
@@ -53,14 +46,8 @@ function Router() {
         <Route path="/email-confirmed">{() => <EmailConfirmed />}</Route>
         <Route path="/inbox">{() => <InboxPage />}</Route>
         <Route path="/admin">{() => <AdminPanel />}</Route>
-        <Route path="/settings/profile">{() => <ProfileSettings />}</Route>
-        <Route path="/settings/appearance">{() => <AppearanceSettings />}</Route>
-        <Route path="/settings/sessions">{() => <SessionSettings />}</Route>
-        <Route path="/settings/billing">{() => <BillingSettings />}</Route>
-        <Route path="/settings/team">{() => <TeamSettings />}</Route>
-        <Route path="/settings/security">{() => <SecuritySettings />}</Route>
-        <Route path="/settings/privacy">{() => <PrivacySettings />}</Route>
-        <Route path="/settings">{() => <SettingsHub />}</Route>
+        <Route path="/settings">{() => <SettingsPage />}</Route>
+        <Route path="/settings/:section">{() => <SettingsPage />}</Route>
         <Route path="/workspace">{() => <Redirect to="/settings" />}</Route>
         <Route path="/profile">{() => <Redirect to="/settings" />}</Route>
         <Route path="/library">{() => <LibraryPage />}</Route>

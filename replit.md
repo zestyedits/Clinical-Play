@@ -47,11 +47,14 @@ Preferred communication style: Simple, everyday language.
 - **Schema**: Shared `shared/schema.ts` defining 10 tables including `users`, `therapy_sessions`, `participants`, `sandtrayItems`, `waitlist_entries`, and tables for other therapeutic tools (e.g., `feeling_wheel_selections`).
 
 ### Settings Architecture
-- **Unified Settings**: `/settings` hub page with 7 sub-pages, replacing the old separate Workspace and Account pages
-- **Sub-pages**: `/settings/profile`, `/settings/appearance`, `/settings/sessions`, `/settings/billing`, `/settings/team`, `/settings/security`, `/settings/privacy`
-- **Layout**: Shared `SettingsLayout` component with back-arrow navigation
+- **Unified Settings**: Single `/settings` page consolidating all 8 sections (Profile, Professional, Appearance, Sessions, Billing, Team, Security, Data & Privacy)
+- **Layout**: Desktop: sticky left sidebar nav + scrollable right content. Mobile: horizontal scrollable tabs + single column
+- **Deep linking**: `/settings/:section` routes scroll to and highlight the target section via IntersectionObserver
+- **Search**: Keyword-based filtering across all sections
+- **Sticky save bar**: Appears when unsaved changes detected, saves profile + local data
 - **Wired features**: Password reset (Supabase `resetPasswordForEmail`), account deletion (`DELETE /api/account` + Supabase admin delete)
 - **Old routes**: `/workspace`, `/account`, `/profile` all redirect to `/settings`
+- **File**: `client/src/pages/settings.tsx` (old `settings/` directory sub-pages are legacy)
 
 ### Project Structure Highlights
 - **`client/`**: Frontend React application.

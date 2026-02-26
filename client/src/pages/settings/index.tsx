@@ -1,10 +1,9 @@
-import { GlassCard } from "@/components/ui/glass-card";
 import { useAuth } from "@/hooks/use-auth";
-import { useEffect } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   User, Palette, Play, Crown, Users, Shield, Lock,
-  ChevronRight, Settings, Sparkles
+  ChevronRight, Settings, Sparkles, Search, X
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
@@ -17,6 +16,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/profile",
     iconBg: "bg-gradient-to-br from-primary/15 to-primary/5",
     iconText: "text-primary",
+    keywords: ["name", "first", "last", "email", "bio", "pronouns", "location", "practice", "title", "specialty", "modalities", "credentials", "professional", "populations"],
   },
   {
     id: "appearance",
@@ -26,6 +26,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/appearance",
     iconBg: "bg-gradient-to-br from-accent/15 to-accent/5",
     iconText: "text-accent",
+    keywords: ["theme", "color", "palette", "dark", "light", "animations", "sound", "motion", "reduced", "style", "tone", "immersion", "humor", "display"],
   },
   {
     id: "sessions",
@@ -35,6 +36,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/sessions",
     iconBg: "bg-gradient-to-br from-purple-500/15 to-purple-500/5",
     iconText: "text-purple-600",
+    keywords: ["session", "anonymous", "default", "export", "artifact", "tool", "timer", "progress"],
   },
   {
     id: "billing",
@@ -44,6 +46,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/billing",
     iconBg: "bg-gradient-to-br from-amber-500/15 to-amber-500/5",
     iconText: "text-amber-600",
+    keywords: ["plan", "billing", "subscription", "payment", "card", "invoice", "receipt", "price", "founding", "stripe", "upgrade", "downgrade"],
   },
   {
     id: "team",
@@ -53,6 +56,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/team",
     iconBg: "bg-gradient-to-br from-blue-500/15 to-blue-500/5",
     iconText: "text-blue-600",
+    keywords: ["team", "organization", "member", "invite", "role", "admin", "clinician", "colleague", "staff"],
   },
   {
     id: "security",
@@ -62,6 +66,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/security",
     iconBg: "bg-gradient-to-br from-emerald-500/15 to-emerald-500/5",
     iconText: "text-emerald-600",
+    keywords: ["password", "reset", "two-factor", "2fa", "device", "session", "revoke", "sign out", "authentication", "login"],
   },
   {
     id: "privacy",
@@ -71,6 +76,7 @@ const SETTINGS_SECTIONS = [
     path: "/settings/privacy",
     iconBg: "bg-gradient-to-br from-rose-500/15 to-rose-500/5",
     iconText: "text-rose-500",
+    keywords: ["privacy", "data", "delete", "account", "export", "download", "phi", "hipaa", "health", "remove", "erase"],
   },
 ];
 
@@ -102,15 +108,53 @@ function UserHeader({ user }: { user: any }) {
   );
 }
 
+function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="relative mb-6">
+      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+        <Search size={16} className="text-muted-foreground/50" />
+      </div>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Search settings..."
+        className="w-full pl-11 pr-10 py-3 rounded-2xl bg-card border border-border/60 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-muted-foreground/40"
+        data-testid="input-settings-search"
+      />
+      {value && (
+        <button
+          onClick={() => onChange("")}
+          className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+          data-testid="button-clear-search"
+        >
+          <X size={16} />
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function SettingsHub() {
   const { isLoading: authLoading, isAuthenticated, user } = useAuth();
   const [, navigate] = useLocation();
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/login");
     }
   }, [authLoading, isAuthenticated]);
+
+  const filteredSections = useMemo(() => {
+    if (!search.trim()) return SETTINGS_SECTIONS;
+    const q = search.toLowerCase().trim();
+    return SETTINGS_SECTIONS.filter(s =>
+      s.label.toLowerCase().includes(q) ||
+      s.description.toLowerCase().includes(q) ||
+      s.keywords.some(k => k.includes(q))
+    );
+  }, [search]);
 
   if (authLoading || !isAuthenticated) {
     return (
@@ -127,7 +171,7 @@ export default function SettingsHub() {
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-12 pt-18 md:pt-22 px-4 md:px-8">
-      <div className="max-w-xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -135,38 +179,58 @@ export default function SettingsHub() {
         >
           <UserHeader user={user} />
 
+          <SearchBar value={search} onChange={setSearch} />
+
           <div className="mb-4">
-            <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-[0.18em] px-1">Settings</p>
+            <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-[0.18em] px-1">
+              {search ? `${filteredSections.length} result${filteredSections.length !== 1 ? "s" : ""}` : "Settings"}
+            </p>
           </div>
 
-          <div className="space-y-1.5">
-            {SETTINGS_SECTIONS.map((section, i) => (
-              <motion.div
-                key={section.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.15 + i * 0.05, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <Link href={section.path} className="no-underline block">
-                  <div
-                    className="flex items-center gap-4 px-4 py-3.5 rounded-2xl cursor-pointer group transition-all duration-200 hover:bg-card hover:shadow-sm hover:border-border/60 border border-transparent active:scale-[0.99]"
-                    data-testid={`card-settings-${section.id}`}
+          <AnimatePresence mode="popLayout">
+            {filteredSections.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                {filteredSections.map((section, i) => (
+                  <motion.div
+                    key={section.id}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: search ? 0 : 0.08 + i * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${section.iconBg} shadow-sm`}>
-                      <section.icon size={18} className={section.iconText} strokeWidth={1.8} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-foreground leading-snug">{section.label}</p>
-                      <p className="text-[11px] text-muted-foreground/70 mt-0.5 leading-relaxed">{section.description}</p>
-                    </div>
-                    <ChevronRight size={16} className="text-muted-foreground/30 group-hover:text-muted-foreground/60 group-hover:translate-x-0.5 transition-all duration-200 shrink-0" />
-                  </div>
-                </Link>
+                    <Link href={section.path} className="no-underline block h-full">
+                      <div
+                        className="flex items-center gap-4 px-5 py-4 rounded-2xl cursor-pointer group transition-all duration-200 bg-card/60 hover:bg-card hover:shadow-md border border-border/40 hover:border-border/70 active:scale-[0.99] h-full"
+                        data-testid={`card-settings-${section.id}`}
+                      >
+                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${section.iconBg} shadow-sm`}>
+                          <section.icon size={20} className={section.iconText} strokeWidth={1.8} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground leading-snug">{section.label}</p>
+                          <p className="text-[11px] text-muted-foreground/70 mt-0.5 leading-relaxed">{section.description}</p>
+                        </div>
+                        <ChevronRight size={16} className="text-muted-foreground/30 group-hover:text-muted-foreground/60 group-hover:translate-x-0.5 transition-all duration-200 shrink-0" />
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12"
+              >
+                <Search size={32} className="text-muted-foreground/20 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground/60 font-medium">No settings found for "{search}"</p>
+                <p className="text-xs text-muted-foreground/40 mt-1">Try a different search term</p>
               </motion.div>
-            ))}
-          </div>
+            )}
+          </AnimatePresence>
 
-          <div className="mt-8 text-center">
+          <div className="mt-10 text-center">
             <p className="text-[10px] text-muted-foreground/40 tracking-wide">ClinicalPlay v1.0</p>
           </div>
         </motion.div>
