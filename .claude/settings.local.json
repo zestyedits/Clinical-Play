@@ -16,7 +16,9 @@
       "Bash(python3:*)",
       "Bash(sort:*)",
       "Bash(npm install:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(timeout 5 npm start:*)",
+      "Bash(curl:*)"
     ]
   }
 }
