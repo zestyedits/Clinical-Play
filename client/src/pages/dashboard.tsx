@@ -55,11 +55,12 @@ const SESSION_TEMPLATES: SessionTemplate[] = [
   { id: "full-assessment", name: "Full Assessment", description: "Comprehensive solo assessment using the Volume Mixer.", tool: "volume-mixer", mode: "solo", emoji: "\u{1F4CB}" },
 ];
 
-function SessionCreationModal({ isOpen, onClose, onSubmit, isPending }: {
+function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialTool }: {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (name: string, mode: "solo" | "group", tool: string) => void;
   isPending: boolean;
+  initialTool?: string;
 }) {
   const [path, setPath] = useState<SessionPath>("menu");
   const [wizardStep, setWizardStep] = useState(0);
@@ -79,9 +80,9 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending }: {
       setWizardStep(0);
       setName("");
       setMode("solo");
-      setSelectedTool("volume-mixer");
+      setSelectedTool(initialTool || "volume-mixer");
     }
-  }, [isOpen]);
+  }, [isOpen, initialTool]);
 
   if (!isOpen) return null;
 
@@ -89,7 +90,7 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending }: {
   const defaultName = `Session \u2014 ${todayStr}`;
 
   const handleQuickStart = () => {
-    onSubmit(defaultName, "solo", "");
+    onSubmit(defaultName, "solo", initialTool || "");
   };
 
   const handleTemplateUse = (template: SessionTemplate) => {
@@ -497,6 +498,7 @@ export default function Dashboard() {
   const [, navigate] = useLocation();
   const [copied, setCopied] = useState<string | null>(null);
   const [showNewSession, setShowNewSession] = useState(false);
+  const [preselectedTool, setPreselectedTool] = useState("");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [favorites, setFavorites] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("cp_favorites") || "[]"); } catch { return []; }
@@ -950,7 +952,7 @@ export default function Dashboard() {
                       <Lock size={10} /> Upgrade
                     </button>
                   ) : (
-                    <Link href="/dashboard" onClick={() => { setShowNewSession(true); }} className="no-underline">
+                    <Link href="/dashboard" onClick={() => { setPreselectedTool(tool.id); setShowNewSession(true); }} className="no-underline">
                       <span className="mt-2 text-xs text-accent font-medium flex items-center gap-1 cursor-pointer">
                         Launch <ArrowRight size={10} />
                       </span>
@@ -1014,7 +1016,7 @@ export default function Dashboard() {
 
                   {!isLocked && (
                     <button
-                      onClick={() => setShowNewSession(true)}
+                      onClick={() => { setPreselectedTool(tool.id); setShowNewSession(true); }}
                       className="w-full px-4 py-2.5 rounded-xl text-xs font-medium transition-colors cursor-pointer flex items-center justify-center gap-1 border bg-primary/10 text-primary border-primary/15 hover:bg-primary/15"
                       data-testid={`button-launch-${tool.id}`}
                     >
@@ -1256,7 +1258,7 @@ export default function Dashboard() {
             </p>
           </div>
           <button
-            onClick={() => setShowNewSession(true)}
+            onClick={() => { setPreselectedTool(""); setShowNewSession(true); }}
             disabled={createSession.isPending}
             className="px-7 py-3.5 rounded-2xl flex items-center gap-2.5 shadow-md cursor-pointer w-full md:w-auto justify-center disabled:opacity-50 bg-primary text-primary-foreground font-medium btn-warm"
             data-testid="button-new-session"
@@ -1303,6 +1305,7 @@ export default function Dashboard() {
         onClose={() => setShowNewSession(false)}
         onSubmit={(name, mode, tool) => createSession.mutate({ name, mode, tool })}
         isPending={createSession.isPending}
+        initialTool={preselectedTool}
       />
 
       <OnboardingModal
