@@ -37,7 +37,10 @@ export default function Playroom() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [toolsOpen, setToolsOpen] = useState(false);
-  const [activeTool, setActiveTool] = useState("volume-mixer");
+  const [activeTool, setActiveTool] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("tool") || "volume-mixer";
+  });
   const [joinNotification, setJoinNotification] = useState<string | null>(null);
   const [toolSelectorOpen, setToolSelectorOpen] = useState(false);
   const [insightsOpen, setInsightsOpen] = useState(false);
@@ -91,7 +94,7 @@ export default function Playroom() {
     : "Guest";
   const toolAreaRef = useRef<HTMLDivElement>(null);
   const peakParticipants = useRef(0);
-  const toolsUsed = useRef<Set<string>>(new Set(["volume-mixer"]));
+  const toolsUsed = useRef<Set<string>>(new Set([activeTool]));
 
   const handleMessage = useCallback((msg: any) => {
     switch (msg.type) {

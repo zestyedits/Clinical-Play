@@ -740,6 +740,94 @@ function ReframeStep({ record, onChange }: { record: ThoughtRecord; onChange: (r
   );
 }
 
+const DISTORTION_EMOJIS: Record<string, string> = {
+  "all-or-nothing": "⚫",
+  "catastrophizing": "🌋",
+  "mind-reading": "🔮",
+  "personalization": "🎯",
+  "overgeneralization": "🔁",
+  "mental-filter": "🧲",
+  "emotional-reasoning": "💔",
+  "should-statements": "📏",
+  "labeling": "🏷️",
+  "fortune-telling": "🔮",
+  "discounting-positives": "🚫",
+  "magnification": "🔭",
+};
+
+function CbtInfoPage({ onNext }: { onNext: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4 }}
+      className="space-y-6"
+    >
+      <div className="text-center space-y-3">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-accent/10 flex items-center justify-center border border-accent/20">
+          <Brain size={32} className="text-accent" />
+        </div>
+        <h2 className="text-2xl md:text-3xl font-serif text-primary" data-testid="text-info-title">
+          Understanding CBT
+        </h2>
+        <p className="text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
+          Cognitive Behavioral Therapy (CBT) helps you recognize and reshape unhelpful thought patterns. By examining your thoughts like a scientist, you can build healthier perspectives.
+        </p>
+      </div>
+
+      <GlassCard className="p-6 space-y-4 max-w-lg mx-auto" hoverEffect={false}>
+        <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+          <Lightbulb size={16} className="text-accent" /> Why It Works
+        </h3>
+        <div className="space-y-3">
+          {[
+            { emoji: "💭", text: "Thoughts shape how we feel and behave — change the thought, shift the feeling" },
+            { emoji: "⚡", text: "Automatic thoughts can be distorted — our brains take shortcuts that aren't always accurate" },
+            { emoji: "⚖️", text: "Examining evidence helps build balanced perspectives — replacing assumptions with facts" },
+          ].map((item, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <span className="text-lg w-7 text-center shrink-0">{item.emoji}</span>
+              <span className="text-sm text-muted-foreground leading-relaxed">{item.text}</span>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+
+      <GlassCard className="p-6 space-y-4 max-w-lg mx-auto" hoverEffect={false}>
+        <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+          <Sparkles size={16} className="text-accent" /> Common Thinking Traps
+        </h3>
+        <div className="space-y-2.5">
+          {DISTORTIONS.map((d) => (
+            <div key={d.id} className="flex items-start gap-3">
+              <span className="text-lg w-7 text-center shrink-0">{DISTORTION_EMOJIS[d.id] || "🧠"}</span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-semibold text-primary">{d.label}</span>
+                  <span className="text-[10px] text-muted-foreground italic">({d.aka})</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{d.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+
+      <div className="flex justify-center max-w-lg mx-auto">
+        <button
+          onClick={onNext}
+          className="w-full sm:w-auto px-8 py-3 rounded-xl bg-accent text-white hover:bg-accent/90 text-sm font-medium shadow-lg shadow-accent/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+          data-testid="button-info-next"
+        >
+          Let's Get Started
+          <ChevronRight size={16} />
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 function ExampleWalkthrough({ onDismiss, onLoadExample }: { onDismiss: () => void; onLoadExample: () => void }) {
   return (
     <motion.div
@@ -807,7 +895,7 @@ function ExampleWalkthrough({ onDismiss, onLoadExample }: { onDismiss: () => voi
 export function ThoughtBridge() {
   const [step, setStep] = useState(0);
   const [record, setRecord] = useState<ThoughtRecord>({ ...EMPTY_RECORD });
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [screen, setScreen] = useState<"info" | "welcome" | "form">("info");
   const [isExample, setIsExample] = useState(false);
 
   const canAdvance = useMemo(() => {
@@ -833,27 +921,33 @@ export function ThoughtBridge() {
   const handleReset = useCallback(() => {
     setRecord({ ...EMPTY_RECORD });
     setStep(0);
-    setShowWelcome(true);
+    setScreen("welcome");
     setIsExample(false);
   }, []);
 
   const handleLoadExample = useCallback(() => {
     setRecord({ ...EXAMPLE_RECORD });
     setIsExample(true);
-    setShowWelcome(false);
+    setScreen("form");
     setStep(0);
   }, []);
 
   const handleStartFresh = useCallback(() => {
-    setShowWelcome(false);
+    setScreen("form");
     setIsExample(false);
+  }, []);
+
+  const handleInfoNext = useCallback(() => {
+    setScreen("welcome");
   }, []);
 
   return (
     <div className="w-full h-full overflow-y-auto" data-testid="thought-bridge-tool">
       <div className="max-w-2xl mx-auto px-4 py-6 pb-32 md:pb-12">
         <AnimatePresence mode="wait">
-          {showWelcome ? (
+          {screen === "info" ? (
+            <CbtInfoPage key="info" onNext={handleInfoNext} />
+          ) : screen === "welcome" ? (
             <ExampleWalkthrough
               key="welcome"
               onDismiss={handleStartFresh}
