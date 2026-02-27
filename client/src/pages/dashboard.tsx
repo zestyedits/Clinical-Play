@@ -7,7 +7,7 @@ import {
   X, UserPlus, Mail, RefreshCw, User, Square, Zap, BookOpen, Play
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth, createAuthFetch } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -635,11 +635,11 @@ export default function Dashboard() {
     staleTime: 5 * 60_000,
   });
 
-  const [pendingTool, setPendingTool] = useState("volume-mixer");
+  const pendingToolRef = useRef("volume-mixer");
 
   const createSession = useMutation({
     mutationFn: async ({ name, mode, tool }: { name: string; mode: string; tool: string }) => {
-      setPendingTool(tool || "volume-mixer");
+      pendingToolRef.current = tool || "volume-mixer";
       const res = await authFetch("/api/therapy-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -650,7 +650,7 @@ export default function Dashboard() {
     onSuccess: (session: TherapySession) => {
       setShowNewSession(false);
       queryClient.invalidateQueries({ queryKey: ["/api/therapy-sessions/mine"] });
-      navigate(`/playroom/${session.id}?tool=${pendingTool}`);
+      navigate(`/playroom/${session.id}?tool=${pendingToolRef.current}`);
     },
   });
 
