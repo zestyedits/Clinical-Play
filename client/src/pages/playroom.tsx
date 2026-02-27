@@ -102,7 +102,11 @@ export default function Playroom() {
         setParticipants(msg.participants || []);
         setOnlineUsers(msg.onlineUsers || []);
         if (msg.session) setSession(msg.session);
-        if (msg.activeTool) setActiveTool(msg.activeTool);
+        if (msg.activeTool) {
+          // Prefer URL tool param over server's stored activeTool on first init
+          const urlTool = new URLSearchParams(window.location.search).get("tool");
+          setActiveTool(urlTool || msg.activeTool);
+        }
         if (msg.toolSettings) setToolSettings(msg.toolSettings);
         break;
       case "session-updated":
@@ -211,16 +215,14 @@ export default function Playroom() {
   const initialToolApplied = useRef(false);
   useEffect(() => {
     if (isDemo || !connected || initialToolApplied.current) return;
+    initialToolApplied.current = true;
     const params = new URLSearchParams(window.location.search);
     const toolParam = params.get("tool");
-    if (toolParam && toolParam !== activeTool) {
-      initialToolApplied.current = true;
+    if (toolParam) {
       setActiveTool(toolParam);
       send({ type: "tool-change", tool: toolParam });
-    } else {
-      initialToolApplied.current = true;
     }
-  }, [connected, isDemo]);
+  }, [connected, isDemo, send]);
 
   useEffect(() => {
     if (isClinician && session && connected && !playroomTour.hasCompleted() && !sessionEnded) {
