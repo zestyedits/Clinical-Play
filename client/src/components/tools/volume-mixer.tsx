@@ -2340,7 +2340,7 @@ function GhostMenu() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative z-10 w-[90vw] max-w-md p-8 rounded-2xl"
+            className="relative z-10 w-[92vw] max-w-md p-5 sm:p-8 rounded-2xl max-h-[85vh] overflow-y-auto"
             style={{
               background: "rgba(30,30,30,0.85)",
               border: "1px solid rgba(255,255,255,0.08)",
@@ -2350,7 +2350,7 @@ function GhostMenu() {
           >
             <button
               onClick={() => setShowGhostMenu(false)}
-              className="absolute top-4 right-4 text-white/30 hover:text-white/60 transition-colors"
+              className="absolute top-3 right-3 text-white/30 hover:text-white/60 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <X size={18} />
             </button>
@@ -2563,9 +2563,9 @@ function SettingsPanel() {
               </h3>
               <button
                 onClick={() => setShowSettings(false)}
-                className="text-white/25 hover:text-white/50 transition-colors"
+                className="text-white/25 hover:text-white/50 transition-colors p-2 -mr-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -2881,7 +2881,7 @@ function CrtIntro() {
         >
           {phase === "briefing" && (
             <motion.div
-              className="flex flex-col items-center max-w-lg mx-4 w-full"
+              className="flex flex-col items-center max-w-lg mx-4 w-full max-h-[90vh] overflow-y-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, scale: 0.96 }}
@@ -2891,7 +2891,7 @@ function CrtIntro() {
                 className="text-white/80 text-center select-none mb-2"
                 style={{
                   fontFamily: "Georgia, 'Times New Roman', serif",
-                  fontSize: "clamp(24px, 4.5vw, 44px)",
+                  fontSize: "clamp(20px, 5vw, 44px)",
                   letterSpacing: "0.3em",
                   fontWeight: 400,
                 }}
@@ -3618,13 +3618,13 @@ function CommandCenter() {
               </h3>
               <button
                 onClick={handleClose}
-                className="text-white/25 hover:text-white/50 transition-colors"
+                className="text-white/25 hover:text-white/50 transition-colors p-2 -mr-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
-            <div className="px-5 py-4 space-y-6">
+            <div className="px-5 py-4 space-y-6" style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom, 16px))" }}>
               <div>
                 <div className="text-[9px] text-white/20 uppercase tracking-[0.25em] font-semibold mb-3 pb-1" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                   Session Timer
@@ -3879,7 +3879,7 @@ function ToolbarButton({
   return (
     <motion.button
       onClick={onClick}
-      className="w-9 h-9 rounded-full flex items-center justify-center text-white/35 hover:text-white/60 hover:bg-white/[0.06] transition-colors"
+      className="w-10 h-10 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/35 hover:text-white/60 hover:bg-white/[0.06] transition-colors"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.93 }}
       title={title}
@@ -4660,7 +4660,8 @@ export function VolumeMixer() {
           {!isEmpty && !uiGhosted && introComplete && (
             <motion.div
               id="mixer-toolbar"
-              className="relative z-30 flex items-center justify-center pb-4 pt-2"
+              className="relative z-30 flex items-center justify-center pt-2"
+              style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom, 16px))" }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}

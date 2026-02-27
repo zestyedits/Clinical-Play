@@ -49,10 +49,10 @@ interface SessionTemplate {
 }
 
 const SESSION_TEMPLATES: SessionTemplate[] = [
-  { id: "parts-work", name: "Parts Work", description: "Explore internal parts with the Volume Mixer tool in a focused solo session.", tool: "volume-mixer", mode: "solo", emoji: "\u{1F39A}\uFE0F" },
-  { id: "emotion-checkin", name: "Emotion Check-in", description: "Use the Feeling Wheel for a quick emotional temperature check.", tool: "feeling-wheel", mode: "solo", emoji: "\u{1F3A8}" },
+  { id: "parts-work", name: "Parts Work", description: "Explore internal parts with the Volume Mixer in a focused solo session.", tool: "volume-mixer", mode: "solo", emoji: "\u{1F39A}\uFE0F" },
+  { id: "emotion-checkin", name: "Emotion Check-in", description: "Use the Feeling Wheel for a quick emotional temperature check.", tool: "feelings", mode: "solo", emoji: "\u{1F3A8}" },
+  { id: "thought-record", name: "Thought Record", description: "Walk through a CBT thought record using the Thought Bridge tool.", tool: "thought-bridge", mode: "solo", emoji: "\u{1F9E0}" },
   { id: "free-play", name: "Free Play", description: "Open-ended group exploration with no specific tool pre-selected.", tool: "", mode: "group", emoji: "\u{1F3B2}" },
-  { id: "full-assessment", name: "Full Assessment", description: "Comprehensive solo assessment using the Volume Mixer.", tool: "volume-mixer", mode: "solo", emoji: "\u{1F4CB}" },
 ];
 
 function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialTool }: {
@@ -68,7 +68,7 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
   // Guided form state
   const [name, setName] = useState("");
   const [mode, setMode] = useState<"solo" | "group">("solo");
-  const [selectedTool, setSelectedTool] = useState("volume-mixer");
+  const [selectedTool, setSelectedTool] = useState(initialTool || ALL_TOOLS[0]?.id || "");
 
   const containsPotentialName = useMemo(() => {
     return /\b[A-Z][a-z]+\s+[A-Z][a-z]+/.test(name);
@@ -88,6 +88,7 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
 
   const todayStr = new Date().toLocaleDateString();
   const defaultName = `Session \u2014 ${todayStr}`;
+  const initialToolInfo = initialTool ? ALL_TOOLS.find(t => t.id === initialTool) : null;
 
   const handleQuickStart = () => {
     onSubmit(defaultName, "solo", initialTool || "");
@@ -106,8 +107,10 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
   const MenuView = () => (
     <div className="p-6 space-y-5">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="font-serif text-2xl text-foreground" data-testid="text-new-session-title">New Session</h2>
-        <button onClick={onClose} className="p-2 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer" data-testid="button-close-new-session">
+        <h2 className="font-serif text-2xl text-foreground" data-testid="text-new-session-title">
+          {initialToolInfo ? `${initialToolInfo.label} Session` : "New Session"}
+        </h2>
+        <button onClick={onClose} className="p-2.5 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center" data-testid="button-close-new-session">
           <X size={20} className="text-muted-foreground" />
         </button>
       </div>
@@ -116,13 +119,17 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
       <button
         onClick={handleQuickStart}
         disabled={isPending}
-        className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2.5 text-base btn-warm"
+        className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2.5 text-sm sm:text-base btn-warm min-h-[52px]"
         data-testid="button-quick-start"
       >
         <Zap size={18} />
-        {isPending ? "Creating..." : "Quick Start"}
+        {isPending ? "Creating..." : initialToolInfo ? `Quick Start — ${initialToolInfo.label}` : "Quick Start"}
       </button>
-      <p className="text-xs text-muted-foreground text-center -mt-2">Solo session with defaults — jump right in</p>
+      <p className="text-xs text-muted-foreground text-center -mt-2">
+        {initialToolInfo
+          ? `Solo session with ${initialToolInfo.label} — jump right in`
+          : "Solo session — jump right in"}
+      </p>
 
       <div className="grid grid-cols-2 gap-3 pt-1">
         {/* Guided Setup card */}
@@ -256,7 +263,7 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
         <div className="space-y-5">
           <div>
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.15em] block mb-2">Starting Tool</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {ACTIVE_TOOLS.map((tool) => (
                 <button
                   key={tool.id}
@@ -334,7 +341,7 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {SESSION_TEMPLATES.map((template) => (
           <div
             key={template.id}
@@ -637,11 +644,11 @@ export default function Dashboard() {
     staleTime: 5 * 60_000,
   });
 
-  const pendingToolRef = useRef("volume-mixer");
+  const pendingToolRef = useRef("");
 
   const createSession = useMutation({
     mutationFn: async ({ name, mode, tool }: { name: string; mode: string; tool: string }) => {
-      pendingToolRef.current = tool || "volume-mixer";
+      pendingToolRef.current = tool || ALL_TOOLS[0]?.id || "volume-mixer";
       const res = await authFetch("/api/therapy-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

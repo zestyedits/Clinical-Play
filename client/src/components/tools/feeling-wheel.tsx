@@ -310,7 +310,7 @@ function Breadcrumb({ nav, onBack, activePrimary, activeSecondary }: BreadcrumbP
               }}
             >
               <span className="text-base">{crumb.emoji}</span>
-              <span className="text-sm font-medium text-slate-700">
+              <span className="text-xs sm:text-sm font-medium text-slate-700 truncate max-w-[80px] sm:max-w-none">
                 {crumb.label}
               </span>
             </motion.div>
@@ -748,7 +748,7 @@ function SelectionPanel({
                               if (e.key === "Escape") setEditingNoteId(null);
                             }}
                             placeholder="Add a note..."
-                            className="w-32 sm:w-40 text-xs px-2 py-1 rounded-lg
+                            className="w-28 sm:w-40 text-xs px-2 py-1.5 rounded-lg
                               bg-card border border-border
                               text-slate-600 placeholder:text-slate-300
                               focus:outline-none focus:ring-1 focus:ring-slate-300"
@@ -758,14 +758,14 @@ function SelectionPanel({
                         <button
                           onClick={() => setEditingNoteId(sel.id)}
                           className={cn(
-                            "ml-1 p-1 rounded-lg transition-colors cursor-pointer",
+                            "ml-1 p-1.5 rounded-lg transition-colors cursor-pointer min-w-[28px] min-h-[28px] flex items-center justify-center",
                             sel.note
                               ? "text-slate-500 hover:text-slate-700"
                               : "text-slate-300 hover:text-slate-500"
                           )}
                           title={sel.note || "Add note"}
                         >
-                          <MessageSquare size={12} />
+                          <MessageSquare size={14} />
                         </button>
                       )}
                       {sel.note && editingNoteId !== sel.id && (
@@ -782,12 +782,12 @@ function SelectionPanel({
                       playClickSound();
                       onRemoveSelection(sel.id);
                     }}
-                    className="ml-1 p-0.5 rounded-full
+                    className="ml-1 p-1.5 rounded-full
                       text-slate-300 hover:text-red-400
-                      opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                      sm:opacity-0 sm:group-hover:opacity-100 transition-all cursor-pointer min-w-[28px] min-h-[28px] flex items-center justify-center"
                     title="Remove"
                   >
-                    <X size={12} />
+                    <X size={14} />
                   </button>
                 </motion.div>
               );
@@ -833,7 +833,8 @@ function ClinicianToolbarInternal({ settings, onReset }: ClinicianToolbarInterna
       initial={{ x: -60, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.3 }}
-      className="absolute left-3 bottom-3 z-30"
+      className="absolute left-3 bottom-3 sm:bottom-3 z-30 mb-safe"
+      style={{ marginBottom: "max(12px, env(safe-area-inset-bottom, 12px))" }}
     >
       <div className="bg-card rounded-2xl p-2 shadow-lg border border-border flex flex-col gap-1.5">
         {/* Toggle emoji */}
@@ -1222,7 +1223,7 @@ export function FeelingWheel() {
         </div>
 
         {/* Bottom Area: Selection Panel */}
-        <div className="flex-shrink-0 pb-4">
+        <div className="flex-shrink-0 pb-4" style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom, 16px))" }}>
           <AnimatePresence>
             {selections.length > 0 && (
               <SelectionPanel

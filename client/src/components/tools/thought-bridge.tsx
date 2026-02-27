@@ -136,13 +136,13 @@ function uid() {
 
 function StepIndicator({ currentStep, onStepClick }: { currentStep: number; onStepClick: (i: number) => void }) {
   return (
-    <div className="flex items-center gap-1 px-2 py-3" data-testid="step-indicator">
+    <div className="flex items-center gap-1 sm:gap-1.5 py-3 overflow-x-auto scrollbar-hide" data-testid="step-indicator">
       {STEPS.map((step, i) => (
         <button
           key={step.id}
           onClick={() => i <= currentStep && onStepClick(i)}
           className={cn(
-            "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer",
+            "flex items-center gap-1.5 px-2 sm:px-2.5 py-2 sm:py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer shrink-0 min-w-[40px] min-h-[40px] justify-center",
             i === currentStep
               ? "bg-accent/15 text-accent border border-accent/20 shadow-sm"
               : i < currentStep
@@ -287,7 +287,7 @@ function EmotionsStep({ record, onChange }: { record: ThoughtRecord; onChange: (
         </p>
       </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 gap-2">
         {EMOTIONS_LIST.map((em) => {
           const selected = record.emotionsBefore.some((e) => e.id === em.id);
           return (
@@ -776,7 +776,7 @@ function CbtInfoPage({ onNext }: { onNext: () => void }) {
         </p>
       </div>
 
-      <GlassCard className="p-6 space-y-4 max-w-lg mx-auto" hoverEffect={false}>
+      <GlassCard className="p-4 sm:p-6 space-y-4 max-w-lg mx-auto" hoverEffect={false}>
         <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
           <Lightbulb size={16} className="text-accent" /> Why It Works
         </h3>
@@ -794,7 +794,7 @@ function CbtInfoPage({ onNext }: { onNext: () => void }) {
         </div>
       </GlassCard>
 
-      <GlassCard className="p-6 space-y-4 max-w-lg mx-auto" hoverEffect={false}>
+      <GlassCard className="p-4 sm:p-6 space-y-4 max-w-lg mx-auto" hoverEffect={false}>
         <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
           <Sparkles size={16} className="text-accent" /> Common Thinking Traps
         </h3>
@@ -803,7 +803,7 @@ function CbtInfoPage({ onNext }: { onNext: () => void }) {
             <div key={d.id} className="flex items-start gap-3">
               <span className="text-lg w-7 text-center shrink-0">{DISTORTION_EMOJIS[d.id] || "🧠"}</span>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-baseline gap-1.5 flex-wrap">
                   <span className="text-sm font-semibold text-primary">{d.label}</span>
                   <span className="text-[10px] text-muted-foreground italic">({d.aka})</span>
                 </div>
@@ -814,10 +814,10 @@ function CbtInfoPage({ onNext }: { onNext: () => void }) {
         </div>
       </GlassCard>
 
-      <div className="flex justify-center max-w-lg mx-auto">
+      <div className="flex justify-center max-w-lg mx-auto px-4">
         <button
           onClick={onNext}
-          className="w-full sm:w-auto px-8 py-3 rounded-xl bg-accent text-white hover:bg-accent/90 text-sm font-medium shadow-lg shadow-accent/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-accent text-white hover:bg-accent/90 text-sm font-medium shadow-lg shadow-accent/20 transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[48px]"
           data-testid="button-info-next"
         >
           Let's Get Started
@@ -849,7 +849,7 @@ function ExampleWalkthrough({ onDismiss, onLoadExample }: { onDismiss: () => voi
         </p>
       </div>
 
-      <GlassCard className="p-6 space-y-4 max-w-lg mx-auto" hoverEffect={false}>
+      <GlassCard className="p-4 sm:p-6 space-y-4 max-w-lg mx-auto" hoverEffect={false}>
         <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
           <span className="text-base">🗺️</span> How it works
         </h3>
@@ -870,10 +870,10 @@ function ExampleWalkthrough({ onDismiss, onLoadExample }: { onDismiss: () => voi
         </div>
       </GlassCard>
 
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto px-4">
         <button
           onClick={onLoadExample}
-          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-secondary/50 text-primary hover:bg-secondary/80 border border-border/30 text-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-secondary/50 text-primary hover:bg-secondary/80 border border-border/30 text-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[48px]"
           data-testid="button-load-example"
         >
           <HelpCircle size={16} />
@@ -881,7 +881,7 @@ function ExampleWalkthrough({ onDismiss, onLoadExample }: { onDismiss: () => voi
         </button>
         <button
           onClick={onDismiss}
-          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-accent text-white hover:bg-accent/90 text-sm font-medium shadow-lg shadow-accent/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-accent text-white hover:bg-accent/90 text-sm font-medium shadow-lg shadow-accent/20 transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[48px]"
           data-testid="button-start-fresh"
         >
           <Sparkles size={16} />
@@ -964,7 +964,7 @@ export function ThoughtBridge() {
                 <StepIndicator currentStep={step} onStepClick={setStep} />
                 <button
                   onClick={handleReset}
-                  className="p-2 rounded-xl text-muted-foreground hover:bg-secondary/50 hover:text-primary transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl text-muted-foreground hover:bg-secondary/50 hover:text-primary transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
                   title="Start over"
                   data-testid="button-reset"
                 >
@@ -994,12 +994,12 @@ export function ThoughtBridge() {
                 {STEPS[step]?.id === "reframe" && <ReframeStep key="reframe" record={record} onChange={setRecord} />}
               </AnimatePresence>
 
-              <div className="flex items-center justify-between pt-4">
+              <div className="flex items-center justify-between pt-4 pb-2">
                 <button
                   onClick={handleBack}
                   disabled={step === 0}
                   className={cn(
-                    "flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer",
+                    "flex items-center gap-1.5 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer min-h-[44px]",
                     step === 0
                       ? "text-muted-foreground/30 cursor-default"
                       : "text-primary hover:bg-secondary/50"
@@ -1015,7 +1015,7 @@ export function ThoughtBridge() {
                     onClick={handleNext}
                     disabled={!canAdvance}
                     className={cn(
-                      "flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer",
+                      "flex items-center gap-1.5 px-5 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer min-h-[44px]",
                       canAdvance
                         ? "bg-accent text-white hover:bg-accent/90 shadow-lg shadow-accent/20"
                         : "bg-secondary/30 text-muted-foreground/40 cursor-default"
@@ -1026,7 +1026,7 @@ export function ThoughtBridge() {
                     <ChevronRight size={16} />
                   </button>
                 ) : (
-                  <div className="flex items-center gap-2 text-sm text-accent font-medium">
+                  <div className="flex items-center gap-2 text-sm text-accent font-medium min-h-[44px]">
                     <Check size={16} />
                     Complete
                   </div>
