@@ -60,8 +60,8 @@ export const isAuthenticated: RequestHandler = async (req: Request, res: Respons
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const email = user.email || "";
-    if (!ALLOWED_EMAILS.includes(email.toLowerCase())) {
+    const email = (user.email || "").toLowerCase();
+    if (!ALLOWED_EMAILS.includes(email)) {
       return res.status(403).json({ message: "Access restricted. ClinicalPlay has not launched yet." });
     }
 
@@ -70,7 +70,8 @@ export const isAuthenticated: RequestHandler = async (req: Request, res: Respons
     req.authUser = {
       id: user.id,
       email,
-      emailConfirmed: !!user.email_confirmed_at,
+      // Treat allowed (admin) emails as always confirmed so they don't get stuck
+      emailConfirmed: ALLOWED_EMAILS.includes(email) || !!user.email_confirmed_at,
     };
 
     return next();
@@ -87,7 +88,12 @@ export async function getAuthUser(req: Request): Promise<AuthUser | null> {
   try {
     const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
     if (error || !user) return null;
-    return { id: user.id, email: user.email || "", emailConfirmed: !!user.email_confirmed_at };
+    const email = (user.email || "").toLowerCase();
+    return {
+      id: user.id,
+      email,
+      emailConfirmed: ALLOWED_EMAILS.includes(email) || !!user.email_confirmed_at,
+    };
   } catch {
     return null;
   }
