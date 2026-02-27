@@ -1226,16 +1226,16 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background">
 
       {/* ── Hero ── */}
-      <section className="pt-32 md:pt-40 pb-20 md:pb-28 px-6">
-        <div className="max-w-2xl mx-auto text-center">
+      <section className="pt-28 md:pt-36 lg:pt-40 pb-16 md:pb-24 lg:pb-28 px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-medium leading-[1.08] text-foreground mb-6" data-testid="text-hero-heading">
             Therapy tools<br />
             <span className="text-primary">that connect.</span>
           </h1>
-          <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-md mx-auto mb-10">
+          <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-10">
             Interactive digital tools for clinicians who want telehealth sessions that actually engage.
           </p>
-          <div className="max-w-sm mx-auto mb-14">
+          <div className="max-w-md mx-auto mb-14">
             <WaitlistForm />
           </div>
           <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground/50 font-medium">
@@ -1247,8 +1247,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── Interactive Demos ── */}
-      <section className="pb-16 md:pb-24 px-4 sm:px-6" id="features">
-        <div className="max-w-3xl mx-auto">
+      <section className="pb-16 md:pb-24 lg:pb-28 px-4 sm:px-6 lg:px-10 xl:px-16" id="features">
+        <div className="max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto">
           <div className="text-center mb-6 md:mb-8">
             <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-primary/50 mb-2">See what a session feels like</p>
             <h2 className="text-2xl md:text-3xl font-serif text-foreground">
@@ -1257,7 +1257,7 @@ export default function LandingPage() {
           </div>
 
           {/* Tab pills */}
-          <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="flex items-center justify-center gap-2 mb-6 flex-wrap">
             {DEMO_TABS.map(tab => {
               const isActive = activeDemo === tab.id;
               return (
@@ -1300,8 +1300,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── What's Coming ── */}
-      <section className="py-20 md:py-28 px-6">
-        <div className="max-w-4xl mx-auto">
+      <section className="py-20 md:py-28 lg:py-32 px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div className="max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto">
           <div className="text-center mb-10">
             <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-primary/50 mb-2">Coming soon</p>
             <h2 className="text-2xl md:text-3xl font-serif text-foreground mb-3">More tools on the way</h2>
@@ -1310,7 +1310,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
             {upcomingTools.map((tool) => (
               <div key={tool.name} className="flex items-start gap-4 p-4 rounded-xl bg-card/60 border border-border/60 hover:border-border transition-colors duration-200" data-testid={`card-tool-${tool.name.toLowerCase().replace(/\s+/g, '-')}`}>
                 <span className="text-2xl shrink-0 mt-0.5">{tool.emoji}</span>
@@ -1325,8 +1325,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── Quote ── */}
-      <section className="py-16 md:py-20 px-6">
-        <div className="max-w-xl mx-auto text-center">
+      <section className="py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div className="max-w-2xl mx-auto text-center">
           <p className="text-lg md:text-xl font-serif italic text-foreground/70 leading-relaxed mb-4" data-testid="text-founder-quote">
             "I got tired of boring telehealth sessions, so I built us a digital playroom."
           </p>
@@ -1337,8 +1337,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── Bottom Waitlist CTA ── */}
-      <section className="py-16 md:py-20 px-6" id="waitlist">
-        <div className="max-w-sm mx-auto text-center">
+      <section className="py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-10 xl:px-16" id="waitlist">
+        <div className="max-w-md mx-auto text-center">
           <h2 className="text-xl md:text-2xl font-serif text-foreground mb-2">Be the first to know</h2>
           <p className="text-sm text-muted-foreground mb-6">
             Early supporters get founding member pricing.
@@ -1348,8 +1348,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-border/60 py-8 px-6">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-border/60 py-8 px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div className="max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <LogoMark size="sm" />
             <span className="text-xs text-muted-foreground/50">&copy; {new Date().getFullYear()}</span>
@@ -1361,7 +1361,7 @@ export default function LandingPage() {
             <Link href="/cookies" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors no-underline" data-testid="link-footer-cookies">Cookies</Link>
           </div>
         </div>
-        <div className="max-w-4xl mx-auto mt-4">
+        <div className="max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto mt-4">
           <LegalDisclaimer />
         </div>
       </footer>
