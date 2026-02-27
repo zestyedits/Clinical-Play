@@ -2,12 +2,11 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { LegalDisclaimer } from "@/components/shared/legal-disclaimer";
 import {
   Plus, Users, Calendar, ArrowRight, Copy, CheckCircle2, Crown, Flame,
-  CreditCard, Star, Lock, Sparkles, Lightbulb, ExternalLink, HelpCircle, AlertTriangle,
-  Palette, Wind, Target, Clock, Layers, House, Brain, Gamepad2, TreePine, Theater,
-  X, UserPlus, Mail, RefreshCw, User, Square, Zap, BookOpen, Play
+  CreditCard, Star, Lock, Sparkles, Lightbulb, HelpCircle, AlertTriangle,
+  Palette, Layers, X, Mail, RefreshCw, User, Square, Play
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth, createAuthFetch } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -33,27 +32,7 @@ const CLINICAL_TIPS: { tip: string; tool: string }[] = [
   // Tips will be added as tools are developed
 ];
 
-const ACTIVE_TOOLS = ALL_TOOLS.filter(t => t.id !== "_placeholder");
-
-// ---------- Session Creation Modal (3-path design) ----------
-
-type SessionPath = "menu" | "guided" | "template";
-
-interface SessionTemplate {
-  id: string;
-  name: string;
-  description: string;
-  tool: string;
-  mode: "solo" | "group";
-  emoji: string;
-}
-
-const SESSION_TEMPLATES: SessionTemplate[] = [
-  { id: "parts-work", name: "Parts Work", description: "Explore internal parts with the Volume Mixer in a focused solo session.", tool: "volume-mixer", mode: "solo", emoji: "\u{1F39A}\uFE0F" },
-  { id: "emotion-checkin", name: "Emotion Check-in", description: "Use the Feeling Wheel for a quick emotional temperature check.", tool: "feelings", mode: "solo", emoji: "\u{1F3A8}" },
-  { id: "thought-record", name: "Thought Record", description: "Walk through a CBT thought record using the Thought Bridge tool.", tool: "thought-bridge", mode: "solo", emoji: "\u{1F9E0}" },
-  { id: "free-play", name: "Free Play", description: "Open-ended group exploration with no specific tool pre-selected.", tool: "", mode: "group", emoji: "\u{1F3B2}" },
-];
+// ---------- Session Creation Modal ----------
 
 function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialTool }: {
   isOpen: boolean;
@@ -62,311 +41,22 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
   isPending: boolean;
   initialTool?: string;
 }) {
-  const [path, setPath] = useState<SessionPath>("menu");
-  const [wizardStep, setWizardStep] = useState(0);
-
-  // Guided form state
-  const [name, setName] = useState("");
-  const [mode, setMode] = useState<"solo" | "group">("solo");
-  const [selectedTool, setSelectedTool] = useState(initialTool || ALL_TOOLS[0]?.id || "");
-
-  const containsPotentialName = useMemo(() => {
-    return /\b[A-Z][a-z]+\s+[A-Z][a-z]+/.test(name);
-  }, [name]);
-
   useEffect(() => {
-    if (isOpen) {
-      setPath("menu");
-      setWizardStep(0);
-      setName("");
-      setMode("solo");
-      setSelectedTool(initialTool || "volume-mixer");
+    if (isOpen && !initialTool) {
+      onClose();
     }
-  }, [isOpen, initialTool]);
+  }, [isOpen, initialTool, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !initialTool) return null;
 
+  const toolInfo = ALL_TOOLS.find(t => t.id === initialTool);
   const todayStr = new Date().toLocaleDateString();
   const defaultName = `Session \u2014 ${todayStr}`;
-  const initialToolInfo = initialTool ? ALL_TOOLS.find(t => t.id === initialTool) : null;
 
-  const handleQuickStart = () => {
-    onSubmit(defaultName, "solo", initialTool || "");
+  const handleStart = () => {
+    const sessionName = toolInfo ? `${toolInfo.label} \u2014 ${todayStr}` : defaultName;
+    onSubmit(sessionName, "solo", initialTool);
   };
-
-  const handleTemplateUse = (template: SessionTemplate) => {
-    const tName = `${template.name} \u2014 ${todayStr}`;
-    onSubmit(tName, template.mode, template.tool);
-  };
-
-  const handleGuidedSubmit = () => {
-    onSubmit(name || defaultName, mode, selectedTool);
-  };
-
-  // --- Menu view (default) ---
-  const MenuView = () => (
-    <div className="p-6 space-y-5">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="font-serif text-2xl text-foreground" data-testid="text-new-session-title">
-          {initialToolInfo ? `${initialToolInfo.label} Session` : "New Session"}
-        </h2>
-        <button onClick={onClose} className="p-2.5 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center" data-testid="button-close-new-session">
-          <X size={20} className="text-muted-foreground" />
-        </button>
-      </div>
-
-      {/* Quick Start — primary action */}
-      <button
-        onClick={handleQuickStart}
-        disabled={isPending}
-        className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2.5 text-sm sm:text-base btn-warm min-h-[52px]"
-        data-testid="button-quick-start"
-      >
-        <Zap size={18} />
-        {isPending ? "Creating..." : initialToolInfo ? `Quick Start — ${initialToolInfo.label}` : "Quick Start"}
-      </button>
-      <p className="text-xs text-muted-foreground text-center -mt-2">
-        {initialToolInfo
-          ? `Solo session with ${initialToolInfo.label} — jump right in`
-          : "Solo session — jump right in"}
-      </p>
-
-      <div className="grid grid-cols-2 gap-3 pt-1">
-        {/* Guided Setup card */}
-        <button
-          onClick={() => setPath("guided")}
-          className="p-5 rounded-2xl bg-secondary border border-border text-left hover:border-primary/30 transition-colors cursor-pointer group"
-          data-testid="button-guided-setup"
-        >
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-            <BookOpen size={18} className="text-primary" />
-          </div>
-          <h3 className="text-sm font-medium text-foreground mb-1">Guided Setup</h3>
-          <p className="text-xs text-muted-foreground leading-relaxed">Step-by-step configuration</p>
-        </button>
-
-        {/* From Template card */}
-        <button
-          onClick={() => setPath("template")}
-          className="p-5 rounded-2xl bg-secondary border border-border text-left hover:border-primary/30 transition-colors cursor-pointer group"
-          data-testid="button-from-template"
-        >
-          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center mb-3">
-            <Layers size={18} className="text-accent" />
-          </div>
-          <h3 className="text-sm font-medium text-foreground mb-1">From Template</h3>
-          <p className="text-xs text-muted-foreground leading-relaxed">Pre-configured presets</p>
-        </button>
-      </div>
-    </div>
-  );
-
-  // --- Guided wizard ---
-  const GuidedView = () => (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <button onClick={() => { if (wizardStep > 0) setWizardStep(wizardStep - 1); else setPath("menu"); }} className="p-2 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer" data-testid="button-guided-back">
-            <ArrowRight size={18} className="text-muted-foreground rotate-180" />
-          </button>
-          <h2 className="font-serif text-xl text-foreground">
-            {wizardStep === 0 ? "Name & Mode" : wizardStep === 1 ? "Starting Tool" : "Review"}
-          </h2>
-        </div>
-        <button onClick={onClose} className="p-2 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer">
-          <X size={20} className="text-muted-foreground" />
-        </button>
-      </div>
-
-      {/* Step indicators */}
-      <div className="flex gap-2 mb-6">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === wizardStep ? "w-8 bg-primary" : i < wizardStep ? "w-4 bg-accent" : "w-4 bg-primary/15"
-            }`}
-          />
-        ))}
-      </div>
-
-      {wizardStep === 0 && (
-        <div className="space-y-5">
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.15em] block mb-2">Session Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={defaultName}
-              className="w-full px-4 py-3.5 rounded-2xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm"
-              autoFocus
-              data-testid="input-session-name"
-            />
-            <p className="mt-2 text-xs text-muted-foreground/70 leading-relaxed" data-testid="text-phi-reminder">
-              Reminder: Do not include client names. Use initials or session codes only.
-            </p>
-            {containsPotentialName && (
-              <div
-                className="mt-2 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs leading-relaxed flex items-start gap-2"
-                data-testid="warning-phi-name-detected"
-              >
-                <span className="mt-0.5 shrink-0">{"\u26A0\uFE0F"}</span>
-                <span>This may contain a client name. Consider using initials instead.</span>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.15em] block mb-2">Session Type</label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setMode("solo")}
-                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
-                  mode === "solo"
-                    ? "border-primary bg-primary/5 shadow-md"
-                    : "border-border bg-secondary hover:border-primary/30"
-                }`}
-                data-testid="button-mode-solo"
-              >
-                <User size={24} className={mode === "solo" ? "text-primary mb-2" : "text-muted-foreground mb-2"} />
-                <div className="font-medium text-sm text-foreground">Solo</div>
-                <div className="text-xs text-muted-foreground mt-0.5">1-on-1 session</div>
-              </button>
-              <button
-                onClick={() => setMode("group")}
-                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
-                  mode === "group"
-                    ? "border-primary bg-primary/5 shadow-md"
-                    : "border-border bg-secondary hover:border-primary/30"
-                }`}
-                data-testid="button-mode-group"
-              >
-                <UserPlus size={24} className={mode === "group" ? "text-primary mb-2" : "text-muted-foreground mb-2"} />
-                <div className="font-medium text-sm text-foreground">Group</div>
-                <div className="text-xs text-muted-foreground mt-0.5">Multiple clients</div>
-              </button>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setWizardStep(1)}
-            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-medium hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 btn-warm"
-            data-testid="button-guided-next-1"
-          >
-            Continue <ArrowRight size={16} />
-          </button>
-        </div>
-      )}
-
-      {wizardStep === 1 && (
-        <div className="space-y-5">
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.15em] block mb-2">Starting Tool</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {ACTIVE_TOOLS.map((tool) => (
-                <button
-                  key={tool.id}
-                  onClick={() => setSelectedTool(tool.id)}
-                  className={`p-3 rounded-2xl border-2 transition-all cursor-pointer text-center ${
-                    selectedTool === tool.id
-                      ? "border-primary bg-primary/5 shadow-md"
-                      : "border-border bg-secondary hover:border-primary/30"
-                  }`}
-                  data-testid={`button-tool-${tool.id}`}
-                >
-                  <span className="text-xl block mb-1">{tool.emoji}</span>
-                  <div className="text-[11px] font-medium text-foreground leading-tight">{tool.label}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <button
-            onClick={() => setWizardStep(2)}
-            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-medium hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 btn-warm"
-            data-testid="button-guided-next-2"
-          >
-            Continue <ArrowRight size={16} />
-          </button>
-        </div>
-      )}
-
-      {wizardStep === 2 && (
-        <div className="space-y-5">
-          <div className="rounded-2xl bg-secondary border border-border p-5 space-y-3">
-            <h3 className="text-sm font-semibold text-foreground">Review</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Name</span>
-                <span className="text-foreground font-medium">{name || defaultName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Mode</span>
-                <span className="text-foreground font-medium capitalize">{mode}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Tool</span>
-                <span className="text-foreground font-medium">{ACTIVE_TOOLS.find(t => t.id === selectedTool)?.label || "None"}</span>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={handleGuidedSubmit}
-            disabled={isPending}
-            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 btn-warm"
-            data-testid="button-create-session-submit"
-          >
-            <Sparkles size={16} />
-            {isPending ? "Creating..." : "Start Session"}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-
-  // --- Template view ---
-  const TemplateView = () => (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <button onClick={() => setPath("menu")} className="p-2 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer" data-testid="button-template-back">
-            <ArrowRight size={18} className="text-muted-foreground rotate-180" />
-          </button>
-          <h2 className="font-serif text-xl text-foreground">Templates</h2>
-        </div>
-        <button onClick={onClose} className="p-2 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer">
-          <X size={20} className="text-muted-foreground" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {SESSION_TEMPLATES.map((template) => (
-          <div
-            key={template.id}
-            className="rounded-2xl bg-secondary border border-border p-4 flex flex-col"
-          >
-            <span className="text-2xl mb-2">{template.emoji}</span>
-            <h3 className="text-sm font-medium text-foreground mb-1">{template.name}</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed mb-3 flex-1">{template.description}</p>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium capitalize">{template.mode}</span>
-            </div>
-            <button
-              onClick={() => handleTemplateUse(template)}
-              disabled={isPending}
-              className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-medium hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 btn-warm"
-              data-testid={`button-template-${template.id}`}
-            >
-              <Play size={12} />
-              {isPending ? "Creating..." : "Use Template"}
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 
   return (
     <>
@@ -375,11 +65,43 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
         onClick={onClose}
       />
       <div
-        className="fixed inset-x-4 top-[10%] bottom-auto max-h-[85vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[500px] md:max-h-[90vh] z-50 bg-card border border-border rounded-2xl shadow-2xl"
+        className="fixed inset-x-4 top-[10%] bottom-auto max-h-[85vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[440px] md:max-h-[90vh] z-50 bg-card border border-border rounded-2xl shadow-2xl"
       >
-        {path === "menu" && <MenuView />}
-        {path === "guided" && <GuidedView />}
-        {path === "template" && <TemplateView />}
+        <div className="p-6 space-y-5">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-serif text-2xl text-foreground" data-testid="text-new-session-title">
+              Start Session
+            </h2>
+            <button onClick={onClose} className="p-2.5 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center" data-testid="button-close-new-session">
+              <X size={20} className="text-muted-foreground" />
+            </button>
+          </div>
+
+          {toolInfo && (
+            <div className="rounded-2xl bg-secondary/50 border border-border p-5 flex items-start gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary/60 to-secondary/30 flex items-center justify-center shrink-0">
+                <span className="text-3xl">{toolInfo.emoji}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-medium text-foreground text-base mb-1">{toolInfo.label}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{toolInfo.desc}</p>
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={handleStart}
+            disabled={isPending}
+            className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2.5 text-sm sm:text-base btn-warm min-h-[52px]"
+            data-testid="button-quick-start"
+          >
+            <Play size={18} />
+            {isPending ? "Creating..." : `Start ${toolInfo?.label || "Session"}`}
+          </button>
+          <p className="text-xs text-muted-foreground text-center -mt-2">
+            Solo session with {toolInfo?.label || "selected tool"} — jump right in
+          </p>
+        </div>
       </div>
     </>
   );
@@ -599,7 +321,12 @@ export default function Dashboard() {
     if (!dashboardTour.hasCompleted()) {
       setTimeout(() => dashboardTour.start(), 600);
     } else {
-      setShowNewSession(true);
+      // Navigate to tools section so user can pick a tool
+      setMobileTab("library");
+      setTimeout(() => {
+        const toolsEl = document.querySelector('[data-tour="dashboard-tools"]');
+        if (toolsEl) toolsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
     }
   }, [dashboardTour]);
 
@@ -822,11 +549,15 @@ export default function Dashboard() {
           <h3 className="text-xl font-serif text-foreground mb-2">No active sessions</h3>
           <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">Create a session room and share the invite code with your client to get started.</p>
           <button
-            onClick={() => setShowNewSession(true)}
+            onClick={() => {
+              setMobileTab("library");
+              const toolsEl = document.querySelector('[data-tour="dashboard-tools"]');
+              if (toolsEl) toolsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
             className="px-6 py-3 rounded-2xl inline-flex items-center gap-2 shadow-md cursor-pointer hover:brightness-105 transition-all bg-primary text-primary-foreground font-medium btn-warm"
             data-testid="button-new-session-empty"
           >
-            <Plus size={18} /> Create Session
+            <Plus size={18} /> Choose a Tool to Begin
           </button>
           <div className="mt-3">
             <button
@@ -959,11 +690,9 @@ export default function Dashboard() {
                       <Lock size={10} /> Upgrade
                     </button>
                   ) : (
-                    <Link href="/dashboard" onClick={() => { setPreselectedTool(tool.id); setShowNewSession(true); }} className="no-underline">
-                      <span className="mt-2 text-xs text-accent font-medium flex items-center gap-1 cursor-pointer">
-                        Launch <ArrowRight size={10} />
-                      </span>
-                    </Link>
+                    <button onClick={() => { setPreselectedTool(tool.id); setShowNewSession(true); }} className="mt-2 text-xs text-accent font-medium flex items-center gap-1 cursor-pointer bg-transparent border-none p-0">
+                      Launch <ArrowRight size={10} />
+                    </button>
                   )}
                 </GlassCard>
               );
@@ -1265,9 +994,12 @@ export default function Dashboard() {
             </p>
           </div>
           <button
-            onClick={() => { setPreselectedTool(""); setShowNewSession(true); }}
-            disabled={createSession.isPending}
-            className="px-7 py-3.5 rounded-2xl flex items-center gap-2.5 shadow-md cursor-pointer w-full md:w-auto justify-center disabled:opacity-50 bg-primary text-primary-foreground font-medium btn-warm"
+            onClick={() => {
+              setMobileTab("library");
+              const toolsEl = document.querySelector('[data-tour="dashboard-tools"]');
+              if (toolsEl) toolsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            className="px-7 py-3.5 rounded-2xl flex items-center gap-2.5 shadow-md cursor-pointer w-full md:w-auto justify-center bg-primary text-primary-foreground font-medium btn-warm"
             data-testid="button-new-session"
           >
             <Plus size={20} /> Start New Session
@@ -1326,11 +1058,19 @@ export default function Dashboard() {
         isActive={dashboardTour.isActive}
         onComplete={() => {
           dashboardTour.complete();
-          setShowNewSession(true);
+          setMobileTab("library");
+          setTimeout(() => {
+            const toolsEl = document.querySelector('[data-tour="dashboard-tools"]');
+            if (toolsEl) toolsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 100);
         }}
         onSkip={() => {
           dashboardTour.skip();
-          setShowNewSession(true);
+          setMobileTab("library");
+          setTimeout(() => {
+            const toolsEl = document.querySelector('[data-tour="dashboard-tools"]');
+            if (toolsEl) toolsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 100);
         }}
       />
     </div>
