@@ -287,12 +287,12 @@ export default function Login() {
                   <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
                     ClinicalPlay is currently in development. Join our waitlist to be the first to know when we launch.
                   </p>
-                  <Link
-                    href="/waitlist"
+                  <a
+                    href="/#waitlist"
                     className="inline-flex items-center justify-center gap-2 w-full h-12 bg-primary text-primary-foreground rounded-xl font-medium btn-warm cursor-pointer transition-all hover:opacity-90"
                   >
                     Join the Waitlist <ArrowRight size={16} />
-                  </Link>
+                  </a>
                 </motion.div>
               </div>
             </div>
