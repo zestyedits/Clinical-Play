@@ -25,6 +25,10 @@ async function upsertUser(supabaseUser: { id: string; email?: string; user_metad
   const firstName = supabaseUser.user_metadata?.first_name || supabaseUser.user_metadata?.firstName || null;
   const lastName = supabaseUser.user_metadata?.last_name || supabaseUser.user_metadata?.lastName || null;
 
+  // 7-day free trial for new users
+  const trialEndsAt = new Date();
+  trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+
   const [user] = await db
     .insert(users)
     .values({
@@ -32,6 +36,7 @@ async function upsertUser(supabaseUser: { id: string; email?: string; user_metad
       email,
       firstName,
       lastName,
+      trialEndsAt,
     })
     .onConflictDoUpdate({
       target: users.id,

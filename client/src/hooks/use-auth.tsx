@@ -57,11 +57,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setSessionLoading(false);
       }
 
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
         if (mounted) {
           setSession(newSession);
           setSessionLoading(false);
           queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+
+          if (event === "PASSWORD_RECOVERY") {
+            window.location.href = "/reset-password";
+          }
         }
       });
 

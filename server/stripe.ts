@@ -62,10 +62,17 @@ export function registerStripeRoutes(app: Express) {
         }
       }
 
+      const trialEndsAt = user.trialEndsAt ? new Date(user.trialEndsAt).getTime() : null;
+      const trialActive = trialEndsAt ? Date.now() < trialEndsAt : false;
+      const trialExpired = trialEndsAt ? Date.now() >= trialEndsAt : false;
+
       res.json({
         isPro: user.isPro,
         subscriptionType: user.subscriptionType || "free",
         paymentFailed,
+        trialEndsAt,
+        trialActive,
+        trialExpired: trialExpired && !user.isPro,
       });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
@@ -264,6 +271,245 @@ export function registerStripeRoutes(app: Express) {
       });
 
       res.json({ url: portalSession.url });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // --- In-App Billing Management ---
+
+  // Get payment methods
+  app.get("/api/billing/payment-methods", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.authUser.id;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user?.stripeCustomerId) return res.json([]);
+
+      const methods = await stripe.paymentMethods.list({
+        customer: user.stripeCustomerId,
+        type: "card",
+      });
+
+      const defaultMethodId = (await stripe.customers.retrieve(user.stripeCustomerId) as Stripe.Customer)
+        .invoice_settings?.default_payment_method;
+
+      res.json(methods.data.map(m => ({
+        id: m.id,
+        brand: m.card?.brand || "unknown",
+        last4: m.card?.last4 || "****",
+        expMonth: m.card?.exp_month,
+        expYear: m.card?.exp_year,
+        isDefault: m.id === defaultMethodId,
+      })));
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Create setup intent for adding a new payment method in-app
+  app.post("/api/billing/setup-intent", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.authUser.id;
+      const email = req.authUser.email || "";
+      const customerId = await getOrCreateStripeCustomer(userId, email);
+
+      const setupIntent = await stripe.setupIntents.create({
+        customer: customerId,
+        payment_method_types: ["card"],
+      });
+
+      res.json({ clientSecret: setupIntent.client_secret });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Set default payment method
+  app.post("/api/billing/set-default-payment-method", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.authUser.id;
+      const { paymentMethodId } = req.body;
+      if (!paymentMethodId) return res.status(400).json({ message: "paymentMethodId required" });
+
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user?.stripeCustomerId) return res.status(400).json({ message: "No billing account" });
+
+      await stripe.customers.update(user.stripeCustomerId, {
+        invoice_settings: { default_payment_method: paymentMethodId },
+      });
+
+      // Also update active subscription if one exists
+      if (user.stripeSubscriptionId) {
+        await stripe.subscriptions.update(user.stripeSubscriptionId, {
+          default_payment_method: paymentMethodId,
+        });
+      }
+
+      res.json({ ok: true });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Remove a payment method
+  app.delete("/api/billing/payment-methods/:id", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      await stripe.paymentMethods.detach(req.params.id);
+      res.json({ ok: true });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Get invoices
+  app.get("/api/billing/invoices", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.authUser.id;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user?.stripeCustomerId) return res.json([]);
+
+      const invoices = await stripe.invoices.list({
+        customer: user.stripeCustomerId,
+        limit: 24,
+      });
+
+      res.json(invoices.data.map(inv => ({
+        id: inv.id,
+        number: inv.number,
+        amount: inv.amount_paid / 100,
+        currency: inv.currency,
+        status: inv.status,
+        date: inv.created * 1000,
+        description: inv.lines.data[0]?.description || "ClinicalPlay Subscription",
+        pdfUrl: inv.invoice_pdf,
+      })));
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Get subscription details
+  app.get("/api/billing/subscription", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.authUser.id;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      if (!user.stripeSubscriptionId) {
+        return res.json({
+          plan: user.subscriptionType || "free",
+          isPro: user.isPro,
+          cancelAtPeriodEnd: false,
+          currentPeriodEnd: null,
+        });
+      }
+
+      try {
+        const sub = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+        const periodEnd = sub.items.data[0]?.current_period_end;
+        return res.json({
+          plan: user.subscriptionType || "free",
+          isPro: user.isPro,
+          status: sub.status,
+          cancelAtPeriodEnd: sub.cancel_at_period_end,
+          currentPeriodEnd: periodEnd ? periodEnd * 1000 : null,
+          cancelAt: sub.cancel_at ? sub.cancel_at * 1000 : null,
+        });
+      } catch {
+        return res.json({
+          plan: user.subscriptionType || "free",
+          isPro: user.isPro,
+          cancelAtPeriodEnd: false,
+          currentPeriodEnd: null,
+        });
+      }
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Cancel subscription (at period end)
+  app.post("/api/billing/cancel-subscription", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.authUser.id;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+
+      if (!user?.stripeSubscriptionId) {
+        return res.status(400).json({ message: "No active subscription to cancel" });
+      }
+
+      if (user.subscriptionType === "founding") {
+        return res.status(400).json({ message: "Founding Member access is lifetime and cannot be cancelled" });
+      }
+
+      await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+
+      res.json({ message: "Subscription will be cancelled at the end of the current billing period" });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Resume (undo cancellation)
+  app.post("/api/billing/resume-subscription", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.authUser.id;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+
+      if (!user?.stripeSubscriptionId) {
+        return res.status(400).json({ message: "No subscription found" });
+      }
+
+      await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: false,
+      });
+
+      res.json({ message: "Subscription resumed" });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Change subscription plan
+  app.post("/api/billing/change-plan", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.authUser.id;
+      const { plan } = req.body as { plan: string };
+
+      if (!plan || !["monthly", "annual"].includes(plan)) {
+        return res.status(400).json({ message: "Invalid plan" });
+      }
+
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user?.stripeSubscriptionId) {
+        return res.status(400).json({ message: "No active subscription to change" });
+      }
+
+      if (user.subscriptionType === "founding") {
+        return res.status(400).json({ message: "Founding Members already have lifetime access" });
+      }
+
+      const sub = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      const currentItemId = sub.items.data[0]?.id;
+      if (!currentItemId) return res.status(400).json({ message: "Subscription item not found" });
+
+      const newPriceId = PRICE_IDS[plan as "monthly" | "annual"];
+      const subscriptionType = plan === "monthly" ? "community" : "annual";
+
+      await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        items: [{ id: currentItemId, price: newPriceId }],
+        proration_behavior: "create_prorations",
+        cancel_at_period_end: false,
+      });
+
+      await db.update(users).set({
+        subscriptionType,
+        updatedAt: new Date(),
+      }).where(eq(users.id, userId));
+
+      res.json({ message: `Switched to ${subscriptionType} plan` });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }

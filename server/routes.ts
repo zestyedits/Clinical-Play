@@ -8,7 +8,18 @@ import { registerStripeRoutes } from "./stripe";
 import { supabaseAdmin } from "./supabase";
 import { db } from "./db";
 import { users } from "@shared/models/auth";
-import { eq } from "drizzle-orm";
+import { eq, inArray, or } from "drizzle-orm";
+import {
+  therapySessions, participants, sandtrayItems, toolSuggestions, messages,
+  feelingWheelSelections, timelineEvents, valuesCardPlacements,
+  theaterParts, theaterConnections, thermometerReadings,
+  containmentContainers, containmentItems, bodyScanMarkers,
+  gratitudeStones, fidgetSessions, safetyPlanItems, worryTreeEntries,
+  thoughtBridgeRecords, thoughtBridgeEvidence, copingStrategies,
+  dbtHouseSkills, strengthsPlacements, strengthsSpottings,
+  socialAtomPeople, socialAtomConnections, socialAtomGroups,
+  gardenPlants, gardenJournalEntries, gardenWeeds,
+} from "@shared/schema";
 import { notifyAdminWaitlistSignup, notifyAdminSupportMessage, sendAnnouncementEmail, sendWelcomeVerificationEmail, sendWaitlistConfirmationEmail } from "./email";
 
 const ADMIN_EMAIL = "clinicalplayapp@gmail.com";
@@ -62,7 +73,8 @@ export async function registerRoutes(
         return res.status(400).json({ message: createError.message });
       }
 
-      const redirectTo = `${req.protocol}://${req.get("host")}/email-confirmed`;
+      const proto = req.headers["x-forwarded-proto"] || req.protocol;
+      const redirectTo = `${proto}://${req.get("host")}/email-confirmed`;
       const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
         type: "signup",
         email,
@@ -196,7 +208,8 @@ export async function registerRoutes(
       const [user] = await db.select().from(users).where(eq(users.id, userId));
       const firstName = user?.firstName || "there";
 
-      const redirectTo = `${req.protocol}://${req.get("host")}/email-confirmed`;
+      const proto = req.headers["x-forwarded-proto"] || req.protocol;
+      const redirectTo = `${proto}://${req.get("host")}/email-confirmed`;
       const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
         type: "magiclink",
         email,
@@ -502,12 +515,63 @@ export async function registerRoutes(
   app.delete("/api/account", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.authUser.id;
+
+      // 1. Find all sessions owned by this user
+      const userSessions = await db.select({ id: therapySessions.id })
+        .from(therapySessions)
+        .where(eq(therapySessions.clinicianId, userId));
+      const sessionIds = userSessions.map(s => s.id);
+
+      // 2. Delete all session-related data (child tables first)
+      if (sessionIds.length > 0) {
+        // Tables with nested dependencies (delete children first)
+        await db.delete(gardenJournalEntries).where(inArray(gardenJournalEntries.sessionId, sessionIds));
+        await db.delete(gardenWeeds).where(inArray(gardenWeeds.sessionId, sessionIds));
+        await db.delete(gardenPlants).where(inArray(gardenPlants.sessionId, sessionIds));
+        await db.delete(socialAtomConnections).where(inArray(socialAtomConnections.sessionId, sessionIds));
+        await db.delete(socialAtomGroups).where(inArray(socialAtomGroups.sessionId, sessionIds));
+        await db.delete(socialAtomPeople).where(inArray(socialAtomPeople.sessionId, sessionIds));
+        await db.delete(strengthsSpottings).where(inArray(strengthsSpottings.sessionId, sessionIds));
+        await db.delete(strengthsPlacements).where(inArray(strengthsPlacements.sessionId, sessionIds));
+        await db.delete(dbtHouseSkills).where(inArray(dbtHouseSkills.sessionId, sessionIds));
+        await db.delete(copingStrategies).where(inArray(copingStrategies.sessionId, sessionIds));
+        await db.delete(thoughtBridgeEvidence).where(inArray(thoughtBridgeEvidence.sessionId, sessionIds));
+        await db.delete(thoughtBridgeRecords).where(inArray(thoughtBridgeRecords.sessionId, sessionIds));
+        await db.delete(worryTreeEntries).where(inArray(worryTreeEntries.sessionId, sessionIds));
+        await db.delete(safetyPlanItems).where(inArray(safetyPlanItems.sessionId, sessionIds));
+        await db.delete(fidgetSessions).where(inArray(fidgetSessions.sessionId, sessionIds));
+        await db.delete(gratitudeStones).where(inArray(gratitudeStones.sessionId, sessionIds));
+        await db.delete(bodyScanMarkers).where(inArray(bodyScanMarkers.sessionId, sessionIds));
+        await db.delete(containmentItems).where(inArray(containmentItems.sessionId, sessionIds));
+        await db.delete(containmentContainers).where(inArray(containmentContainers.sessionId, sessionIds));
+        await db.delete(thermometerReadings).where(inArray(thermometerReadings.sessionId, sessionIds));
+        await db.delete(theaterConnections).where(inArray(theaterConnections.sessionId, sessionIds));
+        await db.delete(theaterParts).where(inArray(theaterParts.sessionId, sessionIds));
+        await db.delete(valuesCardPlacements).where(inArray(valuesCardPlacements.sessionId, sessionIds));
+        await db.delete(timelineEvents).where(inArray(timelineEvents.sessionId, sessionIds));
+        await db.delete(feelingWheelSelections).where(inArray(feelingWheelSelections.sessionId, sessionIds));
+        await db.delete(sandtrayItems).where(inArray(sandtrayItems.sessionId, sessionIds));
+        await db.delete(participants).where(inArray(participants.sessionId, sessionIds));
+
+        // Delete the sessions themselves
+        await db.delete(therapySessions).where(eq(therapySessions.clinicianId, userId));
+      }
+
+      // 3. Delete direct user references
+      await db.delete(toolSuggestions).where(eq(toolSuggestions.clinicianId, userId));
+      await db.delete(messages).where(or(eq(messages.fromUserId, userId), eq(messages.toUserId, userId)));
+      await db.delete(participants).where(eq(participants.userId, userId));
+
+      // 4. Delete from Supabase auth
       const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
       if (error) {
         console.error("Supabase delete error:", error);
         return res.status(500).json({ message: "Failed to delete authentication account" });
       }
+
+      // 5. Delete the user record
       await db.delete(users).where(eq(users.id, userId));
+
       res.json({ message: "Account deleted successfully" });
     } catch (error) {
       console.error("Account deletion error:", error);

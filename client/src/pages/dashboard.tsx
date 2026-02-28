@@ -350,11 +350,11 @@ export default function Dashboard() {
     refetchOnWindowFocus: false,
   });
 
-  const { data: billingStatus } = useQuery<{ isPro: boolean; subscriptionType: string; paymentFailed: boolean }>({
+  const { data: billingStatus } = useQuery<{ isPro: boolean; subscriptionType: string; paymentFailed: boolean; trialEndsAt: number | null; trialActive: boolean; trialExpired: boolean }>({
     queryKey: ["/api/billing/status"],
     queryFn: async () => {
       const res = await authFetch("/api/billing/status");
-      if (!res.ok) return { isPro: false, subscriptionType: "free", paymentFailed: false };
+      if (!res.ok) return { isPro: false, subscriptionType: "free", paymentFailed: false, trialEndsAt: null, trialActive: false, trialExpired: false };
       return res.json();
     },
     enabled: isAuthenticated,
@@ -432,19 +432,6 @@ export default function Dashboard() {
     },
   });
 
-  const manageSubscription = useMutation({
-    mutationFn: async () => {
-      const res = await authFetch("/api/create-portal-session", {
-        method: "POST",
-      });
-      if (!res.ok) throw new Error("Failed to open billing portal");
-      return res.json();
-    },
-    onSuccess: (data: { url: string }) => {
-      if (data.url) window.open(data.url, "_blank");
-    },
-  });
-
   const resendVerification = useMutation({
     mutationFn: async () => {
       const res = await authFetch("/api/auth/resend-verification", { method: "POST" });
@@ -470,6 +457,11 @@ export default function Dashboard() {
   const remaining = foundingSlots?.remaining ?? 0;
   const total = foundingSlots?.total ?? 100;
   const percentClaimed = Math.round(((total - remaining) / total) * 100);
+  const trialActive = billingStatus?.trialActive ?? false;
+  const trialExpired = billingStatus?.trialExpired ?? false;
+  const trialDaysLeft = billingStatus?.trialEndsAt
+    ? Math.max(0, Math.ceil((billingStatus.trialEndsAt - Date.now()) / (1000 * 60 * 60 * 24)))
+    : 0;
 
   const activeSessions = sessions.filter(s => s.status === "active");
   const pastSessions = sessions.filter(s => s.status !== "active");
@@ -807,15 +799,15 @@ export default function Dashboard() {
               </button>
             </Link>
             {isPro && (subscriptionType === "community" || subscriptionType === "annual") && (
-              <button
-                onClick={() => manageSubscription.mutate()}
-                disabled={manageSubscription.isPending}
-                className="w-full py-2.5 rounded-xl bg-secondary/50 text-foreground text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2"
-                data-testid="button-manage-billing"
-              >
-                <CreditCard size={14} />
-                Manage Billing
-              </button>
+              <Link href="/settings" className="no-underline">
+                <button
+                  className="w-full py-2.5 rounded-xl bg-secondary/50 text-foreground text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2"
+                  data-testid="button-manage-billing"
+                >
+                  <CreditCard size={14} />
+                  Manage Billing
+                </button>
+              </Link>
             )}
             <Link href="/contact" className="no-underline">
               <button className="w-full py-2.5 rounded-xl bg-secondary/50 text-foreground text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2" data-testid="button-support-link">
@@ -960,17 +952,65 @@ export default function Dashboard() {
               <p className="text-sm font-medium text-red-900">Your payment method needs updating</p>
               <p className="text-xs text-red-700/70">We were unable to process your latest payment. Please update your payment method to keep your subscription active.</p>
             </div>
-            <button
-              onClick={() => manageSubscription.mutate()}
-              disabled={manageSubscription.isPending}
-              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200/80 text-red-800 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
-              data-testid="button-update-payment"
-            >
-              <CreditCard size={12} />
-              Update Payment
-            </button>
+            <Link href="/settings" className="no-underline">
+              <button
+                className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200/80 text-red-800 text-xs font-medium transition-colors cursor-pointer"
+                data-testid="button-update-payment"
+              >
+                <CreditCard size={12} />
+                Update Payment
+              </button>
+            </Link>
           </div>
         </div>
+      )}
+
+      {trialActive && !isPro && (
+        <div className="max-w-7xl mx-auto mb-4">
+          <div
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/5 border border-primary/10"
+            data-testid="banner-trial"
+          >
+            <Sparkles size={14} className="text-primary/60 shrink-0" />
+            <p className="text-xs text-primary/70 font-medium">
+              Free trial — {trialDaysLeft} {trialDaysLeft === 1 ? "day" : "days"} remaining
+            </p>
+            <Link href="/settings" className="ml-auto no-underline">
+              <span className="text-xs text-primary/50 hover:text-primary font-medium transition-colors cursor-pointer">
+                Upgrade
+              </span>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {trialExpired && (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-50" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <Lock size={28} className="text-primary/60" />
+              </div>
+              <h2 className="text-2xl font-serif text-foreground mb-3">Your free trial has ended</h2>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+                Your 7-day free trial has expired. Upgrade to a paid plan to continue using ClinicalPlay's interactive therapy tools.
+              </p>
+              <Link href="/settings" className="no-underline">
+                <button className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-medium btn-warm cursor-pointer flex items-center justify-center gap-2">
+                  <Crown size={16} />
+                  View Plans & Upgrade
+                </button>
+              </Link>
+              <button
+                onClick={() => logout()}
+                className="mt-3 w-full py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       <div className="max-w-7xl mx-auto">

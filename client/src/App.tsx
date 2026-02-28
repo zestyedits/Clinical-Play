@@ -19,6 +19,7 @@ import Contact from "@/pages/contact";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
 import EmailConfirmed from "@/pages/email-confirmed";
+import ResetPassword from "@/pages/reset-password";
 import InboxPage from "@/pages/inbox";
 import AdminPanel from "@/pages/admin";
 import LibraryPage from "@/pages/library";
@@ -44,6 +45,7 @@ function Router() {
         <Route path="/login">{() => <Login />}</Route>
         <Route path="/signup">{() => <Signup />}</Route>
         <Route path="/email-confirmed">{() => <EmailConfirmed />}</Route>
+        <Route path="/reset-password">{() => <ResetPassword />}</Route>
         <Route path="/inbox">{() => <InboxPage />}</Route>
         <Route path="/admin">{() => <AdminPanel />}</Route>
         <Route path="/settings">{() => <SettingsPage />}</Route>

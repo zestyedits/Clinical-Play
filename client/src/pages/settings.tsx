@@ -460,7 +460,9 @@ export default function SettingsPage() {
     setResettingPassword(true);
     try {
       const supabase = await getSupabase();
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       if (error) throw error;
       toast({ title: "Password reset email sent", description: "Check your inbox for instructions to reset your password." });
     } catch (err: any) {

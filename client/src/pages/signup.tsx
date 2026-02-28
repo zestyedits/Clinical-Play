@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, ArrowRight, Mail, Lock, User } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 
 export default function Signup() {
   const [, navigate] = useLocation();
@@ -167,6 +168,8 @@ export default function Signup() {
                 )}
               </button>
             </form>
+
+            <OAuthButtons />
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
