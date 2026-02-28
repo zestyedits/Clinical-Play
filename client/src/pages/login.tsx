@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, ArrowRight, Mail, Lock } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 
 export default function Login() {
-  const [, navigate] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +25,8 @@ export default function Login() {
         setLoading(false);
         return;
       }
-      navigate("/dashboard");
+      // Full-page nav so SessionProvider picks up the new session on init (avoids race)
+      window.location.href = "/dashboard";
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
