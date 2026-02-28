@@ -29,6 +29,22 @@ async function upsertUser(supabaseUser: { id: string; email?: string; user_metad
   const trialEndsAt = new Date();
   trialEndsAt.setDate(trialEndsAt.getDate() + 7);
 
+  // Check if a user with this email exists under a different ID (e.g. Supabase project change)
+  if (email) {
+    const [existing] = await db.select().from(users).where(eq(users.email, email));
+    if (existing && existing.id !== supabaseUser.id) {
+      // Update the existing record's ID to match the new Supabase auth ID
+      await db.update(users).set({
+        id: supabaseUser.id,
+        ...(firstName && { firstName }),
+        ...(lastName && { lastName }),
+        updatedAt: new Date(),
+      }).where(eq(users.id, existing.id));
+      const [updated] = await db.select().from(users).where(eq(users.id, supabaseUser.id));
+      return updated;
+    }
+  }
+
   const [user] = await db
     .insert(users)
     .values({

@@ -18,7 +18,8 @@
       "Bash(npm install:*)",
       "Bash(npm ls:*)",
       "Bash(timeout 5 npm start:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(psql $DATABASE_URL:*)"
     ]
   }
 }
