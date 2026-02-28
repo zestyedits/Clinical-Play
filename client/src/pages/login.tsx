@@ -18,11 +18,12 @@ export default function Login() {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
   const [forgotError, setForgotError] = useState("");
-  const [adminMode, setAdminMode] = useState(false);
+  const [adminMode, setAdminMode] = useState(() => sessionStorage.getItem("cp_admin") === "1");
 
   // If already authenticated, redirect to dashboard
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
+      sessionStorage.removeItem("cp_admin");
       navigate("/dashboard");
     }
   }, [authLoading, isAuthenticated, navigate]);
@@ -312,7 +313,7 @@ export default function Login() {
           {!adminMode && (
             <div className="mt-8 text-center">
               <button
-                onClick={() => setAdminMode(true)}
+                onClick={() => { sessionStorage.setItem("cp_admin", "1"); setAdminMode(true); }}
                 className="text-[11px] text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors cursor-pointer"
               >
                 Admin
