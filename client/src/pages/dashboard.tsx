@@ -278,10 +278,10 @@ export default function Dashboard() {
   const [tipIndex] = useState(() => CLINICAL_TIPS.length > 0 ? Math.floor(Math.random() * CLINICAL_TIPS.length) : 0);
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated && !accessDenied) {
       navigate("/login");
     }
-  }, [authLoading, isAuthenticated]);
+  }, [authLoading, isAuthenticated, accessDenied]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -467,7 +467,7 @@ export default function Dashboard() {
   const pastSessions = sessions.filter(s => s.status !== "active");
   const favoritedTools = ALL_TOOLS.filter(t => favorites.includes(t.id));
 
-  if (authLoading || !isAuthenticated) {
+  if (authLoading || (!isAuthenticated && !accessDenied)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
