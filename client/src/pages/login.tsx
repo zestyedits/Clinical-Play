@@ -25,6 +25,12 @@ export default function Login() {
         setLoading(false);
         return;
       }
+      // #region agent log
+      const { data: { session: postSignInSession } } = await supabase.auth.getSession();
+      const h1Data = { sessionId: '548a0c', location: 'login.tsx:postSignIn', message: 'After signInWithPassword success', data: { hasSession: !!postSignInSession, sessionUserId: postSignInSession?.user?.id?.slice(0, 8) }, timestamp: Date.now(), hypothesisId: 'H1' };
+      console.debug('[auth debug]', h1Data);
+      fetch('http://127.0.0.1:7279/ingest/a5740328-6079-4b87-9c64-64f6c9d103fb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'548a0c'},body:JSON.stringify(h1Data)}).catch(()=>{});
+      // #endregion
       // Full-page nav so SessionProvider picks up the new session on init (avoids race)
       window.location.href = "/dashboard";
     } catch {

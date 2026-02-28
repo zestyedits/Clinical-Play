@@ -1,10 +1,13 @@
 import type { RequestHandler, Request, Response, NextFunction } from "express";
+import { appendFileSync } from "fs";
+import { join } from "path";
 import { supabaseAdmin } from "./supabase";
 import { db } from "./db";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
 
-const ALLOWED_EMAILS = ["clinicalplayapp@gmail.com"];
+// Include Gmail dot-alias: clinical.play.app@ and clinicalplayapp@ deliver to same inbox
+const ALLOWED_EMAILS = ["clinicalplayapp@gmail.com", "clinical.play.app@gmail.com"];
 
 export interface AuthUser {
   id: string;
@@ -62,6 +65,11 @@ export const isAuthenticated: RequestHandler = async (req: Request, res: Respons
 
     const email = (user.email || "").toLowerCase();
     if (!ALLOWED_EMAILS.includes(email)) {
+      // #region agent log
+      const logData = { sessionId: "548a0c", location: "auth.ts:403", message: "403 Access restricted", data: { email, allowed: ALLOWED_EMAILS }, timestamp: Date.now(), hypothesisId: "H2" };
+      try { appendFileSync(join(process.cwd(), "debug-548a0c.log"), JSON.stringify(logData) + "\n"); } catch {}
+      console.warn("[auth] 403:", logData);
+      // #endregion
       return res.status(403).json({ message: "Access restricted. ClinicalPlay has not launched yet." });
     }
 

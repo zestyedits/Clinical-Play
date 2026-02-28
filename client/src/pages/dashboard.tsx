@@ -279,6 +279,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
+      // #region agent log
+      const h5Data = { sessionId: '548a0c', location: 'dashboard.tsx:redirect', message: 'Dashboard redirecting to login', data: { authLoading, isAuthenticated, path: window.location.pathname }, timestamp: Date.now(), hypothesisId: 'H5' };
+      console.debug('[auth debug]', h5Data);
+      fetch('http://127.0.0.1:7279/ingest/a5740328-6079-4b87-9c64-64f6c9d103fb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'548a0c'},body:JSON.stringify(h5Data)}).catch(()=>{});
+      // #endregion
       navigate("/login");
     }
   }, [authLoading, isAuthenticated]);

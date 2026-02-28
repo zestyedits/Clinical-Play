@@ -19,6 +19,11 @@ async function fetchUser(session: Session | null): Promise<AuthResult> {
     },
   });
 
+  // #region agent log
+  const h2Data = { sessionId: '548a0c', location: 'use-auth.tsx:fetchUser', message: '/api/auth/user response', data: { status: response.status, ok: response.ok }, timestamp: Date.now(), hypothesisId: 'H2' };
+  console.debug('[auth debug]', h2Data);
+  fetch('http://127.0.0.1:7279/ingest/a5740328-6079-4b87-9c64-64f6c9d103fb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'548a0c'},body:JSON.stringify(h2Data)}).catch(()=>{});
+  // #endregion
   if (response.status === 401) return { user: null, accessDenied: false, emailConfirmed: false };
   if (response.status === 403) return { user: null, accessDenied: true, emailConfirmed: false };
   if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
@@ -52,6 +57,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     async function init() {
       const supabase = await getSupabase();
       const { data: { session: currentSession } } = await supabase.auth.getSession();
+      // #region agent log
+      const h1Init = { sessionId: '548a0c', location: 'use-auth.tsx:init', message: 'SessionProvider init getSession', data: { hasSession: !!currentSession, path: typeof window !== 'undefined' ? window.location.pathname : '' }, timestamp: Date.now(), hypothesisId: 'H1' };
+      console.debug('[auth debug]', h1Init);
+      fetch('http://127.0.0.1:7279/ingest/a5740328-6079-4b87-9c64-64f6c9d103fb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'548a0c'},body:JSON.stringify(h1Init)}).catch(()=>{});
+      // #endregion
       if (mounted) {
         setSession(currentSession);
         setSessionLoading(false);

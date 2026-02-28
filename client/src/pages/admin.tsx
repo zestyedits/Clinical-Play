@@ -25,7 +25,7 @@ interface WaitlistEntry {
 }
 
 export default function AdminPanel() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, session } = useAuth();
   const authFetch = useAuthFetch();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -136,6 +136,9 @@ export default function AdminPanel() {
   }
 
   if (!isAuthenticated || !adminCheck?.isAdmin) {
+    // #region agent log
+    fetch('http://127.0.0.1:7279/ingest/a5740328-6079-4b87-9c64-64f6c9d103fb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'548a0c'},body:JSON.stringify({sessionId:'548a0c',location:'admin.tsx:restricted',message:'Admin Access Restricted rendered',data:{isAuthenticated,adminCheckIsAdmin:adminCheck?.isAdmin,hasSession:!!session,path:window.location.pathname},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
+    // #endregion
     return (
       <div className="min-h-screen bg-background">
         <div className="max-w-md mx-auto pt-32 px-6 text-center">
