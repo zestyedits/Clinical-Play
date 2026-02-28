@@ -1110,7 +1110,18 @@ function WaitlistForm({ variant = "default" }: { variant?: "default" | "bottom" 
         body: JSON.stringify({ email, name: name || null }),
       });
       if (res.status === 409) throw new Error("You're already on the waitlist!");
-      if (!res.ok) throw new Error("Failed to join waitlist");
+      if (!res.ok) {
+        let message = "Failed to join waitlist";
+        try {
+          const body = await res.json();
+          if (body?.message && typeof body.message === "string") {
+            message = body.message;
+          }
+        } catch {
+          // ignore JSON parse errors and use default message
+        }
+        throw new Error(message);
+      }
       return res.json();
     },
     onSuccess: () => {
