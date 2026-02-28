@@ -2,7 +2,7 @@ import type { RequestHandler, Request, Response, NextFunction } from "express";
 import { supabaseAdmin } from "./supabase";
 import { db } from "./db";
 import { users } from "@shared/models/auth";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export const ALLOWED_EMAILS = ["clinicalplayapp@gmail.com"];
 
@@ -25,22 +25,25 @@ async function upsertUser(supabaseUser: { id: string; email?: string; user_metad
   const firstName = supabaseUser.user_metadata?.first_name || supabaseUser.user_metadata?.firstName || null;
   const lastName = supabaseUser.user_metadata?.last_name || supabaseUser.user_metadata?.lastName || null;
 
-  // 7-day free trial for new users
   const trialEndsAt = new Date();
   trialEndsAt.setDate(trialEndsAt.getDate() + 7);
 
-  // Check if a user with this email exists under a different ID (e.g. Supabase project change)
   if (email) {
     const [existing] = await db.select().from(users).where(eq(users.email, email));
     if (existing && existing.id !== supabaseUser.id) {
-      // Update the existing record's ID to match the new Supabase auth ID
-      await db.update(users).set({
-        id: supabaseUser.id,
-        ...(firstName && { firstName }),
-        ...(lastName && { lastName }),
-        updatedAt: new Date(),
-      }).where(eq(users.id, existing.id));
-      const [updated] = await db.select().from(users).where(eq(users.id, supabaseUser.id));
+      const oldId = existing.id;
+      const newId = supabaseUser.id;
+
+      await db.transaction(async (tx) => {
+        await tx.execute(sql`UPDATE therapy_sessions SET clinician_id = ${newId} WHERE clinician_id = ${oldId}`);
+        await tx.execute(sql`UPDATE participants SET user_id = ${newId} WHERE user_id = ${oldId}`);
+        await tx.execute(sql`UPDATE tool_suggestions SET clinician_id = ${newId} WHERE clinician_id = ${oldId}`);
+        await tx.execute(sql`UPDATE messages SET from_user_id = ${newId} WHERE from_user_id = ${oldId}`);
+        await tx.execute(sql`UPDATE messages SET to_user_id = ${newId} WHERE to_user_id = ${oldId}`);
+        await tx.execute(sql`UPDATE users SET id = ${newId}, first_name = COALESCE(${firstName}, first_name), last_name = COALESCE(${lastName}, last_name), updated_at = NOW() WHERE id = ${oldId}`);
+      });
+
+      const [updated] = await db.select().from(users).where(eq(users.id, newId));
       return updated;
     }
   }
