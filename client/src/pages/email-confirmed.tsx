@@ -106,16 +106,38 @@ export default function EmailConfirmed() {
             <p className="text-muted-foreground mb-8 leading-relaxed">
               Your email has been successfully verified. You're all set to start using ClinicalPlay.
             </p>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-2xl font-medium shadow-lg shadow-primary/20 btn-warm no-underline"
-              data-testid="link-go-to-dashboard"
-            >
-              Go to Dashboard <ArrowRight size={16} />
-            </Link>
+            <EmailConfirmedRedirect />
           </div>
         </motion.div>
       </div>
+    </div>
+  );
+}
+
+function EmailConfirmedRedirect() {
+  const [countdown, setCountdown] = useState(4);
+
+  useEffect(() => {
+    if (countdown <= 0) {
+      window.location.href = "/dashboard";
+      return;
+    }
+    const t = setInterval(() => setCountdown((c) => c - 1), 1000);
+    return () => clearInterval(t);
+  }, [countdown]);
+
+  return (
+    <div className="space-y-3">
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-2xl font-medium shadow-lg shadow-primary/20 btn-warm no-underline"
+        data-testid="link-go-to-dashboard"
+      >
+        Go to Dashboard <ArrowRight size={16} />
+      </Link>
+      <p className="text-sm text-muted-foreground">
+        Redirecting in {countdown} second{countdown !== 1 ? "s" : ""}…
+      </p>
     </div>
   );
 }

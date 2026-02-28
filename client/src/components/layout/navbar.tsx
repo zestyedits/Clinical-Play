@@ -203,13 +203,13 @@ export function Navbar() {
                 Log In
               </Link>
               <Link
-                href="/signup"
+                href="/#waitlist"
                 className="bg-primary text-primary-foreground px-5 py-2 rounded-xl text-sm font-medium btn-warm no-underline"
-                data-testid="link-nav-get-started"
+                data-testid="link-nav-join-waitlist"
               >
                 <span className="flex items-center gap-1.5">
                   <Sparkles size={14} />
-                  Get Started
+                  Join Waitlist
                 </span>
               </Link>
             </div>
@@ -315,12 +315,12 @@ export function Navbar() {
                       </Link>
                     ))}
                     <Link
-                      href="/signup"
+                      href="/#waitlist"
                       className="flex items-center justify-center gap-2 px-4 py-2.5 mt-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground no-underline btn-warm"
-                      data-testid="link-mobile-get-started"
+                      data-testid="link-mobile-join-waitlist"
                     >
                       <Sparkles size={14} />
-                      Get Started
+                      Join Waitlist
                     </Link>
                   </>
                 )}

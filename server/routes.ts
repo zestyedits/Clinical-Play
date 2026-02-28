@@ -79,6 +79,11 @@ export async function registerRoutes(
       const normalizedEmail = String(email).toLowerCase().trim();
       const isAdminSignup = normalizedEmail === ADMIN_EMAIL;
 
+      // Signup is closed except for admin until launch
+      if (!isAdminSignup) {
+        return res.status(503).json({ message: "Signup is temporarily closed. Join the waitlist for early access." });
+      }
+
       const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email: normalizedEmail,
         password,

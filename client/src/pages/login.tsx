@@ -11,6 +11,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showAdminForm, setShowAdminForm] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,14 +37,35 @@ export default function Login() {
     <div className="min-h-screen bg-background">
       <div className="flex items-center justify-center min-h-screen px-4 pt-24 pb-12">
         <div className="w-full max-w-md">
-          <div className="bg-card border border-border rounded-2xl shadow-lg p-8 md:p-10">
+          {/* Banner: Sign-up closed, join waitlist */}
+          <div className="mb-6 p-4 rounded-xl bg-primary/8 border border-primary/20 text-center">
+            <p className="text-sm font-medium text-foreground">
+              We&apos;re not fully launched yet.
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Join the waitlist to get early access when we go live.
+            </p>
+            <Link href="/#waitlist" className="mt-3 inline-block text-sm font-medium text-primary hover:underline" data-testid="link-join-waitlist">
+              Join the waitlist →
+            </Link>
+          </div>
+
+          <div className="bg-card border border-border rounded-2xl shadow-lg p-8 md:p-10 relative">
+            {/* Grey overlay when admin form hidden - pointer-events-none so Admin button stays clickable */}
+            {!showAdminForm && (
+              <div
+                className="absolute inset-0 rounded-2xl bg-background/60 backdrop-blur-[2px] z-10 pointer-events-none"
+                aria-hidden
+              />
+            )}
+
             <div className="text-center mb-8">
               <img src="/images/logo-icon.png" alt="ClinicalPlay" className="w-18 h-18 mx-auto mb-5 object-contain" />
               <h1 className="text-3xl font-serif text-primary mb-2" data-testid="text-login-title">Welcome Back</h1>
               <p className="text-muted-foreground text-sm">Sign in to your ClinicalPlay account</p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form onSubmit={handleLogin} className={showAdminForm ? "space-y-5 relative z-20" : "space-y-5 opacity-50 pointer-events-none select-none"}>
               <div>
                 <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-[0.15em] mb-2">Email</label>
                 <div className="relative">
@@ -82,6 +104,11 @@ export default function Login() {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                <div className="mt-1.5 text-right">
+                  <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary transition-colors" data-testid="link-forgot-password">
+                    Forgot password?
+                  </Link>
+                </div>
               </div>
 
               {error && (
@@ -110,12 +137,36 @@ export default function Login() {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link href="/signup" className="text-primary underline font-medium" data-testid="link-signup">
-                  Create one
-                </Link>
-              </p>
+              {showAdminForm ? (
+                <p className="text-sm text-muted-foreground">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdminForm(false)}
+                    className="text-muted-foreground/70 hover:text-muted-foreground text-xs cursor-pointer"
+                  >
+                    ← Back
+                  </button>
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Want early access?{" "}
+                  <Link href="/#waitlist" className="text-primary underline font-medium">
+                    Join the waitlist
+                  </Link>
+                </p>
+              )}
+            </div>
+
+            {/* Lowkey admin sign-in toggle - stays clickable above overlay */}
+            <div className="mt-4 pt-4 border-t border-border/50 text-center relative z-20">
+              <button
+                type="button"
+                onClick={() => setShowAdminForm(!showAdminForm)}
+                className="text-[11px] text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors cursor-pointer"
+                data-testid="button-admin-toggle"
+              >
+                {showAdminForm ? "Hide" : "Admin"}
+              </button>
             </div>
           </div>
 
