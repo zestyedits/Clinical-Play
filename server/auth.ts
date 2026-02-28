@@ -54,6 +54,7 @@ async function upsertUser(supabaseUser: { id: string; email?: string; user_metad
 export const isAuthenticated: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    console.log("[auth] No bearer token provided for", req.path);
     return res.status(401).json({ message: "Unauthorized" });
   }
 
@@ -62,11 +63,13 @@ export const isAuthenticated: RequestHandler = async (req: Request, res: Respons
   try {
     const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
     if (error || !user) {
+      console.log("[auth] Token validation failed for", req.path, "error:", error?.message);
       return res.status(401).json({ message: "Unauthorized" });
     }
 
     const email = (user.email || "").toLowerCase();
     if (!ALLOWED_EMAILS.includes(email)) {
+      console.log("[auth] Access denied for email:", email, "on", req.path);
       return res.status(403).json({ message: "Access restricted. ClinicalPlay has not launched yet." });
     }
 
@@ -79,8 +82,10 @@ export const isAuthenticated: RequestHandler = async (req: Request, res: Respons
       emailConfirmed: ALLOWED_EMAILS.includes(email) || !!user.email_confirmed_at,
     };
 
+    console.log("[auth] Authenticated:", email, "on", req.path);
     return next();
-  } catch {
+  } catch (err) {
+    console.error("[auth] Unexpected error for", req.path, err);
     return res.status(401).json({ message: "Unauthorized" });
   }
 };

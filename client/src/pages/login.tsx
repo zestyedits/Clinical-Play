@@ -20,7 +20,7 @@ export default function Login() {
   const [forgotError, setForgotError] = useState("");
   const [adminMode, setAdminMode] = useState(false);
 
-  // Redirect to dashboard once auth state confirms the user is logged in
+  // If already authenticated, redirect to dashboard
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       navigate("/dashboard");
@@ -34,13 +34,40 @@ export default function Login() {
 
     try {
       const supabase = await getSupabase();
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
       if (authError) {
         setError(authError.message);
         setLoading(false);
         return;
       }
-      // Navigation handled by useEffect once session updates
+
+      // Verify access before navigating
+      const token = data.session?.access_token;
+      if (!token) {
+        setError("Sign in succeeded but no session was created. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch("/api/auth/user", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.status === 403) {
+        setError("Access restricted. ClinicalPlay has not launched yet.");
+        setLoading(false);
+        await supabase.auth.signOut();
+        return;
+      }
+
+      if (!res.ok) {
+        setError("Unable to verify your account. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Force a hard navigation to ensure clean state
+      window.location.href = "/dashboard";
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);

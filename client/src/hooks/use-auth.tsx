@@ -51,12 +51,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
     async function init() {
       const supabase = await getSupabase();
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (mounted) {
-        setSession(currentSession);
-        setSessionLoading(false);
-      }
 
+      // Subscribe to auth changes FIRST so we don't miss events
+      // (e.g. OAuth redirect token exchange that happens during initialization)
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
         if (mounted) {
           setSession(newSession);
@@ -70,6 +67,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       });
 
       unsubscribe = () => subscription.unsubscribe();
+
+      // Also call getSession as a fallback to ensure we have the current state
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (mounted) {
+        setSession(currentSession);
+        setSessionLoading(false);
+      }
     }
 
     init();
