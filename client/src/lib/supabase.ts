@@ -10,7 +10,9 @@ export async function getSupabase(): Promise<SupabaseClient> {
   _initPromise = (async () => {
     const res = await fetch("/api/auth/config");
     const { url, anonKey } = await res.json();
-    _supabase = createClient(url, anonKey);
+    _supabase = createClient(url, anonKey, {
+      auth: { detectSessionInUrl: true },
+    });
     return _supabase;
   })();
 
