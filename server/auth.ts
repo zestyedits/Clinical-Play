@@ -35,9 +35,10 @@ async function upsertUser(supabaseUser: { id: string; email?: string; user_metad
       const newId = supabaseUser.id;
 
       await db.transaction(async (tx) => {
+        await tx.execute(sql`UPDATE users SET email = NULL WHERE id = ${oldId}`);
         await tx.execute(sql`
           INSERT INTO users (id, email, first_name, last_name, profile_image_url, professional_title, clinical_specialty, default_anonymous, is_pro, subscription_type, stripe_customer_id, stripe_subscription_id, theme_preference, trial_ends_at, created_at, updated_at)
-          SELECT ${newId}, email, COALESCE(${firstName}, first_name), COALESCE(${lastName}, last_name), profile_image_url, professional_title, clinical_specialty, default_anonymous, is_pro, subscription_type, stripe_customer_id, stripe_subscription_id, theme_preference, trial_ends_at, created_at, NOW()
+          SELECT ${newId}, ${email}, COALESCE(${firstName}, first_name), COALESCE(${lastName}, last_name), profile_image_url, professional_title, clinical_specialty, default_anonymous, is_pro, subscription_type, stripe_customer_id, stripe_subscription_id, theme_preference, trial_ends_at, created_at, NOW()
           FROM users WHERE id = ${oldId}
         `);
         await tx.execute(sql`UPDATE therapy_sessions SET clinician_id = ${newId} WHERE clinician_id = ${oldId}`);

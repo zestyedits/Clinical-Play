@@ -389,8 +389,12 @@ export async function registerRoutes(
         data.name = data.name.trim();
       }
       const entry = await storage.addWaitlistEntry(data);
-      notifyAdminWaitlistSignup(data.email, data.name);
-      sendWaitlistConfirmationEmail(data.email, data.name);
+      notifyAdminWaitlistSignup(data.email, data.name).catch((err) =>
+        console.error("[waitlist] admin notification email failed:", err)
+      );
+      sendWaitlistConfirmationEmail(data.email, data.name).catch((err) =>
+        console.error("[waitlist] confirmation email failed:", err)
+      );
       res.json(entry);
     } catch (e: any) {
       if (e.code === "23505") {
