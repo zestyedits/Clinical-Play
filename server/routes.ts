@@ -41,6 +41,31 @@ export async function registerRoutes(
     }
   });
 
+  // One-time: confirm admin email in Supabase so sign-in works (no verification email needed)
+  app.post("/api/auth/confirm-admin-email", async (req, res) => {
+    const secret = process.env.CONFIRM_ADMIN_SECRET;
+    const provided = req.headers["x-confirm-admin-secret"];
+    if (!secret || provided !== secret) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    try {
+      const { data: { users: authUsers } } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+      const adminUser = authUsers?.find((u) => (u.email || "").toLowerCase() === ADMIN_EMAIL);
+      if (!adminUser) {
+        return res.status(404).json({ message: "Admin user not found in Supabase. Sign up first with " + ADMIN_EMAIL });
+      }
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(adminUser.id, { email_confirm: true });
+      if (error) {
+        console.error("Confirm admin email error:", error);
+        return res.status(500).json({ message: error.message });
+      }
+      res.json({ message: "Admin email confirmed in Supabase. You can sign in now." });
+    } catch (err: any) {
+      console.error("Confirm admin email:", err);
+      res.status(500).json({ message: err?.message || "Failed to confirm admin email" });
+    }
+  });
+
   app.post("/api/auth/signup", async (req, res) => {
     try {
       const { email, password, firstName, lastName } = req.body;
@@ -51,10 +76,13 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Password must be at least 6 characters" });
       }
 
+      const normalizedEmail = String(email).toLowerCase().trim();
+      const isAdminSignup = normalizedEmail === ADMIN_EMAIL;
+
       const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
-        email,
+        email: normalizedEmail,
         password,
-        email_confirm: false,
+        email_confirm: isAdminSignup,
         user_metadata: { firstName, lastName },
       });
 
@@ -62,18 +90,20 @@ export async function registerRoutes(
         return res.status(400).json({ message: createError.message });
       }
 
-      const redirectTo = `${req.protocol}://${req.get("host")}/email-confirmed`;
-      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-        type: "signup",
-        email,
-        password,
-        options: { redirectTo },
-      });
+      if (!isAdminSignup) {
+        const redirectTo = `${req.protocol}://${req.get("host")}/email-confirmed`;
+        const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+          type: "signup",
+          email: normalizedEmail,
+          password,
+          options: { redirectTo },
+        });
 
-      if (linkError) {
-        console.error("Failed to generate verification link:", linkError);
-      } else if (linkData?.properties?.action_link) {
-        await sendWelcomeVerificationEmail(email, firstName, linkData.properties.action_link);
+        if (linkError) {
+          console.error("Failed to generate verification link:", linkError);
+        } else if (linkData?.properties?.action_link) {
+          await sendWelcomeVerificationEmail(normalizedEmail, firstName, linkData.properties.action_link);
+        }
       }
 
       res.json({ message: "Account created successfully" });
