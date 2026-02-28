@@ -78,7 +78,7 @@ export const MOCK_ORG_MEMBERS: OrgMember[] = [
   },
   {
     id: "org-002",
-    name: "James Okafor, LCSW",
+    name: "James Okafor, LMSW",
     email: "james@privatepractice.com",
     role: "clinician",
     joinedAt: "2026-01-20T09:00:00Z",

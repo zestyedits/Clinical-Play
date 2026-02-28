@@ -1342,7 +1342,7 @@ export default function LandingPage() {
             "I got tired of boring telehealth sessions, so I built us a digital playroom."
           </p>
           <p className="text-xs text-muted-foreground/50 font-medium uppercase tracking-wider">
-            — Licensed Clinical Social Worker &amp; Founder
+            — Social Worker &amp; Founder
           </p>
         </div>
       </section>
