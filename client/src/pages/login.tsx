@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, ArrowRight, Mail, Lock, CheckCircle2, Clock } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Login() {
   const [, navigate] = useLocation();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -17,6 +19,13 @@ export default function Login() {
   const [forgotSent, setForgotSent] = useState(false);
   const [forgotError, setForgotError] = useState("");
   const [adminMode, setAdminMode] = useState(false);
+
+  // Redirect to dashboard once auth state confirms the user is logged in
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +40,7 @@ export default function Login() {
         setLoading(false);
         return;
       }
-      navigate("/dashboard");
+      // Navigation handled by useEffect once session updates
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
