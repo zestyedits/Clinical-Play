@@ -197,20 +197,10 @@ export function Navbar() {
               ))}
               <Link
                 href="/login"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors no-underline"
+                className="bg-primary text-primary-foreground px-5 py-2 rounded-xl text-sm font-medium btn-warm no-underline"
                 data-testid="link-nav-login"
               >
                 Log In
-              </Link>
-              <Link
-                href="/signup"
-                className="bg-primary text-primary-foreground px-5 py-2 rounded-xl text-sm font-medium btn-warm no-underline"
-                data-testid="link-nav-get-started"
-              >
-                <span className="flex items-center gap-1.5">
-                  <Sparkles size={14} />
-                  Get Started
-                </span>
               </Link>
             </div>
           )}

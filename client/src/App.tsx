@@ -43,7 +43,7 @@ function Router() {
         <Route path="/faq">{() => <FAQ />}</Route>
         <Route path="/contact">{() => <Contact />}</Route>
         <Route path="/login">{() => <Login />}</Route>
-        <Route path="/signup">{() => <Signup />}</Route>
+        <Route path="/signup">{() => <Redirect to="/login" />}</Route>
         <Route path="/email-confirmed">{() => <EmailConfirmed />}</Route>
         <Route path="/reset-password">{() => <ResetPassword />}</Route>
         <Route path="/inbox">{() => <InboxPage />}</Route>
