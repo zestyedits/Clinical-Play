@@ -239,7 +239,7 @@ export default function Dashboard() {
     return "sessions";
   });
   const queryClient = useQueryClient();
-  const { user, isLoading: authLoading, isAuthenticated, emailConfirmed, accessDenied, session, logout } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated, hasSession, emailConfirmed, accessDenied, session, logout } = useAuth();
   const { toast } = useToast();
   const authFetch = createAuthFetch(session?.access_token);
   const dashboardTour = useTour("dashboard");
@@ -278,10 +278,12 @@ export default function Dashboard() {
   const [tipIndex] = useState(() => CLINICAL_TIPS.length > 0 ? Math.floor(Math.random() * CLINICAL_TIPS.length) : 0);
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated && !accessDenied) {
+    // Only redirect if there's genuinely no session (not logged in at all)
+    // Don't redirect if we have a session but the user query failed
+    if (!authLoading && !hasSession) {
       navigate("/login");
     }
-  }, [authLoading, isAuthenticated, accessDenied]);
+  }, [authLoading, hasSession, navigate]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -467,7 +469,7 @@ export default function Dashboard() {
   const pastSessions = sessions.filter(s => s.status !== "active");
   const favoritedTools = ALL_TOOLS.filter(t => favorites.includes(t.id));
 
-  if (authLoading || (!isAuthenticated && !accessDenied)) {
+  if (authLoading || !hasSession) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">

@@ -13,18 +13,26 @@ interface AuthResult {
 async function fetchUser(session: Session | null): Promise<AuthResult> {
   if (!session?.access_token) return { user: null, accessDenied: false, emailConfirmed: false };
 
-  const response = await fetch("/api/auth/user", {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-    },
-  });
+  try {
+    const response = await fetch("/api/auth/user", {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
 
-  if (response.status === 401) return { user: null, accessDenied: false, emailConfirmed: false };
-  if (response.status === 403) return { user: null, accessDenied: true, emailConfirmed: false };
-  if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
-  const data = await response.json();
-  const { emailConfirmed, ...user } = data;
-  return { user, accessDenied: false, emailConfirmed: !!emailConfirmed };
+    if (response.status === 401) return { user: null, accessDenied: false, emailConfirmed: false };
+    if (response.status === 403) return { user: null, accessDenied: true, emailConfirmed: false };
+    if (!response.ok) {
+      console.error("[auth] /api/auth/user returned", response.status);
+      return { user: null, accessDenied: false, emailConfirmed: false };
+    }
+    const data = await response.json();
+    const { emailConfirmed, ...user } = data;
+    return { user, accessDenied: false, emailConfirmed: !!emailConfirmed };
+  } catch (err) {
+    console.error("[auth] fetchUser error:", err);
+    return { user: null, accessDenied: false, emailConfirmed: false };
+  }
 }
 
 // Shared session context — single source of truth for Supabase session
@@ -150,6 +158,7 @@ export function useAuth() {
     user: session ? user : null,
     isLoading: sessionLoading || (!!session && userLoading),
     isAuthenticated: !!session && !!user,
+    hasSession: !!session,
     emailConfirmed,
     accessDenied,
     session,

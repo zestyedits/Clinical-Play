@@ -34,48 +34,14 @@ export default function Login() {
 
     try {
       const supabase = await getSupabase();
-      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
       if (authError) {
         setError(authError.message);
         setLoading(false);
         return;
       }
-
-      // Verify access before navigating
-      const token = data.session?.access_token;
-      if (!token) {
-        setError("Sign in succeeded but no session was created. Please try again.");
-        setLoading(false);
-        return;
-      }
-
-      // Debug: check what the server sees
-      const debugRes = await fetch("/api/auth/debug", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const debugData = await debugRes.json();
-      console.log("[login debug]", debugData);
-
-      if (!debugData.allowed) {
-        setError(`Access denied. Server sees email: "${debugData.email}". Allowed: ${JSON.stringify(debugData.allowedEmails)}. Step: ${debugData.step}`);
-        setLoading(false);
-        await supabase.auth.signOut();
-        return;
-      }
-
-      const res = await fetch("/api/auth/user", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) {
-        const body = await res.text();
-        setError(`Auth check failed (${res.status}): ${body}`);
-        setLoading(false);
-        return;
-      }
-
-      // Force a hard navigation to ensure clean state
-      window.location.href = "/dashboard";
+      // onAuthStateChange in SessionProvider will update the session,
+      // which triggers the useEffect above to navigate to /dashboard
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
