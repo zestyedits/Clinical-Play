@@ -47,6 +47,47 @@ export async function notifyAdminWaitlistSignup(email: string, name?: string | n
   }
 }
 
+export async function sendWaitlistConfirmationEmail(email: string, name?: string | null) {
+  try {
+    const safeEmail = escapeHtml(email);
+    const safeName = name ? escapeHtml(name) : null;
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: "You're on the ClinicalPlay waitlist 🎉",
+      html: `
+        <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 24px; background: #f8f7f4;">
+          <div style="background: #ffffff; border-radius: 16px; padding: 32px; border: 1px solid #e8e5de;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <h1 style="color: #1B2A4A; font-family: 'Lora', Georgia, serif; margin: 0 0 8px; font-size: 24px;">You're in${safeName ? `, ${safeName}` : ""}.</h1>
+              <p style="color: #666; font-size: 14px; margin: 0;">Thanks for joining the ClinicalPlay waitlist.</p>
+            </div>
+
+            <div style="background: #f8f7f4; border-radius: 12px; padding: 18px 20px; margin-bottom: 20px;">
+              <p style="margin: 0 0 6px; color: #777; font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em;">Email</p>
+              <p style="margin: 0; color: #1B2A4A; font-size: 15px; font-weight: 600;">${safeEmail}</p>
+            </div>
+
+            <p style="color: #444; font-size: 14px; line-height: 1.7; margin: 0 0 10px;">
+              You'll be among the first to hear when ClinicalPlay opens for early clinicians, along with a special founding member offer.
+            </p>
+            <p style="color: #777; font-size: 13px; line-height: 1.6; margin: 0 0 18px;">
+              In the meantime, feel free to reply to this email if you'd like to share anything about your practice or what you'd love ClinicalPlay to help with.
+            </p>
+
+            <p style="color: #888; font-size: 12px; margin: 24px 0 0; text-align: center;">
+              Warmly,<br/>
+              The ClinicalPlay team
+            </p>
+          </div>
+        </div>
+      `,
+    });
+  } catch (error) {
+    console.error("Failed to send waitlist confirmation email:", error);
+  }
+}
+
 export async function notifyAdminSupportMessage(userEmail: string, subject: string, body: string) {
   try {
     const safeEmail = escapeHtml(userEmail);

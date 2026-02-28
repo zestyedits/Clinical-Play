@@ -9,7 +9,7 @@ import { supabaseAdmin } from "./supabase";
 import { db } from "./db";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
-import { notifyAdminWaitlistSignup, notifyAdminSupportMessage, sendAnnouncementEmail, sendWelcomeVerificationEmail } from "./email";
+import { notifyAdminWaitlistSignup, notifyAdminSupportMessage, sendAnnouncementEmail, sendWelcomeVerificationEmail, sendWaitlistConfirmationEmail } from "./email";
 
 const ADMIN_EMAIL = "clinicalplayapp@gmail.com";
 
@@ -372,8 +372,12 @@ export async function registerRoutes(
     try {
       const data = insertWaitlistEntrySchema.parse(req.body);
       data.email = data.email.toLowerCase().trim();
+      if (data.name) {
+        data.name = data.name.trim();
+      }
       const entry = await storage.addWaitlistEntry(data);
       notifyAdminWaitlistSignup(data.email, data.name);
+      sendWaitlistConfirmationEmail(data.email, data.name);
       res.json(entry);
     } catch (e: any) {
       if (e.code === "23505") {
