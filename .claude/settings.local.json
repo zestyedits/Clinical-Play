@@ -19,7 +19,10 @@
       "Bash(npm ls:*)",
       "Bash(timeout 5 npm start:*)",
       "Bash(curl:*)",
-      "Bash(psql $DATABASE_URL:*)"
+      "Bash(psql $DATABASE_URL:*)",
+      "Bash(echo SUPABASE_URL=$SUPABASE_URL:*)",
+      "Bash(printenv:*)",
+      "Bash(kill:*)"
     ]
   }
 }
