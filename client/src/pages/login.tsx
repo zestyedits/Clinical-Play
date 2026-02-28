@@ -49,19 +49,27 @@ export default function Login() {
         return;
       }
 
-      const res = await fetch("/api/auth/user", {
+      // Debug: check what the server sees
+      const debugRes = await fetch("/api/auth/debug", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      const debugData = await debugRes.json();
+      console.log("[login debug]", debugData);
 
-      if (res.status === 403) {
-        setError("Access restricted. ClinicalPlay has not launched yet.");
+      if (!debugData.allowed) {
+        setError(`Access denied. Server sees email: "${debugData.email}". Allowed: ${JSON.stringify(debugData.allowedEmails)}. Step: ${debugData.step}`);
         setLoading(false);
         await supabase.auth.signOut();
         return;
       }
 
+      const res = await fetch("/api/auth/user", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
       if (!res.ok) {
-        setError("Unable to verify your account. Please try again.");
+        const body = await res.text();
+        setError(`Auth check failed (${res.status}): ${body}`);
         setLoading(false);
         return;
       }

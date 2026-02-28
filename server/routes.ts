@@ -3,7 +3,7 @@ import { type Server } from "http";
 import { storage } from "./storage";
 import { insertTherapySessionSchema, insertParticipantSchema, insertSandtrayItemSchema, insertToolSuggestionSchema, insertSupportTicketSchema, insertWaitlistEntrySchema, insertMessageSchema } from "@shared/schema";
 import { setupWebSocketServer, broadcastSessionEnded } from "./websocket";
-import { isAuthenticated } from "./auth";
+import { isAuthenticated, ALLOWED_EMAILS } from "./auth";
 import { registerStripeRoutes } from "./stripe";
 import { supabaseAdmin } from "./supabase";
 import { db } from "./db";
@@ -38,6 +38,32 @@ export async function registerRoutes(
       url: process.env.SUPABASE_URL,
       anonKey: process.env.SUPABASE_ANON_KEY,
     });
+  });
+
+  // Temporary debug endpoint — remove after fixing login
+  app.get("/api/auth/debug", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.json({ step: "no_token", message: "No bearer token provided" });
+    }
+    const token = authHeader.split(" ")[1];
+    try {
+      const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+      if (error) return res.json({ step: "token_invalid", error: error.message });
+      if (!user) return res.json({ step: "no_user", message: "getUser returned no user" });
+      const email = (user.email || "").toLowerCase();
+      const allowed = ALLOWED_EMAILS.includes(email);
+      return res.json({
+        step: "resolved",
+        email,
+        allowed,
+        allowedEmails: ALLOWED_EMAILS,
+        userId: user.id,
+        emailConfirmedAt: user.email_confirmed_at,
+      });
+    } catch (err: any) {
+      return res.json({ step: "error", message: err.message });
+    }
   });
 
   app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {

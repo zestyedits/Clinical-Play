@@ -4,7 +4,7 @@ import { db } from "./db";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
 
-const ALLOWED_EMAILS = ["clinicalplayapp@gmail.com"];
+export const ALLOWED_EMAILS = ["clinicalplayapp@gmail.com"];
 
 export interface AuthUser {
   id: string;
