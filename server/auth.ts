@@ -54,40 +54,44 @@ async function upsertUser(supabaseUser: { id: string; email?: string; user_metad
 export const isAuthenticated: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    console.log("[auth] No bearer token provided for", req.path);
     return res.status(401).json({ message: "Unauthorized" });
   }
 
   const token = authHeader.split(" ")[1];
 
+  // Step 1: Validate token with Supabase
+  let user;
   try {
-    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
-    if (error || !user) {
-      console.log("[auth] Token validation failed for", req.path, "error:", error?.message);
+    const { data, error } = await supabaseAdmin.auth.getUser(token);
+    if (error || !data.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-
-    const email = (user.email || "").toLowerCase();
-    if (!ALLOWED_EMAILS.includes(email)) {
-      console.log("[auth] Access denied for email:", email, "on", req.path);
-      return res.status(403).json({ message: "Access restricted. ClinicalPlay has not launched yet." });
-    }
-
-    await upsertUser(user);
-
-    req.authUser = {
-      id: user.id,
-      email,
-      // Treat allowed (admin) emails as always confirmed so they don't get stuck
-      emailConfirmed: ALLOWED_EMAILS.includes(email) || !!user.email_confirmed_at,
-    };
-
-    console.log("[auth] Authenticated:", email, "on", req.path);
-    return next();
-  } catch (err) {
-    console.error("[auth] Unexpected error for", req.path, err);
+    user = data.user;
+  } catch {
     return res.status(401).json({ message: "Unauthorized" });
   }
+
+  // Step 2: Check allowed emails
+  const email = (user.email || "").toLowerCase();
+  if (!ALLOWED_EMAILS.includes(email)) {
+    return res.status(403).json({ message: "Access restricted. ClinicalPlay has not launched yet." });
+  }
+
+  // Step 3: Upsert user in DB (don't let this fail auth)
+  try {
+    await upsertUser(user);
+  } catch (err) {
+    console.error("[auth] upsertUser failed:", err);
+    // Don't block auth if DB upsert fails — the user is still valid
+  }
+
+  req.authUser = {
+    id: user.id,
+    email,
+    emailConfirmed: ALLOWED_EMAILS.includes(email) || !!user.email_confirmed_at,
+  };
+
+  return next();
 };
 
 export async function getAuthUser(req: Request): Promise<AuthUser | null> {
