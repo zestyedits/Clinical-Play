@@ -87,7 +87,7 @@ export default function Login() {
       <div className="flex items-center justify-center min-h-screen px-4 pt-24 pb-12">
         <div className="w-full max-w-md">
           <div className="bg-card border border-border rounded-2xl shadow-lg p-8 md:p-10">
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <img src="/images/logo-icon.png" alt="ClinicalPlay" className="w-18 h-18 mx-auto mb-5 object-contain" />
               <h1 className="text-3xl font-serif text-primary mb-2" data-testid="text-login-title">
                 {forgotMode ? "Reset Password" : "Welcome Back"}
@@ -98,6 +98,25 @@ export default function Login() {
                   : "Sign in to your ClinicalPlay account"}
               </p>
             </div>
+
+            {!forgotMode && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="mb-6 rounded-xl bg-primary/5 border border-primary/15 p-4 text-center"
+                data-testid="text-prelaunch-notice"
+              >
+                <p className="text-sm font-medium text-primary mb-1">We're still getting ready</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  ClinicalPlay is currently in private development. Public access will open soon.
+                  <Link href="/" className="text-primary font-medium ml-1 hover:underline cursor-pointer">
+                    Join the waitlist
+                  </Link>{" "}
+                  to be first in line.
+                </p>
+              </motion.div>
+            )}
 
             {forgotMode ? (
               forgotSent ? (
