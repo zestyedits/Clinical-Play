@@ -26,10 +26,18 @@ export default function Login() {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
+  const ADMIN_EMAIL = "clinicalplayapp@gmail.com";
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
+    if (email.trim().toLowerCase() !== ADMIN_EMAIL) {
+      setError("ClinicalPlay is not yet open to the public. Join the waitlist to be notified when we launch.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const supabase = await getSupabase();
@@ -39,8 +47,6 @@ export default function Login() {
         setLoading(false);
         return;
       }
-      // onAuthStateChange in SessionProvider will update the session,
-      // which triggers the useEffect above to navigate to /dashboard
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
