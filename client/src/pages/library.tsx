@@ -61,6 +61,129 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-semibold border", cls)}>{label}</span>;
 }
 
+// ── Library Section (tools vs games) ──
+function LibrarySection({
+  title, subtitle, icon, items, viewMode, favorites, toggleFavorite, setDetailTool, className = "",
+}: {
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  items: ToolDefinition[];
+  viewMode: string;
+  favorites: Set<string>;
+  toggleFavorite: (id: string) => void;
+  setDetailTool: (t: ToolDefinition) => void;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <div className="flex items-center gap-2.5 mb-1">
+        <div className="text-primary/60">{icon}</div>
+        <h2 className="font-serif text-xl text-foreground">{title}</h2>
+        <span className="text-xs text-muted-foreground/50 bg-secondary/50 px-2 py-0.5 rounded-full">{items.length}</span>
+      </div>
+      <p className="text-xs text-muted-foreground mb-4 ml-[30px]">{subtitle}</p>
+
+      {viewMode === "grid" ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {items.map((tool) => (
+            <div key={tool.id}>
+              <GlassCard className="p-5 h-full flex flex-col">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="text-3xl">{tool.icon}</div>
+                  <div className="flex items-center gap-1.5">
+                    {tool.category === "game" && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold">Game</span>
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleFavorite(tool.id); }}
+                      className="p-1.5 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
+                    >
+                      <Star size={16} className={favorites.has(tool.id) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"} />
+                    </button>
+                  </div>
+                </div>
+                <h3 className="font-serif text-base text-foreground mb-1">{tool.name}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-3 flex-1">{tool.shortDescription}</p>
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {tool.modalities.slice(0, 2).map(m => (
+                    <span key={m} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/5 text-primary/70 font-medium">{m}</span>
+                  ))}
+                  {tool.modalities.length > 2 && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/5 text-primary/50">+{tool.modalities.length - 2}</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-3">
+                  <span className="flex items-center gap-1"><Clock size={11} />{tool.duration}m</span>
+                  <IntensityBadge level={tool.intensity} />
+                  <StatusBadge status={tool.status} />
+                </div>
+                <div className="flex gap-2 pt-2 border-t border-border/20">
+                  <button
+                    onClick={() => setDetailTool(tool)}
+                    className="flex-1 h-9 rounded-xl bg-secondary/50 text-foreground text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer hover:bg-secondary transition-colors"
+                  >
+                    <Eye size={13} /> Details
+                  </button>
+                  {tool.status === "active" ? (
+                    <Link href="/playroom/demo" className="flex-1">
+                      <button className="w-full h-9 rounded-xl bg-primary text-primary-foreground text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer shadow-sm hover:opacity-90 transition-opacity">
+                        <Play size={13} /> Launch
+                      </button>
+                    </Link>
+                  ) : (
+                    <button disabled className="flex-1 h-9 rounded-xl bg-secondary/30 text-muted-foreground/40 text-xs font-medium flex items-center justify-center gap-1.5 cursor-default">
+                      {tool.status === "development" ? "In Dev" : "Soon"}
+                    </button>
+                  )}
+                </div>
+              </GlassCard>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {items.map((tool) => (
+            <div key={tool.id}>
+              <GlassCard className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="text-2xl shrink-0">{tool.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-serif text-sm text-foreground">{tool.name}</h3>
+                      <IntensityBadge level={tool.intensity} />
+                      <StatusBadge status={tool.status} />
+                      {tool.category === "game" && <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold">Game</span>}
+                      {tool.tier === "pro" && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold">PRO</span>}
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">{tool.shortDescription}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[11px] text-muted-foreground hidden sm:block">{tool.duration}m</span>
+                    <button onClick={() => toggleFavorite(tool.id)} className="p-1.5 cursor-pointer">
+                      <Star size={14} className={favorites.has(tool.id) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"} />
+                    </button>
+                    <button onClick={() => setDetailTool(tool)} className="h-8 px-3 rounded-lg bg-secondary/50 text-xs font-medium text-foreground cursor-pointer hover:bg-secondary transition-colors">
+                      Details
+                    </button>
+                    {tool.status === "active" && (
+                      <Link href={`/playroom/demo?tool=${tool.id}`}>
+                        <button className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium cursor-pointer shadow-sm hover:opacity-90">
+                          Launch
+                        </button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </GlassCard>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Tool Detail Drawer ──
 function ToolDetailDrawer({
   tool, onClose, isFavorite, onToggleFavorite, collections, onAddToCollection,
@@ -370,9 +493,9 @@ export default function Library() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <h1 className="font-serif text-3xl md:text-4xl text-foreground mb-1">Tool Library</h1>
+            <h1 className="font-serif text-3xl md:text-4xl text-foreground mb-1">Library</h1>
             <p className="text-muted-foreground text-sm">
-              {TOOLS_LIBRARY.length} therapeutic tools — {TOOLS_LIBRARY.filter(t => t.status === "active").length} active, more in development
+              {TOOLS_LIBRARY.length} therapeutic tools & games — {TOOLS_LIBRARY.filter(t => t.status === "active").length} active, more in development
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -602,11 +725,10 @@ export default function Library() {
 
         {/* Results count */}
         <p className="text-xs text-muted-foreground mb-4">
-          Showing {filteredTools.length} of {TOOLS_LIBRARY.length} tools
+          Showing {filteredTools.length} of {TOOLS_LIBRARY.length} items
           {activeCollection && <span className="text-accent"> in collection</span>}
         </p>
 
-        {/* Tool Grid/List */}
         {filteredTools.length === 0 ? (
           <div className="text-center py-20">
             <Search size={40} className="mx-auto mb-4 text-muted-foreground/20" />
@@ -616,105 +738,42 @@ export default function Library() {
               <button onClick={clearFilters} className="mt-3 text-sm text-accent cursor-pointer hover:underline">Clear all filters</button>
             )}
           </div>
-        ) : viewMode === "grid" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredTools.map((tool) => (
-              <div key={tool.id}>
-                <GlassCard className="p-5 h-full flex flex-col">
-                  {/* Top row */}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="text-3xl">{tool.icon}</div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleFavorite(tool.id); }}
-                      className="p-1.5 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
-                    >
-                      <Star size={16} className={favorites.has(tool.id) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"} />
-                    </button>
-                  </div>
-
-                  {/* Name & desc */}
-                  <h3 className="font-serif text-base text-foreground mb-1">{tool.name}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed mb-3 flex-1">{tool.shortDescription}</p>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {tool.modalities.slice(0, 2).map(m => (
-                      <span key={m} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/5 text-primary/70 font-medium">{m}</span>
-                    ))}
-                    {tool.modalities.length > 2 && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/5 text-primary/50">+{tool.modalities.length - 2}</span>
-                    )}
-                  </div>
-
-                  {/* Meta row */}
-                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-3">
-                    <span className="flex items-center gap-1"><Clock size={11} />{tool.duration}m</span>
-                    <IntensityBadge level={tool.intensity} />
-                    <StatusBadge status={tool.status} />
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-2 border-t border-border/20">
-                    <button
-                      onClick={() => setDetailTool(tool)}
-                      className="flex-1 h-9 rounded-xl bg-secondary/50 text-foreground text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer hover:bg-secondary transition-colors"
-                    >
-                      <Eye size={13} /> Details
-                    </button>
-                    {tool.status === "active" ? (
-                      <Link href="/playroom/demo" className="flex-1">
-                        <button className="w-full h-9 rounded-xl bg-primary text-primary-foreground text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer shadow-sm hover:opacity-90 transition-opacity">
-                          <Play size={13} /> Launch
-                        </button>
-                      </Link>
-                    ) : (
-                      <button disabled className="flex-1 h-9 rounded-xl bg-secondary/30 text-muted-foreground/40 text-xs font-medium flex items-center justify-center gap-1.5 cursor-default">
-                        {tool.status === "development" ? "In Dev" : "Soon"}
-                      </button>
-                    )}
-                  </div>
-                </GlassCard>
-              </div>
-            ))}
-          </div>
         ) : (
-          /* List view */
-          <div className="space-y-2">
-            {filteredTools.map((tool) => (
-              <div key={tool.id}>
-                <GlassCard className="p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="text-2xl shrink-0">{tool.icon}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-serif text-sm text-foreground">{tool.name}</h3>
-                        <IntensityBadge level={tool.intensity} />
-                        <StatusBadge status={tool.status} />
-                        {tool.tier === "pro" && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold">PRO</span>}
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">{tool.shortDescription}</p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[11px] text-muted-foreground hidden sm:block">{tool.duration}m</span>
-                      <button onClick={() => toggleFavorite(tool.id)} className="p-1.5 cursor-pointer">
-                        <Star size={14} className={favorites.has(tool.id) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"} />
-                      </button>
-                      <button onClick={() => setDetailTool(tool)} className="h-8 px-3 rounded-lg bg-secondary/50 text-xs font-medium text-foreground cursor-pointer hover:bg-secondary transition-colors">
-                        Details
-                      </button>
-                      {tool.status === "active" && (
-                        <Link href={`/playroom/demo?tool=${tool.id}`}>
-                          <button className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium cursor-pointer shadow-sm hover:opacity-90">
-                            Launch
-                          </button>
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                </GlassCard>
-              </div>
-            ))}
-          </div>
+          <>
+            {(() => {
+              const tools = filteredTools.filter(t => t.category === "tool");
+              const games = filteredTools.filter(t => t.category === "game");
+              return (
+                <>
+                  {tools.length > 0 && (
+                    <LibrarySection
+                      title="Tools"
+                      subtitle="Clinical instruments for structured therapeutic work"
+                      icon={<Zap size={16} />}
+                      items={tools}
+                      viewMode={viewMode}
+                      favorites={favorites}
+                      toggleFavorite={toggleFavorite}
+                      setDetailTool={setDetailTool}
+                    />
+                  )}
+                  {games.length > 0 && (
+                    <LibrarySection
+                      title="Games"
+                      subtitle="Interactive therapeutic activities and skill-building exercises"
+                      icon={<Sparkles size={16} />}
+                      items={games}
+                      viewMode={viewMode}
+                      favorites={favorites}
+                      toggleFavorite={toggleFavorite}
+                      setDetailTool={setDetailTool}
+                      className={tools.length > 0 ? "mt-10" : ""}
+                    />
+                  )}
+                </>
+              );
+            })()}
+          </>
         )}
       </div>
 

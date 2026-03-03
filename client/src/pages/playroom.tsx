@@ -8,9 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ToolSelector } from "@/components/tools/tool-selector";
 import { ClinicalInsights } from "@/components/tools/clinical-insights";
-import { VolumeMixer } from "@/components/tools/volume-mixer";
-import { FeelingWheel } from "@/components/tools/feeling-wheel";
-import { ThoughtBridge } from "@/components/tools/thought-bridge";
+import { DBTHouseBuilder } from "@/components/tools/dbt-house";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -253,9 +251,7 @@ export default function Playroom() {
 
   const toolDisplayName = (tool: string) => {
     const names: Record<string, string> = {
-      "volume-mixer": "Volume Mixer",
-      "feelings": "Feeling Wheel",
-      "thought-bridge": "Thought Bridge",
+      "dbt-house": "The DBT House",
     };
     return names[tool] || tool;
   };
@@ -605,21 +601,9 @@ export default function Playroom() {
         {/* Tool Area */}
         <div className="flex-1 relative overflow-hidden" ref={toolAreaRef}>
           <AnimatePresence mode="wait">
-            {activeTool === "volume-mixer" && (
-              <motion.div key="volume-mixer" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
-                <VolumeMixer />
-              </motion.div>
-            )}
-
-            {activeTool === "feelings" && (
-              <motion.div key="feelings" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
-                <FeelingWheel />
-              </motion.div>
-            )}
-
-            {activeTool === "thought-bridge" && (
-              <motion.div key="thought-bridge" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
-                <ThoughtBridge />
+            {activeTool === "dbt-house" && (
+              <motion.div key="dbt-house" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <DBTHouseBuilder />
               </motion.div>
             )}
           </AnimatePresence>

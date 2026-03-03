@@ -11,6 +11,7 @@ export interface ToolDefinition {
   shortDescription: string;
   longDescription: string;
   icon: string;
+  category: "tool" | "game";
   modalities: string[];
   ageRanges: string[];
   intensity: "gentle" | "moderate" | "deep";
@@ -54,80 +55,30 @@ export const SORT_OPTIONS = [
 
 export const TOOLS_LIBRARY: ToolDefinition[] = [
   {
-    id: "volume-mixer",
-    name: "Volume Mixer",
-    shortDescription: "Externalize internal parts as tactile audio faders",
-    longDescription: "A high-end mixing-board metaphor where clients create channels for internal 'parts' or 'voices' and adjust their volume using weighted, physics-based faders. Supports mute, solo, and boost controls with optional organic audio feedback.",
-    icon: "\u{1F39A}\uFE0F",
-    modalities: ["IFS", "ACT", "Play Therapy", "Somatic"],
-    ageRanges: ["Teens (14-18)", "Young Adults (18-25)", "Adults (25-64)"],
-    intensity: "moderate",
-    duration: "15-30",
+    id: "dbt-house",
+    name: "The DBT House",
+    shortDescription: "Build a house layer by layer while exploring core DBT skills",
+    longDescription: "An interactive, gamified DBT skill-building activity where clients construct a house from the ground up. Each of the four layers represents a core DBT skill area: Distress Tolerance (Foundation), Mindfulness & Emotion Regulation (Living Room), Interpersonal Effectiveness (Study), and Wise Mind (Zen Space). Clients place layers sequentially, then tap items within each floor to unlock therapeutic discussion prompts. Includes a built-in Feelings Wheel reference and progress tracking.",
+    icon: "\u{1F3E1}",
+    category: "game",
+    modalities: ["DBT", "Play Therapy", "Psychoeducation", "Mindfulness"],
+    ageRanges: ["Children (5-11)", "Tweens (11-14)", "Teens (14-18)", "Young Adults (18-25)", "Adults (25-64)"],
+    intensity: "gentle",
+    duration: "20-40",
     interactionType: "expressive",
     status: "active",
     tier: "free",
     bestUsedFor: [
-      "Externalizing internal parts or voices (IFS)",
-      "Mapping the relative 'loudness' of competing emotions",
-      "Helping clients identify which parts dominate their experience",
-      "Exploring the relationship between internal parts through volume dynamics",
+      "Introducing the four DBT skill areas in an engaging, non-threatening way",
+      "Helping clients visualize DBT as a structure they build from the ground up",
+      "Exploring crisis survival and distress tolerance strategies",
+      "Practicing interpersonal effectiveness scripts like DEAR MAN and FAST",
+      "Guiding clients toward Wise Mind through the metaphor of reaching the top floor",
     ],
-    adaptations: "For teens, use casual language ('What's loud right now?'). For adults, frame as 'internal landscape mapping.' Use the Boost button for grounding resources like the Wise Self.",
-    pitfalls: "Resist interpreting the mix for the client. If all faders are at 100%, that's data about overwhelm \u2014 don't rush to 'fix' it. The mute button is 'acknowledge,' not 'suppress.'",
-    safetyNotes: "The global reset provides immediate de-escalation. If a client becomes flooded, use the reset to return to neutral. Audio can be disabled for sensory-sensitive clients.",
-    producesArtifact: true,
-    lastUsed: null,
-    timesUsed: 0,
-  },
-  {
-    id: "feelings",
-    name: "Feeling Wheel",
-    shortDescription: "Three-tier emotional identification through guided card exploration",
-    longDescription: "A full-screen card drill-down tool that guides clients from 8 broad emotional categories through secondary and tertiary emotions. Each tier presents clarifying questions to help clients name their experience with precision. Selections sync in real-time and build an emotional map across the session.",
-    icon: "\u{1F3AF}",
-    modalities: ["CBT", "DBT", "Psychoeducation", "Play Therapy", "Mindfulness"],
-    ageRanges: ["Tweens (11-14)", "Teens (14-18)", "Young Adults (18-25)", "Adults (25-64)"],
-    intensity: "gentle",
-    duration: "5-15",
-    interactionType: "reflective",
-    status: "active",
-    tier: "free",
-    bestUsedFor: [
-      "Building emotional vocabulary in alexithymic clients",
-      "Check-ins at session start",
-      "Processing blended or confusing emotional states",
-      "Teaching emotional granularity as a DBT skill",
-    ],
-    adaptations: "For children, pair with body sensations ('Where do you feel that in your body?'). For adults who intellectualize, ask them to choose quickly without overthinking. For couples, have each partner select independently then compare.",
-    pitfalls: "Don't force tertiary specificity \u2014 some clients can only identify primary emotions, and that's valid progress. Avoid using this as a quiz. The wheel works best as a conversation starter, not an endpoint.",
-    safetyNotes: "Selection history is visible to all participants. Clinician can clear selections at any time. No data is stored beyond the session unless exported.",
-    producesArtifact: true,
-    lastUsed: null,
-    timesUsed: 0,
-  },
-  {
-    id: "thought-bridge",
-    name: "Thought Bridge",
-    shortDescription: "CBT thought record — examine evidence and build balanced perspectives",
-    longDescription: "A guided 6-step CBT Thought Record that walks clients through capturing a situation, identifying the 'hot thought,' rating emotions and belief strength, spotting cognitive distortions (thinking traps), weighing evidence for and against, and building a balanced alternative thought. Includes a pre-filled example walkthrough for first-timers and a satisfying before/after belief comparison at the end.",
-    icon: "🧠",
-    modalities: ["CBT", "ACT", "Solution-Focused", "Psychoeducation"],
-    ageRanges: ["Teens (14-18)", "Young Adults (18-25)", "Adults (25-64)", "Older Adults (65+)"],
-    intensity: "moderate",
-    duration: "15-30",
-    interactionType: "cognitive",
-    status: "active",
-    tier: "free",
-    bestUsedFor: [
-      "Challenging automatic negative thoughts in real-time",
-      "Teaching cognitive restructuring as a portable skill",
-      "Identifying recurring cognitive distortion patterns",
-      "Building metacognitive awareness ('thinking about thinking')",
-    ],
-    adaptations: "For teens, use the example walkthrough first and keep language casual. For adults, frame as 'putting the thought on trial.' For clients who intellectualize, focus on the emotion ratings rather than the evidence columns.",
-    pitfalls: "Don't rush to the balanced thought — the evidence-gathering step is where the real work happens. Avoid turning this into a 'positive thinking' exercise; balanced doesn't mean optimistic, it means accurate. If a client's belief doesn't drop, that's useful clinical data.",
-    safetyNotes: "The tool is clinician-visible only in terms of clinical prompts. Thought records involving trauma or suicidal ideation should be handled with standard safety protocols. The reset button clears all data immediately.",
-    producesArtifact: true,
+    adaptations: "For children, focus on the house-building metaphor and use simpler language for prompts. For teens, lean into the game-like progression. For adults, frame as 'mapping your skill foundation.' The Feelings Wheel sidebar provides additional emotional vocabulary support at any point.",
+    pitfalls: "Don't rush through layers \u2014 each floor has 3 items designed for deep discussion. Resist the urge to complete the whole house in one session; it's okay to stop at any layer. The game structure can feel prescriptive, so leave room for the client's own associations with each item.",
+    safetyNotes: "The Foundation layer deals with crisis survival and distress tolerance. Be prepared for disclosures about self-harm or suicidal ideation when exploring these items. The Safety Box prompt references TIPP skills which involve physical interventions (temperature, exercise) \u2014 assess appropriateness. All progress is session-local and not persisted.",
+    producesArtifact: false,
     lastUsed: null,
     timesUsed: 0,
   },
@@ -145,4 +96,11 @@ export function getActiveTools(): ToolDefinition[] {
  */
 export function getToolsByTier(tier: "free" | "pro"): ToolDefinition[] {
   return TOOLS_LIBRARY.filter(t => t.tier === tier);
+}
+
+/**
+ * Helper: get items by category
+ */
+export function getToolsByCategory(category: "tool" | "game"): ToolDefinition[] {
+  return TOOLS_LIBRARY.filter(t => t.category === category);
 }

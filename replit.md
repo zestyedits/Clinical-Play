@@ -38,10 +38,12 @@ Preferred communication style: Simple, everyday language.
 - **Pre-launch & Waitlist**: Restricted access, waitlist signup, and admin panel for user/waitlist management.
 - **Session Lifecycle**: End session functionality with confirmation, session summary, and PHI safety warnings for new session names.
 - **Snapshot Watermarking**: Exported session PNGs include metadata footer.
-- **Volume Mixer Audio**: Uses an MP3 recording of crowd ambience (`client/public/crowd-ambience.mp3`) loaded as an AudioBuffer. Each texture type (chatter, buzz, throb, shout, hum) applies different playback rates and filters to the same recording. Audio is managed via Web Audio API with per-channel gain/pan nodes connected through a master compressor.
 - **Demo Mode**: Local-only sandbox sessions for clinicians to explore tools without data persistence. End session works without API calls.
 - **Guided Tours**: Interactive, spotlight-based onboarding tours for new users.
-- **Thought Bridge**: CBT Thought Record tool — 6-step guided flow (Situation → Hot Thought → Emotions & Belief Rating → Thinking Traps → Evidence For/Against → Balanced Thought). Includes pre-filled example walkthrough for first-timers, before/after belief comparison, 12 cognitive distortion cards with descriptions and examples, and emotion intensity re-rating on the final step. Component: `client/src/components/tools/thought-bridge.tsx`.
+- **DBT House** (Game): Interactive skill-building game where clients construct a house layer by layer. 4 DBT layers (Foundation/Distress Tolerance, Living Room/Mindfulness, Study/Interpersonal Effectiveness, Zen Space/Wise Mind), 3 items per layer with therapeutic discussion prompts, built-in Feelings Wheel sidebar, progress tracking. Components: `client/src/components/tools/dbt-house/`. Audio: `client/public/sounds/dbt-success.mp3`, `client/public/sounds/dbt-hit.mp3`. Images: 13 PNGs in `client/public/images/` (safety-box, grounding-mat, crisis-toolkit, meditation-cushion, stress-ball, dbt-feelings-wheel, dbt-feelings-wheel-full, gratitude-board, mirror, dear-man-desk, boundary-blocks, wise-mind, peace-plant). Uses Zustand store at `client/src/lib/stores/useAudio.tsx`.
+- **Library Organization**: Tools and Games are separate categories. `ToolDefinition` has a `category: "tool" | "game"` field. Library page shows Tools and Games in distinct sections. Tool selector groups items by category with section headers. Future games should use `category: "game"`.
+- **Removed Tools** (component files kept on disk for future re-addition): Volume Mixer (`client/src/components/tools/volume-mixer.tsx`), Feeling Wheel (`client/src/components/tools/feeling-wheel.tsx`), Thought Bridge (`client/src/components/tools/thought-bridge.tsx`). These are unregistered from all integration points but the files remain.
+- **activeTool default**: `"dbt-house"` in schema.ts and websocket.ts
 
 ### Data Storage
 - **Database**: PostgreSQL

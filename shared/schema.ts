@@ -14,7 +14,7 @@ export const therapySessions = pgTable("therapy_sessions", {
   status: text("status").notNull().default("active"),
   isCanvasLocked: boolean("is_canvas_locked").notNull().default(false),
   isAnonymous: boolean("is_anonymous").notNull().default(false),
-  activeTool: text("active_tool").notNull().default("volume-mixer"),
+  activeTool: text("active_tool").notNull().default("dbt-house"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   endedAt: timestamp("ended_at"),
 });

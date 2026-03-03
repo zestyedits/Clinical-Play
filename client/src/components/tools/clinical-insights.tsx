@@ -18,43 +18,17 @@ const MODALITY_COLORS: Record<string, string> = {
 };
 
 const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; modality: string }[] }> = {
-  "volume-mixer": {
-    title: "Volume Mixer Prompts",
+  "dbt-house": {
+    title: "DBT House Prompts",
     prompts: [
-      { text: "Which part is the loudest right now? What is it trying to protect?", modality: "IFS" },
-      { text: "If you could turn one fader all the way down, which would it be?", modality: "IFS" },
-      { text: "What happens in your body when that part gets louder?", modality: "Somatic" },
-      { text: "Is there a part that's been muted for a long time? What would it say if it could speak?", modality: "IFS" },
-      { text: "Notice the mix as a whole — does it feel balanced, chaotic, or numb?", modality: "Mindfulness" },
-      { text: "What would this mix sound like on your best day vs. your hardest day?", modality: "Solution-Focused" },
-      { text: "Which part do you wish had more volume? What stops it?", modality: "ACT" },
-      { text: "If these parts could talk to each other, what would the loudest one say to the quietest?", modality: "Gestalt" },
-    ],
-  },
-  feelings: {
-    title: "Feeling Wheel Prompts",
-    prompts: [
-      { text: "What surprised you about the emotion you landed on?", modality: "Mindfulness" },
-      { text: "When did you first start noticing this feeling today?", modality: "CBT" },
-      { text: "Where in your body do you experience this emotion?", modality: "Somatic" },
-      { text: "On a scale of 1-10, how intense is this feeling right now?", modality: "Solution-Focused" },
-      { text: "Is this a familiar feeling, or is it new?", modality: "Psychodynamic" },
-      { text: "What would you need in order to feel 1 point better?", modality: "Solution-Focused" },
-      { text: "If this emotion had a shape, what would it look like?", modality: "Play Therapy" },
-      { text: "What triggered this emotion? Can you trace it back?", modality: "CBT" },
-    ],
-  },
-  "thought-bridge": {
-    title: "Thought Bridge Prompts",
-    prompts: [
-      { text: "What evidence is strongest against the automatic thought? Can they expand on it?", modality: "CBT" },
-      { text: "Which cognitive distortion pattern shows up most often for this client?", modality: "CBT" },
-      { text: "Where do they feel the hot thought in their body? Any tension, tightness, or heat?", modality: "Somatic" },
-      { text: "What would they tell a close friend who had this same thought?", modality: "CBT" },
-      { text: "Is this thought protecting them from something? What's the function?", modality: "ACT" },
-      { text: "How old does this thought feel? Does it remind them of an earlier experience?", modality: "Psychodynamic" },
-      { text: "Can they hold this thought lightly — like a leaf on a stream — without fusing with it?", modality: "ACT" },
-      { text: "What would 'good enough' look like here, instead of perfect?", modality: "Solution-Focused" },
+      { text: "Which layer felt most familiar? Which felt most challenging to place?", modality: "DBT" },
+      { text: "When the client placed the Foundation, what came up about their crisis survival strategies?", modality: "DBT" },
+      { text: "Did any item prompt a strong emotional response? Explore what was activated.", modality: "Somatic" },
+      { text: "How does the client relate to the idea of building skills 'from the ground up'?", modality: "Narrative" },
+      { text: "Which DBT skill area does the client seem most confident in? Which needs the most work?", modality: "DBT" },
+      { text: "Did the Wise Mind garden resonate? What does their wise mind sound like?", modality: "Mindfulness" },
+      { text: "How did they respond to the DEAR MAN desk? Can they identify a real-life situation to practice?", modality: "DBT" },
+      { text: "Notice the order they explored items — what does that sequence tell you about their priorities?", modality: "Psychodynamic" },
     ],
   },
 };
@@ -67,7 +41,7 @@ interface ClinicalInsightsProps {
 }
 
 export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsightsProps) {
-  const toolData = TOOL_PROMPTS[activeTool] || TOOL_PROMPTS["volume-mixer"];
+  const toolData = TOOL_PROMPTS[activeTool] || TOOL_PROMPTS["dbt-house"];
 
   return (
     <>

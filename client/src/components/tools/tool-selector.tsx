@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Wind, Target, Brain, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
+import { X, Home, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 
@@ -12,12 +12,11 @@ interface Tool {
   status: "active" | "development" | "planned";
   accentColor: string;
   iconClass: string;
+  category?: "tool" | "game";
 }
 
 const TOOLS: Tool[] = [
-  { id: "volume-mixer", label: "Volume Mixer", desc: "Externalize internal parts as tactile audio faders", icon: Wind, status: "active", accentColor: "#d4a017", iconClass: "icon-mixer" },
-  { id: "feelings", label: "Feeling Wheel", desc: "Three-tier emotional identification through guided card exploration", icon: Target, status: "active", accentColor: "#8b5cf6", iconClass: "icon-feeling" },
-  { id: "thought-bridge", label: "Thought Bridge", desc: "CBT thought record — examine evidence and build balanced perspectives", icon: Brain, status: "active", accentColor: "#0891b2", iconClass: "icon-thought" },
+  { id: "dbt-house", label: "The DBT House", desc: "Build a house layer by layer while exploring core DBT skills", icon: Home, status: "active", accentColor: "#6b8b6b", iconClass: "icon-dbt-house", category: "game" },
 ];
 
 interface ToolSelectorProps {
@@ -97,7 +96,7 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
           >
             <div className="flex items-center justify-between p-6 pb-2 shrink-0 relative z-10">
               <div>
-                <h2 className="font-serif text-2xl text-primary">Clinical Tools</h2>
+                <h2 className="font-serif text-2xl text-primary">Tools & Games</h2>
                 <p className="text-sm text-muted-foreground mt-1">Your therapeutic toolkit is growing</p>
               </div>
               <button
@@ -118,10 +117,16 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
                     exit={{ opacity: 0, x: -20 }}
                     className="space-y-2"
                   >
-                    {TOOLS.map((tool, i) => {
-                      const isAvailable = tool.status === "active";
-                      const badge = statusLabel(tool.status);
-                      const isActive = activeTool === tool.id;
+                    {[
+                      { label: "Tools", items: TOOLS.filter(t => t.category === "tool") },
+                      { label: "Games", items: TOOLS.filter(t => t.category === "game") },
+                    ].map((group) => group.items.length > 0 && (
+                      <div key={group.label}>
+                        <p className="text-[11px] font-semibold text-muted-foreground/50 uppercase tracking-wider px-1 pt-2 pb-1">{group.label}</p>
+                        {group.items.map((tool, i) => {
+                          const isAvailable = tool.status === "active";
+                          const badge = statusLabel(tool.status);
+                          const isActive = activeTool === tool.id;
 
                       return (
                         <motion.button
@@ -187,6 +192,8 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
                         </motion.button>
                       );
                     })}
+                      </div>
+                    ))}
                   </motion.div>
                 ) : (
                   <motion.div
