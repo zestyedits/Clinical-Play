@@ -1,6 +1,7 @@
 import { useReducer } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAudio } from "../../../lib/stores/useAudio";
+import { WelcomeScreen } from "./WelcomeScreen";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -154,17 +155,15 @@ export function CBTThoughtCourt() {
         style={{
           width: "100%",
           height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background:
-            "linear-gradient(170deg, #1a1520 0%, #2a2035 30%, #1e1a2e 60%, #15112a 100%)",
-          fontFamily: "Inter, sans-serif",
-          borderRadius: 12,
           position: "relative",
         }}
       >
-        <div>Welcome Screen</div>
+        <WelcomeScreen
+          onStart={() => dispatch({ type: "START_TRIAL" })}
+          ageMode={state.ageMode}
+          onSetAgeMode={(mode) => dispatch({ type: "SET_AGE_MODE", payload: mode })}
+          onOpenGuide={() => dispatch({ type: "TOGGLE_GUIDE" })}
+        />
       </div>
     );
   }
