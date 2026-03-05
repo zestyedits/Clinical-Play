@@ -1,5 +1,6 @@
+import { useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lightbulb, MessageCircle, BookOpen, Sparkles, X } from "lucide-react";
+import { Lightbulb, MessageCircle, BookOpen, Sparkles, X, GripHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MODALITY_COLORS: Record<string, string> = {
@@ -55,14 +56,26 @@ interface ClinicalInsightsProps {
 
 export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsightsProps) {
   const toolData = TOOL_PROMPTS[activeTool] || TOOL_PROMPTS["dbt-house"];
+  const constraintsRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
-      {/* Toggle button */}
+      {/* Drag constraints container (covers the playroom area) */}
+      <div
+        ref={constraintsRef}
+        className="absolute inset-0 z-30 pointer-events-none"
+        style={{ overflow: "hidden" }}
+      />
+
+      {/* Draggable toggle button */}
       <motion.button
+        drag
+        dragConstraints={constraintsRef}
+        dragMomentum={false}
+        dragElastic={0.1}
         onClick={onToggle}
         className={cn(
-          "absolute top-20 md:top-4 right-4 z-30 min-h-[44px] px-4 py-2.5 rounded-2xl shadow-lg transition-all cursor-pointer flex items-center gap-2.5",
+          "absolute top-20 md:top-4 right-4 z-30 min-h-[44px] px-4 py-2.5 rounded-2xl shadow-lg cursor-grab active:cursor-grabbing flex items-center gap-2 pointer-events-auto select-none touch-none",
           isOpen
             ? "bg-primary text-primary-foreground"
             : "bg-card text-primary hover:bg-card border border-primary/20"
@@ -70,8 +83,9 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsig
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
         data-testid="button-toggle-insights"
-        title="Therapy Prompts — Private clinical prompts to guide your session"
+        title="Therapy Prompts — Drag to reposition, click to open"
       >
+        <GripHorizontal size={14} className={cn("opacity-40 shrink-0", isOpen ? "text-primary-foreground" : "text-muted-foreground")} />
         <Lightbulb size={18} className={cn(isOpen ? "text-primary-foreground" : "text-accent")} />
         <span className="text-xs font-semibold tracking-wide whitespace-nowrap">
           {isOpen ? "Close Prompts" : "Therapy Prompts"}
