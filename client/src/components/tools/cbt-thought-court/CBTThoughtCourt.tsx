@@ -345,7 +345,7 @@ export function CBTThoughtCourt() {
             {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
           </button>
         </div>
-        <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
+        <div style={{ flex: 1, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
           <CaseFileSummary state={state} onNewTrial={() => dispatch({ type: "RESET_TRIAL" })} />
         </div>
       </div>
@@ -393,21 +393,44 @@ export function CBTThoughtCourt() {
             </div>
           </div>
         </div>
-        <button
-          onClick={toggleMute}
-          data-testid="button-cbt-mute"
-          style={{
-            background: "rgba(232, 224, 240, 0.1)",
-            border: "1px solid rgba(120, 100, 180, 0.3)",
-            borderRadius: 8,
-            padding: "5px 10px",
-            color: "#e8e0f0",
-            fontSize: 16,
-            cursor: "pointer",
-          }}
-        >
-          {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <button
+            onClick={() => dispatch({ type: "TOGGLE_GUIDE" })}
+            data-testid="button-distortions-guide"
+            style={{
+              background: "linear-gradient(135deg, #6b3fa0, #4a2d7a)",
+              color: "#e8e0f0",
+              border: "1px solid rgba(160, 130, 220, 0.4)",
+              borderRadius: 8,
+              padding: "5px 10px",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span style={{ fontSize: 14 }}>{"\uD83D\uDCD6"}</span>
+            <span className="distortions-label" style={{ display: "inline" }}>Guide</span>
+          </button>
+          <button
+            onClick={toggleMute}
+            data-testid="button-cbt-mute"
+            style={{
+              background: "rgba(232, 224, 240, 0.1)",
+              border: "1px solid rgba(120, 100, 180, 0.3)",
+              borderRadius: 8,
+              padding: "5px 10px",
+              color: "#e8e0f0",
+              fontSize: 16,
+              cursor: "pointer",
+            }}
+          >
+            {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
+          </button>
+        </div>
       </div>
 
       {/* Step content area */}
@@ -437,33 +460,6 @@ export function CBTThoughtCourt() {
           </motion.div>
         </AnimatePresence>
       </div>
-
-      {/* Floating Distortions Guide button */}
-      <button
-        onClick={() => dispatch({ type: "TOGGLE_GUIDE" })}
-        data-testid="button-distortions-guide"
-        style={{
-          position: "absolute",
-          bottom: 20,
-          right: 20,
-          background: "linear-gradient(135deg, #6b3fa0, #4a2d7a)",
-          color: "#e8e0f0",
-          border: "1px solid rgba(160, 130, 220, 0.4)",
-          borderRadius: 14,
-          padding: "10px 16px",
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: "pointer",
-          boxShadow: "0 4px 20px rgba(80, 50, 140, 0.4), 0 0 0 1px rgba(255,255,255,0.05) inset",
-          zIndex: 20,
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-        }}
-      >
-        <span style={{ fontSize: 15 }}>{"\uD83D\uDCD6"}</span>
-        Distortions Guide
-      </button>
 
       {/* Distortions Guide modal */}
       <DistortionsGuide

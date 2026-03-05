@@ -83,7 +83,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
       transition={{ duration: 0.5 }}
       style={{
         width: "100%",
-        maxWidth: 640,
+        maxWidth: 720,
         margin: "0 auto",
         display: "flex",
         flexDirection: "column",
@@ -104,7 +104,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
         <div
           style={{
             background: "linear-gradient(135deg, #1e1a2e, #2a2438)",
-            padding: "28px 28px 20px",
+            padding: "clamp(16px, 3vw, 28px) clamp(16px, 3vw, 28px) 20px",
             borderBottom: "2px solid rgba(212, 168, 83, 0.4)",
             textAlign: "center",
           }}
@@ -149,7 +149,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
         </div>
 
         {/* Document Body */}
-        <div style={{ padding: "24px 28px" }}>
+        <div style={{ padding: "clamp(16px, 3vw, 24px) clamp(16px, 3vw, 28px)" }}>
           {/* Case Number */}
           <div style={sectionStyle}>
             <div style={labelStyle}>Case Number</div>

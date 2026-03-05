@@ -75,10 +75,10 @@ export function VerdictReveal({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: "24px",
-        padding: "24px",
+        gap: "clamp(16px, 3vw, 24px)",
+        padding: "clamp(12px, 3vw, 24px)",
         width: "100%",
-        maxWidth: "640px",
+        maxWidth: "720px",
         margin: "0 auto",
       }}
     >
@@ -145,9 +145,7 @@ export function VerdictReveal({
       >
         <svg
           viewBox="0 0 300 200"
-          width="300"
-          height="200"
-          style={{ overflow: "visible" }}
+          style={{ overflow: "visible", width: "100%", maxWidth: 300, height: "auto" }}
         >
           {/* Center pillar */}
           <rect x="147" y="60" width="6" height="120" fill="#d4a853" rx="3" />
@@ -244,7 +242,8 @@ export function VerdictReveal({
           style={{
             display: "flex",
             justifyContent: "space-between",
-            width: "300px",
+            width: "100%",
+            maxWidth: "300px",
             marginTop: "4px",
           }}
         >

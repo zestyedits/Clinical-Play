@@ -69,9 +69,9 @@ export function WelcomeScreen({
     >
       <div
         style={{
-          maxWidth: 480,
-          width: "90%",
-          padding: "36px 24px",
+          maxWidth: 540,
+          width: "92%",
+          padding: "clamp(20px, 4vw, 36px) clamp(16px, 3vw, 24px)",
           textAlign: "center",
         }}
       >

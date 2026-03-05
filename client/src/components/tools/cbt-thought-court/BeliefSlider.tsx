@@ -78,7 +78,7 @@ export function BeliefSlider({
   const change = isRerate && originalBelief != null ? value - originalBelief : 0;
 
   return (
-    <div style={{ width: "100%", maxWidth: 520, margin: "0 auto" }}>
+    <div style={{ width: "100%", maxWidth: 600, margin: "0 auto" }}>
       {/* Inject custom thumb CSS */}
       <style>{SLIDER_THUMB_CSS(reactId)}</style>
 

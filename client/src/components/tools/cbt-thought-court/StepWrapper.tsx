@@ -56,7 +56,7 @@ export function StepWrapper({
       {/* ── Progress bar ─────────────────────────────────────── */}
       <div
         style={{
-          padding: "14px 20px 10px",
+          padding: "14px clamp(12px, 3vw, 24px) 10px",
           borderBottom: "1px solid rgba(120, 100, 180, 0.2)",
           flexShrink: 0,
         }}
@@ -112,7 +112,7 @@ export function StepWrapper({
       {/* ── Step header ──────────────────────────────────────── */}
       <div
         style={{
-          padding: "16px 20px 12px",
+          padding: "16px clamp(12px, 3vw, 24px) 12px",
           textAlign: "center",
           flexShrink: 0,
         }}
@@ -146,7 +146,7 @@ export function StepWrapper({
         style={{
           flex: 1,
           overflow: "auto",
-          padding: "0 20px 16px",
+          padding: "0 clamp(12px, 3vw, 24px) 16px",
         }}
       >
         {children}
@@ -158,7 +158,7 @@ export function StepWrapper({
           display: "flex",
           alignItems: "center",
           justifyContent: isFirstStep ? "flex-end" : "space-between",
-          padding: "12px 20px",
+          padding: "12px clamp(12px, 3vw, 24px)",
           borderTop: "1px solid rgba(120, 100, 180, 0.2)",
           flexShrink: 0,
         }}
