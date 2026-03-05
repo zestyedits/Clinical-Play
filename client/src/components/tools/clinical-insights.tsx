@@ -31,6 +31,19 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; mod
       { text: "Notice the order they explored items — what does that sequence tell you about their priorities?", modality: "Psychodynamic" },
     ],
   },
+  "cbt-thought-court": {
+    title: "Thought Court Prompts",
+    prompts: [
+      { text: "Which cognitive distortion did the client identify most quickly? What does that tell you?", modality: "CBT" },
+      { text: "Was the client able to generate counter-evidence independently, or did they need support?", modality: "CBT" },
+      { text: "How did the belief rating shift from before to after? Explore what drove the change.", modality: "CBT" },
+      { text: "Did the client resist any part of the process? That resistance itself is clinically meaningful.", modality: "Psychodynamic" },
+      { text: "Notice the language the client used in their reframe \u2014 does it feel genuinely balanced or performatively positive?", modality: "CBT" },
+      { text: "Which distortions from the guide resonated most? Consider assigning distortion-tracking homework.", modality: "CBT" },
+      { text: "How did the courtroom metaphor land? Did the client engage with the playfulness or find it uncomfortable?", modality: "Play Therapy" },
+      { text: "Consider the body language when the verdict was revealed. What somatic responses did you observe?", modality: "Somatic" },
+    ],
+  },
 };
 
 interface ClinicalInsightsProps {

@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ToolSelector } from "@/components/tools/tool-selector";
 import { ClinicalInsights } from "@/components/tools/clinical-insights";
 import { DBTHouseBuilder } from "@/components/tools/dbt-house";
+import { CBTThoughtCourt } from "@/components/tools/cbt-thought-court";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -604,6 +605,11 @@ export default function Playroom() {
             {activeTool === "dbt-house" && (
               <motion.div key="dbt-house" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <DBTHouseBuilder />
+              </motion.div>
+            )}
+            {activeTool === "cbt-thought-court" && (
+              <motion.div key="cbt-thought-court" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <CBTThoughtCourt />
               </motion.div>
             )}
           </AnimatePresence>

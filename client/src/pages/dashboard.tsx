@@ -24,6 +24,7 @@ interface DashboardTool {
 
 const ALL_TOOLS: DashboardTool[] = [
   { id: "dbt-house", label: "The DBT House", desc: "Build a house layer by layer while exploring core DBT skills", icon: Layers, tier: "free", emoji: "🏡" },
+  { id: "cbt-thought-court", label: "The Thought Court", desc: "Put negative thoughts on trial using CBT cognitive restructuring", icon: Square, tier: "free", emoji: "⚖️" },
 ];
 
 const CLINICAL_TIPS: { tip: string; tool: string }[] = [

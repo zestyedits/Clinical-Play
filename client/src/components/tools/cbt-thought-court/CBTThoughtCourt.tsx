@@ -2,6 +2,15 @@ import { useReducer } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAudio } from "../../../lib/stores/useAudio";
 import { WelcomeScreen } from "./WelcomeScreen";
+import { DistortionsGuide } from "./DistortionsGuide";
+import { StepWrapper } from "./StepWrapper";
+import { ThoughtEntry } from "./ThoughtEntry";
+import { DistortionPicker } from "./DistortionPicker";
+import { BeliefSlider } from "./BeliefSlider";
+import { EvidenceBoard } from "./EvidenceBoard";
+import { VerdictReveal } from "./VerdictReveal";
+import { ReframeStation } from "./ReframeStation";
+import { CaseFileSummary } from "./CaseFileSummary";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -129,16 +138,16 @@ export function trialReducer(state: TrialState, action: TrialAction): TrialState
 
 // ── Step labels ────────────────────────────────────────────────────────────
 
-const STEP_LABELS = [
-  "Enter Thought",
-  "Situation",
-  "Identify Distortions",
-  "Rate Belief",
-  "Evidence For",
-  "Evidence Against",
-  "Verdict",
-  "Reframe",
-  "Re-rate Belief",
+const STEP_CONFIG = [
+  { label: "The Accusation", title: "Enter Your Thought", subtitle: "File the case", icon: "\uD83D\uDCDC" },
+  { label: "The Charges", title: "Identify Distortions", subtitle: "What charges apply?", icon: "\uD83D\uDD28" },
+  { label: "Sworn Testimony", title: "Rate Your Belief", subtitle: "How strongly do you believe it?", icon: "\uD83D\uDCCA" },
+  { label: "The Prosecution", title: "Evidence For", subtitle: "The prosecution presents", icon: "\uD83D\uDD34" },
+  { label: "The Defense", title: "Evidence Against", subtitle: "The defense responds", icon: "\uD83D\uDFE2" },
+  { label: "The Verdict", title: "Weighing the Evidence", subtitle: "The court has reached a verdict", icon: "\u2696\uFE0F" },
+  { label: "The Appeal", title: "Reframe the Thought", subtitle: "Write a balanced alternative", icon: "\u270F\uFE0F" },
+  { label: "Final Testimony", title: "Re-rate Your Belief", subtitle: "Has anything changed?", icon: "\uD83D\uDCCA" },
+  { label: "Case File", title: "Case Summary", subtitle: "Review your case file", icon: "\uD83D\uDCC1" },
 ];
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -147,16 +156,122 @@ export function CBTThoughtCourt() {
   const [state, dispatch] = useReducer(trialReducer, initialState);
   const { isMuted, toggleMute } = useAudio();
 
+  const stepConfig = STEP_CONFIG[state.currentStep] || STEP_CONFIG[0];
+  const handleNext = () => dispatch({ type: "NEXT_STEP" });
+  const handleBack = () => dispatch({ type: "PREV_STEP" });
+
+  const canProceed = (() => {
+    switch (state.currentStep) {
+      case 0: return state.originalThought.trim().length > 0 && state.situation.trim().length > 0;
+      case 1: return state.selectedDistortions.length > 0;
+      case 2: return true; // slider always has a value
+      case 3: return state.evidenceFor.length > 0;
+      case 4: return state.evidenceAgainst.length > 0;
+      case 5: return true; // display only
+      case 6: return state.reframedThought.trim().length > 0;
+      case 7: return true; // slider always has a value
+      case 8: return true; // summary
+      default: return false;
+    }
+  })();
+
+  const renderStepContent = () => {
+    switch (state.currentStep) {
+      case 0:
+        return (
+          <ThoughtEntry
+            thought={state.originalThought}
+            situation={state.situation}
+            onThoughtChange={(v) => dispatch({ type: "SET_THOUGHT", payload: v })}
+            onSituationChange={(v) => dispatch({ type: "SET_SITUATION", payload: v })}
+            ageMode={state.ageMode}
+          />
+        );
+      case 1:
+        return (
+          <DistortionPicker
+            selectedDistortions={state.selectedDistortions}
+            onToggle={(id) => dispatch({ type: "TOGGLE_DISTORTION", payload: id })}
+            ageMode={state.ageMode}
+          />
+        );
+      case 2:
+        return (
+          <BeliefSlider
+            value={state.initialBelief}
+            onChange={(v) => dispatch({ type: "SET_INITIAL_BELIEF", payload: v })}
+            ageMode={state.ageMode}
+          />
+        );
+      case 3:
+        return (
+          <EvidenceBoard
+            side="prosecution"
+            evidence={state.evidenceFor}
+            onAdd={(text) => dispatch({ type: "ADD_EVIDENCE_FOR", payload: text })}
+            onRemove={(i) => dispatch({ type: "REMOVE_EVIDENCE_FOR", payload: i })}
+            ageMode={state.ageMode}
+            originalThought={state.originalThought}
+          />
+        );
+      case 4:
+        return (
+          <EvidenceBoard
+            side="defense"
+            evidence={state.evidenceAgainst}
+            onAdd={(text) => dispatch({ type: "ADD_EVIDENCE_AGAINST", payload: text })}
+            onRemove={(i) => dispatch({ type: "REMOVE_EVIDENCE_AGAINST", payload: i })}
+            ageMode={state.ageMode}
+            originalThought={state.originalThought}
+          />
+        );
+      case 5:
+        return (
+          <VerdictReveal
+            evidenceFor={state.evidenceFor}
+            evidenceAgainst={state.evidenceAgainst}
+            originalThought={state.originalThought}
+            ageMode={state.ageMode}
+          />
+        );
+      case 6:
+        return (
+          <ReframeStation
+            originalThought={state.originalThought}
+            reframedThought={state.reframedThought}
+            onChange={(v) => dispatch({ type: "SET_REFRAMED_THOUGHT", payload: v })}
+            ageMode={state.ageMode}
+            selectedDistortions={state.selectedDistortions}
+          />
+        );
+      case 7:
+        return (
+          <BeliefSlider
+            value={state.finalBelief}
+            onChange={(v) => dispatch({ type: "SET_FINAL_BELIEF", payload: v })}
+            ageMode={state.ageMode}
+            isRerate
+            originalBelief={state.initialBelief}
+          />
+        );
+      case 8:
+        return (
+          <CaseFileSummary
+            state={state}
+            onNewTrial={() => dispatch({ type: "RESET_TRIAL" })}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   // Welcome screen
   if (state.currentStep === -1) {
     return (
       <div
         data-testid="tool-cbt-thought-court"
-        style={{
-          width: "100%",
-          height: "100%",
-          position: "relative",
-        }}
+        style={{ width: "100%", height: "100%", position: "relative" }}
       >
         <WelcomeScreen
           onStart={() => dispatch({ type: "START_TRIAL" })}
@@ -164,11 +279,80 @@ export function CBTThoughtCourt() {
           onSetAgeMode={(mode) => dispatch({ type: "SET_AGE_MODE", payload: mode })}
           onOpenGuide={() => dispatch({ type: "TOGGLE_GUIDE" })}
         />
+        <DistortionsGuide
+          isOpen={state.isDistortionsGuideOpen}
+          onClose={() => dispatch({ type: "TOGGLE_GUIDE" })}
+          ageMode={state.ageMode}
+        />
       </div>
     );
   }
 
-  // Trial steps
+  // Case file summary — rendered without StepWrapper (has its own layout + buttons)
+  if (state.currentStep === 8) {
+    return (
+      <div
+        data-testid="tool-cbt-thought-court"
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          background: "linear-gradient(170deg, #1a1520 0%, #2a2035 30%, #1e1a2e 60%, #15112a 100%)",
+          fontFamily: "Inter, sans-serif",
+          overflow: "hidden",
+          position: "relative",
+          borderRadius: 12,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px 16px",
+            background: "rgba(15, 10, 25, 0.92)",
+            borderBottom: "1px solid rgba(120, 100, 180, 0.3)",
+            zIndex: 10,
+            flexShrink: 0,
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 18 }}>{"\u2696\uFE0F"}</span>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#e8e0f0", lineHeight: 1.2 }}>
+                The Thought Court
+              </div>
+              <div style={{ fontSize: 10, color: "rgba(232, 224, 240, 0.5)" }}>
+                Case File Complete
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={toggleMute}
+            data-testid="button-cbt-mute"
+            style={{
+              background: "rgba(232, 224, 240, 0.1)",
+              border: "1px solid rgba(120, 100, 180, 0.3)",
+              borderRadius: 8,
+              padding: "5px 10px",
+              color: "#e8e0f0",
+              fontSize: 16,
+              cursor: "pointer",
+            }}
+          >
+            {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
+          </button>
+        </div>
+        <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
+          <CaseFileSummary state={state} onNewTrial={() => dispatch({ type: "RESET_TRIAL" })} />
+        </div>
+      </div>
+    );
+  }
+
+  // Trial steps 0-7
   return (
     <div
       data-testid="tool-cbt-thought-court"
@@ -177,8 +361,7 @@ export function CBTThoughtCourt() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background:
-          "linear-gradient(170deg, #1a1520 0%, #2a2035 30%, #1e1a2e 60%, #15112a 100%)",
+        background: "linear-gradient(170deg, #1a1520 0%, #2a2035 30%, #1e1a2e 60%, #15112a 100%)",
         fontFamily: "Inter, sans-serif",
         overflow: "hidden",
         position: "relative",
@@ -202,67 +385,33 @@ export function CBTThoughtCourt() {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 18 }}>{"\u2696\uFE0F"}</span>
           <div>
-            <div
-              style={{
-                fontSize: 14,
-                fontWeight: 700,
-                color: "#e8e0f0",
-                lineHeight: 1.2,
-              }}
-            >
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#e8e0f0", lineHeight: 1.2 }}>
               The Thought Court
             </div>
-            <div
-              style={{
-                fontSize: 10,
-                color: "rgba(232, 224, 240, 0.5)",
-              }}
-            >
-              Step {state.currentStep + 1} of {STEP_LABELS.length} &mdash;{" "}
-              {STEP_LABELS[state.currentStep]}
+            <div style={{ fontSize: 10, color: "rgba(232, 224, 240, 0.5)" }}>
+              Step {state.currentStep + 1} of {STEP_CONFIG.length} &mdash; {stepConfig.label}
             </div>
           </div>
         </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              fontSize: 11,
-              color: "rgba(232, 224, 240, 0.5)",
-            }}
-          >
-            Step {state.currentStep + 1} of {STEP_LABELS.length}
-          </div>
-          <button
-            onClick={toggleMute}
-            data-testid="button-cbt-mute"
-            style={{
-              background: "rgba(232, 224, 240, 0.1)",
-              border: "1px solid rgba(120, 100, 180, 0.3)",
-              borderRadius: 8,
-              padding: "5px 10px",
-              color: "#e8e0f0",
-              fontSize: 16,
-              cursor: "pointer",
-            }}
-          >
-            {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
-          </button>
-        </div>
+        <button
+          onClick={toggleMute}
+          data-testid="button-cbt-mute"
+          style={{
+            background: "rgba(232, 224, 240, 0.1)",
+            border: "1px solid rgba(120, 100, 180, 0.3)",
+            borderRadius: 8,
+            padding: "5px 10px",
+            color: "#e8e0f0",
+            fontSize: 16,
+            cursor: "pointer",
+          }}
+        >
+          {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
+        </button>
       </div>
 
       {/* Step content area */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          position: "relative",
-          padding: 16,
-        }}
-      >
+      <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
         <AnimatePresence mode="wait">
           <motion.div
             key={state.currentStep}
@@ -270,16 +419,21 @@ export function CBTThoughtCourt() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -40 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#e8e0f0",
-            }}
+            style={{ width: "100%", height: "100%" }}
           >
-            <div>Step {state.currentStep + 1} Placeholder</div>
+            <StepWrapper
+              stepNumber={state.currentStep}
+              totalSteps={STEP_CONFIG.length}
+              title={stepConfig.title}
+              subtitle={stepConfig.subtitle}
+              icon={stepConfig.icon}
+              ageMode={state.ageMode}
+              canProceed={canProceed}
+              onNext={handleNext}
+              onBack={handleBack}
+            >
+              {renderStepContent()}
+            </StepWrapper>
           </motion.div>
         </AnimatePresence>
       </div>
@@ -300,8 +454,7 @@ export function CBTThoughtCourt() {
           fontSize: 13,
           fontWeight: 600,
           cursor: "pointer",
-          boxShadow:
-            "0 4px 20px rgba(80, 50, 140, 0.4), 0 0 0 1px rgba(255,255,255,0.05) inset",
+          boxShadow: "0 4px 20px rgba(80, 50, 140, 0.4), 0 0 0 1px rgba(255,255,255,0.05) inset",
           zIndex: 20,
           display: "flex",
           alignItems: "center",
@@ -311,6 +464,13 @@ export function CBTThoughtCourt() {
         <span style={{ fontSize: 15 }}>{"\uD83D\uDCD6"}</span>
         Distortions Guide
       </button>
+
+      {/* Distortions Guide modal */}
+      <DistortionsGuide
+        isOpen={state.isDistortionsGuideOpen}
+        onClose={() => dispatch({ type: "TOGGLE_GUIDE" })}
+        ageMode={state.ageMode}
+      />
     </div>
   );
 }
