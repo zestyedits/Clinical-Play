@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { AgeMode } from "./compass-data";
-import { LIFE_DOMAINS, ACTION_PROMPTS } from "./compass-data";
+import { LIFE_DOMAINS, ACTION_OPTIONS } from "./compass-data";
 
 interface DomainState {
   domainId: string;
@@ -21,24 +21,11 @@ interface CommittedActionProps {
   ageMode: AgeMode;
 }
 
-const HELPER_PROMPTS: Record<AgeMode, string[]> = {
-  child: ["When will you do it?", "Who will help you?"],
-  teen: ["When?", "Where?", "What's the first step?"],
-  adult: [
-    "Specify: When, where, duration, and the smallest first step.",
-  ],
-};
-
 export function CommittedAction({
   domains,
   committedActions,
   onUpdateAction,
-  ageMode,
 }: CommittedActionProps) {
-  const [expandedHelpers, setExpandedHelpers] = useState<
-    Record<string, boolean>
-  >({});
-
   const underservedDomains = domains.filter((d) => d.alignment <= 6);
   const displayDomains =
     underservedDomains.length > 0 ? underservedDomains : domains;
@@ -49,32 +36,43 @@ export function CommittedAction({
   const getAction = (domainId: string) =>
     committedActions.find((a) => a.domainId === domainId)?.action || "";
 
-  const toggleHelper = (domainId: string) => {
-    setExpandedHelpers((prev) => ({
-      ...prev,
-      [domainId]: !prev[domainId],
-    }));
+  const handleChipTap = (domainId: string, actionText: string) => {
+    const current = getAction(domainId);
+    if (current === actionText) {
+      onUpdateAction(domainId, "");
+    } else {
+      onUpdateAction(domainId, actionText);
+    }
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "24px",
+        minHeight: "100%",
+        flex: 1,
+      }}
+    >
       {/* Header context */}
       <div
         style={{
           textAlign: "center",
           color: "rgba(255, 255, 255, 0.7)",
           fontSize: "14px",
-          lineHeight: "1.5",
+          lineHeight: "1.6",
+          padding: "0 8px",
         }}
       >
         {underservedDomains.length > 0 ? (
           <span>
             These domains scored 6 or below — they could use some attention.
-            Write one concrete action for each.
+            Tap an action for each.
           </span>
         ) : (
           <span>
-            All your domains are well-aligned! You can still plan actions to
+            All your domains are well-aligned! You can still pick actions to
             keep the momentum going.
           </span>
         )}
@@ -85,18 +83,16 @@ export function CommittedAction({
         const domain = getDomainInfo(domainState.domainId);
         if (!domain) return null;
 
-        const action = getAction(domainState.domainId);
-        const hasAction = action.trim().length > 0;
-        const placeholder =
-          ACTION_PROMPTS[domainState.domainId]?.[ageMode] || "";
-        const helperOpen = expandedHelpers[domainState.domainId] || false;
+        const currentAction = getAction(domainState.domainId);
+        const hasAction = currentAction.trim().length > 0;
+        const options = ACTION_OPTIONS[domainState.domainId] || [];
 
         return (
           <div
             key={domainState.domainId}
             style={{
-              background: "rgba(15, 10, 25, 0.5)",
-              borderRadius: "12px",
+              background: "rgba(15, 22, 28, 0.55)",
+              borderRadius: "14px",
               padding: "20px",
               border: "1px solid rgba(45, 138, 138, 0.2)",
             }}
@@ -136,7 +132,7 @@ export function CommittedAction({
                 style={{
                   fontSize: "13px",
                   color: "rgba(255, 255, 255, 0.6)",
-                  marginBottom: "14px",
+                  marginBottom: "16px",
                   fontStyle: "italic",
                 }}
               >
@@ -150,88 +146,50 @@ export function CommittedAction({
               </div>
             )}
 
-            {/* Action textarea */}
-            <textarea
-              value={action}
-              onChange={(e) =>
-                onUpdateAction(domainState.domainId, e.target.value)
-              }
-              placeholder={placeholder}
-              rows={3}
+            {/* Action chips */}
+            <div
               style={{
-                width: "100%",
-                background: "rgba(15, 10, 25, 0.7)",
-                border: "1px solid rgba(45, 138, 138, 0.3)",
-                borderRadius: "8px",
-                padding: "12px",
-                color: "#ffffff",
-                fontSize: "14px",
-                lineHeight: "1.5",
-                resize: "vertical",
-                outline: "none",
-                fontFamily: "inherit",
-                boxSizing: "border-box",
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = "#2d8a8a";
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = "rgba(45, 138, 138, 0.3)";
-              }}
-            />
-
-            {/* Helper prompts (collapsible) */}
-            <button
-              onClick={() => toggleHelper(domainState.domainId)}
-              style={{
-                background: "none",
-                border: "none",
-                color: "rgba(45, 138, 138, 0.8)",
-                fontSize: "12px",
-                cursor: "pointer",
-                padding: "6px 0",
                 display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                marginTop: "4px",
+                flexWrap: "wrap",
+                gap: "10px",
               }}
             >
-              <span
-                style={{
-                  display: "inline-block",
-                  transform: helperOpen ? "rotate(90deg)" : "rotate(0deg)",
-                  transition: "transform 0.2s",
-                  fontSize: "10px",
-                }}
-              >
-                &#9654;
-              </span>
-              Need help making it specific?
-            </button>
+              {options.map((actionText) => {
+                const isSelected = currentAction === actionText;
 
-            {helperOpen && (
-              <div
-                style={{
-                  padding: "8px 12px",
-                  background: "rgba(45, 138, 138, 0.08)",
-                  borderRadius: "6px",
-                  marginTop: "4px",
-                }}
-              >
-                {HELPER_PROMPTS[ageMode].map((tip, i) => (
-                  <div
-                    key={i}
+                return (
+                  <button
+                    key={actionText}
+                    onClick={() =>
+                      handleChipTap(domainState.domainId, actionText)
+                    }
                     style={{
-                      fontSize: "12px",
-                      color: "rgba(255, 255, 255, 0.6)",
-                      padding: "2px 0",
+                      minHeight: "44px",
+                      padding: "10px 16px",
+                      borderRadius: "22px",
+                      border: isSelected
+                        ? "2px solid #2d8a8a"
+                        : "1px solid rgba(201, 168, 76, 0.3)",
+                      background: isSelected
+                        ? "rgba(45, 138, 138, 0.25)"
+                        : "rgba(15, 22, 28, 0.6)",
+                      color: isSelected ? "#e8dcc8" : "rgba(232, 220, 200, 0.75)",
+                      fontSize: "14px",
+                      fontWeight: isSelected ? 600 : 400,
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      lineHeight: "1.3",
+                      transition: "all 0.2s ease",
+                      boxShadow: isSelected
+                        ? "0 0 12px rgba(45, 138, 138, 0.3)"
+                        : "none",
                     }}
                   >
-                    &bull; {tip}
-                  </div>
-                ))}
-              </div>
-            )}
+                    {actionText}
+                  </button>
+                );
+              })}
+            </div>
 
             {/* Waypoint indicator */}
             <AnimatePresence>
@@ -245,7 +203,7 @@ export function CommittedAction({
                     display: "flex",
                     alignItems: "center",
                     gap: "6px",
-                    marginTop: "10px",
+                    marginTop: "14px",
                   }}
                 >
                   <svg
@@ -283,9 +241,9 @@ export function CommittedAction({
       {/* Trail visualization */}
       <div
         style={{
-          background: "rgba(15, 10, 25, 0.4)",
-          borderRadius: "12px",
-          padding: "20px 24px",
+          background: "rgba(15, 22, 28, 0.4)",
+          borderRadius: "14px",
+          padding: "24px",
           marginTop: "8px",
         }}
       >
@@ -340,7 +298,7 @@ export function CommittedAction({
                   position: "relative",
                 }}
               >
-                {/* Domain icon or initial above dot */}
+                {/* Domain icon above dot */}
                 <svg
                   width="16"
                   height="16"

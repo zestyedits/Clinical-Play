@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { AgeMode, BarrierType } from "./compass-data";
-import { LIFE_DOMAINS, BARRIER_PROMPTS, BARRIER_TYPES } from "./compass-data";
+import { LIFE_DOMAINS, BARRIER_OPTIONS, BARRIER_TYPES } from "./compass-data";
 
 interface DomainState {
   domainId: string;
@@ -26,46 +25,27 @@ interface BarrierIdentificationProps {
   ageMode: AgeMode;
 }
 
-interface LocalInputState {
-  text: string;
-  type: BarrierType | null;
-}
+const TYPE_COLORS: Record<BarrierType, string> = {
+  thought: "#7c8ee0",
+  feeling: "#e88a7a",
+  urge: "#e0a84c",
+};
+
+const TYPE_LABELS: Record<BarrierType, { label: string; icon: string }> = {
+  thought: { label: "Thoughts", icon: "\uD83D\uDCAD" },
+  feeling: { label: "Feelings", icon: "\uD83D\uDC94" },
+  urge: { label: "Urges", icon: "\u26A1" },
+};
+
+const BARRIER_TYPE_KEYS: BarrierType[] = ["thought", "feeling", "urge"];
 
 export function BarrierIdentification({
   domains,
   barriers,
   onAddBarrier,
   onRemoveBarrier,
-  ageMode,
 }: BarrierIdentificationProps) {
   const underservedDomains = domains.filter((d) => d.alignment <= 6);
-
-  const [inputStates, setInputStates] = useState<
-    Record<string, LocalInputState>
-  >(() => {
-    const initial: Record<string, LocalInputState> = {};
-    for (const d of underservedDomains) {
-      initial[d.domainId] = { text: "", type: null };
-    }
-    return initial;
-  });
-
-  const updateInput = (
-    domainId: string,
-    update: Partial<LocalInputState>
-  ) => {
-    setInputStates((prev) => ({
-      ...prev,
-      [domainId]: { ...prev[domainId], ...update },
-    }));
-  };
-
-  const handleAdd = (domainId: string) => {
-    const state = inputStates[domainId];
-    if (!state || !state.text.trim() || !state.type) return;
-    onAddBarrier(domainId, state.text.trim(), state.type);
-    updateInput(domainId, { text: "", type: null });
-  };
 
   if (underservedDomains.length === 0) {
     return (
@@ -104,22 +84,40 @@ export function BarrierIdentification({
     );
   }
 
+  const isBarrierSelected = (
+    domainId: string,
+    text: string,
+    type: BarrierType
+  ): Barrier | undefined => {
+    return barriers.find(
+      (b) => b.domainId === domainId && b.text === text && b.type === type
+    );
+  };
+
+  const handleChipClick = (
+    domainId: string,
+    text: string,
+    type: BarrierType
+  ) => {
+    const existing = isBarrierSelected(domainId, text, type);
+    if (existing) {
+      onRemoveBarrier(existing.id);
+    } else {
+      onAddBarrier(domainId, text, type);
+    }
+  };
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "32px",
+      }}
+    >
       {underservedDomains.map((domain, idx) => {
         const domainInfo = LIFE_DOMAINS.find((ld) => ld.id === domain.domainId);
         if (!domainInfo) return null;
-
-        const domainBarriers = barriers.filter(
-          (b) => b.domainId === domain.domainId
-        );
-        const input = inputStates[domain.domainId] ?? {
-          text: "",
-          type: null,
-        };
-        const prompt =
-          BARRIER_PROMPTS[domain.domainId]?.[ageMode] ??
-          "What gets in the way?";
 
         return (
           <div key={domain.domainId}>
@@ -187,7 +185,7 @@ export function BarrierIdentification({
                   fontSize: "14px",
                   color: "#e8dcc8",
                   opacity: 0.7,
-                  marginBottom: "16px",
+                  marginBottom: "20px",
                   fontStyle: "italic",
                   lineHeight: 1.5,
                 }}
@@ -201,214 +199,130 @@ export function BarrierIdentification({
               </div>
             )}
 
-            {/* Barrier input area */}
+            {/* Barrier chip sections by type */}
             <div
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "12px",
-                marginBottom: "16px",
+                gap: "20px",
               }}
             >
-              <textarea
-                value={input.text}
-                onChange={(e) =>
-                  updateInput(domain.domainId, { text: e.target.value })
-                }
-                placeholder={prompt}
-                rows={3}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  background: "rgba(15, 10, 25, 0.7)",
-                  border: "1px solid rgba(45, 138, 138, 0.3)",
-                  borderRadius: "8px",
-                  color: "#e8dcc8",
-                  fontSize: "14px",
-                  lineHeight: 1.5,
-                  resize: "vertical",
-                  outline: "none",
-                  fontFamily: "inherit",
-                  boxSizing: "border-box",
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(45, 138, 138, 0.6)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(45, 138, 138, 0.3)";
-                }}
-              />
-
-              {/* Barrier type selector */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  flexWrap: "wrap",
-                }}
-              >
-                {BARRIER_TYPES.map((bt) => {
-                  const isSelected = input.type === bt.type;
-                  return (
-                    <button
-                      key={bt.type}
-                      onClick={() =>
-                        updateInput(domain.domainId, {
-                          type: isSelected ? null : bt.type,
-                        })
-                      }
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        padding: "6px 14px",
-                        borderRadius: "20px",
-                        fontSize: "13px",
-                        fontWeight: isSelected ? 700 : 500,
-                        cursor: "pointer",
-                        border: `1.5px solid ${
-                          isSelected ? bt.color : "rgba(232,220,200,0.2)"
-                        }`,
-                        background: isSelected
-                          ? `${bt.color}22`
-                          : "transparent",
-                        color: isSelected ? bt.color : "#e8dcc8",
-                        transition: "all 0.15s ease",
-                      }}
-                    >
-                      <span style={{ fontSize: "15px" }}>{bt.icon}</span>
-                      {bt.label}
-                    </button>
-                  );
-                })}
-
-                {/* Add Barrier button */}
-                <button
-                  onClick={() => handleAdd(domain.domainId)}
-                  disabled={!input.text.trim() || !input.type}
-                  style={{
-                    marginLeft: "auto",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    padding: "6px 18px",
-                    borderRadius: "20px",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    cursor:
-                      !input.text.trim() || !input.type
-                        ? "not-allowed"
-                        : "pointer",
-                    border: "none",
-                    background:
-                      !input.text.trim() || !input.type
-                        ? "rgba(45, 138, 138, 0.15)"
-                        : "#2d8a8a",
-                    color:
-                      !input.text.trim() || !input.type
-                        ? "rgba(232,220,200,0.35)"
-                        : "#0f0a19",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  + Add Barrier
-                </button>
-              </div>
-            </div>
-
-            {/* Existing barriers list */}
-            <AnimatePresence mode="popLayout">
-              {domainBarriers.map((barrier) => {
-                const typeInfo = BARRIER_TYPES.find(
-                  (bt) => bt.type === barrier.type
-                );
-                const bColor = typeInfo?.color ?? "#e8dcc8";
+              {BARRIER_TYPE_KEYS.map((type) => {
+                const color = TYPE_COLORS[type];
+                const { label, icon } = TYPE_LABELS[type];
+                const options = BARRIER_OPTIONS[type];
 
                 return (
-                  <motion.div
-                    key={barrier.id}
-                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: "10px",
-                      padding: "10px 14px",
-                      marginBottom: "8px",
-                      borderRadius: "8px",
-                      background: `${bColor}1A`,
-                      border: `1px solid ${bColor}4D`,
-                    }}
-                  >
-                    {/* Type badge */}
-                    <span
+                  <div key={type}>
+                    {/* Section header */}
+                    <div
                       style={{
-                        display: "inline-flex",
+                        display: "flex",
                         alignItems: "center",
-                        gap: "4px",
-                        padding: "2px 10px",
-                        borderRadius: "12px",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        color: bColor,
-                        background: `${bColor}22`,
-                        flexShrink: 0,
-                        whiteSpace: "nowrap",
+                        gap: "8px",
+                        marginBottom: "10px",
                       }}
                     >
-                      {typeInfo?.icon} {typeInfo?.label}
-                    </span>
+                      <span style={{ fontSize: "16px" }}>{icon}</span>
+                      <span
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: 600,
+                          color: color,
+                          letterSpacing: "0.3px",
+                        }}
+                      >
+                        {label}
+                      </span>
+                    </div>
 
-                    {/* Barrier text */}
-                    <span
-                      style={{
-                        flex: 1,
-                        fontSize: "14px",
-                        color: "#e8dcc8",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {barrier.text}
-                    </span>
+                    {/* Chips */}
+                    <AnimatePresence>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: "8px",
+                        }}
+                      >
+                        {options.map((text) => {
+                          const selected = !!isBarrierSelected(
+                            domain.domainId,
+                            text,
+                            type
+                          );
 
-                    {/* Remove button */}
-                    <button
-                      onClick={() => onRemoveBarrier(barrier.id)}
-                      style={{
-                        flexShrink: 0,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: "22px",
-                        height: "22px",
-                        borderRadius: "50%",
-                        border: "none",
-                        background: "rgba(232,220,200,0.1)",
-                        color: "#e8dcc8",
-                        fontSize: "13px",
-                        cursor: "pointer",
-                        lineHeight: 1,
-                        padding: 0,
-                        transition: "background 0.15s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background =
-                          "rgba(232,220,200,0.25)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background =
-                          "rgba(232,220,200,0.1)";
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </motion.div>
+                          return (
+                            <motion.button
+                              key={text}
+                              initial={{ opacity: 0, scale: 0.92 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.92 }}
+                              transition={{ duration: 0.15, ease: "easeOut" }}
+                              onClick={() =>
+                                handleChipClick(domain.domainId, text, type)
+                              }
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                minHeight: "44px",
+                                padding: "8px 16px",
+                                borderRadius: "22px",
+                                fontSize: "14px",
+                                fontWeight: selected ? 600 : 400,
+                                lineHeight: 1.3,
+                                cursor: "pointer",
+                                border: selected
+                                  ? `2px solid ${color}`
+                                  : "2px solid rgba(232, 220, 200, 0.15)",
+                                background: selected
+                                  ? `${color}25`
+                                  : "rgba(15, 22, 28, 0.5)",
+                                color: selected ? color : "#e8dcc8",
+                                transition: "all 0.15s ease",
+                                fontFamily: "inherit",
+                                textAlign: "left",
+                                boxShadow: selected
+                                  ? `0 0 12px ${color}20`
+                                  : "none",
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!selected) {
+                                  e.currentTarget.style.borderColor = `${color}80`;
+                                  e.currentTarget.style.background =
+                                    "rgba(15, 22, 28, 0.7)";
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!selected) {
+                                  e.currentTarget.style.borderColor =
+                                    "rgba(232, 220, 200, 0.15)";
+                                  e.currentTarget.style.background =
+                                    "rgba(15, 22, 28, 0.5)";
+                                }
+                              }}
+                            >
+                              {selected && (
+                                <span
+                                  style={{
+                                    marginRight: "6px",
+                                    fontSize: "13px",
+                                    lineHeight: 1,
+                                  }}
+                                >
+                                  ✓
+                                </span>
+                              )}
+                              {text}
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    </AnimatePresence>
+                  </div>
                 );
               })}
-            </AnimatePresence>
+            </div>
           </div>
         );
       })}

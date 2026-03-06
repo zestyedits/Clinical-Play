@@ -1,5 +1,5 @@
 import React from "react";
-import { AgeMode, LIFE_DOMAINS, VALUE_PROMPTS } from "./compass-data";
+import { AgeMode, LIFE_DOMAINS, VALUE_OPTIONS } from "./compass-data";
 
 interface DomainState {
   domainId: string;
@@ -28,8 +28,8 @@ export function ValuesMapping({
     >
       {LIFE_DOMAINS.map((domain) => {
         const domainState = domains.find((d) => d.domainId === domain.id);
-        const currentValue = domainState?.values?.[0] ?? "";
-        const placeholder = VALUE_PROMPTS[domain.id]?.[ageMode] ?? "";
+        const selectedValues = domainState?.values ?? [];
+        const options = VALUE_OPTIONS[domain.id] ?? [];
 
         return (
           <div
@@ -100,33 +100,54 @@ export function ValuesMapping({
               {domain.description[ageMode]}
             </div>
 
-            {/* Value input */}
-            <textarea
-              rows={2}
-              placeholder={placeholder}
-              value={currentValue}
-              onChange={(e) => onUpdateValue(domain.id, [e.target.value])}
+            {/* Value chips */}
+            <div
               style={{
-                width: "100%",
-                boxSizing: "border-box",
-                background: "rgba(15, 10, 25, 0.7)",
-                color: "#e8dcc8",
-                border: "1px solid rgba(45, 138, 138, 0.3)",
-                borderRadius: 8,
-                padding: "8px 10px",
-                fontSize: 14,
-                fontFamily: "inherit",
-                resize: "vertical",
-                outline: "none",
-                transition: "border-color 0.2s ease",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
               }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = "#2d8a8a";
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = "rgba(45, 138, 138, 0.3)";
-              }}
-            />
+            >
+              {options.map((value) => {
+                const isSelected = selectedValues.includes(value);
+
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      const next = isSelected
+                        ? selectedValues.filter((v) => v !== value)
+                        : [...selectedValues, value];
+                      onUpdateValue(domain.id, next);
+                    }}
+                    style={{
+                      minHeight: 44,
+                      padding: "8px 16px",
+                      borderRadius: 22,
+                      border: isSelected
+                        ? `2px solid ${domain.color}`
+                        : "1px solid rgba(232, 220, 200, 0.2)",
+                      background: isSelected
+                        ? `${domain.color}30`
+                        : "rgba(15, 22, 28, 0.5)",
+                      color: isSelected ? domain.color : "#e8dcc8",
+                      fontSize: 14,
+                      fontFamily: "inherit",
+                      fontWeight: isSelected ? 600 : 400,
+                      cursor: "pointer",
+                      transition:
+                        "background 0.15s ease, border-color 0.15s ease, color 0.15s ease",
+                      outline: "none",
+                      WebkitTapHighlightColor: "transparent",
+                      userSelect: "none",
+                    }}
+                  >
+                    {value}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         );
       })}

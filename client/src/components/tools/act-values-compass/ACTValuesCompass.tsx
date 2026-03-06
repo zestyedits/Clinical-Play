@@ -12,6 +12,7 @@ import { DefusionExercise } from "./DefusionExercise";
 import { LookoutPoint } from "./LookoutPoint";
 import { CommittedAction } from "./CommittedAction";
 import { ExpeditionMap } from "./ExpeditionMap";
+import { ACTGuide } from "./ACTGuide";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -275,6 +276,10 @@ export function ACTValuesCompass() {
           ageMode={state.ageMode}
           onSetAgeMode={(mode) => dispatch({ type: "SET_AGE_MODE", payload: mode })}
           onOpenGuide={() => dispatch({ type: "TOGGLE_GUIDE" })}
+        />
+        <ACTGuide
+          isOpen={state.isACTGuideOpen}
+          onClose={() => dispatch({ type: "TOGGLE_GUIDE" })}
         />
       </div>
     );

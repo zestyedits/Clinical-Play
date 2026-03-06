@@ -93,10 +93,6 @@ export function DefusionExercise({
     onUpdateBarrier(barrier.id, techniqueId, prefilled);
   }
 
-  function handleDefusedTextChange(text: string) {
-    onUpdateBarrier(barrier.id, barrier.defusionTechnique, text);
-  }
-
   // ── Progress dots ───────────────────────────────────────────────────────
   const progressDots = (
     <div
@@ -200,7 +196,7 @@ export function DefusionExercise({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fill, minmax(min(200px, 100%), 1fr))",
           gap: 12,
         }}
       >
@@ -286,51 +282,6 @@ export function DefusionExercise({
       >
         {applyTemplate(selectedTechnique.template, barrier.text)}
       </p>
-    </div>
-  ) : null;
-
-  // ── Defused text input ──────────────────────────────────────────────────
-  const defusedInput = selectedTechnique ? (
-    <div style={{ marginBottom: 24 }}>
-      <label
-        style={{
-          display: "block",
-          color: "#c9a84c",
-          fontSize: 14,
-          fontWeight: 600,
-          marginBottom: 8,
-          letterSpacing: 0.5,
-        }}
-      >
-        Your defused version
-      </label>
-      <textarea
-        value={barrier.defusedText}
-        onChange={(e) => handleDefusedTextChange(e.target.value)}
-        rows={3}
-        style={{
-          width: "100%",
-          boxSizing: "border-box",
-          background: "rgba(15, 22, 28, 0.5)",
-          border: "1px solid rgba(45, 138, 138, 0.4)",
-          borderRadius: 10,
-          padding: "12px 14px",
-          color: "#e8dcc8",
-          fontSize: 15,
-          lineHeight: 1.5,
-          resize: "vertical",
-          fontFamily: "inherit",
-          outline: "none",
-        }}
-        onFocus={(e) => {
-          e.currentTarget.style.borderColor = "#2d8a8a";
-          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(45, 138, 138, 0.15)";
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.borderColor = "rgba(45, 138, 138, 0.4)";
-          e.currentTarget.style.boxShadow = "none";
-        }}
-      />
     </div>
   ) : null;
 
@@ -478,7 +429,7 @@ export function DefusionExercise({
 
   // ── Render ──────────────────────────────────────────────────────────────
   return (
-    <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 4px" }}>
+    <div style={{ maxWidth: "100%", margin: "0 auto" }}>
       {progressDots}
 
       <AnimatePresence mode="wait">
@@ -492,7 +443,6 @@ export function DefusionExercise({
           {barrierCard}
           {techniqueSelector}
           {templatePreview}
-          {defusedInput}
           {comparison}
         </motion.div>
       </AnimatePresence>

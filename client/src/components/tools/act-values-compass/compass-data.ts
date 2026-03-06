@@ -394,6 +394,195 @@ export const STEP_CONFIGS: StepConfig[] = [
   },
 ] as const;
 
+// ── Selectable Value Options (per domain) ───────────────────────────────────
+
+export const VALUE_OPTIONS: Record<string, string[]> = {
+  relationships: [
+    "Loyalty", "Trust", "Honesty", "Compassion", "Connection",
+    "Support", "Respect", "Intimacy", "Kindness", "Forgiveness",
+  ],
+  "work-school": [
+    "Excellence", "Creativity", "Dedication", "Learning", "Impact",
+    "Teamwork", "Leadership", "Growth", "Purpose", "Integrity",
+  ],
+  health: [
+    "Vitality", "Balance", "Strength", "Self-care", "Mindfulness",
+    "Rest", "Nourishment", "Movement", "Resilience", "Wholeness",
+  ],
+  "personal-growth": [
+    "Courage", "Curiosity", "Resilience", "Authenticity", "Self-awareness",
+    "Patience", "Openness", "Discipline", "Wisdom", "Vulnerability",
+  ],
+  "fun-recreation": [
+    "Adventure", "Playfulness", "Creativity", "Exploration", "Joy",
+    "Spontaneity", "Humor", "Freedom", "Wonder", "Relaxation",
+  ],
+  community: [
+    "Service", "Justice", "Belonging", "Leadership", "Generosity",
+    "Inclusion", "Advocacy", "Responsibility", "Tradition", "Solidarity",
+  ],
+};
+
+// ── Selectable Barrier Options (by type) ────────────────────────────────────
+
+export const BARRIER_OPTIONS: Record<BarrierType, string[]> = {
+  thought: [
+    "I'm not good enough",
+    "I'll fail if I try",
+    "People will judge me",
+    "It's too late to change",
+    "I don't deserve this",
+    "Something bad will happen",
+    "I can't handle it",
+    "Nobody really cares",
+    "I should be further along",
+    "What's the point?",
+  ],
+  feeling: [
+    "Anxiety", "Fear", "Shame", "Sadness", "Guilt",
+    "Anger", "Overwhelm", "Numbness", "Loneliness", "Frustration",
+  ],
+  urge: [
+    "Avoid the situation",
+    "Procrastinate",
+    "Withdraw from others",
+    "Give up entirely",
+    "Distract myself",
+    "Lash out at someone",
+    "Shut down emotionally",
+    "Seek constant reassurance",
+    "Over-control everything",
+    "People-please",
+  ],
+};
+
+// ── Selectable Action Options (per domain) ──────────────────────────────────
+
+export const ACTION_OPTIONS: Record<string, string[]> = {
+  relationships: [
+    "Call or text someone I care about",
+    "Have an honest conversation I've been avoiding",
+    "Plan quality time with a loved one",
+    "Express gratitude to someone",
+    "Set a healthy boundary",
+    "Apologize for something I regret",
+    "Ask someone how they're really doing",
+    "Join a group or social activity",
+  ],
+  "work-school": [
+    "Start a project I've been putting off",
+    "Ask for help or feedback",
+    "Set one meaningful goal for this week",
+    "Learn something new in my field",
+    "Organize my workspace or schedule",
+    "Share an idea with a colleague or classmate",
+    "Take a break when I need one",
+    "Celebrate a small accomplishment",
+  ],
+  health: [
+    "Go for a walk or do 10 minutes of movement",
+    "Prepare a nourishing meal",
+    "Set a consistent bedtime this week",
+    "Schedule a health appointment I've postponed",
+    "Practice deep breathing for 5 minutes",
+    "Drink more water throughout the day",
+    "Limit screen time before bed",
+    "Do one kind thing for my body today",
+  ],
+  "personal-growth": [
+    "Try something outside my comfort zone",
+    "Journal about my feelings for 10 minutes",
+    "Read or listen to something inspiring",
+    "Practice a new skill for 15 minutes",
+    "Reflect on what I learned this week",
+    "Ask for honest feedback from someone I trust",
+    "Sit with discomfort instead of avoiding it",
+    "Write down three things I'm grateful for",
+  ],
+  "fun-recreation": [
+    "Schedule time for a hobby I enjoy",
+    "Say yes to a fun invitation",
+    "Try a new activity or experience",
+    "Spend time outdoors",
+    "Play a game with someone",
+    "Create something just for fun",
+    "Watch, read, or listen to something I love",
+    "Do something spontaneous this week",
+  ],
+  community: [
+    "Volunteer for a cause I care about",
+    "Attend a local event or meeting",
+    "Help a neighbor with something",
+    "Donate to or support an organization",
+    "Introduce myself to someone new",
+    "Write a letter or email to a representative",
+    "Mentor or support someone who needs it",
+    "Clean up or beautify a shared space",
+  ],
+};
+
+// ── ACT Hexaflex Concepts (for guide popup) ─────────────────────────────────
+
+export interface ACTConcept {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  description: string;
+  inSession: string;
+}
+
+export const ACT_CONCEPTS: ACTConcept[] = [
+  {
+    id: "values",
+    name: "Values",
+    icon: "\uD83E\uDDED",
+    color: "#c9a84c",
+    description: "Values are chosen life directions — what matters most to you. They are not goals to be achieved but ongoing qualities you want to embody in how you live.",
+    inSession: "Clients identify what truly matters across life domains. Values are freely chosen, not imposed by 'shoulds' or expectations from others.",
+  },
+  {
+    id: "acceptance",
+    name: "Acceptance",
+    icon: "\uD83E\uDEA8",
+    color: "#e88a7a",
+    description: "Willingness to experience difficult thoughts and feelings without trying to eliminate or control them. Acceptance is not approval — it's making room for what's already there.",
+    inSession: "Help clients recognize internal barriers (thoughts, feelings, urges) that block values-aligned action, and practice making space for them.",
+  },
+  {
+    id: "defusion",
+    name: "Cognitive Defusion",
+    icon: "\uD83E\uDE9D",
+    color: "#7c8ee0",
+    description: "Learning to step back from thoughts and see them as mental events rather than literal truths. Defusion doesn't change thought content — it changes your relationship to thoughts.",
+    inSession: "Techniques like prefacing ('I notice I'm having the thought that...'), externalization, naming the story, or silly voice help create distance from sticky thoughts.",
+  },
+  {
+    id: "present-moment",
+    name: "Present Moment Awareness",
+    icon: "\uD83D\uDDFC",
+    color: "#2d8a8a",
+    description: "Flexible, non-judgmental contact with the here and now. Rather than being lost in the past or future, mindfulness brings attention to what is happening right now.",
+    inSession: "The Lookout Point exercise offers a brief experiential mindfulness moment. Observe thoughts like clouds drifting across a sky.",
+  },
+  {
+    id: "self-as-context",
+    name: "Self-as-Context",
+    icon: "\uD83C\uDF0C",
+    color: "#6bc5c5",
+    description: "You are the sky, not the weather. The observing self is the stable perspective from which all experiences are noticed — it remains constant even as thoughts and feelings change.",
+    inSession: "During mindfulness exercises, help clients notice that they are the one observing their thoughts, not the thoughts themselves.",
+  },
+  {
+    id: "committed-action",
+    name: "Committed Action",
+    icon: "\uD83D\uDEF6",
+    color: "#5ab88f",
+    description: "Taking concrete, values-aligned steps even in the presence of difficult internal experiences. It's doing what matters, not waiting until you feel ready.",
+    inSession: "Clients choose specific, doable actions tied to their values. Emphasize small steps over grand plans — willingness over perfection.",
+  },
+];
+
 // ── Welcome Screen Content ──────────────────────────────────────────────────
 
 export const WELCOME_CONTENT: WelcomeContent = {
