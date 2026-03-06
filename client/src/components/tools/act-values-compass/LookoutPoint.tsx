@@ -64,7 +64,7 @@ export function LookoutPoint({ barriers, ageMode }: LookoutPointProps) {
       <style>{`
         @keyframes lp-cloud-drift {
           0% {
-            transform: translateX(110%);
+            transform: translateX(0);
             opacity: 0;
           }
           5% {
@@ -74,7 +74,7 @@ export function LookoutPoint({ barriers, ageMode }: LookoutPointProps) {
             opacity: 1;
           }
           100% {
-            transform: translateX(-130%);
+            transform: translateX(calc(-100vw - 200px));
             opacity: 0;
           }
         }
@@ -127,7 +127,7 @@ export function LookoutPoint({ barriers, ageMode }: LookoutPointProps) {
               style={{
                 position: "absolute",
                 top: `${top}%`,
-                right: 0,
+                left: "100%",
                 padding: "10px 22px",
                 borderRadius: 28,
                 background: "rgba(200, 210, 225, 0.12)",
