@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Home, Scale, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
+import { X, Home, Scale, Compass, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 
@@ -18,6 +18,7 @@ interface Tool {
 const TOOLS: Tool[] = [
   { id: "dbt-house", label: "The DBT House", desc: "Build a house layer by layer while exploring core DBT skills", icon: Home, status: "active", accentColor: "#6b8b6b", iconClass: "icon-dbt-house", category: "game" },
   { id: "cbt-thought-court", label: "The Thought Court", desc: "Put negative thoughts on trial using CBT cognitive restructuring", icon: Scale, status: "active", accentColor: "#7c5cbf", iconClass: "icon-cbt-court", category: "game" },
+  { id: "act-values-compass", label: "The Values Compass", desc: "Map your values, spot barriers, and chart a course toward what matters", icon: Compass, status: "active", accentColor: "#2d8a8a", iconClass: "icon-act-compass", category: "game" },
 ];
 
 interface ToolSelectorProps {

@@ -32,6 +32,19 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; mod
       { text: "Notice the order they explored items — what does that sequence tell you about their priorities?", modality: "Psychodynamic" },
     ],
   },
+  "act-values-compass": {
+    title: "Values Compass Prompts",
+    prompts: [
+      { text: "Which life domain did the client rate lowest? What does that gap tell you about their current avoidance patterns?", modality: "ACT" },
+      { text: "Did the client struggle to name values in any domain? Difficulty articulating values often signals fusion with 'should' statements.", modality: "ACT" },
+      { text: "How did the client respond to the defusion exercises? Which technique resonated most, and what does that suggest about their cognitive style?", modality: "ACT" },
+      { text: "During the Lookout Point mindfulness moment, what did you observe in the client's body language? Did they settle or resist?", modality: "Somatic" },
+      { text: "Are the committed actions genuinely values-driven, or do they reflect compliance or people-pleasing? Explore the motivation behind each.", modality: "ACT" },
+      { text: "Notice which barriers the client identified as feelings vs. thoughts vs. urges. This reveals their emotional awareness and labeling capacity.", modality: "Mindfulness" },
+      { text: "How does the client's values map compare to their presenting concerns? Where are the intersections and disconnects?", modality: "ACT" },
+      { text: "Consider using the Expedition Map as a reference point in future sessions to track whether committed actions were followed through.", modality: "CBT" },
+    ],
+  },
   "cbt-thought-court": {
     title: "Thought Court Prompts",
     prompts: [

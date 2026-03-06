@@ -10,6 +10,7 @@ import { ToolSelector } from "@/components/tools/tool-selector";
 import { ClinicalInsights } from "@/components/tools/clinical-insights";
 import { DBTHouseBuilder } from "@/components/tools/dbt-house";
 import { CBTThoughtCourt } from "@/components/tools/cbt-thought-court";
+import { ACTValuesCompass } from "@/components/tools/act-values-compass";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -610,6 +611,11 @@ export default function Playroom() {
             {activeTool === "cbt-thought-court" && (
               <motion.div key="cbt-thought-court" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <CBTThoughtCourt />
+              </motion.div>
+            )}
+            {activeTool === "act-values-compass" && (
+              <motion.div key="act-values-compass" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <ACTValuesCompass />
               </motion.div>
             )}
           </AnimatePresence>
