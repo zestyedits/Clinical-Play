@@ -16,6 +16,7 @@ const MODALITY_COLORS: Record<string, string> = {
   "Mindfulness": "bg-teal-100/80 text-teal-700 border-teal-200/50",
   "ACT": "bg-cyan-100/80 text-cyan-700 border-cyan-200/50",
   "IFS": "bg-violet-100/80 text-violet-700 border-violet-200/50",
+  "MI": "bg-green-100/80 text-green-700 border-green-200/50",
 };
 
 const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; modality: string }[] }> = {
@@ -69,6 +70,19 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; mod
       { text: "How does the client's relationship with their Inner Critic compare to their relationship with their Wounded Child? The protector-exile dynamic is central to IFS work.", modality: "IFS" },
       { text: "Did the client show signs of blending with any part during the meeting? Watch for sudden emotional shifts or identification with a part's perspective.", modality: "Somatic" },
       { text: "Consider using the Council Record as a reference point in future sessions to track how the client's relationship with their parts evolves over time.", modality: "IFS" },
+    ],
+  },
+  "mi-motivation-garden": {
+    title: "Motivation Garden Prompts",
+    prompts: [
+      { text: "Which DARN category had the most seeds? Desire-heavy change talk may indicate early-stage contemplation, while Need-heavy talk often signals greater urgency.", modality: "MI" },
+      { text: "Compare the client's importance and confidence ratings. A high-importance / low-confidence gap is a key MI target \u2014 focus on building self-efficacy through ability-focused questions.", modality: "MI" },
+      { text: "Which weeds (sustain talk) did the client select? Validate these rather than arguing against them \u2014 'rolling with resistance' is core to MI spirit.", modality: "MI" },
+      { text: "Notice the values the client connected to their change goal. When motivation wavers, returning to these values can reactivate intrinsic motivation.", modality: "MI" },
+      { text: "How specific were the client's commitments? Vague commitments predict lower follow-through. Help them refine toward SMART-style action steps.", modality: "CBT" },
+      { text: "During the reflection step, what did you observe in the client's body? Softening or opening may indicate genuine readiness; tension may signal unresolved ambivalence.", modality: "Somatic" },
+      { text: "Consider the client's change narrative as a whole \u2014 the seeds they planted tell a story about their relationship with change. What themes emerge?", modality: "Narrative" },
+      { text: "How present was the client during the 'Watching Things Grow' step? Their capacity to stay with the reflection may indicate their current window of tolerance for emotional engagement.", modality: "Mindfulness" },
     ],
   },
 };

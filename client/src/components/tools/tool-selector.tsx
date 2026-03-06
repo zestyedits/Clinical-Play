@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Home, Scale, Compass, Shield, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
+import { X, Home, Scale, Compass, Shield, Sprout, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 
@@ -20,6 +20,7 @@ const TOOLS: Tool[] = [
   { id: "cbt-thought-court", label: "The Thought Court", desc: "Put negative thoughts on trial using CBT cognitive restructuring", icon: Scale, status: "active", accentColor: "#7c5cbf", iconClass: "icon-cbt-court", category: "game" },
   { id: "act-values-compass", label: "The Values Compass", desc: "Map your values, spot barriers, and chart a course toward what matters", icon: Compass, status: "active", accentColor: "#2d8a8a", iconClass: "icon-act-compass", category: "game" },
   { id: "ifs-inner-council", label: "The Inner Council", desc: "Discover your inner parts, seat them at a council table, and respond from Self", icon: Shield, status: "active", accentColor: "#b8860b", iconClass: "icon-ifs-council", category: "game" },
+  { id: "mi-motivation-garden", label: "The Motivation Garden", desc: "Grow your motivation for change using seeds, water, and a commitment bouquet", icon: Sprout, status: "active", accentColor: "#2d7a3a", iconClass: "icon-mi-garden", category: "game" },
 ];
 
 interface ToolSelectorProps {

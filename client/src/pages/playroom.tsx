@@ -12,6 +12,7 @@ import { DBTHouseBuilder } from "@/components/tools/dbt-house";
 import { CBTThoughtCourt } from "@/components/tools/cbt-thought-court";
 import { ACTValuesCompass } from "@/components/tools/act-values-compass";
 import { IFSInnerCouncil } from "@/components/tools/ifs-inner-council";
+import { MIMotivationGarden } from "@/components/tools/mi-motivation-garden";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -255,6 +256,7 @@ export default function Playroom() {
   const toolDisplayName = (tool: string) => {
     const names: Record<string, string> = {
       "dbt-house": "The DBT House",
+      "mi-motivation-garden": "The Motivation Garden",
     };
     return names[tool] || tool;
   };
@@ -622,6 +624,11 @@ export default function Playroom() {
             {activeTool === "ifs-inner-council" && (
               <motion.div key="ifs-inner-council" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <IFSInnerCouncil />
+              </motion.div>
+            )}
+            {activeTool === "mi-motivation-garden" && (
+              <motion.div key="mi-motivation-garden" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <MIMotivationGarden />
               </motion.div>
             )}
           </AnimatePresence>
