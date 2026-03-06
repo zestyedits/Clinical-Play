@@ -11,6 +11,7 @@ import { ClinicalInsights } from "@/components/tools/clinical-insights";
 import { DBTHouseBuilder } from "@/components/tools/dbt-house";
 import { CBTThoughtCourt } from "@/components/tools/cbt-thought-court";
 import { ACTValuesCompass } from "@/components/tools/act-values-compass";
+import { IFSInnerCouncil } from "@/components/tools/ifs-inner-council";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -616,6 +617,11 @@ export default function Playroom() {
             {activeTool === "act-values-compass" && (
               <motion.div key="act-values-compass" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <ACTValuesCompass />
+              </motion.div>
+            )}
+            {activeTool === "ifs-inner-council" && (
+              <motion.div key="ifs-inner-council" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <IFSInnerCouncil />
               </motion.div>
             )}
           </AnimatePresence>

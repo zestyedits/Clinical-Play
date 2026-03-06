@@ -1,0 +1,1 @@
+export { IFSInnerCouncil } from "./IFSInnerCouncil";

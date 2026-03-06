@@ -58,6 +58,19 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; mod
       { text: "Consider the body language when the verdict was revealed. What somatic responses did you observe?", modality: "Somatic" },
     ],
   },
+  "ifs-inner-council": {
+    title: "Inner Council Prompts",
+    prompts: [
+      { text: "Which parts did the client select first? The order of recognition often reveals which parts are most active in daily life.", modality: "IFS" },
+      { text: "Did the client hesitate to include any exiles? Reluctance to acknowledge vulnerable parts may indicate strong protector activity.", modality: "IFS" },
+      { text: "How did the client respond to the council table visualization? Did they engage with the metaphor or seem disconnected?", modality: "Play Therapy" },
+      { text: "Notice which Self responses the client chose. Do they lean toward gratitude, reassurance, or boundary-setting with their parts?", modality: "IFS" },
+      { text: "Were any parts left 'unheard'? Resistance to responding to certain parts is clinically significant \u2014 explore what makes those parts difficult to approach.", modality: "IFS" },
+      { text: "How does the client's relationship with their Inner Critic compare to their relationship with their Wounded Child? The protector-exile dynamic is central to IFS work.", modality: "IFS" },
+      { text: "Did the client show signs of blending with any part during the meeting? Watch for sudden emotional shifts or identification with a part's perspective.", modality: "Somatic" },
+      { text: "Consider using the Council Record as a reference point in future sessions to track how the client's relationship with their parts evolves over time.", modality: "IFS" },
+    ],
+  },
 };
 
 interface ClinicalInsightsProps {

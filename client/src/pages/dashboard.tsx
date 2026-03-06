@@ -3,7 +3,7 @@ import { LegalDisclaimer } from "@/components/shared/legal-disclaimer";
 import {
   Plus, Users, Calendar, ArrowRight, Copy, CheckCircle2, Crown, Flame,
   CreditCard, Star, Lock, Sparkles, Lightbulb, HelpCircle, AlertTriangle,
-  Palette, Layers, X, Mail, RefreshCw, User, Square, Play, Compass
+  Palette, Layers, X, Mail, RefreshCw, User, Square, Play, Compass, Shield
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -26,6 +26,7 @@ const ALL_TOOLS: DashboardTool[] = [
   { id: "dbt-house", label: "The DBT House", desc: "Build a house layer by layer while exploring core DBT skills", icon: Layers, tier: "free", emoji: "🏡" },
   { id: "cbt-thought-court", label: "The Thought Court", desc: "Put negative thoughts on trial using CBT cognitive restructuring", icon: Square, tier: "free", emoji: "⚖️" },
   { id: "act-values-compass", label: "The Values Compass", desc: "Map your values, spot barriers, and chart a course toward what matters", icon: Compass, tier: "free", emoji: "🧭" },
+  { id: "ifs-inner-council", label: "The Inner Council", desc: "Discover your inner parts, seat them at a council table, and respond from Self", icon: Shield, tier: "free", emoji: "\u2694\uFE0F" },
 ];
 
 const CLINICAL_TIPS: { tip: string; tool: string }[] = [
