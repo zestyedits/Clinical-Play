@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Home, Scale, Compass, Shield, Sprout, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
+import { X, Home, Scale, Compass, Shield, Sprout, TreePine, Sparkles, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 
@@ -21,6 +21,8 @@ const TOOLS: Tool[] = [
   { id: "act-values-compass", label: "The Values Compass", desc: "Map your values, spot barriers, and chart a course toward what matters", icon: Compass, status: "active", accentColor: "#2d8a8a", iconClass: "icon-act-compass", category: "game" },
   { id: "ifs-inner-council", label: "The Inner Council", desc: "Discover your inner parts, seat them at a council table, and respond from Self", icon: Shield, status: "active", accentColor: "#b8860b", iconClass: "icon-ifs-council", category: "game" },
   { id: "mi-motivation-garden", label: "The Motivation Garden", desc: "Grow your motivation for change using seeds, water, and a commitment bouquet", icon: Sprout, status: "active", accentColor: "#2d7a3a", iconClass: "icon-mi-garden", category: "game" },
+  { id: "somatic-grounding-grove", label: "The Grounding Grove", desc: "Explore your body, rate tension, and practice somatic grounding techniques", icon: TreePine, status: "active", accentColor: "#3a6b3a", iconClass: "icon-grounding-grove", category: "game" },
+  { id: "sfbt-miracle-bridge", label: "The Miracle Bridge", desc: "Walk toward your preferred future using solution-focused questions", icon: Sparkles, status: "active", accentColor: "#5b4a8a", iconClass: "icon-miracle-bridge", category: "game" },
 ];
 
 interface ToolSelectorProps {

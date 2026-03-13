@@ -28,6 +28,8 @@ const ALL_TOOLS: DashboardTool[] = [
   { id: "act-values-compass", label: "The Values Compass", desc: "Map your values, spot barriers, and chart a course toward what matters", icon: Compass, tier: "free", emoji: "🧭" },
   { id: "ifs-inner-council", label: "The Inner Council", desc: "Discover your inner parts, seat them at a council table, and respond from Self", icon: Shield, tier: "free", emoji: "\u2694\uFE0F" },
   { id: "mi-motivation-garden", label: "The Motivation Garden", desc: "Grow your motivation for change using seeds, water, and a commitment bouquet", icon: Sprout, tier: "free", emoji: "\uD83C\uDF31" },
+  { id: "somatic-grounding-grove", label: "The Grounding Grove", desc: "Explore your body, rate tension, and practice somatic grounding techniques", icon: Layers, tier: "free", emoji: "\u{1F333}" },
+  { id: "sfbt-miracle-bridge", label: "The Miracle Bridge", desc: "Walk toward your preferred future using solution-focused questions", icon: Layers, tier: "free", emoji: "\u{1F309}" },
 ];
 
 const CLINICAL_TIPS: { tip: string; tool: string }[] = [

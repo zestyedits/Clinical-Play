@@ -126,7 +126,7 @@ function LibrarySection({
                     <Eye size={13} className="shrink-0" /> Details
                   </button>
                   {tool.status === "active" ? (
-                    <Link href="/playroom/demo" className="flex-1 min-w-0 no-underline">
+                    <Link href={`/playroom/demo?tool=${tool.id}`} className="flex-1 min-w-0 no-underline">
                       <button className="w-full h-9 rounded-xl bg-primary text-primary-foreground text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap overflow-hidden">
                         <Play size={13} className="shrink-0" /> Launch
                       </button>

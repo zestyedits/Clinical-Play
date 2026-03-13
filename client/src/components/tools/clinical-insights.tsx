@@ -85,6 +85,32 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; mod
       { text: "How present was the client during the 'Watching Things Grow' step? Their capacity to stay with the reflection may indicate their current window of tolerance for emotional engagement.", modality: "Mindfulness" },
     ],
   },
+  "somatic-grounding-grove": {
+    title: "Grounding Grove Prompts",
+    prompts: [
+      { text: "Which body region did the client rate with the highest tension? Chronic tension patterns often reflect unprocessed emotional experiences stored somatically.", modality: "Somatic" },
+      { text: "Did the client avoid any body regions? Reluctance to scan certain areas may indicate trauma-related dissociation or body image concerns worth exploring gently.", modality: "Somatic" },
+      { text: "How did the tension ratings shift after practicing techniques? Even small changes demonstrate the client's capacity for self-regulation \u2014 name and celebrate this.", modality: "Somatic" },
+      { text: "Which grounding technique resonated most? This reveals the client's preferred sensory channel (visual, tactile, auditory, kinesthetic) for future interventions.", modality: "Psychoeducation" },
+      { text: "Notice the client's breathing pattern during the exercises. Shallow chest breathing vs. deep belly breathing tells you about their baseline nervous system activation.", modality: "Somatic" },
+      { text: "Did the client seem surprised by any tension they discovered? Building interoceptive awareness \u2014 the ability to notice internal body signals \u2014 is a foundational skill for emotional regulation.", modality: "Mindfulness" },
+      { text: "Consider the sequence of regions explored. Did they start with 'safe' areas (hands, feet) or jump to high-tension zones? This may reflect their approach to difficult emotions.", modality: "Psychodynamic" },
+      { text: "How comfortable was the client with the body-focused exercises? Discomfort with somatic work itself is clinically meaningful and worth exploring without pushing.", modality: "Somatic" },
+    ],
+  },
+  "sfbt-miracle-bridge": {
+    title: "Miracle Bridge Prompts",
+    prompts: [
+      { text: "How detailed was the client's miracle morning description? Vivid, specific imagery suggests a clearer vision of change and stronger motivation to pursue it.", modality: "SFBT" },
+      { text: "When identifying exceptions, did the client recognize their own agency in those moments? Highlighting personal contribution to exceptions builds self-efficacy.", modality: "SFBT" },
+      { text: "Notice the gap between the client's current scaling number and their miracle. A client at 4/10 has already done significant work \u2014 explore what got them from 1 to 4.", modality: "SFBT" },
+      { text: "How realistic was the 'one step forward'? Very small, concrete steps predict higher follow-through than ambitious plans. If it feels too big, help them shrink it.", modality: "SFBT" },
+      { text: "Did the client include other people in their miracle day? The relational elements of their preferred future reveal attachment needs and social support resources.", modality: "SFBT" },
+      { text: "Compare the confidence and motivation scales. Low confidence with high motivation is a therapeutic sweet spot \u2014 the desire is there, and building competence becomes the focus.", modality: "MI" },
+      { text: "What emotions surfaced during the miracle question? Some clients feel hopeful; others feel grief for the gap between reality and desire. Both responses are clinically rich.", modality: "Psychodynamic" },
+      { text: "Consider using the client's own words from their responses as anchors in future sessions. Solution-focused work is most powerful when it uses the client's language.", modality: "SFBT" },
+    ],
+  },
 };
 
 interface ClinicalInsightsProps {

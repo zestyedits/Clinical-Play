@@ -13,6 +13,8 @@ import { CBTThoughtCourt } from "@/components/tools/cbt-thought-court";
 import { ACTValuesCompass } from "@/components/tools/act-values-compass";
 import { IFSInnerCouncil } from "@/components/tools/ifs-inner-council";
 import { MIMotivationGarden } from "@/components/tools/mi-motivation-garden";
+import { GroundingGrove } from "@/components/tools/somatic-grounding-grove";
+import { MiracleBridge } from "@/components/tools/sfbt-miracle-bridge";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -256,7 +258,12 @@ export default function Playroom() {
   const toolDisplayName = (tool: string) => {
     const names: Record<string, string> = {
       "dbt-house": "The DBT House",
+      "cbt-thought-court": "The Thought Court",
+      "act-values-compass": "The Values Compass",
+      "ifs-inner-council": "The Inner Council",
       "mi-motivation-garden": "The Motivation Garden",
+      "somatic-grounding-grove": "The Grounding Grove",
+      "sfbt-miracle-bridge": "The Miracle Bridge",
     };
     return names[tool] || tool;
   };
@@ -629,6 +636,16 @@ export default function Playroom() {
             {activeTool === "mi-motivation-garden" && (
               <motion.div key="mi-motivation-garden" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <MIMotivationGarden />
+              </motion.div>
+            )}
+            {activeTool === "somatic-grounding-grove" && (
+              <motion.div key="somatic-grounding-grove" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <GroundingGrove />
+              </motion.div>
+            )}
+            {activeTool === "sfbt-miracle-bridge" && (
+              <motion.div key="sfbt-miracle-bridge" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <MiracleBridge />
               </motion.div>
             )}
           </AnimatePresence>
