@@ -1,4 +1,4 @@
-import { BODY_REGIONS, type BodyRegion } from "./grove-data";
+import { BODY_REGIONS } from "./grove-data";
 
 interface BodyMapProps {
   selectedRegion: string | null;
@@ -6,6 +6,17 @@ interface BodyMapProps {
   completedRegions: Set<string>;
   onSelectRegion: (regionId: string) => void;
 }
+
+const REGION_LAYOUT: Record<string, { x: number; y: number; w: number; h: number }> = {
+  head:      { x: 37, y: 0,  w: 26, h: 9 },
+  throat:    { x: 39, y: 11, w: 22, h: 7 },
+  shoulders: { x: 22, y: 20, w: 56, h: 7 },
+  chest:     { x: 32, y: 29, w: 36, h: 10 },
+  stomach:   { x: 35, y: 41, w: 30, h: 9 },
+  hands:     { x: 10, y: 41, w: 18, h: 9 },
+  legs:      { x: 30, y: 55, w: 40, h: 16 },
+  feet:      { x: 30, y: 76, w: 40, h: 9 },
+};
 
 export function BodyMap({ selectedRegion, regionTension, completedRegions, onSelectRegion }: BodyMapProps) {
   const getTensionColor = (tension: number) => {
@@ -24,17 +35,19 @@ export function BodyMap({ selectedRegion, regionTension, completedRegions, onSel
   };
 
   return (
-    <div style={{ position: "relative", width: "100%", maxWidth: 280, height: "100%", maxHeight: 520, margin: "0 auto" }}>
-      <svg viewBox="0 0 100 85" style={{ width: "100%", height: "100%", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.2))" }}>
-        <ellipse cx="50" cy="8" rx="7" ry="8" fill="rgba(212, 232, 208, 0.08)" stroke="rgba(212, 232, 208, 0.2)" strokeWidth="0.5" />
-        <line x1="50" y1="16" x2="50" y2="50" stroke="rgba(212, 232, 208, 0.15)" strokeWidth="4" strokeLinecap="round" />
-        <line x1="50" y1="22" x2="30" y2="42" stroke="rgba(212, 232, 208, 0.15)" strokeWidth="3" strokeLinecap="round" />
-        <line x1="50" y1="22" x2="70" y2="42" stroke="rgba(212, 232, 208, 0.15)" strokeWidth="3" strokeLinecap="round" />
-        <line x1="50" y1="50" x2="38" y2="82" stroke="rgba(212, 232, 208, 0.15)" strokeWidth="3.5" strokeLinecap="round" />
-        <line x1="50" y1="50" x2="62" y2="82" stroke="rgba(212, 232, 208, 0.15)" strokeWidth="3.5" strokeLinecap="round" />
+    <div style={{ position: "relative", width: "100%", maxWidth: 300, margin: "0 auto", aspectRatio: "3 / 5" }}>
+      <svg viewBox="0 0 120 200" preserveAspectRatio="xMidYMid meet" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.2))" }}>
+        <ellipse cx="60" cy="12" rx="10" ry="12" fill="rgba(212, 232, 208, 0.06)" stroke="rgba(212, 232, 208, 0.15)" strokeWidth="0.6" />
+        <line x1="60" y1="24" x2="60" y2="100" stroke="rgba(212, 232, 208, 0.12)" strokeWidth="5" strokeLinecap="round" />
+        <line x1="60" y1="42" x2="25" y2="90" stroke="rgba(212, 232, 208, 0.12)" strokeWidth="3.5" strokeLinecap="round" />
+        <line x1="60" y1="42" x2="95" y2="90" stroke="rgba(212, 232, 208, 0.12)" strokeWidth="3.5" strokeLinecap="round" />
+        <line x1="60" y1="100" x2="42" y2="180" stroke="rgba(212, 232, 208, 0.12)" strokeWidth="4" strokeLinecap="round" />
+        <line x1="60" y1="100" x2="78" y2="180" stroke="rgba(212, 232, 208, 0.12)" strokeWidth="4" strokeLinecap="round" />
       </svg>
 
       {BODY_REGIONS.map((region) => {
+        const layout = REGION_LAYOUT[region.id];
+        if (!layout) return null;
         const tension = regionTension[region.id] || 0;
         const isSelected = selectedRegion === region.id;
         const isCompleted = completedRegions.has(region.id);
@@ -46,10 +59,10 @@ export function BodyMap({ selectedRegion, regionTension, completedRegions, onSel
             data-testid={`button-body-${region.id}`}
             style={{
               position: "absolute",
-              left: `${region.x}%`,
-              top: `${region.y}%`,
-              width: `${region.width}%`,
-              height: `${region.height}%`,
+              left: `${layout.x}%`,
+              top: `${layout.y}%`,
+              width: `${layout.w}%`,
+              height: `${layout.h}%`,
               background: isSelected
                 ? "rgba(100, 180, 100, 0.3)"
                 : getTensionColor(tension),
@@ -58,13 +71,13 @@ export function BodyMap({ selectedRegion, regionTension, completedRegions, onSel
                 : isCompleted
                   ? "2px solid rgba(100, 200, 100, 0.4)"
                   : "1.5px solid rgba(212, 232, 208, 0.15)",
-              borderRadius: region.id === "head" ? "50%" : 8,
+              borderRadius: region.id === "head" ? "50%" : 10,
               cursor: "pointer",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 1,
+              gap: 2,
               transition: "all 0.25s ease",
               boxShadow: isSelected
                 ? "0 0 20px rgba(100, 200, 100, 0.3)"
@@ -75,14 +88,14 @@ export function BodyMap({ selectedRegion, regionTension, completedRegions, onSel
               padding: 2,
             }}
           >
-            <span style={{ fontSize: "clamp(10px, 2vw, 14px)", lineHeight: 1 }}>
+            <span style={{ fontSize: "clamp(11px, 2.5vw, 16px)", lineHeight: 1 }}>
               {isCompleted ? "\u2705" : region.emoji}
             </span>
-            <span style={{ fontSize: "clamp(6px, 1.2vw, 8px)", color: "rgba(212, 232, 208, 0.7)", fontWeight: 600, whiteSpace: "nowrap" }}>
+            <span style={{ fontSize: "clamp(7px, 1.4vw, 9px)", color: "rgba(212, 232, 208, 0.7)", fontWeight: 600, whiteSpace: "nowrap" }}>
               {region.name.split(" ")[0]}
             </span>
             {tension > 0 && !isCompleted && (
-              <span style={{ fontSize: "clamp(6px, 1vw, 7px)", color: tension > 5 ? "rgba(220, 140, 60, 0.9)" : "rgba(212, 232, 208, 0.5)" }}>
+              <span style={{ fontSize: "clamp(6px, 1.1vw, 7px)", color: tension > 5 ? "rgba(220, 140, 60, 0.9)" : "rgba(212, 232, 208, 0.5)" }}>
                 {tension}/10
               </span>
             )}
