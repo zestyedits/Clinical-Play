@@ -12,50 +12,55 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #1a1a2e 0%, #2a2040 30%, #1e2848 70%, #141428 100%)",
-        fontFamily: "Inter, sans-serif",
-        color: "#d4d0e8",
+        background: "#1c1e2a",
+        fontFamily: "'Lora', 'Georgia', serif",
+        color: "#e0ddd5",
         overflow: "auto",
         borderRadius: 12,
+        position: "relative",
       }}
     >
-      <div style={{ maxWidth: 480, width: "90%", padding: "36px 24px", textAlign: "center" }}>
-        <div style={{ fontSize: 48, marginBottom: 8, lineHeight: 1 }}>{"\u{1F309}"}</div>
+      <div style={{
+        position: "absolute", inset: 0, opacity: 0.06,
+        background: "radial-gradient(ellipse 80% 50% at 50% 80%, rgba(212, 168, 83, 0.4), transparent)",
+      }} />
 
-        <h1 style={{ fontSize: "clamp(22px, 4.5vw, 30px)", fontWeight: 700, margin: "0 0 6px", letterSpacing: "-0.5px", color: "#d4d0e8" }}>
+      <div style={{ maxWidth: 460, width: "90%", padding: "36px 24px", textAlign: "center", position: "relative", zIndex: 1 }}>
+        <svg width="80" height="48" viewBox="0 0 80 48" style={{ marginBottom: 16, opacity: 0.85 }}>
+          <path d="M 5 38 Q 40 8 75 38" stroke="#c4a25a" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          <path d="M 5 38 Q 40 12 75 38" stroke="rgba(196, 162, 90, 0.15)" strokeWidth="10" fill="none" strokeLinecap="round" />
+          {[0, 0.2, 0.4, 0.6, 0.8, 1].map((t, i) => {
+            const x = 5 + t * 70;
+            const y = 38 - Math.sin(t * Math.PI) * 26 - t * 4;
+            return <circle key={i} cx={x} cy={y} r="3" fill={i === 5 ? "#d4a853" : "rgba(196, 162, 90, 0.5)"} />;
+          })}
+        </svg>
+
+        <h1 style={{ fontSize: "clamp(24px, 5vw, 32px)", fontWeight: 600, margin: "0 0 6px", letterSpacing: "-0.3px", color: "#e0ddd5", lineHeight: 1.2 }}>
           The Miracle Bridge
         </h1>
 
-        <p style={{ fontSize: "clamp(12px, 2.2vw, 14px)", color: "rgba(212, 208, 232, 0.6)", margin: "0 0 24px", fontWeight: 400 }}>
-          Walk Toward Your Preferred Future
+        <p style={{ fontSize: "clamp(13px, 2.4vw, 15px)", color: "rgba(224, 221, 213, 0.5)", margin: "0 0 28px", fontFamily: "Inter, sans-serif", fontWeight: 400, fontStyle: "italic" }}>
+          A journey from where you are to where you want to be
         </p>
 
-        <div style={{ background: "rgba(212, 208, 232, 0.06)", borderRadius: 12, padding: "18px 16px", marginBottom: 24, border: "1px solid rgba(120, 100, 180, 0.2)", textAlign: "left" }}>
-          <p style={{ fontSize: "clamp(12px, 2.2vw, 14px)", lineHeight: 1.75, margin: 0, color: "rgba(212, 208, 232, 0.85)" }}>
-            In this activity, you'll walk across a bridge from where you are today toward your ideal future. Along the way, you'll answer powerful questions that help you discover what you truly want and what's already working.
-          </p>
-          <p style={{ fontSize: "clamp(11px, 2vw, 13px)", lineHeight: 1.75, margin: "12px 0 0", color: "rgba(212, 208, 232, 0.6)" }}>
-            <strong style={{ color: "rgba(212, 208, 232, 0.85)" }}>How it works:</strong>{" "}
-            Step by step, move across the bridge. Each stepping stone asks a question rooted in Solution-Focused Brief Therapy. Your answers build a vision of change that's already beginning.
+        <div style={{ background: "rgba(224, 221, 213, 0.04)", borderRadius: 14, padding: "20px 18px", marginBottom: 28, border: "1px solid rgba(196, 162, 90, 0.12)", textAlign: "left" }}>
+          <p style={{ fontSize: "clamp(13px, 2.3vw, 15px)", lineHeight: 1.8, margin: 0, color: "rgba(224, 221, 213, 0.8)", fontFamily: "Inter, sans-serif" }}>
+            You'll cross seven stepping stones, each one asking a question rooted in Solution-Focused therapy. By the end, you'll have a clear picture of the future you're building — and evidence that it's already started.
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center", marginBottom: 28, flexWrap: "wrap" }}>
           {[
-            { icon: "\u{1F4CD}", label: "Where You Are", sub: "Name your starting point" },
-            { icon: "\u{2728}", label: "The Miracle", sub: "Envision the change" },
-            { icon: "\u{1F50D}", label: "Exceptions", sub: "Find what's working" },
-            { icon: "\u{1F305}", label: "Miracle Day", sub: "See the full picture" },
-          ].map((step, i) => (
-            <div
-              key={i}
-              style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(212, 208, 232, 0.04)", borderRadius: 8, padding: "8px 10px", border: "1px solid rgba(120, 100, 180, 0.1)" }}
-            >
-              <span style={{ fontSize: 16 }}>{step.icon}</span>
-              <div style={{ textAlign: "left" }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(212, 208, 232, 0.85)" }}>{step.label}</div>
-                <div style={{ fontSize: 9, color: "rgba(212, 208, 232, 0.45)", marginTop: 1 }}>{step.sub}</div>
-              </div>
+            { label: "Name your starting point", color: "#8a7768" },
+            { label: "Envision the miracle", color: "#9b87c4" },
+            { label: "Find what's working", color: "#c4943a" },
+            { label: "See the full picture", color: "#d4a853" },
+          ].map((item, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ width: 7, height: 7, borderRadius: "50%", background: item.color, flexShrink: 0 }} />
+              <span style={{ fontSize: 12, color: "rgba(224, 221, 213, 0.55)", fontFamily: "Inter, sans-serif" }}>{item.label}</span>
+              {i < 3 && <span style={{ color: "rgba(224, 221, 213, 0.15)", marginLeft: 4, fontFamily: "Inter, sans-serif" }}>/</span>}
             </div>
           ))}
         </div>
@@ -64,8 +69,8 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
           onClick={onStart}
           data-testid="button-start-miracle-bridge"
           style={{
-            background: "linear-gradient(135deg, #5b4a8a, #4a3a7a)",
-            color: "#d4d0e8",
+            background: "#c4a25a",
+            color: "#1c1e2a",
             border: "none",
             borderRadius: 10,
             padding: "14px 40px",
@@ -73,13 +78,14 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
             fontWeight: 600,
             cursor: "pointer",
             fontFamily: "Inter, sans-serif",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+            boxShadow: "0 2px 12px rgba(196, 162, 90, 0.25)",
             width: "100%",
-            maxWidth: 260,
-            transition: "transform 0.15s",
+            maxWidth: 240,
+            transition: "transform 0.15s, box-shadow 0.15s",
+            letterSpacing: "0.3px",
           }}
-          onMouseOver={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
-          onMouseOut={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+          onMouseOver={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(196, 162, 90, 0.35)"; }}
+          onMouseOut={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(196, 162, 90, 0.25)"; }}
         >
           Begin the Journey
         </button>

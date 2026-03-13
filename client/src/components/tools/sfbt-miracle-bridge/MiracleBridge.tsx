@@ -63,7 +63,7 @@ export function MiracleBridge() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: "linear-gradient(170deg, #1a1a2e 0%, #2a2040 30%, #1e2848 60%, #141428 100%)",
+        background: "#1c1e2a",
         fontFamily: "Inter, sans-serif",
         overflow: "hidden",
         position: "relative",
@@ -76,38 +76,39 @@ export function MiracleBridge() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "10px 16px",
-          background: "rgba(26, 26, 46, 0.94)",
-          borderBottom: "1px solid rgba(120, 100, 180, 0.2)",
+          background: "rgba(28, 30, 42, 0.98)",
+          borderBottom: "1px solid rgba(224, 221, 213, 0.06)",
           zIndex: 10,
           flexShrink: 0,
-          backdropFilter: "blur(10px)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 18 }}>{"\u{1F309}"}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <svg width="22" height="14" viewBox="0 0 22 14" style={{ opacity: 0.7 }}>
+            <path d="M 1 12 Q 11 1 21 12" stroke="#c4a25a" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+          </svg>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#d4d0e8", lineHeight: 1.2 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#e0ddd5", lineHeight: 1.2, fontFamily: "'Lora', Georgia, serif" }}>
               The Miracle Bridge
             </div>
-            <div style={{ fontSize: 10, color: "rgba(212, 208, 232, 0.5)" }}>
+            <div style={{ fontSize: 10, color: "rgba(224, 221, 213, 0.35)" }}>
               Walk toward your preferred future
             </div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ fontSize: 11, color: "rgba(212, 208, 232, 0.5)" }}>
-            {completedSteps.size}/{BRIDGE_STEPS.length} steps
+          <div style={{ fontSize: 11, color: "rgba(224, 221, 213, 0.35)" }}>
+            {completedSteps.size}/{BRIDGE_STEPS.length}
           </div>
           <button
             onClick={toggleMute}
             data-testid="button-bridge-mute"
             style={{
-              background: "rgba(212, 208, 232, 0.1)",
-              border: "1px solid rgba(120, 100, 180, 0.2)",
-              borderRadius: 8,
-              padding: "5px 10px",
-              color: "#d4d0e8",
-              fontSize: 16,
+              background: "rgba(224, 221, 213, 0.04)",
+              border: "1px solid rgba(224, 221, 213, 0.06)",
+              borderRadius: 6,
+              padding: "4px 8px",
+              color: "#e0ddd5",
+              fontSize: 14,
               cursor: "pointer",
             }}
           >
