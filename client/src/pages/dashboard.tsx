@@ -5,6 +5,7 @@ import {
   CreditCard, Star, Lock, CheckCircle, Lightbulb, HelpCircle, AlertTriangle, Clock,
   Palette, Layers, X, Mail, RefreshCw, User, Square, Play, Compass, Shield, Sprout
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -51,25 +52,34 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
     }
   }, [isOpen, initialTool, onClose]);
 
-  if (!isOpen || !initialTool) return null;
-
-  const toolInfo = ALL_TOOLS.find(t => t.id === initialTool);
+  const toolInfo = initialTool ? ALL_TOOLS.find(t => t.id === initialTool) : null;
   const todayStr = new Date().toLocaleDateString();
   const defaultName = `Session \u2014 ${todayStr}`;
 
   const handleStart = () => {
+    if (!initialTool) return;
     const sessionName = toolInfo ? `${toolInfo.label} \u2014 ${todayStr}` : defaultName;
     onSubmit(sessionName, "solo", initialTool);
   };
 
+  if (!isOpen || !initialTool) return null;
+
   return (
     <>
-      <div
+      <motion.div
         className="fixed inset-0 bg-black/30 z-50"
         onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
       />
-      <div
+      <motion.div
         className="fixed inset-x-4 top-[10%] bottom-auto max-h-[85vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[440px] md:max-h-[90vh] z-50 bg-card border border-border rounded-2xl shadow-2xl"
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97, y: 8 }}
+        transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
       >
         <div className="p-6 space-y-5">
           <div className="flex items-center justify-between mb-2">
@@ -106,7 +116,7 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
             Solo session with {toolInfo?.label || "selected tool"} — jump right in
           </p>
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }
@@ -701,12 +711,18 @@ export default function Dashboard() {
           <Palette size={18} className="text-accent" /> All Tools
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {ALL_TOOLS.map((tool) => {
+          {ALL_TOOLS.map((tool, i) => {
             const isLocked = tool.tier === "pro" && !isPro;
             const isFavorited = favorites.includes(tool.id);
 
             return (
-              <GlassCard key={tool.id} className={`relative p-4 ${isLocked ? "opacity-75" : ""}`} hoverEffect={!isLocked}>
+              <motion.div
+                key={tool.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+              <GlassCard className={`relative p-4 ${isLocked ? "opacity-75" : ""}`} hoverEffect={!isLocked}>
                 {isLocked && (
                   <div className="absolute inset-0 bg-card/60 rounded-2xl z-10 flex items-center justify-center">
                     <button
@@ -750,6 +766,7 @@ export default function Dashboard() {
                   </button>
                 )}
               </GlassCard>
+              </motion.div>
             );
           })}
         </div>
@@ -1076,13 +1093,17 @@ export default function Dashboard() {
         <LegalDisclaimer />
       </div>
 
-      <SessionCreationModal
-        isOpen={showNewSession}
-        onClose={() => setShowNewSession(false)}
-        onSubmit={(name, mode, tool) => createSession.mutate({ name, mode, tool })}
-        isPending={createSession.isPending}
-        initialTool={preselectedTool}
-      />
+      <AnimatePresence>
+        {showNewSession && preselectedTool && (
+          <SessionCreationModal
+            isOpen={showNewSession}
+            onClose={() => setShowNewSession(false)}
+            onSubmit={(name, mode, tool) => createSession.mutate({ name, mode, tool })}
+            isPending={createSession.isPending}
+            initialTool={preselectedTool}
+          />
+        )}
+      </AnimatePresence>
 
       <OnboardingModal
         isOpen={showOnboarding}
