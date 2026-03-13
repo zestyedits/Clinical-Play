@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Search, Grid3X3, List, Star, Filter, X, ChevronDown, ChevronRight,
   Clock, Zap, Play, Eye, Heart, BookOpen, AlertTriangle, Shield, FolderPlus,
-  Plus, Trash2, SlidersHorizontal, Sparkles, ArrowLeft, LayoutGrid,
+  Plus, Trash2, SlidersHorizontal, Wrench, ArrowLeft, LayoutGrid, Gamepad2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -329,7 +329,7 @@ function ToolDetailDrawer({
 
           {/* Expandable sections */}
           {[
-            { key: "adaptations", label: "Adaptations", icon: <Sparkles size={14} />, content: tool.adaptations },
+            { key: "adaptations", label: "Adaptations", icon: <Wrench size={14} />, content: tool.adaptations },
             { key: "pitfalls", label: "Watch for", icon: <AlertTriangle size={14} />, content: tool.pitfalls },
             { key: "safety", label: "Safety & containment", icon: <Shield size={14} />, content: tool.safetyNotes },
           ].map(section => (
@@ -761,7 +761,7 @@ export default function Library() {
                     <LibrarySection
                       title="Games"
                       subtitle="Interactive therapeutic activities and skill-building exercises"
-                      icon={<Sparkles size={16} />}
+                      icon={<Gamepad2 size={16} />}
                       items={games}
                       viewMode={viewMode}
                       favorites={favorites}

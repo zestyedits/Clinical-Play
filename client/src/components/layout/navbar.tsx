@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Library, LogOut, Menu, X, Sparkles, Inbox, Shield, SlidersHorizontal } from "lucide-react";
+import { LayoutDashboard, Library, LogOut, Menu, X, ArrowRight, Inbox, Shield, SlidersHorizontal } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth, useAuthFetch } from "@/hooks/use-auth";
@@ -309,7 +309,7 @@ export function Navbar() {
                       className="flex items-center justify-center gap-2 px-4 py-2.5 mt-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground no-underline btn-warm"
                       data-testid="link-mobile-get-started"
                     >
-                      <Sparkles size={14} />
+                      <ArrowRight size={14} />
                       Get Started
                     </Link>
                   </>

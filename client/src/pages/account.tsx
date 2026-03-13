@@ -8,7 +8,7 @@ import {
   ArrowLeft, Crown, CreditCard, Receipt, Users, UserPlus, Shield,
   Lock, Smartphone, Monitor, Tablet, KeyRound, Eye, Download, Trash2,
   ChevronDown, ChevronRight, Check, X, Copy, Volume2, VolumeX,
-  Zap, Sparkles, AlertTriangle, Mail, Clock
+  Zap, AlertTriangle, Mail, Clock, SlidersHorizontal, Info
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
@@ -132,7 +132,7 @@ function PlanBillingSection() {
           <div className="flex items-center gap-3 mb-3">
             <div className="px-3 py-1 rounded-full bg-accent/15 border border-accent/25">
               <span className="text-xs font-bold text-accent flex items-center gap-1">
-                <Sparkles size={12} /> Founding Member
+                <Crown size={12} /> Founding Member
               </span>
             </div>
             <span className="text-xs text-muted-foreground">Lifetime Access</span>
@@ -425,7 +425,7 @@ function PreferencesSection() {
         <div className="space-y-3">
           <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/15 border border-border/25">
             <div className="flex items-center gap-3">
-              <Sparkles size={18} className="text-accent" />
+              <SlidersHorizontal size={18} className="text-accent" />
               <div>
                 <p className="text-sm font-medium text-primary">Animations</p>
                 <p className="text-xs text-muted-foreground">Enable smooth transitions and micro-interactions</p>

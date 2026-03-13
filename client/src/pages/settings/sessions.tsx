@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Play, Eye, EyeOff, Save, CheckCircle2, FileText,
-  ChevronDown, Tag, ExternalLink, ShieldAlert, Sparkles
+  ChevronDown, Tag, ExternalLink, ShieldAlert, Info
 } from "lucide-react";
 import { SettingsLayout } from "./settings-layout";
 
@@ -119,7 +119,7 @@ export default function SessionSettings() {
 
         <div className="mt-5 p-3 rounded-xl bg-purple-500/5 border border-purple-500/15">
           <p className="text-[11px] text-muted-foreground/80">
-            <Sparkles size={11} className="inline mr-1 text-purple-500" />
+            <Info size={11} className="inline mr-1 text-purple-500" />
             More session defaults (tool preferences, timer settings) will be available as new tools are added.
           </p>
         </div>

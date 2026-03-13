@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft, Save, User, Briefcase, Shield, Eye, EyeOff, CheckCircle2,
-  Palette, Check, Heart, Sparkles, SlidersHorizontal,
+  Palette, Check, Heart, Info, SlidersHorizontal,
   FileText, Tag, ExternalLink, ChevronDown, ShieldAlert, ChevronRight
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -634,7 +634,7 @@ export default function WorkspacePage() {
 
               <div className="mt-5 p-3 rounded-xl bg-primary/5 border border-primary/15">
                 <p className="text-[11px] text-muted-foreground/80">
-                  <Sparkles size={11} className="inline mr-1 text-primary" />
+                  <Info size={11} className="inline mr-1 text-primary" />
                   These style preferences shape the default feel of your sessions. You can adjust them on a per-session basis.
                 </p>
               </div>

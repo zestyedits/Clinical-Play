@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Crown, CreditCard, Receipt, ChevronDown, Trash2,
-  Check, Sparkles, AlertTriangle, RefreshCw, X
+  Check, AlertTriangle, RefreshCw, X
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth, createAuthFetch } from "@/hooks/use-auth";
@@ -199,7 +199,7 @@ export default function BillingSettings() {
           <div className="flex items-center gap-3 mb-3">
             <div className="px-3 py-1 rounded-full bg-accent/15 border border-accent/25">
               <span className="text-xs font-bold text-accent flex items-center gap-1">
-                {isFounder && <Sparkles size={12} />}
+                {isFounder && <Crown size={12} />}
                 {PLAN_LABELS[plan] || plan}
               </span>
             </div>

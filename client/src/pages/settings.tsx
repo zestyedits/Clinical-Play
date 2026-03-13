@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import {
   User, Briefcase, Palette, Play, Crown, Users, Shield, Lock,
   Settings, Save, CheckCircle2, Eye, EyeOff, ChevronRight,
-  ShieldAlert, Sparkles, Volume2, VolumeX, SlidersHorizontal,
+  ShieldAlert, Volume2, VolumeX, SlidersHorizontal, Lightbulb, Info,
   Check, CreditCard, Receipt, ChevronDown, UserPlus, Clock,
   Zap, Smartphone, Monitor, Tablet, Mail, KeyRound, Download,
   Trash2, AlertTriangle, FileText, Tag, ExternalLink
@@ -893,18 +893,18 @@ export default function SettingsPage() {
 
                 <div className="mt-5 p-3 rounded-xl bg-primary/5 border border-primary/15">
                   <p className="text-[11px] text-muted-foreground/80">
-                    <Sparkles size={11} className="inline mr-1 text-primary" />
+                    <Info size={11} className="inline mr-1 text-primary" />
                     These style preferences shape the default feel of your sessions. You can adjust them on a per-session basis.
                   </p>
                 </div>
               </GlassCard>
 
               <GlassCard className="p-6 md:p-8" hoverEffect={false}>
-                <SectionHeader icon={Sparkles} title="Experience" iconColor="bg-gradient-to-br from-accent/12 to-accent/4" />
+                <SectionHeader icon={SlidersHorizontal} title="Experience" iconColor="bg-gradient-to-br from-accent/12 to-accent/4" />
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/15 border border-border/25">
                     <div className="flex items-center gap-3">
-                      <Sparkles size={18} className="text-accent" />
+                      <SlidersHorizontal size={18} className="text-accent" />
                       <div>
                         <p className="text-sm font-medium text-foreground">Animations</p>
                         <p className="text-xs text-muted-foreground">Enable smooth transitions and micro-interactions</p>
@@ -978,7 +978,7 @@ export default function SettingsPage() {
 
                 <div className="mt-5 p-3 rounded-xl bg-purple-500/5 border border-purple-500/15">
                   <p className="text-[11px] text-muted-foreground/80">
-                    <Sparkles size={11} className="inline mr-1 text-purple-500" />
+                    <Info size={11} className="inline mr-1 text-purple-500" />
                     More session defaults (tool preferences, timer settings) will be available as new tools are added.
                   </p>
                 </div>
@@ -1023,7 +1023,7 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-3 mb-3">
                     <div className="px-3 py-1 rounded-full bg-accent/15 border border-accent/25">
                       <span className="text-xs font-bold text-accent flex items-center gap-1">
-                        <Sparkles size={12} /> Founding Member
+                        <Crown size={12} /> Founding Member
                       </span>
                     </div>
                     <span className="text-xs text-muted-foreground">Lifetime Access</span>

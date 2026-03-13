@@ -2,7 +2,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { LegalDisclaimer } from "@/components/shared/legal-disclaimer";
 import {
   Plus, Users, Calendar, ArrowRight, Copy, CheckCircle2, Crown, Flame,
-  CreditCard, Star, Lock, Sparkles, Lightbulb, HelpCircle, AlertTriangle,
+  CreditCard, Star, Lock, CheckCircle, Lightbulb, HelpCircle, AlertTriangle, Clock,
   Palette, Layers, X, Mail, RefreshCw, User, Square, Play, Compass, Shield, Sprout
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -167,7 +167,7 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
           {step === 2 && (
             <div className="p-8 pt-4 text-center">
               <div className="w-20 h-20 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center">
-                <Sparkles size={36} className="text-accent" />
+                <CheckCircle size={36} className="text-accent" />
               </div>
               <h2 className="font-serif text-2xl text-foreground mb-3">You're All Set</h2>
               <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
@@ -196,7 +196,6 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
             >
               {step === 2 ? (
                 <>
-                  <Sparkles size={16} />
                   Start Your First Session
                 </>
               ) : (
@@ -975,7 +974,7 @@ export default function Dashboard() {
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/5 border border-primary/10"
             data-testid="banner-trial"
           >
-            <Sparkles size={14} className="text-primary/60 shrink-0" />
+            <Clock size={14} className="text-primary/60 shrink-0" />
             <p className="text-xs text-primary/70 font-medium">
               Free trial — {trialDaysLeft} {trialDaysLeft === 1 ? "day" : "days"} remaining
             </p>

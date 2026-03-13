@@ -5,8 +5,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
-  Palette, Sparkles, Volume2, VolumeX, Eye,
-  SlidersHorizontal, Check, CheckCircle2
+  Palette, SlidersHorizontal, Volume2, VolumeX, Eye, Info,
+  Check, CheckCircle2
 } from "lucide-react";
 import { useTheme, accentPresets } from "@/hooks/use-theme";
 import { SettingsLayout } from "./settings-layout";
@@ -246,7 +246,7 @@ export default function AppearanceSettings() {
 
         <div className="mt-5 p-3 rounded-xl bg-primary/5 border border-primary/15">
           <p className="text-[11px] text-muted-foreground/80">
-            <Sparkles size={11} className="inline mr-1 text-primary" />
+            <Info size={11} className="inline mr-1 text-primary" />
             These style preferences shape the default feel of your sessions. You can adjust them on a per-session basis.
           </p>
         </div>
@@ -255,7 +255,7 @@ export default function AppearanceSettings() {
       <GlassCard className="p-6 md:p-8" hoverEffect={false}>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent/12 to-accent/4 flex items-center justify-center shadow-sm">
-            <Sparkles size={18} className="text-accent" strokeWidth={1.8} />
+            <SlidersHorizontal size={18} className="text-accent" strokeWidth={1.8} />
           </div>
           <h2 className="font-serif text-lg text-foreground tracking-tight">Experience</h2>
         </div>
@@ -263,7 +263,7 @@ export default function AppearanceSettings() {
         <div className="space-y-3">
           <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/15 border border-border/25">
             <div className="flex items-center gap-3">
-              <Sparkles size={18} className="text-accent" />
+              <SlidersHorizontal size={18} className="text-accent" />
               <div>
                 <p className="text-sm font-medium text-foreground">Animations</p>
                 <p className="text-xs text-muted-foreground">Enable smooth transitions and micro-interactions</p>

@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lightbulb, MessageCircle, BookOpen, Sparkles, X, GripHorizontal } from "lucide-react";
+import { Lightbulb, MessageCircle, BookOpen, X, GripHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MODALITY_COLORS: Record<string, string> = {
