@@ -700,62 +700,56 @@ export default function Dashboard() {
         <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
           <Palette size={18} className="text-accent" /> All Tools
         </h2>
-        <div className="columns-1 sm:columns-2 gap-3 space-y-3">
-          {ALL_TOOLS.map((tool, i) => {
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {ALL_TOOLS.map((tool) => {
             const isLocked = tool.tier === "pro" && !isPro;
             const isFavorited = favorites.includes(tool.id);
-            const isExpanded = i === 0 || i === 3 || i === 5;
 
             return (
-              <div
-                key={tool.id}
-                className="break-inside-avoid"
-              >
-                <GlassCard className={`relative ${isLocked ? "opacity-75" : ""} ${isExpanded ? "p-6" : "p-5"}`} hoverEffect={!isLocked}>
-                  {isLocked && (
-                    <div className="absolute inset-0 bg-card/60 rounded-2xl z-10 flex items-center justify-center">
-                      <button
-                        onClick={() => checkout.mutate("monthly")}
-                        className="bg-primary text-primary-foreground px-5 py-2.5 rounded-2xl text-sm font-medium shadow-md flex items-center gap-2 cursor-pointer hover:brightness-105 transition-all btn-warm"
-                        data-testid={`button-upgrade-${tool.id}`}
-                      >
-                        <Lock size={14} /> Upgrade to Unlock
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="flex items-start justify-between mb-3">
-                    <div className={`${isExpanded ? "w-14 h-14" : "w-12 h-12"} rounded-2xl bg-gradient-to-br from-secondary/60 to-secondary/30 flex items-center justify-center shrink-0`}>
-                      <span className={isExpanded ? "text-3xl" : "text-2xl"}>{tool.emoji}</span>
-                    </div>
+              <GlassCard key={tool.id} className={`relative p-4 ${isLocked ? "opacity-75" : ""}`} hoverEffect={!isLocked}>
+                {isLocked && (
+                  <div className="absolute inset-0 bg-card/60 rounded-2xl z-10 flex items-center justify-center">
                     <button
-                      onClick={() => toggleFavorite(tool.id)}
-                      className="p-1.5 rounded-xl hover:bg-secondary/50 transition-colors cursor-pointer"
-                      data-testid={`button-favorite-${tool.id}`}
+                      onClick={() => checkout.mutate("monthly")}
+                      className="bg-primary text-primary-foreground px-4 py-2 rounded-xl text-xs font-medium shadow-md flex items-center gap-1.5 cursor-pointer hover:brightness-105 transition-all btn-warm"
+                      data-testid={`button-upgrade-${tool.id}`}
                     >
-                      <Star size={14} className={isFavorited ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40"} />
+                      <Lock size={12} /> Unlock
                     </button>
                   </div>
+                )}
 
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-medium text-foreground text-sm">{tool.label}</h3>
-                    {tool.tier === "pro" && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold border bg-primary/10 text-primary border-primary/20">PRO</span>
-                    )}
+                <div className="flex items-center justify-between mb-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-secondary/40 flex items-center justify-center shrink-0">
+                    <span className="text-xl">{tool.emoji}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-3">{tool.desc}</p>
+                  <button
+                    onClick={() => toggleFavorite(tool.id)}
+                    className="p-1 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer"
+                    data-testid={`button-favorite-${tool.id}`}
+                  >
+                    <Star size={13} className={isFavorited ? "text-amber-500 fill-amber-500" : "text-muted-foreground/30"} />
+                  </button>
+                </div>
 
-                  {!isLocked && (
-                    <button
-                      onClick={() => { setPreselectedTool(tool.id); setShowNewSession(true); }}
-                      className="w-full px-4 py-2.5 rounded-xl text-xs font-medium transition-colors cursor-pointer flex items-center justify-center gap-1 border bg-primary/10 text-primary border-primary/15 hover:bg-primary/15"
-                      data-testid={`button-launch-${tool.id}`}
-                    >
-                      Launch <ArrowRight size={12} />
-                    </button>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <h3 className="font-medium text-foreground text-xs leading-tight">{tool.label}</h3>
+                  {tool.tier === "pro" && (
+                    <span className="text-[9px] px-1 py-0.5 rounded-full font-semibold border bg-primary/10 text-primary border-primary/20">PRO</span>
                   )}
-                </GlassCard>
-              </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground mb-3 leading-relaxed line-clamp-2">{tool.desc}</p>
+
+                {!isLocked && (
+                  <button
+                    onClick={() => { setPreselectedTool(tool.id); setShowNewSession(true); }}
+                    className="w-full px-3 py-2 rounded-lg text-[11px] font-medium transition-colors cursor-pointer flex items-center justify-center gap-1 border bg-primary/8 text-primary border-primary/12 hover:bg-primary/15"
+                    data-testid={`button-launch-${tool.id}`}
+                  >
+                    Launch <ArrowRight size={11} />
+                  </button>
+                )}
+              </GlassCard>
             );
           })}
         </div>
