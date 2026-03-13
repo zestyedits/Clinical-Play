@@ -121,18 +121,18 @@ function LibrarySection({
                 <div className="flex gap-2 pt-2 border-t border-border/20">
                   <button
                     onClick={() => setDetailTool(tool)}
-                    className="flex-1 h-9 rounded-xl bg-secondary/50 text-foreground text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer hover:bg-secondary transition-colors"
+                    className="flex-1 h-9 rounded-xl bg-secondary/50 text-foreground text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer hover:bg-secondary transition-colors whitespace-nowrap overflow-hidden"
                   >
-                    <Eye size={13} /> Details
+                    <Eye size={13} className="shrink-0" /> Details
                   </button>
                   {tool.status === "active" ? (
-                    <Link href="/playroom/demo" className="flex-1">
-                      <button className="w-full h-9 rounded-xl bg-primary text-primary-foreground text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer shadow-sm hover:opacity-90 transition-opacity">
-                        <Play size={13} /> Launch
+                    <Link href="/playroom/demo" className="flex-1 min-w-0 no-underline">
+                      <button className="w-full h-9 rounded-xl bg-primary text-primary-foreground text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap overflow-hidden">
+                        <Play size={13} className="shrink-0" /> Launch
                       </button>
                     </Link>
                   ) : (
-                    <button disabled className="flex-1 h-9 rounded-xl bg-secondary/30 text-muted-foreground/40 text-xs font-medium flex items-center justify-center gap-1.5 cursor-default">
+                    <button disabled className="flex-1 h-9 rounded-xl bg-secondary/30 text-muted-foreground/40 text-xs font-medium flex items-center justify-center gap-1.5 cursor-default whitespace-nowrap overflow-hidden">
                       {tool.status === "development" ? "In Dev" : "Soon"}
                     </button>
                   )}
@@ -211,19 +211,19 @@ function ToolDetailDrawer({
       >
         <div className="p-6">
           {/* Header */}
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="text-4xl">{tool.icon}</div>
-              <div>
-                <h2 className="font-serif text-2xl text-foreground">{tool.name}</h2>
-                <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-start justify-between gap-3 mb-6">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div className="text-3xl sm:text-4xl shrink-0">{tool.icon}</div>
+              <div className="min-w-0">
+                <h2 className="font-serif text-xl sm:text-2xl text-foreground truncate">{tool.name}</h2>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <IntensityBadge level={tool.intensity} />
                   <StatusBadge status={tool.status} />
                   <span className="text-xs text-muted-foreground">{tool.tier === "pro" ? "Pro" : "Free"}</span>
                 </div>
               </div>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-secondary rounded-xl transition-colors cursor-pointer">
+            <button onClick={onClose} className="p-2 hover:bg-secondary rounded-xl transition-colors cursor-pointer shrink-0">
               <X size={20} className="text-muted-foreground" />
             </button>
           </div>
@@ -236,27 +236,27 @@ function ToolDetailDrawer({
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 mb-6">
+          <div className="flex flex-wrap gap-2 mb-6">
             {tool.status === "active" && (
-              <Link href={`/playroom/demo?tool=${tool.id}`}>
-                <button className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground font-medium text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer hover:opacity-90 transition-opacity">
-                  <Play size={15} /> Launch in Demo
+              <Link href={`/playroom/demo?tool=${tool.id}`} className="flex-1 min-w-[140px] no-underline">
+                <button className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-medium text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer hover:opacity-90 transition-opacity whitespace-nowrap">
+                  <Play size={15} className="shrink-0" /> Launch in Demo
                 </button>
               </Link>
             )}
             <button
               onClick={onToggleFavorite}
               className={cn(
-                "h-11 px-4 rounded-xl border text-sm font-medium flex items-center gap-2 cursor-pointer transition-colors",
+                "h-11 px-4 rounded-xl border text-sm font-medium flex items-center gap-2 cursor-pointer transition-colors whitespace-nowrap",
                 isFavorite ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-card border-border text-muted-foreground hover:bg-secondary"
               )}
             >
-              <Star size={15} className={isFavorite ? "fill-amber-400" : ""} />
+              <Star size={15} className={cn("shrink-0", isFavorite ? "fill-amber-400" : "")} />
               {isFavorite ? "Favorited" : "Favorite"}
             </button>
             <button
               onClick={() => setShowCollectionPicker(!showCollectionPicker)}
-              className="h-11 px-4 rounded-xl border border-border text-sm font-medium flex items-center gap-2 cursor-pointer hover:bg-secondary transition-colors text-muted-foreground"
+              className="h-11 px-4 rounded-xl border border-border text-sm font-medium flex items-center gap-2 cursor-pointer hover:bg-secondary transition-colors text-muted-foreground shrink-0"
             >
               <FolderPlus size={15} />
             </button>

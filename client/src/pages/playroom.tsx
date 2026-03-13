@@ -373,13 +373,13 @@ export default function Playroom() {
               <ChevronRight className="rotate-180 text-muted-foreground" size={20} />
             </button>
           </Link>
-          <div>
-            <h1 className="font-serif text-base md:text-lg text-foreground leading-tight flex items-center gap-2">
+          <div className="min-w-0 max-w-[140px] sm:max-w-[220px] md:max-w-none">
+            <h1 className="font-serif text-base md:text-lg text-foreground leading-tight flex items-center gap-2 truncate">
               {session?.name || `Session ${id}`}
             </h1>
             <div className="flex items-center gap-2">
-              <span className={cn("w-2 h-2 rounded-full", connected ? "bg-green-500 animate-pulse" : "bg-red-400")} />
-              <span className="text-[11px] text-muted-foreground">
+              <span className={cn("w-2 h-2 rounded-full shrink-0", connected ? "bg-green-500 animate-pulse" : "bg-red-400")} />
+              <span className="text-[11px] text-muted-foreground whitespace-nowrap">
                 {connected ? "Synced" : "Connecting..."}
                 {onlineUsers.length > 0 && ` · ${onlineUsers.length} online`}
               </span>
@@ -589,10 +589,10 @@ export default function Playroom() {
 
       <AnimatePresence>
       {isDemo && (
-        <div className="bg-amber-50 border-b border-amber-200/60 px-4 py-2 flex items-center justify-center gap-3 shrink-0 z-20" data-testid="banner-demo-mode">
-          <span className="text-xs text-amber-700 font-medium">Demo Mode — changes won't be saved</span>
+        <div className="bg-amber-50 border-b border-amber-200/60 px-3 sm:px-4 py-2 flex items-center justify-center gap-2 sm:gap-3 shrink-0 z-20 flex-wrap" data-testid="banner-demo-mode">
+          <span className="text-[11px] sm:text-xs text-amber-700 font-medium whitespace-nowrap">Demo Mode — changes won't be saved</span>
           <Link href="/dashboard" className="no-underline">
-            <span className="text-xs text-accent font-semibold hover:text-accent/80 transition-colors cursor-pointer underline underline-offset-2" data-testid="link-start-real-session">
+            <span className="text-[11px] sm:text-xs text-accent font-semibold hover:text-accent/80 transition-colors cursor-pointer underline underline-offset-2 whitespace-nowrap" data-testid="link-start-real-session">
               Start a Real Session
             </span>
           </Link>
