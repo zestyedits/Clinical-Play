@@ -340,35 +340,31 @@ export function MIMotivationGarden() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "10px 16px",
-            background: "rgba(10, 24, 18, 0.92)",
-            borderBottom: "1px solid rgba(45, 122, 58, 0.3)",
+            padding: "8px 14px",
+            borderBottom: "1px solid rgba(45, 122, 58, 0.15)",
             zIndex: 10,
             flexShrink: 0,
-            backdropFilter: "blur(10px)",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 18 }}>{"\uD83C\uDF31"}</span>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#e8dcc8", lineHeight: 1.2 }}>
-                The Motivation Garden
-              </div>
-              <div style={{ fontSize: 10, color: "rgba(232, 220, 200, 0.5)" }}>
-                Bouquet Complete
-              </div>
-            </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 16 }}>{"\uD83C\uDF31"}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#e8dcc8" }}>
+              Motivation Garden
+            </span>
+            <span style={{ fontSize: 10, color: "rgba(232, 220, 200, 0.35)" }}>
+              — Complete
+            </span>
           </div>
           <button
             onClick={toggleMute}
             data-testid="button-mi-mute"
             style={{
-              background: "rgba(232, 220, 200, 0.1)",
-              border: "1px solid rgba(45, 122, 58, 0.3)",
-              borderRadius: 8,
-              padding: "5px 10px",
-              color: "#e8dcc8",
-              fontSize: 16,
+              background: "transparent",
+              border: "none",
+              borderRadius: 6,
+              padding: "4px 8px",
+              color: "rgba(232, 220, 200, 0.5)",
+              fontSize: 14,
               cursor: "pointer",
             }}
           >
@@ -412,41 +408,33 @@ export function MIMotivationGarden() {
         borderRadius: 12,
       }}
     >
-      {/* Header bar */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "10px 16px",
-          background: "rgba(10, 24, 18, 0.92)",
-          borderBottom: "1px solid rgba(45, 122, 58, 0.3)",
+          padding: "8px 14px",
+          borderBottom: "1px solid rgba(45, 122, 58, 0.15)",
           zIndex: 10,
           flexShrink: 0,
-          backdropFilter: "blur(10px)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 18 }}>{"\uD83C\uDF31"}</span>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#e8dcc8", lineHeight: 1.2 }}>
-              The Motivation Garden
-            </div>
-            <div style={{ fontSize: 10, color: "rgba(232, 220, 200, 0.5)" }}>
-              Step {state.currentStep + 1} of {STEP_CONFIGS.length} &mdash; {stepConfig.label}
-            </div>
-          </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 16 }}>{"\uD83C\uDF31"}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#e8dcc8" }}>
+            Motivation Garden
+          </span>
         </div>
         <button
           onClick={toggleMute}
           data-testid="button-mi-mute"
           style={{
-            background: "rgba(232, 220, 200, 0.1)",
-            border: "1px solid rgba(45, 122, 58, 0.3)",
-            borderRadius: 8,
-            padding: "5px 10px",
-            color: "#e8dcc8",
-            fontSize: 16,
+            background: "transparent",
+            border: "none",
+            borderRadius: 6,
+            padding: "4px 8px",
+            color: "rgba(232, 220, 200, 0.5)",
+            fontSize: 14,
             cursor: "pointer",
           }}
         >

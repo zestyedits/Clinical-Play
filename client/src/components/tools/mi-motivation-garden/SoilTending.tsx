@@ -27,16 +27,15 @@ export function SoilTending({
   const valuesPrompt: Record<AgeMode, string> = {
     child: "Pick the things that matter most to you:",
     teen: "Select the values that feel most important to you right now:",
-    adult: "Select 1\u20133 core values that this change connects to:",
+    adult: "Select 1–3 core values that this change connects to:",
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* Prompt */}
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <div
         style={{
-          fontSize: 14,
-          color: "rgba(232, 220, 200, 0.7)",
+          fontSize: 13,
+          color: "rgba(232, 220, 200, 0.6)",
           fontWeight: 500,
           textAlign: "center",
         }}
@@ -44,12 +43,11 @@ export function SoilTending({
         {valuesPrompt[ageMode]}
       </div>
 
-      {/* Value chips */}
       <div
         style={{
           display: "flex",
           flexWrap: "wrap",
-          gap: 8,
+          gap: 6,
           justifyContent: "center",
         }}
       >
@@ -71,17 +69,17 @@ export function SoilTending({
               }}
               disabled={isMaxed}
               style={{
-                minHeight: 44,
-                padding: "8px 18px",
-                borderRadius: 22,
+                minHeight: 36,
+                padding: "6px 14px",
+                borderRadius: 18,
                 border: isSelected
-                  ? "2px solid #d4a24c"
-                  : "1px solid rgba(232, 220, 200, 0.2)",
+                  ? "1.5px solid #d4a24c"
+                  : "1px solid rgba(232, 220, 200, 0.12)",
                 background: isSelected
-                  ? "rgba(212, 162, 76, 0.25)"
-                  : "rgba(12, 24, 18, 0.5)",
-                color: isSelected ? "#d4a24c" : isMaxed ? "rgba(232, 220, 200, 0.3)" : "#e8dcc8",
-                fontSize: 14,
+                  ? "rgba(212, 162, 76, 0.18)"
+                  : "rgba(232, 220, 200, 0.04)",
+                color: isSelected ? "#d4a24c" : isMaxed ? "rgba(232, 220, 200, 0.25)" : "rgba(232, 220, 200, 0.7)",
+                fontSize: 13,
                 fontFamily: "inherit",
                 fontWeight: isSelected ? 600 : 400,
                 cursor: isMaxed ? "not-allowed" : "pointer",
@@ -98,7 +96,6 @@ export function SoilTending({
         })}
       </div>
 
-      {/* Connection cards for selected values */}
       {values.map((value) => {
         const connections = topicConnections[value] || [];
         const currentConnection = valueConnections.find((vc) => vc.value === value);
@@ -109,24 +106,23 @@ export function SoilTending({
           <div
             key={value}
             style={{
-              background: "rgba(12, 24, 18, 0.6)",
-              borderRadius: 14,
-              padding: "16px 18px",
-              border: "1px solid rgba(212, 162, 76, 0.15)",
               borderLeft: "3px solid #d4a24c",
+              borderRadius: 8,
+              padding: "10px 14px",
+              background: "rgba(232, 220, 200, 0.03)",
             }}
           >
             <div
               style={{
-                fontSize: 14,
-                fontWeight: 700,
+                fontSize: 13,
+                fontWeight: 600,
                 color: "#d4a24c",
-                marginBottom: 10,
+                marginBottom: 8,
               }}
             >
               How does your change connect to {value}?
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {connections.map((connection) => {
                 const isSelected = currentConnection?.connection === connection;
                 return (
@@ -141,20 +137,21 @@ export function SoilTending({
                       }
                     }}
                     style={{
-                      padding: "10px 14px",
-                      borderRadius: 10,
+                      padding: "8px 12px",
+                      borderRadius: 8,
                       border: isSelected
-                        ? "2px solid #d4a24c"
-                        : "1px solid rgba(232, 220, 200, 0.15)",
-                      background: isSelected ? "rgba(212, 162, 76, 0.15)" : "rgba(12, 24, 18, 0.4)",
-                      color: isSelected ? "#d4a24c" : "rgba(232, 220, 200, 0.75)",
-                      fontSize: 13,
+                        ? "1.5px solid #d4a24c"
+                        : "1px solid rgba(232, 220, 200, 0.08)",
+                      background: isSelected ? "rgba(212, 162, 76, 0.12)" : "transparent",
+                      color: isSelected ? "#d4a24c" : "rgba(232, 220, 200, 0.65)",
+                      fontSize: 12,
                       fontFamily: "inherit",
                       fontWeight: isSelected ? 600 : 400,
                       cursor: "pointer",
                       textAlign: "left",
                       transition: "all 0.15s ease",
                       outline: "none",
+                      lineHeight: 1.4,
                     }}
                   >
                     {connection}

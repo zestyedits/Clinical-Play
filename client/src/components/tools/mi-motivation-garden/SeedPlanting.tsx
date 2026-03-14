@@ -21,18 +21,18 @@ export function SeedPlanting({
   const topicSeeds = SEED_OPTIONS[changeTopic] || {};
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      {/* Seed count */}
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       <div
         style={{
           textAlign: "center",
-          fontSize: 13,
-          color: seeds.length >= 2 ? "rgba(90, 184, 143, 0.8)" : "rgba(232, 220, 200, 0.5)",
-          fontWeight: 600,
+          fontSize: 12,
+          color: seeds.length >= 2 ? "rgba(90, 184, 143, 0.8)" : "rgba(232, 220, 200, 0.4)",
+          fontWeight: 500,
+          marginBottom: 2,
         }}
       >
         {seeds.length} seed{seeds.length !== 1 ? "s" : ""} planted
-        {seeds.length < 2 && " \u2014 plant at least 2"}
+        {seeds.length < 2 && " — plant at least 2"}
       </div>
 
       {DARN_CATEGORIES.map((darnCat) => {
@@ -44,14 +44,13 @@ export function SeedPlanting({
           <div
             key={darnCat.category}
             style={{
-              background: "rgba(12, 24, 18, 0.6)",
-              borderRadius: 14,
-              border: `1px solid ${darnCat.color}20`,
+              borderRadius: 8,
               borderLeft: `3px solid ${darnCat.color}`,
               overflow: "hidden",
+              background: isExpanded ? "rgba(232, 220, 200, 0.03)" : "transparent",
+              transition: "background 0.2s",
             }}
           >
-            {/* Category header */}
             <button
               type="button"
               onClick={() => setExpandedCategory(isExpanded ? null : darnCat.category)}
@@ -60,7 +59,7 @@ export function SeedPlanting({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "14px 16px",
+                padding: "10px 12px",
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
@@ -68,27 +67,27 @@ export function SeedPlanting({
                 textAlign: "left",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 18 }}>{darnCat.icon}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 16 }}>{darnCat.icon}</span>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: darnCat.color }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: darnCat.color }}>
                     {darnCat.label}
                   </div>
-                  <div style={{ fontSize: 12, color: "rgba(232, 220, 200, 0.5)", marginTop: 2 }}>
+                  <div style={{ fontSize: 11, color: "rgba(232, 220, 200, 0.4)", marginTop: 1 }}>
                     {darnCat.prompt[ageMode]}
                   </div>
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 {categorySeeds.length > 0 && (
                   <span
                     style={{
-                      fontSize: 11,
+                      fontSize: 10,
                       fontWeight: 600,
                       color: darnCat.color,
-                      background: `${darnCat.color}20`,
-                      padding: "2px 8px",
-                      borderRadius: 10,
+                      background: `${darnCat.color}18`,
+                      padding: "1px 7px",
+                      borderRadius: 8,
                     }}
                   >
                     {categorySeeds.length}
@@ -96,26 +95,25 @@ export function SeedPlanting({
                 )}
                 <span
                   style={{
-                    fontSize: 14,
-                    color: "rgba(232, 220, 200, 0.4)",
+                    fontSize: 12,
+                    color: "rgba(232, 220, 200, 0.3)",
                     transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
                     transition: "transform 0.2s",
                     display: "inline-block",
                   }}
                 >
-                  {"\u25BC"}
+                  ▼
                 </span>
               </div>
             </button>
 
-            {/* Expandable options */}
             {isExpanded && (
               <div
                 style={{
-                  padding: "0 16px 14px",
+                  padding: "2px 12px 10px",
                   display: "flex",
                   flexWrap: "wrap",
-                  gap: 8,
+                  gap: 6,
                 }}
               >
                 {options.map((option) => {
@@ -138,22 +136,21 @@ export function SeedPlanting({
                         }
                       }}
                       style={{
-                        minHeight: 44,
-                        padding: "8px 16px",
-                        borderRadius: 22,
+                        minHeight: 36,
+                        padding: "6px 14px",
+                        borderRadius: 18,
                         border: isSelected
-                          ? `2px solid ${darnCat.color}`
-                          : "1px solid rgba(232, 220, 200, 0.2)",
+                          ? `1.5px solid ${darnCat.color}`
+                          : "1px solid rgba(232, 220, 200, 0.12)",
                         background: isSelected
-                          ? `${darnCat.color}30`
-                          : "rgba(12, 24, 18, 0.5)",
-                        color: isSelected ? darnCat.color : "#e8dcc8",
-                        fontSize: 13,
+                          ? `${darnCat.color}20`
+                          : "rgba(232, 220, 200, 0.04)",
+                        color: isSelected ? darnCat.color : "rgba(232, 220, 200, 0.7)",
+                        fontSize: 12,
                         fontFamily: "inherit",
                         fontWeight: isSelected ? 600 : 400,
                         cursor: "pointer",
-                        transition:
-                          "background 0.15s ease, border-color 0.15s ease, color 0.15s ease",
+                        transition: "all 0.15s ease",
                         outline: "none",
                         WebkitTapHighlightColor: "transparent",
                         userSelect: "none",
