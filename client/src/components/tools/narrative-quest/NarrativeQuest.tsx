@@ -154,8 +154,10 @@ export function NarrativeQuest() {
     switch (state.currentStep) {
       case 0:
         return state.problemDescription.trim().length > 0 && state.problemName.trim().length > 0;
-      case 1:
-        return state.speechBubbles.length > 0;
+      case 1: {
+        const categories = new Set(state.speechBubbles.map((b) => b.category));
+        return categories.has("shows-up") && categories.has("whispers") && categories.has("loudest");
+      }
       case 2:
         return state.exceptionStars.length > 0;
       case 3:
