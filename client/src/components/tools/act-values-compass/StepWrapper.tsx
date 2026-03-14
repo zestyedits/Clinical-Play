@@ -14,12 +14,25 @@ export interface StepWrapperProps {
   children: React.ReactNode;
 }
 
-const GOLD = "#c9a84c";
-const GOLD_MUTED = "rgba(201, 168, 76, 0.35)";
-const GOLD_DIM = "rgba(201, 168, 76, 0.12)";
-const PARCHMENT = "#e8dcc8";
-const PANEL_BG = "rgba(15, 22, 28, 0.95)";
-const TEAL = "#2d8a8a";
+const STEP_SCENES: Record<number, { bg: string; accent: string; glow: string }> = {
+  0: { bg: "linear-gradient(170deg, #0a1a20 0%, #122830 40%, #182e38 70%, #0d1820 100%)", accent: "#2d8a8a", glow: "rgba(45,138,138,0.08)" },
+  1: { bg: "linear-gradient(170deg, #0a1a20 0%, #153035 40%, #1a3540 70%, #0d1820 100%)", accent: "#4ab8b8", glow: "rgba(74,184,184,0.08)" },
+  2: { bg: "linear-gradient(170deg, #0f1518 0%, #1a2228 40%, #1e2830 70%, #0d1518 100%)", accent: "#8a7768", glow: "rgba(138,119,104,0.08)" },
+  3: { bg: "linear-gradient(170deg, #0f1520 0%, #181e30 40%, #1a2035 70%, #0d1218 100%)", accent: "#7a8ec4", glow: "rgba(122,142,196,0.08)" },
+  4: { bg: "linear-gradient(170deg, #0a1a20 0%, #122830 40%, #182e38 70%, #0d1820 100%)", accent: "#64b5d9", glow: "rgba(100,181,217,0.1)" },
+  5: { bg: "linear-gradient(170deg, #0a1a18 0%, #12281e 40%, #182e25 70%, #0d1815 100%)", accent: "#5ab88f", glow: "rgba(90,184,143,0.08)" },
+  6: { bg: "linear-gradient(170deg, #0a1a20 0%, #122830 40%, #182e38 70%, #0d1820 100%)", accent: "#c9a84c", glow: "rgba(201,168,76,0.1)" },
+};
+
+const FLOATING_ELEMENTS: Record<number, string[]> = {
+  0: ["🧭", "💎", "✨"],
+  1: ["🎯", "📏", "⭐"],
+  2: ["🪨", "🌊", "💨"],
+  3: ["🪝", "🎭", "💭"],
+  4: ["🗼", "🌅", "☁️"],
+  5: ["⛵", "🌊", "✨"],
+  6: ["🗺️", "🏆", "🌟"],
+};
 
 export function StepWrapper({
   stepNumber,
@@ -34,6 +47,8 @@ export function StepWrapper({
 }: StepWrapperProps) {
   const isFirstStep = stepNumber === 0;
   const isLastStep = stepNumber === totalSteps - 1;
+  const scene = STEP_SCENES[stepNumber] || STEP_SCENES[0];
+  const floats = FLOATING_ELEMENTS[stepNumber] || [];
 
   return (
     <div
@@ -42,132 +57,152 @@ export function StepWrapper({
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: PANEL_BG,
-        borderRadius: 14,
         overflow: "hidden",
         fontFamily: "Inter, sans-serif",
+        background: scene.bg,
+        position: "relative",
       }}
     >
-      {/* Progress bar */}
+      <style>{`
+        @keyframes act-float-0 { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-8px) rotate(5deg); } }
+        @keyframes act-float-1 { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-12px) rotate(-4deg); } }
+        @keyframes act-float-2 { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-6px) rotate(8deg); } }
+      `}</style>
+
+      {floats.map((emoji, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            top: i === 0 ? "12%" : i === 1 ? "25%" : "18%",
+            right: i === 0 ? "8%" : i === 1 ? "15%" : "22%",
+            fontSize: i === 0 ? 28 : i === 1 ? 20 : 16,
+            opacity: 0.15,
+            animation: `act-float-${i} ${4 + i}s ease-in-out infinite`,
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        >
+          {emoji}
+        </div>
+      ))}
+
       <div
         style={{
-          padding: "14px clamp(12px, 3vw, 24px) 10px",
-          borderBottom: "1px solid rgba(45, 138, 138, 0.2)",
-          flexShrink: 0,
+          position: "absolute",
+          top: 0, left: 0, right: 0, height: 180,
+          background: `radial-gradient(ellipse at 30% 0%, ${scene.glow}, transparent 70%)`,
+          pointerEvents: "none",
+          zIndex: 0,
         }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+      />
+
+      <div style={{ position: "relative", zIndex: 1, padding: "12px clamp(16px, 4vw, 28px) 0", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 12 }}>
           {Array.from({ length: totalSteps }, (_, i) => {
             const isCompleted = i < stepNumber;
             const isCurrent = i === stepNumber;
             return (
-              <motion.div
-                key={i}
-                initial={{ scale: 0.8, opacity: 0.5 }}
-                animate={{
-                  scale: isCurrent ? 1.15 : 1,
-                  opacity: 1,
-                  backgroundColor: isCurrent ? TEAL : isCompleted ? GOLD_MUTED : GOLD_DIM,
-                }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-                style={{ flex: 1, height: 6, borderRadius: 3 }}
-              />
+              <div key={i} style={{ flex: 1 }}>
+                <motion.div
+                  initial={{ scale: 0.8 }}
+                  animate={{
+                    scale: 1,
+                    backgroundColor: isCurrent ? scene.accent : isCompleted ? `${scene.accent}80` : "rgba(232, 220, 200, 0.1)",
+                    boxShadow: isCurrent ? `0 0 8px ${scene.accent}40` : "none",
+                  }}
+                  transition={{ duration: 0.35 }}
+                  style={{ width: "100%", height: 4, borderRadius: 2 }}
+                />
+              </div>
             );
           })}
         </div>
-        <div
-          style={{
-            fontSize: 11,
-            color: "rgba(232, 220, 200, 0.5)",
-            textAlign: "center",
-            letterSpacing: 0.5,
-          }}
-        >
-          Step {stepNumber + 1} of {totalSteps}
+
+        <div style={{ textAlign: "center", padding: "0 8px" }}>
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 52, height: 52,
+              borderRadius: "50%",
+              background: `radial-gradient(circle, ${scene.glow}, transparent)`,
+              fontSize: 30,
+              marginBottom: 6,
+            }}
+          >
+            {icon}
+          </motion.div>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#e8dcc8", fontFamily: "'Lora', Georgia, serif", lineHeight: 1.2 }}>
+            {title}
+          </h2>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(232, 220, 200, 0.5)", lineHeight: 1.35 }}>
+            {subtitle}
+          </p>
         </div>
       </div>
 
-      {/* Step header */}
-      <div style={{ padding: "16px clamp(12px, 3vw, 24px) 12px", textAlign: "center", flexShrink: 0 }}>
-        <div style={{ fontSize: 28, marginBottom: 6 }}>{icon}</div>
-        <h2
-          style={{
-            margin: 0,
-            fontSize: 20,
-            fontWeight: 700,
-            color: PARCHMENT,
-            lineHeight: 1.3,
-          }}
-        >
-          {title}
-        </h2>
-        <p
-          style={{
-            margin: "4px 0 0",
-            fontSize: 13,
-            color: "rgba(232, 220, 200, 0.6)",
-            lineHeight: 1.4,
-          }}
-        >
-          {subtitle}
-        </p>
-      </div>
-
-      {/* Scrollable content */}
-      <div style={{ flex: 1, overflow: "auto", padding: "0 clamp(12px, 3vw, 24px) 16px" }}>
+      <div style={{ flex: 1, overflow: "auto", padding: "12px clamp(16px, 4vw, 28px) 12px", position: "relative", zIndex: 1 }}>
         {children}
       </div>
 
-      {/* Bottom navigation */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: isFirstStep ? "flex-end" : "space-between",
-          padding: "12px clamp(12px, 3vw, 24px)",
-          borderTop: "1px solid rgba(45, 138, 138, 0.2)",
+          padding: "10px clamp(16px, 4vw, 28px) 12px",
           flexShrink: 0,
+          position: "relative",
+          zIndex: 1,
+          background: "linear-gradient(to top, rgba(0,0,0,0.3), transparent)",
         }}
       >
         {!isFirstStep && (
           <button
             onClick={onBack}
             style={{
-              background: "rgba(232, 220, 200, 0.08)",
-              border: "1px solid rgba(232, 220, 200, 0.15)",
+              background: "rgba(232, 220, 200, 0.06)",
+              border: "1px solid rgba(232, 220, 200, 0.12)",
               borderRadius: 10,
-              padding: "10px 22px",
-              color: "rgba(232, 220, 200, 0.7)",
-              fontSize: 14,
-              fontWeight: 600,
+              padding: "10px 20px",
+              color: "rgba(232, 220, 200, 0.6)",
+              fontSize: 13,
+              fontWeight: 500,
               cursor: "pointer",
-              transition: "background 0.2s",
+              transition: "all 0.2s",
             }}
           >
-            Back
+            ← Back
           </button>
         )}
-        <button
+        <motion.button
           onClick={onNext}
           disabled={!canProceed}
+          whileHover={canProceed ? { scale: 1.02 } : {}}
+          whileTap={canProceed ? { scale: 0.98 } : {}}
           style={{
             background: canProceed
-              ? `linear-gradient(135deg, ${TEAL}, #237070)`
-              : "rgba(45, 138, 138, 0.2)",
+              ? `linear-gradient(135deg, ${scene.accent}, ${scene.accent}cc)`
+              : "rgba(232, 220, 200, 0.08)",
             border: "none",
             borderRadius: 10,
             padding: "10px 28px",
-            color: canProceed ? "#e8dcc8" : "rgba(232, 220, 200, 0.3)",
+            color: canProceed ? "#0a1820" : "rgba(232, 220, 200, 0.25)",
             fontSize: 14,
             fontWeight: 700,
             cursor: canProceed ? "pointer" : "not-allowed",
-            opacity: canProceed ? 1 : 0.6,
-            boxShadow: canProceed ? "0 4px 16px rgba(45, 138, 138, 0.3)" : "none",
+            opacity: canProceed ? 1 : 0.5,
+            boxShadow: canProceed ? `0 4px 20px ${scene.accent}30` : "none",
             transition: "all 0.2s",
           }}
         >
-          {isLastStep ? "View Expedition Map" : "Next"}
-        </button>
+          {isLastStep ? "View Expedition Map 🗺️" : "Continue →"}
+        </motion.button>
       </div>
     </div>
   );

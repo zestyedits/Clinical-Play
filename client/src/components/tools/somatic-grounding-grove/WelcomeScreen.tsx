@@ -1,6 +1,15 @@
+import { motion } from "framer-motion";
+
 interface WelcomeScreenProps {
   onStart: () => void;
 }
+
+const JOURNEY_STEPS = [
+  { emoji: "🧠", label: "Head & Mind" },
+  { emoji: "💚", label: "Chest & Heart" },
+  { emoji: "✋", label: "Hands" },
+  { emoji: "👣", label: "Feet & Roots" },
+];
 
 export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
   return (
@@ -12,77 +21,183 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #1a2a1a 0%, #2a3a2a 30%, #1e3028 70%, #162016 100%)",
+        background:
+          "linear-gradient(170deg, #1a2a1a 0%, #253525 30%, #1e3028 60%, #162016 100%)",
         fontFamily: "Inter, sans-serif",
         color: "#d4e8d0",
         overflow: "auto",
         borderRadius: 12,
+        position: "relative",
       }}
     >
-      <div style={{ maxWidth: 480, width: "90%", padding: "36px 24px", textAlign: "center" }}>
-        <div style={{ fontSize: 48, marginBottom: 8, lineHeight: 1 }}>{"\u{1F333}"}</div>
+      <style>{`
+        @keyframes gg-w-float1 { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(8deg); } }
+        @keyframes gg-w-float2 { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(-6deg); } }
+        @keyframes gg-w-float3 { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-12px) rotate(4deg); } }
+        @keyframes gg-w-twinkle { 0%,100% { opacity: 0.1; } 50% { opacity: 0.3; } }
+      `}</style>
 
-        <h1 style={{ fontSize: "clamp(22px, 4.5vw, 30px)", fontWeight: 700, margin: "0 0 6px", letterSpacing: "-0.5px", color: "#d4e8d0" }}>
+      <div style={{ position: "absolute", top: "8%", left: "8%", fontSize: 32, opacity: 0.12, animation: "gg-w-float1 6s ease-in-out infinite", pointerEvents: "none" }}>🌳</div>
+      <div style={{ position: "absolute", top: "15%", right: "10%", fontSize: 24, opacity: 0.1, animation: "gg-w-float2 7s ease-in-out infinite 0.5s", pointerEvents: "none" }}>🍃</div>
+      <div style={{ position: "absolute", bottom: "20%", left: "12%", fontSize: 20, opacity: 0.1, animation: "gg-w-float3 5s ease-in-out infinite 1s", pointerEvents: "none" }}>🌿</div>
+      <div style={{ position: "absolute", bottom: "15%", right: "8%", fontSize: 28, opacity: 0.08, animation: "gg-w-float1 8s ease-in-out infinite 2s", pointerEvents: "none" }}>🪨</div>
+      <div style={{ position: "absolute", top: "35%", left: "5%", fontSize: 10, opacity: 0.15, animation: "gg-w-twinkle 3s ease-in-out infinite", pointerEvents: "none" }}>✨</div>
+      <div style={{ position: "absolute", top: "20%", right: "20%", fontSize: 10, opacity: 0.12, animation: "gg-w-twinkle 4s ease-in-out infinite 1.5s", pointerEvents: "none" }}>🌟</div>
+
+      <div
+        style={{
+          position: "absolute",
+          top: 0, left: 0, right: 0, height: "50%",
+          background: "radial-gradient(ellipse at 50% 0%, rgba(58,107,58,0.12), transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      <div
+        style={{
+          maxWidth: 480,
+          width: "90%",
+          padding: "clamp(20px, 4vw, 32px) clamp(12px, 3vw, 20px)",
+          textAlign: "center",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        <motion.div
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 200, damping: 12, delay: 0.1 }}
+          style={{ fontSize: 56, marginBottom: 4, lineHeight: 1, filter: "drop-shadow(0 4px 12px rgba(58,107,58,0.3))" }}
+        >
+          🌳
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          style={{
+            fontSize: "clamp(24px, 5vw, 32px)",
+            fontWeight: 700,
+            margin: "0 0 4px",
+            fontFamily: "'Lora', Georgia, serif",
+            background: "linear-gradient(135deg, #7db87d, #a0d4a0)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
           The Grounding Grove
-        </h1>
+        </motion.h1>
 
-        <p style={{ fontSize: "clamp(12px, 2.2vw, 14px)", color: "rgba(212, 232, 208, 0.6)", margin: "0 0 24px", fontWeight: 400 }}>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          style={{
+            fontSize: "clamp(12px, 2.5vw, 14px)",
+            color: "rgba(212, 232, 208, 0.55)",
+            margin: "0 0 20px",
+            fontWeight: 400,
+          }}
+        >
           Return to Your Body, One Region at a Time
-        </p>
+        </motion.p>
 
-        <div style={{ background: "rgba(212, 232, 208, 0.06)", borderRadius: 12, padding: "18px 16px", marginBottom: 24, border: "1px solid rgba(100, 160, 100, 0.2)", textAlign: "left" }}>
-          <p style={{ fontSize: "clamp(12px, 2.2vw, 14px)", lineHeight: 1.75, margin: 0, color: "rgba(212, 232, 208, 0.85)" }}>
-            In this activity, you'll explore different areas of your body to notice where you hold tension, stress, or discomfort. For each region, you'll try grounding techniques designed to help you reconnect and release.
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          style={{
+            background: "rgba(212, 232, 208, 0.04)",
+            borderRadius: 14,
+            padding: "14px 16px",
+            marginBottom: 18,
+            borderLeft: "3px solid rgba(58, 107, 58, 0.3)",
+            textAlign: "left",
+          }}
+        >
+          <p
+            style={{
+              fontSize: "clamp(12px, 2.2vw, 13px)",
+              lineHeight: 1.7,
+              margin: 0,
+              color: "rgba(212, 232, 208, 0.75)",
+            }}
+          >
+            Explore different areas of your body to notice where you hold tension, stress, or discomfort. For each region, try grounding techniques designed to help you reconnect and release.
           </p>
-          <p style={{ fontSize: "clamp(11px, 2vw, 13px)", lineHeight: 1.75, margin: "12px 0 0", color: "rgba(212, 232, 208, 0.6)" }}>
-            <strong style={{ color: "rgba(212, 232, 208, 0.85)" }}>How it works:</strong>{" "}
-            Tap on a body region to rate your tension level, then try the grounding exercises. Your clinician will guide you through discussion prompts along the way.
-          </p>
-        </div>
+        </motion.div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 24 }}>
-          {[
-            { icon: "\u{1F9E0}", label: "Head & Mind", sub: "Mental grounding" },
-            { icon: "\u{1F49A}", label: "Chest & Heart", sub: "Breath & calm" },
-            { icon: "\u{270B}", label: "Hands", sub: "Tactile focus" },
-            { icon: "\u{1F463}", label: "Feet & Roots", sub: "Earth connection" },
-          ].map((area, i) => (
-            <div
-              key={i}
-              style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(212, 232, 208, 0.04)", borderRadius: 8, padding: "8px 10px", border: "1px solid rgba(100, 160, 100, 0.1)" }}
-            >
-              <span style={{ fontSize: 16 }}>{area.icon}</span>
-              <div style={{ textAlign: "left" }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(212, 232, 208, 0.85)" }}>{area.label}</div>
-                <div style={{ fontSize: 9, color: "rgba(212, 232, 208, 0.45)", marginTop: 1 }}>{area.sub}</div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 4,
+            marginBottom: 22,
+            padding: "0 4px",
+          }}
+        >
+          {JOURNEY_STEPS.map((step, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center" }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                <div
+                  style={{
+                    width: 42, height: 42,
+                    borderRadius: "50%",
+                    background: "rgba(58, 107, 58, 0.12)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 18,
+                  }}
+                >
+                  {step.emoji}
+                </div>
+                <span style={{ fontSize: 8, color: "rgba(212, 232, 208, 0.35)", whiteSpace: "nowrap" }}>
+                  {step.label}
+                </span>
               </div>
+              {i < JOURNEY_STEPS.length - 1 && (
+                <div style={{ width: 16, height: 1, background: "rgba(58, 107, 58, 0.2)", margin: "0 2px", marginBottom: 14 }} />
+              )}
             </div>
           ))}
-        </div>
+        </motion.div>
 
-        <button
-          onClick={onStart}
-          data-testid="button-start-grounding-grove"
-          style={{
-            background: "linear-gradient(135deg, #3a6b3a, #2d5a2d)",
-            color: "#d4e8d0",
-            border: "none",
-            borderRadius: 10,
-            padding: "14px 40px",
-            fontSize: "clamp(14px, 2.8vw, 16px)",
-            fontWeight: 600,
-            cursor: "pointer",
-            fontFamily: "Inter, sans-serif",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-            width: "100%",
-            maxWidth: 260,
-            transition: "transform 0.15s",
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
-          onMouseOut={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}
         >
-          Enter the Grove
-        </button>
+          <motion.button
+            onClick={onStart}
+            data-testid="button-start-grounding-grove"
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            style={{
+              background: "linear-gradient(135deg, #3a6b3a, #2d5a2d)",
+              color: "#d4e8d0",
+              border: "none",
+              borderRadius: 14,
+              padding: "14px 44px",
+              fontSize: "clamp(14px, 3vw, 16px)",
+              fontWeight: 700,
+              cursor: "pointer",
+              fontFamily: "Inter, sans-serif",
+              boxShadow: "0 4px 24px rgba(58, 107, 58, 0.35), 0 0 60px rgba(58, 107, 58, 0.1)",
+              width: "100%",
+              maxWidth: 280,
+            }}
+          >
+            🌳 Enter the Grove
+          </motion.button>
+        </motion.div>
       </div>
     </div>
   );
