@@ -17,6 +17,9 @@ export interface QuestState {
   currentStep: number;
   problemDescription: string;
   problemName: string;
+  characterEmoji: string;
+  characterColor: string;
+  characterTraits: string[];
   speechBubbles: SpeechBubble[];
   exceptionStars: ExceptionStar[];
   strengths: Strength[];
@@ -28,7 +31,10 @@ export type QuestAction =
   | { type: "START_QUEST" }
   | { type: "SET_PROBLEM_DESCRIPTION"; payload: string }
   | { type: "SET_PROBLEM_NAME"; payload: string }
-  | { type: "ADD_BUBBLE"; payload: string }
+  | { type: "SET_CHARACTER_EMOJI"; payload: string }
+  | { type: "SET_CHARACTER_COLOR"; payload: string }
+  | { type: "TOGGLE_CHARACTER_TRAIT"; payload: string }
+  | { type: "ADD_BUBBLE"; text: string; category: SpeechBubble["category"] }
   | { type: "REMOVE_BUBBLE"; payload: string }
   | { type: "ADD_STAR"; payload: string }
   | { type: "REMOVE_STAR"; payload: string }
@@ -44,6 +50,9 @@ const createInitialState = (): QuestState => ({
   currentStep: -1,
   problemDescription: "",
   problemName: "",
+  characterEmoji: "👹",
+  characterColor: "purple",
+  characterTraits: [],
   speechBubbles: [],
   exceptionStars: [],
   strengths: [],
@@ -64,10 +73,28 @@ function questReducer(state: QuestState, action: QuestAction): QuestState {
     case "SET_PROBLEM_NAME":
       return { ...state, problemName: action.payload };
 
+    case "SET_CHARACTER_EMOJI":
+      return { ...state, characterEmoji: action.payload };
+
+    case "SET_CHARACTER_COLOR":
+      return { ...state, characterColor: action.payload };
+
+    case "TOGGLE_CHARACTER_TRAIT": {
+      const trait = action.payload;
+      const exists = state.characterTraits.includes(trait);
+      return {
+        ...state,
+        characterTraits: exists
+          ? state.characterTraits.filter((t) => t !== trait)
+          : [...state.characterTraits, trait],
+      };
+    }
+
     case "ADD_BUBBLE": {
       const newBubble: SpeechBubble = {
         id: `b-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        text: action.payload,
+        text: action.text,
+        category: action.category,
       };
       return { ...state, speechBubbles: [...state.speechBubbles, newBubble] };
     }
@@ -149,8 +176,14 @@ export function NarrativeQuest() {
           <ExternalizeStep
             problemDescription={state.problemDescription}
             problemName={state.problemName}
+            characterEmoji={state.characterEmoji}
+            characterColor={state.characterColor}
+            characterTraits={state.characterTraits}
             onDescriptionChange={(v) => dispatch({ type: "SET_PROBLEM_DESCRIPTION", payload: v })}
             onNameChange={(v) => dispatch({ type: "SET_PROBLEM_NAME", payload: v })}
+            onEmojiChange={(v) => dispatch({ type: "SET_CHARACTER_EMOJI", payload: v })}
+            onColorChange={(v) => dispatch({ type: "SET_CHARACTER_COLOR", payload: v })}
+            onToggleTrait={(id) => dispatch({ type: "TOGGLE_CHARACTER_TRAIT", payload: id })}
             ageMode={state.ageMode}
           />
         );
@@ -158,8 +191,10 @@ export function NarrativeQuest() {
         return (
           <SpeechBubbles
             problemName={state.problemName}
+            characterEmoji={state.characterEmoji}
+            characterColor={state.characterColor}
             bubbles={state.speechBubbles}
-            onAdd={(text) => dispatch({ type: "ADD_BUBBLE", payload: text })}
+            onAdd={(text, category) => dispatch({ type: "ADD_BUBBLE", text, category })}
             onRemove={(id) => dispatch({ type: "REMOVE_BUBBLE", payload: id })}
             ageMode={state.ageMode}
           />
@@ -168,6 +203,7 @@ export function NarrativeQuest() {
         return (
           <ExceptionStars
             problemName={state.problemName}
+            characterEmoji={state.characterEmoji}
             stars={state.exceptionStars}
             onAdd={(text) => dispatch({ type: "ADD_STAR", payload: text })}
             onRemove={(id) => dispatch({ type: "REMOVE_STAR", payload: id })}
@@ -187,6 +223,9 @@ export function NarrativeQuest() {
         return (
           <RewriteStep
             problemName={state.problemName}
+            characterEmoji={state.characterEmoji}
+            characterColor={state.characterColor}
+            strengths={state.strengths}
             rewrittenStory={state.rewrittenStory}
             onChange={(v) => dispatch({ type: "SET_REWRITE", payload: v })}
             ageMode={state.ageMode}
@@ -273,6 +312,9 @@ export function NarrativeQuest() {
             ageMode={state.ageMode}
             problemDescription={state.problemDescription}
             problemName={state.problemName}
+            characterEmoji={state.characterEmoji}
+            characterColor={state.characterColor}
+            characterTraits={state.characterTraits}
             bubbles={state.speechBubbles}
             stars={state.exceptionStars}
             strengths={state.strengths}
