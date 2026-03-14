@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import type { AgeMode } from "./garden-data";
 import { WELCOME_CONTENT } from "./garden-data";
 
@@ -8,19 +9,19 @@ interface WelcomeScreenProps {
   onOpenGuide: () => void;
 }
 
-const AGE_MODES: { value: AgeMode; label: string }[] = [
-  { value: "child", label: "Child" },
-  { value: "teen", label: "Teen" },
-  { value: "adult", label: "Adult" },
+const AGE_MODES: { value: AgeMode; label: string; emoji: string }[] = [
+  { value: "child", label: "Child", emoji: "🧒" },
+  { value: "teen", label: "Teen", emoji: "🧑" },
+  { value: "adult", label: "Adult", emoji: "🧑‍💼" },
 ];
 
-const PREVIEW_CARDS = [
-  { emoji: "\uD83C\uDF0D", label: "Garden Plot", sub: "Topic" },
-  { emoji: "\uD83C\uDF31", label: "Plant Seeds", sub: "Change Talk" },
-  { emoji: "\uD83C\uDF3F", label: "Notice Weeds", sub: "Sustain Talk" },
-  { emoji: "\uD83D\uDCA7", label: "Water Garden", sub: "Readiness" },
-  { emoji: "\uD83E\uDEB4", label: "Tend the Soil", sub: "Values" },
-  { emoji: "\uD83D\uDC90", label: "Harvest", sub: "Commitment" },
+const JOURNEY_STEPS = [
+  { emoji: "🌍", label: "Choose a Plot" },
+  { emoji: "🌱", label: "Plant Seeds" },
+  { emoji: "🌿", label: "Notice Weeds" },
+  { emoji: "💧", label: "Water" },
+  { emoji: "🪴", label: "Tend Soil" },
+  { emoji: "💐", label: "Harvest" },
 ];
 
 export function WelcomeScreen({
@@ -39,239 +40,262 @@ export function WelcomeScreen({
         alignItems: "center",
         justifyContent: "center",
         background:
-          "linear-gradient(135deg, #0a1f14 0%, #152520 30%, #1a2a25 70%, #0d1814 100%)",
+          "linear-gradient(170deg, #0a1f14 0%, #152520 30%, #1a2a25 60%, #0d1814 100%)",
         fontFamily: "Inter, sans-serif",
         color: "#e8dcc8",
         overflow: "auto",
         borderRadius: 12,
+        position: "relative",
       }}
     >
+      <style>{`
+        @keyframes mg-w-float1 { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(8deg); } }
+        @keyframes mg-w-float2 { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(-6deg); } }
+        @keyframes mg-w-float3 { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-12px) rotate(4deg); } }
+        @keyframes mg-w-twinkle { 0%,100% { opacity: 0.1; } 50% { opacity: 0.3; } }
+      `}</style>
+
+      <div style={{ position: "absolute", top: "8%", left: "8%", fontSize: 32, opacity: 0.12, animation: "mg-w-float1 6s ease-in-out infinite", pointerEvents: "none" }}>🌻</div>
+      <div style={{ position: "absolute", top: "15%", right: "10%", fontSize: 24, opacity: 0.1, animation: "mg-w-float2 7s ease-in-out infinite 0.5s", pointerEvents: "none" }}>🦋</div>
+      <div style={{ position: "absolute", bottom: "20%", left: "12%", fontSize: 20, opacity: 0.1, animation: "mg-w-float3 5s ease-in-out infinite 1s", pointerEvents: "none" }}>🌸</div>
+      <div style={{ position: "absolute", bottom: "15%", right: "8%", fontSize: 28, opacity: 0.08, animation: "mg-w-float1 8s ease-in-out infinite 2s", pointerEvents: "none" }}>🌿</div>
+      <div style={{ position: "absolute", top: "35%", left: "5%", fontSize: 10, opacity: 0.15, animation: "mg-w-twinkle 3s ease-in-out infinite", pointerEvents: "none" }}>✨</div>
+      <div style={{ position: "absolute", top: "20%", right: "20%", fontSize: 10, opacity: 0.12, animation: "mg-w-twinkle 4s ease-in-out infinite 1.5s", pointerEvents: "none" }}>✨</div>
+
       <div
         style={{
-          maxWidth: 540,
-          width: "92%",
-          padding: "clamp(20px, 4vw, 36px) clamp(16px, 3vw, 24px)",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "50%",
+          background: "radial-gradient(ellipse at 50% 0%, rgba(45,122,58,0.12), transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      <div
+        style={{
+          maxWidth: 480,
+          width: "90%",
+          padding: "clamp(20px, 4vw, 32px) clamp(12px, 3vw, 20px)",
           textAlign: "center",
+          position: "relative",
+          zIndex: 1,
         }}
       >
-        {/* Garden emoji */}
-        <div style={{ fontSize: 48, marginBottom: 8, lineHeight: 1 }}>
-          {"\uD83C\uDF31"}
-        </div>
+        <motion.div
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 200, damping: 12, delay: 0.1 }}
+          style={{ fontSize: 56, marginBottom: 4, lineHeight: 1, filter: "drop-shadow(0 4px 12px rgba(45,122,58,0.3))" }}
+        >
+          🌱
+        </motion.div>
 
-        <h1
+        <motion.h1
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
           style={{
-            fontSize: "clamp(22px, 4.5vw, 30px)",
+            fontSize: "clamp(24px, 5vw, 32px)",
             fontWeight: 700,
-            margin: "0 0 6px",
-            letterSpacing: "-0.5px",
-            color: "#d4a24c",
+            margin: "0 0 4px",
+            fontFamily: "'Lora', Georgia, serif",
+            background: "linear-gradient(135deg, #d4a24c, #e8c06a)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
           }}
         >
           The Motivation Garden
-        </h1>
+        </motion.h1>
 
-        <p
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
           style={{
-            fontSize: "clamp(12px, 2.2vw, 14px)",
-            color: "rgba(232, 220, 200, 0.6)",
+            fontSize: "clamp(12px, 2.5vw, 14px)",
+            color: "rgba(232, 220, 200, 0.55)",
             margin: "0 0 20px",
             fontWeight: 400,
           }}
         >
           {WELCOME_CONTENT.subtitle[ageMode]}
-        </p>
+        </motion.p>
 
-        {/* Age mode selector */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
           style={{
             display: "flex",
             justifyContent: "center",
-            gap: 4,
+            gap: 3,
             marginBottom: 20,
-            background: "rgba(232, 220, 200, 0.06)",
-            borderRadius: 10,
-            padding: 4,
-            border: "1px solid rgba(212, 162, 76, 0.15)",
+            background: "rgba(232, 220, 200, 0.04)",
+            borderRadius: 12,
+            padding: 3,
           }}
         >
-          {AGE_MODES.map(({ value, label }) => (
+          {AGE_MODES.map(({ value, label, emoji }) => (
             <button
               key={value}
               onClick={() => onSetAgeMode(value)}
               data-testid={`age-mode-${value}`}
               style={{
                 flex: 1,
-                padding: "8px 12px",
+                padding: "8px 10px",
                 fontSize: "clamp(11px, 2vw, 13px)",
                 fontWeight: 600,
                 fontFamily: "Inter, sans-serif",
                 border: "none",
-                borderRadius: 8,
+                borderRadius: 10,
                 cursor: "pointer",
-                transition: "all 0.2s",
+                transition: "all 0.25s",
                 background:
                   ageMode === value
-                    ? "linear-gradient(135deg, #d4a24c, #b8892e)"
+                    ? "linear-gradient(135deg, #2d7a3a, #1f5a28)"
                     : "transparent",
                 color:
                   ageMode === value
-                    ? "#0a1f14"
-                    : "rgba(232, 220, 200, 0.6)",
+                    ? "#e8dcc8"
+                    : "rgba(232, 220, 200, 0.5)",
                 boxShadow:
                   ageMode === value
-                    ? "0 2px 8px rgba(212, 162, 76, 0.3)"
+                    ? "0 2px 10px rgba(45, 122, 58, 0.3)"
                     : "none",
               }}
             >
-              {label}
+              {emoji} {label}
             </button>
           ))}
-        </div>
+        </motion.div>
 
-        {/* Instruction card */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
           style={{
-            background: "rgba(232, 220, 200, 0.06)",
-            borderRadius: 12,
-            padding: "18px 16px",
-            marginBottom: 20,
-            border: "1px solid rgba(212, 162, 76, 0.15)",
+            background: "rgba(232, 220, 200, 0.04)",
+            borderRadius: 14,
+            padding: "14px 16px",
+            marginBottom: 18,
+            borderLeft: "3px solid rgba(45, 122, 58, 0.3)",
             textAlign: "left",
           }}
         >
           <p
             style={{
-              fontSize: "clamp(12px, 2.2vw, 14px)",
-              lineHeight: 1.75,
+              fontSize: "clamp(12px, 2.2vw, 13px)",
+              lineHeight: 1.7,
               margin: 0,
-              color: "rgba(232, 220, 200, 0.85)",
+              color: "rgba(232, 220, 200, 0.75)",
             }}
           >
             {WELCOME_CONTENT.instruction[ageMode]}
           </p>
+        </motion.div>
 
-          <p
-            style={{
-              fontSize: "clamp(11px, 2vw, 13px)",
-              lineHeight: 1.75,
-              margin: "12px 0 0",
-              color: "rgba(232, 220, 200, 0.6)",
-            }}
-          >
-            <strong style={{ color: "rgba(232, 220, 200, 0.85)" }}>
-              How it works:
-            </strong>{" "}
-            {WELCOME_CONTENT.howItWorks[ageMode]}
-          </p>
-        </div>
-
-        {/* 2x3 preview grid */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 6,
-            marginBottom: 20,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 2,
+            marginBottom: 22,
+            padding: "0 4px",
           }}
         >
-          {PREVIEW_CARDS.map((card, i) => (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                background: "rgba(232, 220, 200, 0.04)",
-                borderRadius: 8,
-                padding: "8px 10px",
-                border: "1px solid rgba(212, 162, 76, 0.1)",
-              }}
-            >
-              <span style={{ fontSize: 16 }}>{card.emoji}</span>
-              <div style={{ textAlign: "left" }}>
+          {JOURNEY_STEPS.map((step, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 3,
+                }}
+              >
                 <div
                   style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "rgba(232, 220, 200, 0.85)",
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    background: "rgba(45, 122, 58, 0.12)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 16,
                   }}
                 >
-                  {card.label}
+                  {step.emoji}
                 </div>
-                <div
-                  style={{
-                    fontSize: 9,
-                    color: "rgba(232, 220, 200, 0.45)",
-                    marginTop: 1,
-                  }}
-                >
-                  {card.sub}
-                </div>
+                <span style={{ fontSize: 8, color: "rgba(232, 220, 200, 0.35)", whiteSpace: "nowrap" }}>
+                  {step.label}
+                </span>
               </div>
+              {i < JOURNEY_STEPS.length - 1 && (
+                <div style={{ width: 12, height: 1, background: "rgba(45, 122, 58, 0.2)", margin: "0 1px", marginBottom: 14 }} />
+              )}
             </div>
           ))}
-        </div>
+        </motion.div>
 
-        {/* Review MI Concepts button */}
-        <button
-          onClick={onOpenGuide}
-          data-testid="button-open-mi-guide"
-          style={{
-            background: "transparent",
-            color: "#2d7a3a",
-            border: "1px solid rgba(45, 122, 58, 0.4)",
-            borderRadius: 10,
-            padding: "10px 24px",
-            fontSize: "clamp(12px, 2.4vw, 14px)",
-            fontWeight: 600,
-            cursor: "pointer",
-            fontFamily: "Inter, sans-serif",
-            width: "100%",
-            maxWidth: 260,
-            marginBottom: 12,
-            transition: "all 0.15s",
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = "rgba(45, 122, 58, 0.1)";
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = "transparent";
-          }}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}
         >
-          Review MI Concepts
-        </button>
+          <motion.button
+            onClick={onStart}
+            data-testid="button-begin-garden"
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            style={{
+              background: "linear-gradient(135deg, #2d7a3a, #1f5a28)",
+              color: "#e8dcc8",
+              border: "none",
+              borderRadius: 14,
+              padding: "14px 44px",
+              fontSize: "clamp(14px, 3vw, 16px)",
+              fontWeight: 700,
+              cursor: "pointer",
+              fontFamily: "Inter, sans-serif",
+              boxShadow: "0 4px 24px rgba(45, 122, 58, 0.35), 0 0 60px rgba(45, 122, 58, 0.1)",
+              width: "100%",
+              maxWidth: 280,
+            }}
+          >
+            🌱 Start Planting
+          </motion.button>
 
-        <br />
-
-        {/* Begin Garden button */}
-        <button
-          onClick={onStart}
-          data-testid="button-begin-garden"
-          style={{
-            background: "linear-gradient(135deg, #2d7a3a, #1f5a28)",
-            color: "#e8dcc8",
-            border: "none",
-            borderRadius: 10,
-            padding: "14px 40px",
-            fontSize: "clamp(14px, 2.8vw, 16px)",
-            fontWeight: 700,
-            cursor: "pointer",
-            fontFamily: "Inter, sans-serif",
-            boxShadow: "0 4px 16px rgba(45, 122, 58, 0.3)",
-            width: "100%",
-            maxWidth: 260,
-            transition: "transform 0.15s",
-          }}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.transform = "translateY(-2px)")
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.transform = "translateY(0)")
-          }
-        >
-          Start Planting
-        </button>
+          <button
+            onClick={onOpenGuide}
+            data-testid="button-open-mi-guide"
+            style={{
+              background: "transparent",
+              color: "rgba(232, 220, 200, 0.45)",
+              border: "none",
+              borderRadius: 8,
+              padding: "8px 16px",
+              fontSize: 12,
+              fontWeight: 500,
+              cursor: "pointer",
+              fontFamily: "Inter, sans-serif",
+              transition: "color 0.15s",
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.color = "rgba(232, 220, 200, 0.7)"; }}
+            onMouseOut={(e) => { e.currentTarget.style.color = "rgba(232, 220, 200, 0.45)"; }}
+          >
+            Learn about MI concepts →
+          </button>
+        </motion.div>
       </div>
     </div>
   );

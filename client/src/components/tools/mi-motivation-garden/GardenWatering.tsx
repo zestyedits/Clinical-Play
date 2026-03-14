@@ -15,74 +15,70 @@ interface GardenWateringProps {
   ageMode: AgeMode;
 }
 
-function ArcGauge({ value, color }: { value: number; color: string }) {
-  const cx = 100;
-  const cy = 100;
-  const r = 80;
-  const fraction = value / 10;
-
-  const startAngle = Math.PI;
-  const endAngle = 0;
-  const totalSweep = startAngle - endAngle;
-
-  const fullArc = describeArc(cx, cy, r, startAngle, endAngle);
-  const filledEndAngle = startAngle - totalSweep * fraction;
-  const filledArc =
-    fraction > 0 ? describeArc(cx, cy, r, startAngle, filledEndAngle) : "";
-
-  const needleAngle = startAngle - totalSweep * fraction;
-  const needleX = cx + r * Math.cos(needleAngle);
-  const needleY = cy - r * Math.sin(needleAngle);
+function WaterDrop({ value, color }: { value: number; color: string }) {
+  const fillPercent = (value / 10) * 100;
 
   return (
-    <svg
-      viewBox="0 0 200 115"
-      style={{ width: "100%", maxWidth: 160, display: "block", margin: "0 auto" }}
-    >
-      <path
-        d={fullArc}
-        fill="none"
-        stroke="rgba(232,220,200,0.1)"
-        strokeWidth={8}
-        strokeLinecap="round"
-      />
-      {fraction > 0 && (
+    <div style={{ position: "relative", width: 80, height: 100, margin: "0 auto" }}>
+      <svg viewBox="0 0 60 80" style={{ width: "100%", height: "100%" }}>
+        <defs>
+          <clipPath id={`drop-${color}`}>
+            <path d="M30 5 Q30 5 10 40 Q-2 58 30 75 Q62 58 50 40 Q30 5 30 5 Z" />
+          </clipPath>
+        </defs>
         <path
-          d={filledArc}
+          d="M30 5 Q30 5 10 40 Q-2 58 30 75 Q62 58 50 40 Q30 5 30 5 Z"
+          fill="none"
+          stroke="rgba(232,220,200,0.12)"
+          strokeWidth={1.5}
+        />
+        <rect
+          x={0}
+          y={80 - (fillPercent * 0.7)}
+          width={60}
+          height={80}
+          fill={`${color}40`}
+          clipPath={`url(#drop-${color})`}
+          style={{ transition: "y 0.4s ease" }}
+        />
+        <path
+          d="M30 5 Q30 5 10 40 Q-2 58 30 75 Q62 58 50 40 Q30 5 30 5 Z"
           fill="none"
           stroke={color}
-          strokeWidth={8}
-          strokeLinecap="round"
-          style={{ filter: `drop-shadow(0 0 4px ${color}55)` }}
+          strokeWidth={1.5}
+          opacity={0.5}
         />
-      )}
-      <circle
-        cx={needleX}
-        cy={needleY}
-        r={6}
-        fill={color}
-        stroke="#e8dcc8"
-        strokeWidth={2}
-        style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.3))" }}
-      />
-      <text x={cx - r - 4} y={cy + 14} fill="rgba(232,220,200,0.4)" fontSize="9" textAnchor="middle">
-        0
-      </text>
-      <text x={cx + r + 4} y={cy + 14} fill="rgba(232,220,200,0.4)" fontSize="9" textAnchor="middle">
-        10
-      </text>
-    </svg>
+      </svg>
+      <div
+        style={{
+          position: "absolute",
+          bottom: 18,
+          left: "50%",
+          transform: "translateX(-50%)",
+          textAlign: "center",
+        }}
+      >
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={value}
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.7 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: 22,
+              fontWeight: 700,
+              color,
+              textShadow: `0 0 20px ${color}40`,
+            }}
+          >
+            {value}
+          </motion.span>
+        </AnimatePresence>
+      </div>
+    </div>
   );
-}
-
-function describeArc(cx: number, cy: number, r: number, a1: number, a2: number): string {
-  const x1 = cx + r * Math.cos(a1);
-  const y1 = cy - r * Math.sin(a1);
-  const x2 = cx + r * Math.cos(a2);
-  const y2 = cy - r * Math.sin(a2);
-  const sweep = a1 - a2;
-  const largeArc = sweep > Math.PI ? 1 : 0;
-  return `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 0 ${x2} ${y2}`;
 }
 
 function getBucket(value: number): string {
@@ -95,39 +91,37 @@ const RANGE_THUMB_CSS = (id: string, color: string) => `
   .watering-range-${id}::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     background: ${color};
     border: 2.5px solid #e8dcc8;
     cursor: pointer;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.3);
-    margin-top: -7px;
+    box-shadow: 0 2px 10px ${color}60;
+    margin-top: -8px;
     position: relative;
     z-index: 2;
   }
   .watering-range-${id}::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     background: ${color};
     border: 2.5px solid #e8dcc8;
     cursor: pointer;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 10px ${color}60;
   }
   .watering-range-${id}::-webkit-slider-runnable-track {
-    height: 5px;
+    height: 6px;
     border-radius: 3px;
-    background: rgba(232,220,200,0.1);
+    background: linear-gradient(to right, rgba(232,220,200,0.08), rgba(232,220,200,0.15));
   }
   .watering-range-${id}::-moz-range-track {
-    height: 5px;
+    height: 6px;
     border-radius: 3px;
-    background: rgba(232,220,200,0.1);
+    background: linear-gradient(to right, rgba(232,220,200,0.08), rgba(232,220,200,0.15));
   }
-  .watering-range-${id}:focus {
-    outline: none;
-  }
+  .watering-range-${id}:focus { outline: none; }
 `;
 
 export function GardenWatering({
@@ -160,52 +154,22 @@ export function GardenWatering({
   ) => (
     <div
       style={{
-        borderLeft: `3px solid ${color}`,
-        borderRadius: 8,
-        padding: "12px 14px",
+        borderRadius: 14,
+        padding: "16px 16px 14px",
         background: "rgba(232, 220, 200, 0.03)",
+        border: `1px solid ${color}15`,
       }}
     >
       <style>{RANGE_THUMB_CSS(cssId, color)}</style>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-        <span style={{ fontSize: 18 }}>{icon}</span>
-        <span style={{ fontSize: 14, fontWeight: 600, color: "#e8dcc8" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <span style={{ fontSize: 20 }}>{icon}</span>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#e8dcc8", fontFamily: "'Lora', Georgia, serif" }}>
           {label}
         </span>
       </div>
 
-      <div style={{ position: "relative", marginBottom: 2 }}>
-        <ArcGauge value={value} color={color} />
-        <div
-          style={{
-            position: "absolute",
-            left: "50%",
-            bottom: 2,
-            transform: "translateX(-50%)",
-            textAlign: "center",
-          }}
-        >
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={value}
-              initial={{ opacity: 0, y: 6, scale: 0.85 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              style={{
-                fontFamily: "'Playfair Display', Georgia, serif",
-                fontSize: "1.6rem",
-                fontWeight: 700,
-                color,
-                lineHeight: 1,
-              }}
-            >
-              {value}
-            </motion.span>
-          </AnimatePresence>
-        </div>
-      </div>
+      <WaterDrop value={value} color={color} />
 
       <input
         type="range"
@@ -218,47 +182,53 @@ export function GardenWatering({
         aria-label={label}
         style={{
           width: "100%",
-          height: 20,
+          height: 22,
           background: "transparent",
           appearance: "none",
           WebkitAppearance: "none",
           cursor: "pointer",
-          margin: "2px 0 8px",
+          margin: "4px 0 8px",
         }}
       />
+
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "rgba(232,220,200,0.3)", marginBottom: reflections.length > 0 ? 10 : 0 }}>
+        <span>Not at all</span>
+        <span>Extremely</span>
+      </div>
 
       {reflections.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <div style={{ fontSize: 11, color: "rgba(232, 220, 200, 0.4)", fontWeight: 500 }}>
-            This resonates with me:
+            This resonates:
           </div>
           {reflections.map((text) => {
             const isSelected = selectedReflection === text;
             return (
-              <button
+              <motion.button
                 key={text}
                 type="button"
                 onClick={() => onSelectReflection(isSelected ? "" : text)}
+                whileTap={{ scale: 0.98 }}
                 style={{
                   padding: "8px 12px",
-                  borderRadius: 8,
+                  borderRadius: 10,
                   border: isSelected
                     ? `1.5px solid ${color}`
-                    : "1px solid rgba(232, 220, 200, 0.08)",
-                  background: isSelected ? `${color}15` : "transparent",
-                  color: isSelected ? color : "rgba(232, 220, 200, 0.65)",
+                    : "1px solid rgba(232, 220, 200, 0.06)",
+                  background: isSelected ? `${color}12` : "transparent",
+                  color: isSelected ? color : "rgba(232, 220, 200, 0.6)",
                   fontSize: 12,
                   fontFamily: "inherit",
                   fontWeight: isSelected ? 600 : 400,
                   cursor: "pointer",
                   textAlign: "left",
-                  transition: "all 0.15s ease",
+                  transition: "all 0.2s ease",
                   outline: "none",
                   lineHeight: 1.4,
                 }}
               >
-                {text}
-              </button>
+                {isSelected && "✨ "}{text}
+              </motion.button>
             );
           })}
         </div>
@@ -267,9 +237,9 @@ export function GardenWatering({
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {renderRuler(
-        "How Important Is This Change?",
+        "How Important?",
         "⭐",
         importance,
         "#d4a24c",
@@ -280,7 +250,7 @@ export function GardenWatering({
         `${reactId}-importance`,
       )}
       {renderRuler(
-        "How Confident Are You?",
+        "How Confident?",
         "💪",
         confidence,
         "#5ab88f",
@@ -292,29 +262,42 @@ export function GardenWatering({
       )}
 
       {Math.abs(importance - confidence) >= 3 && (
-        <p
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
           style={{
-            margin: 0,
-            fontSize: 12,
-            lineHeight: 1.5,
-            color: "rgba(232, 220, 200, 0.55)",
-            fontStyle: "italic",
-            textAlign: "center",
-            padding: "4px 12px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "10px 14px",
+            background: "rgba(212, 162, 76, 0.05)",
+            borderRadius: 12,
+            borderLeft: "3px solid rgba(212, 162, 76, 0.25)",
           }}
         >
-          {importance > confidence
-            ? ageMode === "child"
-              ? "You really care about this but aren't sure you can do it yet — that's okay! Let's find what can help."
-              : ageMode === "teen"
-                ? "You see the importance but your confidence hasn't caught up yet. That gap is where growth happens."
-                : "There's a notable gap between importance and confidence — this is a prime area for MI work. Building self-efficacy may be the key leverage point."
-            : ageMode === "child"
-              ? "You feel like you could do it, but you're not sure it matters enough yet. Let's explore why it might."
-              : ageMode === "teen"
-                ? "You've got the confidence, but the motivation isn't quite there. Connecting this to what you value could help."
-                : "Confidence exceeds importance — exploring deeper values connections may strengthen the motivational foundation."}
-        </p>
+          <span style={{ fontSize: 16 }}>💡</span>
+          <p
+            style={{
+              margin: 0,
+              fontSize: 12,
+              lineHeight: 1.45,
+              color: "rgba(232, 220, 200, 0.6)",
+              fontStyle: "italic",
+            }}
+          >
+            {importance > confidence
+              ? ageMode === "child"
+                ? "You really care about this but aren't sure you can do it yet — that's okay!"
+                : ageMode === "teen"
+                  ? "You see the importance but your confidence hasn't caught up yet. That gap is where growth happens."
+                  : "There's a gap between importance and confidence — building self-efficacy may be the key leverage point."
+              : ageMode === "child"
+                ? "You feel like you could do it, but you're not sure it matters enough yet."
+                : ageMode === "teen"
+                  ? "You've got the confidence, but the motivation isn't quite there."
+                  : "Confidence exceeds importance — deeper values connections may strengthen your motivation."}
+          </p>
+        </motion.div>
       )}
     </div>
   );

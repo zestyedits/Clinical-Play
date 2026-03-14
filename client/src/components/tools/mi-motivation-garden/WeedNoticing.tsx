@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { AgeMode, WeedCategory, Weed } from "./garden-data";
 import { WEED_CATEGORIES, WEED_OPTIONS } from "./garden-data";
 
@@ -22,37 +23,56 @@ export function WeedNoticing({
 
   const validatingMessage: Record<AgeMode, string> = {
     child: "Weeds are normal in every garden. Noticing them is brave!",
-    teen: "Weeds are natural — everyone has reasons it's hard to change. Acknowledging them is the first step.",
-    adult: "Sustain talk is a natural part of ambivalence. Acknowledging these barriers without judgment is core to the MI process.",
+    teen: "Weeds are natural — everyone has reasons it's hard to change.",
+    adult: "Sustain talk is a natural part of ambivalence. Acknowledging barriers is core to MI.",
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <p
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div
         style={{
-          margin: "0 0 4px",
-          fontSize: 12,
-          lineHeight: 1.5,
-          color: "rgba(232, 220, 200, 0.55)",
-          fontStyle: "italic",
-          textAlign: "center",
-          padding: "0 8px",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 14px",
+          background: "rgba(155, 142, 196, 0.06)",
+          borderRadius: 12,
+          borderLeft: "3px solid rgba(155, 142, 196, 0.25)",
         }}
       >
-        {validatingMessage[ageMode]}
-      </p>
+        <span style={{ fontSize: 16 }}>🌙</span>
+        <p
+          style={{
+            margin: 0,
+            fontSize: 12,
+            lineHeight: 1.5,
+            color: "rgba(232, 220, 200, 0.6)",
+            fontStyle: "italic",
+          }}
+        >
+          {validatingMessage[ageMode]}
+        </p>
+      </div>
 
       <div
         style={{
-          textAlign: "center",
-          fontSize: 12,
-          color: weeds.length >= 1 ? "rgba(90, 184, 143, 0.8)" : "rgba(232, 220, 200, 0.4)",
-          fontWeight: 500,
-          marginBottom: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          padding: "4px 0",
         }}
       >
-        {weeds.length} weed{weeds.length !== 1 ? "s" : ""} noticed
-        {weeds.length < 1 && " — notice at least 1"}
+        <span
+          style={{
+            fontSize: 12,
+            color: weeds.length >= 1 ? "rgba(155, 142, 196, 0.8)" : "rgba(232, 220, 200, 0.4)",
+            fontWeight: 500,
+          }}
+        >
+          {weeds.length} weed{weeds.length !== 1 ? "s" : ""} noticed
+          {weeds.length < 1 && " · notice 1+"}
+        </span>
       </div>
 
       {WEED_CATEGORIES.map((weedCat) => {
@@ -64,11 +84,11 @@ export function WeedNoticing({
           <div
             key={weedCat.category}
             style={{
-              borderRadius: 8,
-              borderLeft: `3px solid ${weedCat.color}`,
+              borderRadius: 12,
               overflow: "hidden",
               background: isExpanded ? "rgba(232, 220, 200, 0.03)" : "transparent",
-              transition: "background 0.2s",
+              border: isExpanded ? `1px solid ${weedCat.color}20` : "1px solid transparent",
+              transition: "all 0.25s",
             }}
           >
             <button
@@ -79,7 +99,7 @@ export function WeedNoticing({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 12px",
+                padding: "10px 14px",
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
@@ -87,8 +107,21 @@ export function WeedNoticing({
                 textAlign: "left",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 16 }}>{weedCat.icon}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    background: `${weedCat.color}12`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 16,
+                  }}
+                >
+                  {weedCat.icon}
+                </div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: weedCat.color }}>
                     {weedCat.label} Weeds
@@ -106,82 +139,93 @@ export function WeedNoticing({
                       fontWeight: 600,
                       color: weedCat.color,
                       background: `${weedCat.color}18`,
-                      padding: "1px 7px",
-                      borderRadius: 8,
+                      padding: "2px 8px",
+                      borderRadius: 10,
                     }}
                   >
                     {categoryWeeds.length}
                   </span>
                 )}
-                <span
+                <motion.span
+                  animate={{ rotate: isExpanded ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
                   style={{
-                    fontSize: 12,
+                    fontSize: 11,
                     color: "rgba(232, 220, 200, 0.3)",
-                    transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
-                    transition: "transform 0.2s",
                     display: "inline-block",
                   }}
                 >
                   ▼
-                </span>
+                </motion.span>
               </div>
             </button>
 
-            {isExpanded && (
-              <div
-                style={{
-                  padding: "2px 12px 10px",
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 6,
-                }}
-              >
-                {options.map((option) => {
-                  const isSelected = weeds.some(
-                    (w) => w.category === weedCat.category && w.text === option,
-                  );
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  style={{ overflow: "hidden" }}
+                >
+                  <div
+                    style={{
+                      padding: "2px 14px 12px",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 6,
+                    }}
+                  >
+                    {options.map((option) => {
+                      const isSelected = weeds.some(
+                        (w) => w.category === weedCat.category && w.text === option,
+                      );
 
-                  return (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => {
-                        if (isSelected) {
-                          const weed = weeds.find(
-                            (w) => w.category === weedCat.category && w.text === option,
-                          );
-                          if (weed) onRemoveWeed(weed.id);
-                        } else {
-                          onAddWeed(weedCat.category, option);
-                        }
-                      }}
-                      style={{
-                        minHeight: 36,
-                        padding: "6px 14px",
-                        borderRadius: 18,
-                        border: isSelected
-                          ? `1.5px solid ${weedCat.color}`
-                          : "1px solid rgba(232, 220, 200, 0.12)",
-                        background: isSelected
-                          ? `${weedCat.color}20`
-                          : "rgba(232, 220, 200, 0.04)",
-                        color: isSelected ? weedCat.color : "rgba(232, 220, 200, 0.7)",
-                        fontSize: 12,
-                        fontFamily: "inherit",
-                        fontWeight: isSelected ? 600 : 400,
-                        cursor: "pointer",
-                        transition: "all 0.15s ease",
-                        outline: "none",
-                        WebkitTapHighlightColor: "transparent",
-                        userSelect: "none",
-                      }}
-                    >
-                      {option}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                      return (
+                        <motion.button
+                          key={option}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              const weed = weeds.find(
+                                (w) => w.category === weedCat.category && w.text === option,
+                              );
+                              if (weed) onRemoveWeed(weed.id);
+                            } else {
+                              onAddWeed(weedCat.category, option);
+                            }
+                          }}
+                          whileTap={{ scale: 0.95 }}
+                          style={{
+                            minHeight: 36,
+                            padding: "6px 14px",
+                            borderRadius: 20,
+                            border: isSelected
+                              ? `1.5px solid ${weedCat.color}`
+                              : "1px solid rgba(232, 220, 200, 0.1)",
+                            background: isSelected
+                              ? `${weedCat.color}20`
+                              : "rgba(232, 220, 200, 0.04)",
+                            color: isSelected ? weedCat.color : "rgba(232, 220, 200, 0.65)",
+                            fontSize: 12,
+                            fontFamily: "inherit",
+                            fontWeight: isSelected ? 600 : 400,
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                            outline: "none",
+                            WebkitTapHighlightColor: "transparent",
+                            userSelect: "none",
+                          }}
+                        >
+                          {isSelected && "🍂 "}{option}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         );
       })}
