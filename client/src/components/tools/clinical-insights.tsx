@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lightbulb, MessageCircle, BookOpen, X, GripHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ const MODALITY_COLORS: Record<string, string> = {
   "ACT": "bg-cyan-100/80 text-cyan-700 border-cyan-200/50",
   "IFS": "bg-violet-100/80 text-violet-700 border-violet-200/50",
   "MI": "bg-green-100/80 text-green-700 border-green-200/50",
+  "SFBT": "bg-amber-100/80 text-amber-700 border-amber-200/50",
 };
 
 const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; modality: string }[] }> = {
@@ -53,7 +54,7 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; mod
       { text: "Was the client able to generate counter-evidence independently, or did they need support?", modality: "CBT" },
       { text: "How did the belief rating shift from before to after? Explore what drove the change.", modality: "CBT" },
       { text: "Did the client resist any part of the process? That resistance itself is clinically meaningful.", modality: "Psychodynamic" },
-      { text: "Notice the language the client used in their reframe \u2014 does it feel genuinely balanced or performatively positive?", modality: "CBT" },
+      { text: "Notice the language the client used in their reframe — does it feel genuinely balanced or performatively positive?", modality: "CBT" },
       { text: "Which distortions from the guide resonated most? Consider assigning distortion-tracking homework.", modality: "CBT" },
       { text: "How did the courtroom metaphor land? Did the client engage with the playfulness or find it uncomfortable?", modality: "Play Therapy" },
       { text: "Consider the body language when the verdict was revealed. What somatic responses did you observe?", modality: "Somatic" },
@@ -66,7 +67,7 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; mod
       { text: "Did the client hesitate to include any exiles? Reluctance to acknowledge vulnerable parts may indicate strong protector activity.", modality: "IFS" },
       { text: "How did the client respond to the council table visualization? Did they engage with the metaphor or seem disconnected?", modality: "Play Therapy" },
       { text: "Notice which Self responses the client chose. Do they lean toward gratitude, reassurance, or boundary-setting with their parts?", modality: "IFS" },
-      { text: "Were any parts left 'unheard'? Resistance to responding to certain parts is clinically significant \u2014 explore what makes those parts difficult to approach.", modality: "IFS" },
+      { text: "Were any parts left 'unheard'? Resistance to responding to certain parts is clinically significant — explore what makes those parts difficult to approach.", modality: "IFS" },
       { text: "How does the client's relationship with their Inner Critic compare to their relationship with their Wounded Child? The protector-exile dynamic is central to IFS work.", modality: "IFS" },
       { text: "Did the client show signs of blending with any part during the meeting? Watch for sudden emotional shifts or identification with a part's perspective.", modality: "Somatic" },
       { text: "Consider using the Council Record as a reference point in future sessions to track how the client's relationship with their parts evolves over time.", modality: "IFS" },
@@ -76,26 +77,26 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; mod
     title: "Motivation Garden Prompts",
     prompts: [
       { text: "Which DARN category had the most seeds? Desire-heavy change talk may indicate early-stage contemplation, while Need-heavy talk often signals greater urgency.", modality: "MI" },
-      { text: "Compare the client's importance and confidence ratings. A high-importance / low-confidence gap is a key MI target \u2014 focus on building self-efficacy through ability-focused questions.", modality: "MI" },
-      { text: "Which weeds (sustain talk) did the client select? Validate these rather than arguing against them \u2014 'rolling with resistance' is core to MI spirit.", modality: "MI" },
-      { text: "Notice the values the client connected to their change goal. When motivation wavers, returning to these values can reactivate intrinsic motivation.", modality: "MI" },
-      { text: "How specific were the client's commitments? Vague commitments predict lower follow-through. Help them refine toward SMART-style action steps.", modality: "CBT" },
-      { text: "During the reflection step, what did you observe in the client's body? Softening or opening may indicate genuine readiness; tension may signal unresolved ambivalence.", modality: "Somatic" },
-      { text: "Consider the client's change narrative as a whole \u2014 the seeds they planted tell a story about their relationship with change. What themes emerge?", modality: "Narrative" },
-      { text: "How present was the client during the 'Watching Things Grow' step? Their capacity to stay with the reflection may indicate their current window of tolerance for emotional engagement.", modality: "Mindfulness" },
+      { text: "Compare the client's importance and confidence ratings. A high-importance / low-confidence gap is a key MI target — focus on building self-efficacy through ability-focused questions.", modality: "MI" },
+      { text: "Which weeds (sustain talk) did the client select? Validate these rather than arguing against them — 'rolling with resistance' is core to MI spirit.", modality: "MI" },
+      { text: "How did the client respond to the reflections? Did any particular reflection create a visible shift? That's the moment of deepening to explore further.", modality: "MI" },
+      { text: "Notice the language in the client's change talk. Are they using 'I want to' (desire), 'I could' (ability), 'I need to' (need), or 'I have to' (reason)? Each signals a different stage.", modality: "MI" },
+      { text: "Was the harvest summary surprising to the client? Seeing their own motivations reflected back can strengthen commitment language.", modality: "MI" },
+      { text: "Consider the client's readiness ruler ratings as a baseline. Track these across sessions to see movement toward change.", modality: "MI" },
+      { text: "Did the garden metaphor resonate? Some clients connect deeply with growth imagery while others may prefer more concrete frameworks.", modality: "Narrative" },
     ],
   },
   "somatic-grounding-grove": {
     title: "Grounding Grove Prompts",
     prompts: [
-      { text: "Which body region did the client rate with the highest tension? Chronic tension patterns often reflect unprocessed emotional experiences stored somatically.", modality: "Somatic" },
-      { text: "Did the client avoid any body regions? Reluctance to scan certain areas may indicate trauma-related dissociation or body image concerns worth exploring gently.", modality: "Somatic" },
-      { text: "How did the tension ratings shift after practicing techniques? Even small changes demonstrate the client's capacity for self-regulation \u2014 name and celebrate this.", modality: "Somatic" },
-      { text: "Which grounding technique resonated most? This reveals the client's preferred sensory channel (visual, tactile, auditory, kinesthetic) for future interventions.", modality: "Psychoeducation" },
-      { text: "Notice the client's breathing pattern during the exercises. Shallow chest breathing vs. deep belly breathing tells you about their baseline nervous system activation.", modality: "Somatic" },
-      { text: "Did the client seem surprised by any tension they discovered? Building interoceptive awareness \u2014 the ability to notice internal body signals \u2014 is a foundational skill for emotional regulation.", modality: "Mindfulness" },
-      { text: "Consider the sequence of regions explored. Did they start with 'safe' areas (hands, feet) or jump to high-tension zones? This may reflect their approach to difficult emotions.", modality: "Psychodynamic" },
-      { text: "How comfortable was the client with the body-focused exercises? Discomfort with somatic work itself is clinically meaningful and worth exploring without pushing.", modality: "Somatic" },
+      { text: "Which body region did the client choose first? The order of selection often reveals where they're most aware of holding tension.", modality: "Somatic" },
+      { text: "Were there regions the client avoided or rated very low? Low ratings can indicate disconnection rather than absence of tension.", modality: "Somatic" },
+      { text: "How did the client respond to the breathing techniques? Did they visibly settle, or did focused attention increase their distress?", modality: "Somatic" },
+      { text: "Notice if there's a pattern in high-tension regions. Head + shoulders often correlates with anxiety, while stomach + chest may indicate suppressed emotion.", modality: "Somatic" },
+      { text: "Did the client's tension ratings change during the session? Body awareness often shifts as the nervous system regulates.", modality: "Somatic" },
+      { text: "Which grounding technique seemed most effective? This information helps build the client's personalized coping toolkit.", modality: "DBT" },
+      { text: "How does the client's body map relate to their presenting concerns? Somatic markers often reveal what cognitive processing misses.", modality: "Psychodynamic" },
+      { text: "Consider asking the client to check in with their body at the start and end of future sessions to build interoceptive awareness over time.", modality: "Mindfulness" },
     ],
   },
   "sfbt-miracle-bridge": {
@@ -103,10 +104,10 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; mod
     prompts: [
       { text: "How detailed was the client's miracle morning description? Vivid, specific imagery suggests a clearer vision of change and stronger motivation to pursue it.", modality: "SFBT" },
       { text: "When identifying exceptions, did the client recognize their own agency in those moments? Highlighting personal contribution to exceptions builds self-efficacy.", modality: "SFBT" },
-      { text: "Notice the gap between the client's current scaling number and their miracle. A client at 4/10 has already done significant work \u2014 explore what got them from 1 to 4.", modality: "SFBT" },
+      { text: "Notice the gap between the client's current scaling number and their miracle. A client at 4/10 has already done significant work — explore what got them from 1 to 4.", modality: "SFBT" },
       { text: "How realistic was the 'one step forward'? Very small, concrete steps predict higher follow-through than ambitious plans. If it feels too big, help them shrink it.", modality: "SFBT" },
       { text: "Did the client include other people in their miracle day? The relational elements of their preferred future reveal attachment needs and social support resources.", modality: "SFBT" },
-      { text: "Compare the confidence and motivation scales. Low confidence with high motivation is a therapeutic sweet spot \u2014 the desire is there, and building competence becomes the focus.", modality: "MI" },
+      { text: "Compare the confidence and motivation scales. Low confidence with high motivation is a therapeutic sweet spot — the desire is there, and building competence becomes the focus.", modality: "MI" },
       { text: "What emotions surfaced during the miracle question? Some clients feel hopeful; others feel grief for the gap between reality and desire. Both responses are clinically rich.", modality: "Psychodynamic" },
       { text: "Consider using the client's own words from their responses as anchors in future sessions. Solution-focused work is most powerful when it uses the client's language.", modality: "SFBT" },
     ],
@@ -123,23 +124,40 @@ interface ClinicalInsightsProps {
 export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsightsProps) {
   const toolData = TOOL_PROMPTS[activeTool] || TOOL_PROMPTS["dbt-house"];
   const constraintsRef = useRef<HTMLDivElement>(null);
+  const hasDragged = useRef(false);
+
+  const handlePointerDown = useCallback(() => {
+    hasDragged.current = false;
+  }, []);
+
+  const handleDragStart = useCallback(() => {
+    hasDragged.current = true;
+  }, []);
+
+  const handleClick = useCallback(() => {
+    if (hasDragged.current) {
+      hasDragged.current = false;
+      return;
+    }
+    onToggle();
+  }, [onToggle]);
 
   return (
     <>
-      {/* Drag constraints container (covers the playroom area) */}
       <div
         ref={constraintsRef}
         className="absolute inset-0 z-30 pointer-events-none"
         style={{ overflow: "hidden" }}
       />
 
-      {/* Draggable toggle button */}
       <motion.button
         drag
         dragConstraints={constraintsRef}
         dragMomentum={false}
         dragElastic={0.1}
-        onClick={onToggle}
+        onPointerDown={handlePointerDown}
+        onDragStart={handleDragStart}
+        onClick={handleClick}
         className={cn(
           "absolute top-20 md:top-4 right-4 z-30 min-h-[44px] px-4 py-2.5 rounded-2xl shadow-lg cursor-grab active:cursor-grabbing flex items-center gap-2 pointer-events-auto select-none touch-none",
           isOpen
@@ -165,7 +183,6 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsig
         )}
       </motion.button>
 
-      {/* Panel + backdrop */}
       <AnimatePresence>
         {isOpen && (
           <>
