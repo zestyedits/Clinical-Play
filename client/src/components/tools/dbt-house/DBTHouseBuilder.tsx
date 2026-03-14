@@ -5,6 +5,8 @@ import { PromptDialog } from "./PromptDialog";
 import { FeelingsWheel } from "./FeelingsWheel";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { useAudio } from "../../../lib/stores/useAudio";
+import { FurtherReading } from "../shared/FurtherReading";
+import { DBT_REFERENCES } from "../shared/references-data";
 
 export interface HouseLayer {
   id: string;
@@ -319,6 +321,12 @@ export function DBTHouseBuilder() {
           >
             {discussedCount}/{totalItems} discussed
           </div>
+          <FurtherReading
+            references={DBT_REFERENCES}
+            accentColor="rgba(160,146,107,0.6)"
+            textColor="#f0e8d8"
+            bgColor="rgba(45,40,35,0.97)"
+          />
           <button
             onClick={toggleMute}
             data-testid="button-dbt-mute"

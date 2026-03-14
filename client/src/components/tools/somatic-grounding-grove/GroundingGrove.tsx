@@ -4,6 +4,8 @@ import { BodyMap } from "./BodyMap";
 import { RegionPanel } from "./RegionPanel";
 import { BODY_REGIONS } from "./grove-data";
 import { useAudio } from "../../../lib/stores/useAudio";
+import { FurtherReading } from "../shared/FurtherReading";
+import { SOMATIC_REFERENCES } from "../shared/references-data";
 
 export function GroundingGrove() {
   const [started, setStarted] = useState(false);
@@ -92,6 +94,12 @@ export function GroundingGrove() {
           <div style={{ fontSize: 11, color: "rgba(212, 232, 208, 0.5)" }}>
             {regionsExplored}/{BODY_REGIONS.length} explored
           </div>
+          <FurtherReading
+            references={SOMATIC_REFERENCES}
+            accentColor="rgba(100,160,100,0.6)"
+            textColor="#d4e8d0"
+            bgColor="rgba(26,42,26,0.97)"
+          />
           <button
             onClick={toggleMute}
             data-testid="button-grove-mute"

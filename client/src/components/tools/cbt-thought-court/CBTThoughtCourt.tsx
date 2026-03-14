@@ -11,6 +11,8 @@ import { EvidenceBoard } from "./EvidenceBoard";
 import { VerdictReveal } from "./VerdictReveal";
 import { ReframeStation } from "./ReframeStation";
 import { CaseFileSummary } from "./CaseFileSummary";
+import { FurtherReading } from "../shared/FurtherReading";
+import { CBT_REFERENCES } from "../shared/references-data";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -329,21 +331,29 @@ export function CBTThoughtCourt() {
               </div>
             </div>
           </div>
-          <button
-            onClick={toggleMute}
-            data-testid="button-cbt-mute"
-            style={{
-              background: "rgba(232, 224, 240, 0.1)",
-              border: "1px solid rgba(120, 100, 180, 0.3)",
-              borderRadius: 8,
-              padding: "5px 10px",
-              color: "#e8e0f0",
-              fontSize: 16,
-              cursor: "pointer",
-            }}
-          >
-            {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <FurtherReading
+              references={CBT_REFERENCES}
+              accentColor="rgba(120,100,180,0.6)"
+              textColor="#e8e0f0"
+              bgColor="rgba(15,10,25,0.97)"
+            />
+            <button
+              onClick={toggleMute}
+              data-testid="button-cbt-mute"
+              style={{
+                background: "rgba(232, 224, 240, 0.1)",
+                border: "1px solid rgba(120, 100, 180, 0.3)",
+                borderRadius: 8,
+                padding: "5px 10px",
+                color: "#e8e0f0",
+                fontSize: 16,
+                cursor: "pointer",
+              }}
+            >
+              {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
+            </button>
+          </div>
         </div>
         <div style={{ flex: 1, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
           <CaseFileSummary state={state} onNewTrial={() => dispatch({ type: "RESET_TRIAL" })} />
@@ -415,6 +425,12 @@ export function CBTThoughtCourt() {
             <span style={{ fontSize: 14 }}>{"\uD83D\uDCD6"}</span>
             <span className="distortions-label" style={{ display: "inline" }}>Guide</span>
           </button>
+          <FurtherReading
+            references={CBT_REFERENCES}
+            accentColor="rgba(120,100,180,0.6)"
+            textColor="#e8e0f0"
+            bgColor="rgba(15,10,25,0.97)"
+          />
           <button
             onClick={toggleMute}
             data-testid="button-cbt-mute"

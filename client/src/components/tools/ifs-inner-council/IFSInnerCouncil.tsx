@@ -10,6 +10,8 @@ import { CouncilTable } from "./CouncilTable";
 import { CouncilMeeting } from "./CouncilMeeting";
 import { CouncilSummary } from "./CouncilSummary";
 import { IFSGuide } from "./IFSGuide";
+import { FurtherReading } from "../shared/FurtherReading";
+import { IFS_REFERENCES } from "../shared/references-data";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -242,21 +244,29 @@ export function IFSInnerCouncil() {
               </div>
             </div>
           </div>
-          <button
-            onClick={toggleMute}
-            data-testid="button-ifs-mute"
-            style={{
-              background: "rgba(244, 228, 188, 0.1)",
-              border: "1px solid rgba(139, 115, 85, 0.3)",
-              borderRadius: 8,
-              padding: "5px 10px",
-              color: "#f4e4bc",
-              fontSize: 16,
-              cursor: "pointer",
-            }}
-          >
-            {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <FurtherReading
+              references={IFS_REFERENCES}
+              accentColor="rgba(139,115,85,0.6)"
+              textColor="#f4e4bc"
+              bgColor="rgba(26,18,8,0.97)"
+            />
+            <button
+              onClick={toggleMute}
+              data-testid="button-ifs-mute"
+              style={{
+                background: "rgba(244, 228, 188, 0.1)",
+                border: "1px solid rgba(139, 115, 85, 0.3)",
+                borderRadius: 8,
+                padding: "5px 10px",
+                color: "#f4e4bc",
+                fontSize: 16,
+                cursor: "pointer",
+              }}
+            >
+              {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
+            </button>
+          </div>
         </div>
         <div style={{ flex: 1, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
           <CouncilSummary
@@ -310,21 +320,29 @@ export function IFSInnerCouncil() {
             </div>
           </div>
         </div>
-        <button
-          onClick={toggleMute}
-          data-testid="button-ifs-mute"
-          style={{
-            background: "rgba(244, 228, 188, 0.1)",
-            border: "1px solid rgba(139, 115, 85, 0.3)",
-            borderRadius: 8,
-            padding: "5px 10px",
-            color: "#f4e4bc",
-            fontSize: 16,
-            cursor: "pointer",
-          }}
-        >
-          {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <FurtherReading
+            references={IFS_REFERENCES}
+            accentColor="rgba(139,115,85,0.6)"
+            textColor="#f4e4bc"
+            bgColor="rgba(26,18,8,0.97)"
+          />
+          <button
+            onClick={toggleMute}
+            data-testid="button-ifs-mute"
+            style={{
+              background: "rgba(244, 228, 188, 0.1)",
+              border: "1px solid rgba(139, 115, 85, 0.3)",
+              borderRadius: 8,
+              padding: "5px 10px",
+              color: "#f4e4bc",
+              fontSize: 16,
+              cursor: "pointer",
+            }}
+          >
+            {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
+          </button>
+        </div>
       </div>
 
       {/* Step content area */}

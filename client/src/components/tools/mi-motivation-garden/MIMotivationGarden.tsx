@@ -13,6 +13,8 @@ import { GardenWatering } from "./GardenWatering";
 import { SoilTending } from "./SoilTending";
 import { GardenGrowing } from "./GardenGrowing";
 import { BouquetHarvest } from "./BouquetHarvest";
+import { FurtherReading } from "../shared/FurtherReading";
+import { MI_REFERENCES } from "../shared/references-data";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -355,21 +357,29 @@ export function MIMotivationGarden() {
               — Complete
             </span>
           </div>
-          <button
-            onClick={toggleMute}
-            data-testid="button-mi-mute"
-            style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: 6,
-              padding: "4px 8px",
-              color: "rgba(232, 220, 200, 0.5)",
-              fontSize: 14,
-              cursor: "pointer",
-            }}
-          >
-            {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <FurtherReading
+              references={MI_REFERENCES}
+              accentColor="rgba(45,122,58,0.6)"
+              textColor="#e8dcc8"
+              bgColor="rgba(10,31,20,0.97)"
+            />
+            <button
+              onClick={toggleMute}
+              data-testid="button-mi-mute"
+              style={{
+                background: "transparent",
+                border: "none",
+                borderRadius: 6,
+                padding: "4px 8px",
+                color: "rgba(232, 220, 200, 0.5)",
+                fontSize: 14,
+                cursor: "pointer",
+              }}
+            >
+              {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
+            </button>
+          </div>
         </div>
         <div style={{ flex: 1, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
           <BouquetHarvest
@@ -425,21 +435,29 @@ export function MIMotivationGarden() {
             Motivation Garden
           </span>
         </div>
-        <button
-          onClick={toggleMute}
-          data-testid="button-mi-mute"
-          style={{
-            background: "transparent",
-            border: "none",
-            borderRadius: 6,
-            padding: "4px 8px",
-            color: "rgba(232, 220, 200, 0.5)",
-            fontSize: 14,
-            cursor: "pointer",
-          }}
-        >
-          {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <FurtherReading
+            references={MI_REFERENCES}
+            accentColor="rgba(45,122,58,0.6)"
+            textColor="#e8dcc8"
+            bgColor="rgba(10,31,20,0.97)"
+          />
+          <button
+            onClick={toggleMute}
+            data-testid="button-mi-mute"
+            style={{
+              background: "transparent",
+              border: "none",
+              borderRadius: 6,
+              padding: "4px 8px",
+              color: "rgba(232, 220, 200, 0.5)",
+              fontSize: 14,
+              cursor: "pointer",
+            }}
+          >
+            {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
+          </button>
+        </div>
       </div>
 
       {/* Step content area */}

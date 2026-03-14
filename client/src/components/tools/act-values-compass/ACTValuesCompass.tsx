@@ -13,6 +13,8 @@ import { LookoutPoint } from "./LookoutPoint";
 import { CommittedAction } from "./CommittedAction";
 import { ExpeditionMap } from "./ExpeditionMap";
 import { ACTGuide } from "./ACTGuide";
+import { FurtherReading } from "../shared/FurtherReading";
+import { ACT_REFERENCES } from "../shared/references-data";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -326,21 +328,29 @@ export function ACTValuesCompass() {
               </div>
             </div>
           </div>
-          <button
-            onClick={toggleMute}
-            data-testid="button-act-mute"
-            style={{
-              background: "rgba(232, 220, 200, 0.1)",
-              border: "1px solid rgba(45, 138, 138, 0.3)",
-              borderRadius: 8,
-              padding: "5px 10px",
-              color: "#e8dcc8",
-              fontSize: 16,
-              cursor: "pointer",
-            }}
-          >
-            {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <FurtherReading
+              references={ACT_REFERENCES}
+              accentColor="rgba(45,138,138,0.6)"
+              textColor="#e8dcc8"
+              bgColor="rgba(10,18,25,0.97)"
+            />
+            <button
+              onClick={toggleMute}
+              data-testid="button-act-mute"
+              style={{
+                background: "rgba(232, 220, 200, 0.1)",
+                border: "1px solid rgba(45, 138, 138, 0.3)",
+                borderRadius: 8,
+                padding: "5px 10px",
+                color: "#e8dcc8",
+                fontSize: 16,
+                cursor: "pointer",
+              }}
+            >
+              {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
+            </button>
+          </div>
         </div>
         <div style={{ flex: 1, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
           <ExpeditionMap
@@ -396,21 +406,29 @@ export function ACTValuesCompass() {
             </div>
           </div>
         </div>
-        <button
-          onClick={toggleMute}
-          data-testid="button-act-mute"
-          style={{
-            background: "rgba(232, 220, 200, 0.1)",
-            border: "1px solid rgba(45, 138, 138, 0.3)",
-            borderRadius: 8,
-            padding: "5px 10px",
-            color: "#e8dcc8",
-            fontSize: 16,
-            cursor: "pointer",
-          }}
-        >
-          {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <FurtherReading
+            references={ACT_REFERENCES}
+            accentColor="rgba(45,138,138,0.6)"
+            textColor="#e8dcc8"
+            bgColor="rgba(10,18,25,0.97)"
+          />
+          <button
+            onClick={toggleMute}
+            data-testid="button-act-mute"
+            style={{
+              background: "rgba(232, 220, 200, 0.1)",
+              border: "1px solid rgba(45, 138, 138, 0.3)",
+              borderRadius: 8,
+              padding: "5px 10px",
+              color: "#e8dcc8",
+              fontSize: 16,
+              cursor: "pointer",
+            }}
+          >
+            {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
+          </button>
+        </div>
       </div>
 
       {/* Step content area */}

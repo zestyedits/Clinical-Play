@@ -11,6 +11,8 @@ import { ExceptionStars } from "./ExceptionStars";
 import { StrengthsFinder } from "./StrengthsFinder";
 import { RewriteStep } from "./RewriteStep";
 import { StorySummary } from "./StorySummary";
+import { FurtherReading } from "../shared/FurtherReading";
+import { NARRATIVE_REFERENCES } from "../shared/references-data";
 
 export interface QuestState {
   ageMode: AgeMode;
@@ -293,21 +295,29 @@ export function NarrativeQuest() {
               </div>
             </div>
           </div>
-          <button
-            onClick={toggleMute}
-            data-testid="button-nq-mute"
-            style={{
-              background: "rgba(244, 232, 208, 0.1)",
-              border: "1px solid rgba(180, 140, 80, 0.3)",
-              borderRadius: 8,
-              padding: "5px 10px",
-              color: "#f4e8d0",
-              fontSize: 16,
-              cursor: "pointer",
-            }}
-          >
-            {isMuted ? "🔇" : "🔊"}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <FurtherReading
+              references={NARRATIVE_REFERENCES}
+              accentColor="rgba(180,140,80,0.6)"
+              textColor="#f4e8d0"
+              bgColor="rgba(26,20,16,0.97)"
+            />
+            <button
+              onClick={toggleMute}
+              data-testid="button-nq-mute"
+              style={{
+                background: "rgba(244, 232, 208, 0.1)",
+                border: "1px solid rgba(180, 140, 80, 0.3)",
+                borderRadius: 8,
+                padding: "5px 10px",
+                color: "#f4e8d0",
+                fontSize: 16,
+                cursor: "pointer",
+              }}
+            >
+              {isMuted ? "🔇" : "🔊"}
+            </button>
+          </div>
         </div>
         <div style={{ flex: 1, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
           <div style={{ maxWidth: 560, margin: "0 auto", width: "100%" }}>
@@ -369,21 +379,29 @@ export function NarrativeQuest() {
             </div>
           </div>
         </div>
-        <button
-          onClick={toggleMute}
-          data-testid="button-nq-mute"
-          style={{
-            background: "rgba(244, 232, 208, 0.1)",
-            border: "1px solid rgba(180, 140, 80, 0.3)",
-            borderRadius: 8,
-            padding: "5px 10px",
-            color: "#f4e8d0",
-            fontSize: 16,
-            cursor: "pointer",
-          }}
-        >
-          {isMuted ? "🔇" : "🔊"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <FurtherReading
+            references={NARRATIVE_REFERENCES}
+            accentColor="rgba(180,140,80,0.6)"
+            textColor="#f4e8d0"
+            bgColor="rgba(26,20,16,0.97)"
+          />
+          <button
+            onClick={toggleMute}
+            data-testid="button-nq-mute"
+            style={{
+              background: "rgba(244, 232, 208, 0.1)",
+              border: "1px solid rgba(180, 140, 80, 0.3)",
+              borderRadius: 8,
+              padding: "5px 10px",
+              color: "#f4e8d0",
+              fontSize: 16,
+              cursor: "pointer",
+            }}
+          >
+            {isMuted ? "🔇" : "🔊"}
+          </button>
+        </div>
       </div>
 
       <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>

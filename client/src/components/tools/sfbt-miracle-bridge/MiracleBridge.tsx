@@ -5,6 +5,8 @@ import { StepPanel } from "./StepPanel";
 import { JourneySummary } from "./JourneySummary";
 import { BRIDGE_STEPS } from "./bridge-data";
 import { useAudio } from "../../../lib/stores/useAudio";
+import { FurtherReading } from "../shared/FurtherReading";
+import { SFBT_REFERENCES } from "../shared/references-data";
 
 export function MiracleBridge() {
   const [started, setStarted] = useState(false);
@@ -99,6 +101,12 @@ export function MiracleBridge() {
           <div style={{ fontSize: 11, color: "rgba(224, 221, 213, 0.35)" }}>
             {completedSteps.size}/{BRIDGE_STEPS.length}
           </div>
+          <FurtherReading
+            references={SFBT_REFERENCES}
+            accentColor="rgba(196,162,90,0.6)"
+            textColor="#e0ddd5"
+            bgColor="rgba(28,30,42,0.97)"
+          />
           <button
             onClick={toggleMute}
             data-testid="button-bridge-mute"
