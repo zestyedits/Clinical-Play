@@ -6,6 +6,7 @@ export interface Reference {
   author: string;
   year: number;
   description: string;
+  url?: string;
 }
 
 interface FurtherReadingProps {
@@ -168,17 +169,38 @@ export function FurtherReading({
                         borderLeft: `2px solid ${withOpacity(accentColor, 0.2)}`,
                       }}
                     >
-                      <p
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: withOpacity(textColor, 0.8),
-                          margin: 0,
-                          fontFamily: "'Lora', Georgia, serif",
-                        }}
-                      >
-                        {ref.title}
-                      </p>
+                      {ref.url ? (
+                        <a
+                          href={ref.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: withOpacity(textColor, 0.8),
+                            margin: 0,
+                            fontFamily: "'Lora', Georgia, serif",
+                            textDecoration: "underline",
+                            textDecorationColor: withOpacity(accentColor, 0.3),
+                            textUnderlineOffset: 2,
+                            display: "block",
+                          }}
+                        >
+                          {ref.title}
+                        </a>
+                      ) : (
+                        <p
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: withOpacity(textColor, 0.8),
+                            margin: 0,
+                            fontFamily: "'Lora', Georgia, serif",
+                          }}
+                        >
+                          {ref.title}
+                        </p>
+                      )}
                       <p
                         style={{
                           fontSize: 11,
