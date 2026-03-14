@@ -152,7 +152,9 @@ export function StepWrapper({
       </div>
 
       <div style={{ flex: 1, overflow: "auto", padding: "12px clamp(16px, 4vw, 28px) 12px", position: "relative", zIndex: 1 }}>
-        {children}
+        <div style={{ maxWidth: 560, margin: "0 auto", width: "100%" }}>
+          {children}
+        </div>
       </div>
 
       <div
@@ -165,6 +167,9 @@ export function StepWrapper({
           position: "relative",
           zIndex: 1,
           background: "linear-gradient(to top, rgba(0,0,0,0.3), transparent)",
+          maxWidth: 560 + 56,
+          margin: "0 auto",
+          width: "100%",
         }}
       >
         {!isFirstStep && (

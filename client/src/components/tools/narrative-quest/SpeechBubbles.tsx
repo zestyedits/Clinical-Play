@@ -38,7 +38,7 @@ export function SpeechBubbles({ problemName, characterEmoji, characterColor, bub
         </p>
       </div>
 
-      <div style={{ display: "flex", gap: 4, background: "rgba(244, 232, 208, 0.04)", borderRadius: 10, padding: 3 }}>
+      <div style={{ display: "flex", gap: 4, background: "rgba(244, 232, 208, 0.04)", borderRadius: 12, padding: 3 }}>
         {SPEECH_CATEGORIES.map((cat) => {
           const count = bubbles.filter((b) => b.category === cat.id).length;
           return (
@@ -48,11 +48,11 @@ export function SpeechBubbles({ problemName, characterEmoji, characterColor, bub
               data-testid={`tab-${cat.id}`}
               style={{
                 flex: 1,
-                padding: "8px 6px",
-                fontSize: 11,
+                padding: "10px 6px",
+                fontSize: 12,
                 fontWeight: 600,
                 border: "none",
-                borderRadius: 8,
+                borderRadius: 10,
                 cursor: "pointer",
                 transition: "all 0.2s",
                 background: activeCategory === cat.id ? `${activeHex}30` : "transparent",

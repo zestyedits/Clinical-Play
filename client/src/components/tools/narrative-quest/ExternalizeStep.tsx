@@ -69,6 +69,7 @@ export function ExternalizeStep({
             lineHeight: 1.6,
             resize: "vertical",
             outline: "none",
+            boxSizing: "border-box",
           }}
         />
       </motion.div>
@@ -97,6 +98,7 @@ export function ExternalizeStep({
             fontFamily: "'Lora', Georgia, serif",
             fontWeight: 600,
             outline: "none",
+            boxSizing: "border-box",
           }}
         />
       </motion.div>
@@ -105,14 +107,14 @@ export function ExternalizeStep({
         <p style={{ fontSize: 11, color: "rgba(244, 232, 208, 0.4)", margin: "0 0 6px" }}>
           Choose an icon for the troublemaker:
         </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {CHARACTER_EMOJIS.map((emoji) => (
             <button
               key={emoji}
               onClick={() => onEmojiChange(emoji)}
               data-testid={`emoji-${emoji}`}
               style={{
-                width: 38, height: 38, borderRadius: 8, fontSize: 20,
+                width: 42, height: 42, borderRadius: 10, fontSize: 20,
                 border: characterEmoji === emoji ? `2px solid ${activeColor}` : "1px solid rgba(244, 232, 208, 0.1)",
                 background: characterEmoji === emoji ? `${activeColor}20` : "rgba(244, 232, 208, 0.04)",
                 cursor: "pointer",
@@ -130,14 +132,14 @@ export function ExternalizeStep({
         <p style={{ fontSize: 11, color: "rgba(244, 232, 208, 0.4)", margin: "0 0 6px" }}>
           Pick a color that represents it:
         </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {CHARACTER_COLORS.map((c) => (
             <button
               key={c.id}
               onClick={() => onColorChange(c.id)}
               data-testid={`color-${c.id}`}
               style={{
-                width: 32, height: 32, borderRadius: "50%",
+                width: 36, height: 36, borderRadius: "50%",
                 background: c.hex,
                 border: characterColor === c.id ? "3px solid #f4e8d0" : "2px solid rgba(244, 232, 208, 0.15)",
                 cursor: "pointer",
@@ -163,7 +165,7 @@ export function ExternalizeStep({
                 onClick={() => onToggleTrait(trait.id)}
                 data-testid={`trait-${trait.id}`}
                 style={{
-                  padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 500,
+                  padding: "8px 14px", borderRadius: 20, fontSize: 13, fontWeight: 500,
                   border: selected ? `1px solid ${activeColor}80` : "1px solid rgba(244, 232, 208, 0.12)",
                   background: selected ? `${activeColor}20` : "rgba(244, 232, 208, 0.04)",
                   color: selected ? "#f4e8d0" : "rgba(244, 232, 208, 0.5)",

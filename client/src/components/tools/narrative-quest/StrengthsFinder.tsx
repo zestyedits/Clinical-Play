@@ -136,7 +136,7 @@ export function StrengthsFinder({ strengths, onAdd, onRemove, ageMode }: Strengt
                   key={emoji}
                   onClick={() => setCustomEmoji(emoji)}
                   style={{
-                    width: 34, height: 34, borderRadius: 8, fontSize: 16,
+                    width: 40, height: 40, borderRadius: 10, fontSize: 18,
                     border: customEmoji === emoji ? "2px solid rgba(212, 133, 58, 0.5)" : "1px solid rgba(244, 232, 208, 0.1)",
                     background: customEmoji === emoji ? "rgba(212, 133, 58, 0.15)" : "rgba(244, 232, 208, 0.04)",
                     cursor: "pointer",

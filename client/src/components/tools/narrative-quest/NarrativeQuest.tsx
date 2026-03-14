@@ -310,6 +310,7 @@ export function NarrativeQuest() {
           </button>
         </div>
         <div style={{ flex: 1, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
+          <div style={{ maxWidth: 560, margin: "0 auto", width: "100%" }}>
           <StorySummary
             ageMode={state.ageMode}
             problemDescription={state.problemDescription}
@@ -323,6 +324,7 @@ export function NarrativeQuest() {
             rewrittenStory={state.rewrittenStory}
             onNewQuest={() => dispatch({ type: "RESET" })}
           />
+          </div>
         </div>
       </div>
     );

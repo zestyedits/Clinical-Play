@@ -127,6 +127,7 @@ export function RewriteStep({ problemName, characterEmoji, characterColor, stren
             lineHeight: 1.8,
             resize: "vertical",
             outline: "none",
+            boxSizing: "border-box",
           }}
         />
       </motion.div>
