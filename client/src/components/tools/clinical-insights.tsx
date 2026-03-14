@@ -99,6 +99,19 @@ const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; mod
       { text: "Consider asking the client to check in with their body at the start and end of future sessions to build interoceptive awareness over time.", modality: "Mindfulness" },
     ],
   },
+  "narrative-quest": {
+    title: "Narrative Quest Prompts",
+    prompts: [
+      { text: "How easily did the client externalize the problem? Difficulty separating self from problem may indicate deep fusion with a dominant narrative.", modality: "Narrative" },
+      { text: "What name did the client give the problem? The language of externalization reveals how the client relates to their struggle — is it a monster, a fog, a critic?", modality: "Narrative" },
+      { text: "Notice the speech bubbles — what dominant narrative does the problem reinforce? Look for themes of worthlessness, helplessness, or isolation.", modality: "Psychodynamic" },
+      { text: "How many unique outcomes (exceptions) could the client identify? Difficulty finding exceptions may indicate the problem narrative feels totalizing.", modality: "Narrative" },
+      { text: "Which strengths did the client choose? The emojis and language they select reveal what resources feel most authentic and accessible to them.", modality: "Narrative" },
+      { text: "How detailed was the re-authored narrative? Vividness and specificity in the new chapter suggest stronger investment in an alternative story.", modality: "Narrative" },
+      { text: "Did the client show visible relief during externalization? The moment of separation — 'I am not the problem' — is often a pivotal therapeutic experience.", modality: "Somatic" },
+      { text: "Consider revisiting the client's externalized character in future sessions. Tracking how the relationship with the problem evolves over time is central to narrative work.", modality: "Narrative" },
+    ],
+  },
   "sfbt-miracle-bridge": {
     title: "Miracle Bridge Prompts",
     prompts: [

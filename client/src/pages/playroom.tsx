@@ -15,6 +15,7 @@ import { IFSInnerCouncil } from "@/components/tools/ifs-inner-council";
 import { MIMotivationGarden } from "@/components/tools/mi-motivation-garden";
 import { GroundingGrove } from "@/components/tools/somatic-grounding-grove";
 import { MiracleBridge } from "@/components/tools/sfbt-miracle-bridge";
+import { NarrativeQuest } from "@/components/tools/narrative-quest";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -264,6 +265,7 @@ export default function Playroom() {
       "mi-motivation-garden": "The Motivation Garden",
       "somatic-grounding-grove": "The Grounding Grove",
       "sfbt-miracle-bridge": "The Miracle Bridge",
+      "narrative-quest": "The Narrative Quest",
     };
     return names[tool] || tool;
   };
@@ -646,6 +648,11 @@ export default function Playroom() {
             {activeTool === "sfbt-miracle-bridge" && (
               <motion.div key="sfbt-miracle-bridge" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <MiracleBridge />
+              </motion.div>
+            )}
+            {activeTool === "narrative-quest" && (
+              <motion.div key="narrative-quest" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <NarrativeQuest />
               </motion.div>
             )}
           </AnimatePresence>

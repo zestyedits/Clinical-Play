@@ -31,6 +31,7 @@ const ALL_TOOLS: DashboardTool[] = [
   { id: "mi-motivation-garden", label: "The Motivation Garden", desc: "Grow your motivation for change using seeds, water, and a commitment bouquet", icon: Sprout, tier: "free", emoji: "\uD83C\uDF31" },
   { id: "somatic-grounding-grove", label: "The Grounding Grove", desc: "Explore your body, rate tension, and practice somatic grounding techniques", icon: Layers, tier: "free", emoji: "\u{1F333}" },
   { id: "sfbt-miracle-bridge", label: "The Miracle Bridge", desc: "Walk toward your preferred future using solution-focused questions", icon: Layers, tier: "free", emoji: "\u{1F309}" },
+  { id: "narrative-quest", label: "The Narrative Quest", desc: "Externalize problems, find exceptions, and rewrite your story", icon: Layers, tier: "free", emoji: "📖" },
 ];
 
 const CLINICAL_TIPS: { tip: string; tool: string }[] = [
