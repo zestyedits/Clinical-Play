@@ -7,11 +7,20 @@ import { useAuth, useAuthFetch } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { LogoMark } from "@/components/shared/logo-mark";
 
-function MobileBottomNav({ items, currentPath, unreadCount }: { items: { label: string; icon: React.ElementType; tab: string; path: string }[]; currentPath: string; unreadCount: number }) {
+function MobileBottomNav({ items, currentPath, unreadCount, isDark }: { items: { label: string; icon: React.ElementType; tab: string; path: string }[]; currentPath: string; unreadCount: number; isDark?: boolean }) {
   const [, navigate] = useLocation();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border" aria-label="Mobile navigation" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+    <nav
+      className={cn(
+        "md:hidden fixed bottom-0 left-0 right-0 z-50 backdrop-blur-md border-t",
+        isDark
+          ? "bg-[#3D3228]/95 border-[#5A4E40]/40"
+          : "bg-background/95 border-border"
+      )}
+      aria-label="Mobile navigation"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
       <div className="flex justify-around items-center h-16 px-2" role="tablist">
         {items.map((item) => {
           const isActive = item.path === "/settings"
@@ -23,14 +32,16 @@ function MobileBottomNav({ items, currentPath, unreadCount }: { items: { label: 
               onClick={() => navigate(item.path)}
               className={cn(
                 "relative flex flex-col items-center justify-center w-full h-full gap-1 bg-transparent border-none cursor-pointer transition-colors",
-                isActive ? "text-primary" : "text-muted-foreground"
+                isDark
+                  ? isActive ? "text-[#C9956B]" : "text-[#7A6E60]"
+                  : isActive ? "text-primary" : "text-muted-foreground"
               )}
               data-testid={`link-bottomnav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
             >
               <div className="relative">
                 <item.icon size={22} strokeWidth={isActive ? 2.2 : 1.5} />
                 {item.tab === "inbox" && unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 rounded-full bg-accent text-[8px] font-bold text-white flex items-center justify-center">
+                  <span className={cn("absolute -top-1 -right-1.5 w-3.5 h-3.5 rounded-full text-[8px] font-bold text-white flex items-center justify-center", isDark ? "bg-[#C9956B]" : "bg-accent")}>
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
@@ -39,7 +50,7 @@ function MobileBottomNav({ items, currentPath, unreadCount }: { items: { label: 
                 {item.label}
               </span>
               {isActive && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary" />
+                <span className={cn("absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full", isDark ? "bg-[#C9956B]" : "bg-primary")} />
               )}
             </button>
           );
@@ -108,12 +119,19 @@ export function Navbar() {
     }
   };
 
+  const isDarkPage = location === "/dashboard";
+
   return (
     <>
       {/* Desktop Navigation */}
       <nav
         aria-label="Main navigation"
-        className="fixed top-0 left-0 right-0 z-50 hidden md:flex items-center justify-between px-6 h-16 bg-background border-b border-border"
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 hidden md:flex items-center justify-between px-6 h-16 border-b",
+          isDarkPage
+            ? "bg-[#3D3228]/90 backdrop-blur-md border-[#5A4E40]/40"
+            : "bg-background border-border"
+        )}
       >
         <Link href="/" className="no-underline" data-testid="link-home-logo">
           <LogoMark size="sm" />
@@ -134,44 +152,52 @@ export function Navbar() {
                       href={item.path}
                       className={cn(
                         "relative flex items-center gap-2 px-4 h-full text-sm font-medium transition-colors no-underline",
-                        isActive
-                          ? "text-primary"
-                          : "text-muted-foreground hover:text-foreground"
+                        isDarkPage
+                          ? isActive ? "text-[#C9956B]" : "text-[#A89880] hover:text-[#D8CABB]"
+                          : isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                       )}
                       data-testid={`link-nav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
                     >
                       <item.icon size={16} />
                       {item.label}
                       {item.tab === "inbox" && unreadCount > 0 && (
-                        <span className="w-4 h-4 rounded-full bg-accent text-[10px] font-bold text-white flex items-center justify-center">
+                        <span className={cn("w-4 h-4 rounded-full text-[10px] font-bold text-white flex items-center justify-center", isDarkPage ? "bg-[#C9956B]" : "bg-accent")}>
                           {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
                       )}
                       {isActive && (
-                        <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full" />
+                        <span className={cn("absolute bottom-0 left-3 right-3 h-0.5 rounded-full", isDarkPage ? "bg-[#C9956B]" : "bg-primary")} />
                       )}
                     </Link>
                   );
                 })}
               </div>
 
-              <div className="ml-4 pl-4 border-l border-border flex items-center gap-3">
-                {isAdminUser && (
-                  <Link
-                    href="/admin"
-                    className={cn(
-                      "text-sm font-medium transition-colors no-underline flex items-center gap-1.5",
-                      location === "/admin" ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                    )}
-                    data-testid="link-nav-admin"
-                  >
-                    <Shield size={15} />
-                    Admin
-                  </Link>
-                )}
+              <div className={cn("ml-4 pl-4 border-l flex items-center gap-3", isDarkPage ? "border-[#5A4E40]/40" : "border-border")}>
+                {isAdminUser && (() => {
+                  const isAdminActive = location === "/admin";
+                  return (
+                    <Link
+                      href="/admin"
+                      className={cn(
+                        "text-sm font-medium transition-colors no-underline flex items-center gap-1.5",
+                        isDarkPage
+                          ? isAdminActive ? "text-[#C9956B]" : "text-[#A89880] hover:text-[#D8CABB]"
+                          : isAdminActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                      )}
+                      data-testid="link-nav-admin"
+                    >
+                      <Shield size={15} />
+                      Admin
+                    </Link>
+                  );
+                })()}
                 <button
                   onClick={() => logout()}
-                  className="text-sm font-medium text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className={cn(
+                    "text-sm font-medium transition-colors flex items-center gap-1.5 cursor-pointer",
+                    isDarkPage ? "text-[#A89880] hover:text-[#C27878]" : "text-muted-foreground hover:text-destructive"
+                  )}
                   data-testid="button-nav-signout"
                 >
                   <LogOut size={15} />
@@ -210,7 +236,10 @@ export function Navbar() {
       {/* Mobile Header */}
       <div className="md:hidden fixed left-0 right-0 top-0 z-50">
         <div className={cn(
-          "flex justify-between items-center px-4 h-14 bg-background border-b border-border"
+          "flex justify-between items-center px-4 h-14 border-b",
+          isDarkPage
+            ? "bg-[#3D3228]/90 backdrop-blur-md border-[#5A4E40]/40"
+            : "bg-background border-border"
         )}>
           <Link href="/" className="no-underline">
             <LogoMark size="sm" />
@@ -238,7 +267,12 @@ export function Navbar() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="bg-background border-b border-border overflow-hidden"
+              className={cn(
+                "border-b overflow-hidden",
+                isDarkPage
+                  ? "bg-[#3D3228] border-[#5A4E40]/40"
+                  : "bg-background border-border"
+              )}
             >
               <div className="p-3 space-y-0.5">
                 {isAuthenticated ? (
@@ -253,16 +287,16 @@ export function Navbar() {
                         href={item.path}
                         className={cn(
                           "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors no-underline",
-                          isMobileActive
-                            ? "bg-primary/8 text-primary"
-                            : "text-muted-foreground hover:bg-secondary"
+                          isDarkPage
+                            ? isMobileActive ? "bg-[#C9956B]/10 text-[#C9956B]" : "text-[#A89880] hover:bg-[#5A4E40]/40"
+                            : isMobileActive ? "bg-primary/8 text-primary" : "text-muted-foreground hover:bg-secondary"
                         )}
                         data-testid={`link-mobile-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
                       >
                         <item.icon size={18} />
                         {item.label}
                         {item.tab === "inbox" && unreadCount > 0 && (
-                          <span className="ml-auto w-5 h-5 rounded-full bg-accent text-[10px] font-bold text-white flex items-center justify-center">
+                          <span className={cn("ml-auto w-5 h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center", isDarkPage ? "bg-[#C9956B]" : "bg-accent")}>
                             {unreadCount > 9 ? "9+" : unreadCount}
                           </span>
                         )}
@@ -274,7 +308,9 @@ export function Navbar() {
                         href="/admin"
                         className={cn(
                           "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors no-underline",
-                          location === "/admin" ? "bg-primary/8 text-primary" : "text-muted-foreground hover:bg-secondary"
+                          isDarkPage
+                            ? location === "/admin" ? "bg-[#C9956B]/10 text-[#C9956B]" : "text-[#A89880] hover:bg-[#5A4E40]/40"
+                            : location === "/admin" ? "bg-primary/8 text-primary" : "text-muted-foreground hover:bg-secondary"
                         )}
                         data-testid="link-mobile-admin"
                       >
@@ -284,7 +320,10 @@ export function Navbar() {
                     )}
                     <button
                       onClick={() => logout()}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/8 transition-colors cursor-pointer"
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer",
+                        isDarkPage ? "text-[#C27878] hover:bg-[#C27878]/8" : "text-destructive hover:bg-destructive/8"
+                      )}
                       data-testid="button-mobile-signout"
                     >
                       <LogOut size={18} />
@@ -322,7 +361,7 @@ export function Navbar() {
 
       {/* Mobile Bottom Tab Bar */}
       {isAuthenticated && !location.startsWith("/playroom/") && (
-        <MobileBottomNav items={loggedInItems} currentPath={location} unreadCount={unreadCount} />
+        <MobileBottomNav items={loggedInItems} currentPath={location} unreadCount={unreadCount} isDark={isDarkPage} />
       )}
     </>
   );

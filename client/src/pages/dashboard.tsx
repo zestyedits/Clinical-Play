@@ -3,7 +3,8 @@ import { LegalDisclaimer } from "@/components/shared/legal-disclaimer";
 import {
   Plus, Users, Calendar, ArrowRight, Copy, CheckCircle2, Crown, Flame,
   CreditCard, Star, Lock, CheckCircle, Lightbulb, HelpCircle, AlertTriangle, Clock,
-  Palette, Layers, X, Mail, RefreshCw, User, Square, Play, Compass, Shield, Sprout
+  Palette, Layers, X, Mail, RefreshCw, User, Square, Play, Compass, Shield, Sprout,
+  ChevronRight, BarChart3, Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
@@ -34,11 +35,18 @@ const ALL_TOOLS: DashboardTool[] = [
   { id: "narrative-quest", label: "The Narrative Quest", desc: "Externalize problems, find exceptions, and rewrite your story", icon: Layers, tier: "free", emoji: "📖" },
 ];
 
-const CLINICAL_TIPS: { tip: string; tool: string }[] = [
-  // Tips will be added as tools are developed
-];
+const TOOL_ACCENT_COLORS: Record<string, string> = {
+  "dbt-house": "#7B9E87",
+  "cbt-thought-court": "#8B7BA8",
+  "act-values-compass": "#C9956B",
+  "ifs-inner-council": "#7B8FA8",
+  "mi-motivation-garden": "#7B9E87",
+  "somatic-grounding-grove": "#9E8B7B",
+  "sfbt-miracle-bridge": "#7B8FA8",
+  "narrative-quest": "#A8877B",
+};
 
-// ---------- Session Creation Modal ----------
+const CLINICAL_TIPS: { tip: string; tool: string }[] = [];
 
 function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialTool }: {
   isOpen: boolean;
@@ -65,10 +73,12 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
 
   if (!isOpen || !initialTool) return null;
 
+  const accentColor = TOOL_ACCENT_COLORS[initialTool] || "#C9956B";
+
   return (
     <>
       <motion.div
-        className="fixed inset-0 bg-black/30 z-50"
+        className="fixed inset-0 bg-black/50 z-50"
         onClick={onClose}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -76,7 +86,7 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
         transition={{ duration: 0.2 }}
       />
       <motion.div
-        className="fixed inset-x-4 top-[10%] bottom-auto max-h-[85vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[440px] md:max-h-[90vh] z-50 bg-card border border-border rounded-2xl shadow-2xl"
+        className="fixed inset-x-4 top-[10%] bottom-auto max-h-[85vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[440px] md:max-h-[90vh] z-50 bg-[#4A3E32] border border-[#5A4E40] rounded-2xl shadow-2xl"
         initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.97, y: 8 }}
@@ -84,22 +94,28 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
       >
         <div className="p-6 space-y-5">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-serif text-2xl text-foreground" data-testid="text-new-session-title">
+            <h2 className="font-['Playfair_Display'] text-2xl text-[#F0E6D8]" data-testid="text-new-session-title">
               Start Session
             </h2>
-            <button onClick={onClose} className="p-2.5 hover:bg-secondary/50 rounded-xl transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center" data-testid="button-close-new-session">
-              <X size={20} className="text-muted-foreground" />
+            <button onClick={onClose} className="p-2.5 hover:bg-[#5A4E40]/50 rounded-xl transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center" data-testid="button-close-new-session">
+              <X size={20} className="text-[#A89880]" />
             </button>
           </div>
 
           {toolInfo && (
-            <div className="rounded-2xl bg-secondary/50 border border-border p-5 flex items-start gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary/60 to-secondary/30 flex items-center justify-center shrink-0">
+            <div className="rounded-2xl bg-[#3D3228]/80 border border-[#5A4E40]/60 p-5 flex items-start gap-4">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border"
+                style={{
+                  background: `linear-gradient(135deg, ${accentColor}20, ${accentColor}08)`,
+                  borderColor: `${accentColor}20`,
+                }}
+              >
                 <span className="text-3xl">{toolInfo.emoji}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-foreground text-base mb-1">{toolInfo.label}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{toolInfo.desc}</p>
+                <h3 className="font-medium text-[#F0E6D8] text-base mb-1">{toolInfo.label}</h3>
+                <p className="text-xs text-[#A89880] leading-relaxed">{toolInfo.desc}</p>
               </div>
             </div>
           )}
@@ -107,13 +123,13 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
           <button
             onClick={handleStart}
             disabled={isPending}
-            className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2.5 text-sm sm:text-base btn-warm min-h-[52px]"
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#C9956B] to-[#B8845E] hover:from-[#D4A57A] hover:to-[#C9956B] text-white font-medium shadow-lg shadow-[#C9956B]/20 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2.5 text-sm sm:text-base min-h-[52px]"
             data-testid="button-quick-start"
           >
             <Play size={18} />
             {isPending ? "Creating..." : `Start ${toolInfo?.label || "Session"}`}
           </button>
-          <p className="text-xs text-muted-foreground text-center -mt-2">
+          <p className="text-xs text-[#A89880] text-center -mt-2">
             Solo session with {toolInfo?.label || "selected tool"} — jump right in
           </p>
         </div>
@@ -122,8 +138,6 @@ function SessionCreationModal({ isOpen, onClose, onSubmit, isPending, initialToo
   );
 }
 
-// ---------- Onboarding Modal ----------
-
 function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [step, setStep] = useState(0);
 
@@ -131,15 +145,15 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-50" />
-      <div className="fixed inset-x-4 top-[8%] bottom-auto max-h-[88vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[500px] md:max-h-[90vh] z-50 bg-card border border-border rounded-2xl shadow-2xl">
+      <div className="fixed inset-0 bg-black/50 z-50" />
+      <div className="fixed inset-x-4 top-[8%] bottom-auto max-h-[88vh] overflow-y-auto md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[500px] md:max-h-[90vh] z-50 bg-[#4A3E32] border border-[#5A4E40] rounded-2xl shadow-2xl">
         <div className="relative">
           <div className="flex justify-center gap-2 pt-6 pb-2">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
                 className={`h-1.5 rounded-full transition-all duration-500 ${
-                  i === step ? "w-8 bg-primary" : i < step ? "w-4 bg-accent" : "w-4 bg-primary/15"
+                  i === step ? "w-8 bg-[#C9956B]" : i < step ? "w-4 bg-[#7B9E87]" : "w-4 bg-[#5A4E40]"
                 }`}
               />
             ))}
@@ -147,11 +161,11 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
           {step === 0 && (
             <div className="p-8 pt-4 text-center">
-              <div className="w-20 h-20 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+              <div className="w-20 h-20 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-[#C9956B]/15 to-[#7B9E87]/15 flex items-center justify-center">
                 <span className="text-4xl">{"\u2728"}</span>
               </div>
-              <h2 className="font-serif text-2xl text-foreground mb-3" data-testid="text-onboarding-welcome">Welcome to the Community</h2>
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
+              <h2 className="font-['Playfair_Display'] text-2xl text-[#F0E6D8] mb-3" data-testid="text-onboarding-welcome">Welcome to the Community</h2>
+              <p className="text-[#A89880] text-sm leading-relaxed max-w-xs mx-auto">
                 ClinicalPlay gives you interactive therapy tools that work in real time with your clients. No downloads, no installs — just share an invite code and you're connected.
               </p>
             </div>
@@ -159,17 +173,17 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
           {step === 1 && (
             <div className="p-8 pt-4 text-center">
-              <div className="w-full max-w-[280px] mx-auto mb-5 rounded-2xl bg-gradient-to-br from-secondary to-secondary/60 p-6 relative overflow-hidden">
+              <div className="w-full max-w-[280px] mx-auto mb-5 rounded-2xl bg-gradient-to-br from-[#4A3E32] to-[#3D3228] p-6 relative overflow-hidden border border-[#5A4E40]/40">
                 <div className="text-5xl mb-3">{"\u{1F3D6}\uFE0F"}</div>
                 <div className="flex flex-wrap justify-center gap-2">
                   {["\u{1F332}", "\u{1F338}", "\u26F0\uFE0F", "\u{1F30A}", "\u2600\uFE0F", "\u{1F3E0}"].map((emoji, i) => (
                     <span key={i} className="text-2xl">{emoji}</span>
                   ))}
                 </div>
-                <div className="absolute -bottom-2 -right-2 w-24 h-24 bg-accent/10 rounded-full blur-xl" />
+                <div className="absolute -bottom-2 -right-2 w-24 h-24 bg-[#C9956B]/10 rounded-full blur-xl" />
               </div>
-              <h2 className="font-serif text-2xl text-foreground mb-3">The Zen Sandtray</h2>
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
+              <h2 className="font-['Playfair_Display'] text-2xl text-[#F0E6D8] mb-3">The Zen Sandtray</h2>
+              <p className="text-[#A89880] text-sm leading-relaxed max-w-xs mx-auto">
                 Your clients drag and drop expressive items onto a shared canvas. Watch their world unfold in real time — no words needed.
               </p>
             </div>
@@ -177,11 +191,11 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
           {step === 2 && (
             <div className="p-8 pt-4 text-center">
-              <div className="w-20 h-20 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center">
-                <CheckCircle size={36} className="text-accent" />
+              <div className="w-20 h-20 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-[#7B9E87]/20 to-[#C9956B]/10 flex items-center justify-center">
+                <CheckCircle size={36} className="text-[#8DB89A]" />
               </div>
-              <h2 className="font-serif text-2xl text-foreground mb-3">You're All Set</h2>
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
+              <h2 className="font-['Playfair_Display'] text-2xl text-[#F0E6D8] mb-3">You're All Set</h2>
+              <p className="text-[#A89880] text-sm leading-relaxed max-w-xs mx-auto">
                 Create your first session, share the invite code with a client, and start exploring together. It's that simple.
               </p>
             </div>
@@ -191,7 +205,7 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
             {step > 0 && (
               <button
                 onClick={() => setStep(step - 1)}
-                className="px-5 py-3 rounded-2xl bg-secondary/50 text-foreground font-medium text-sm hover:bg-secondary transition-colors cursor-pointer"
+                className="px-5 py-3 rounded-2xl bg-[#5A4E40]/50 text-[#D8CABB] font-medium text-sm hover:bg-[#5A4E40] transition-colors cursor-pointer"
                 data-testid="button-onboarding-back"
               >
                 Back
@@ -202,7 +216,7 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                 if (step < 2) setStep(step + 1);
                 else onClose();
               }}
-              className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 btn-warm"
+              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#C9956B] to-[#B8845E] text-white font-medium shadow-lg shadow-[#C9956B]/20 hover:from-[#D4A57A] hover:to-[#C9956B] transition-all cursor-pointer flex items-center justify-center gap-2"
               data-testid="button-onboarding-next"
             >
               {step === 2 ? (
@@ -221,7 +235,7 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
             <div className="px-6 pb-6 pt-0 text-center">
               <Link href="/playroom/demo" className="no-underline">
                 <button
-                  className="text-sm text-accent hover:text-accent/80 transition-colors cursor-pointer underline underline-offset-2"
+                  className="text-sm text-[#8DB89A] hover:text-[#7B9E87] transition-colors cursor-pointer underline underline-offset-2"
                   data-testid="button-try-demo-onboarding"
                 >
                   Or try a demo first
@@ -234,8 +248,6 @@ function OnboardingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     </>
   );
 }
-
-// ---------- Main Dashboard ----------
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
@@ -335,7 +347,6 @@ export default function Dashboard() {
     if (!dashboardTour.hasCompleted()) {
       setTimeout(() => dashboardTour.start(), 600);
     } else {
-      // Navigate to tools section so user can pick a tool
       setMobileTab("library");
       setTimeout(() => {
         const toolsEl = document.querySelector('[data-tour="dashboard-tools"]');
@@ -483,12 +494,12 @@ export default function Dashboard() {
 
   if (authLoading || (!isAuthenticated && !accessDenied)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-[#3D3228]">
         <div className="text-center">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-accent/10 flex items-center justify-center animate-pulse">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-[#C9956B]/10 flex items-center justify-center animate-pulse">
             <span className="text-2xl">{"\u2728"}</span>
           </div>
-          <p className="text-muted-foreground font-medium" data-testid="text-loading">Loading...</p>
+          <p className="text-[#A89880] font-medium" data-testid="text-loading">Loading...</p>
         </div>
       </div>
     );
@@ -496,71 +507,72 @@ export default function Dashboard() {
 
   if (accessDenied) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#3D3228]">
         <div className="flex items-center justify-center min-h-screen px-6">
-          <GlassCard className="max-w-md w-full p-10 text-center" hoverEffect={false}>
-            <div className="w-16 h-16 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-              <Lock size={28} className="text-primary/60" />
+          <div className="max-w-md w-full p-10 text-center bg-[#4A3E32]/80 border border-[#5A4E40]/50 rounded-2xl shadow-xl">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-[#C9956B]/15 to-[#8B7BA8]/15 flex items-center justify-center">
+              <Lock size={28} className="text-[#C9956B]/60" />
             </div>
-            <h2 className="text-2xl font-serif text-foreground mb-3">We Haven't Launched Yet</h2>
-            <p className="text-muted-foreground leading-relaxed mb-6">
+            <h2 className="text-2xl font-['Playfair_Display'] text-[#F0E6D8] mb-3">We Haven't Launched Yet</h2>
+            <p className="text-[#A89880] leading-relaxed mb-6">
               ClinicalPlay is currently in private preview. We're putting the finishing touches on the platform and will be opening access soon.
             </p>
-            <p className="text-sm text-muted-foreground/70 mb-6">
+            <p className="text-sm text-[#7A6E60] mb-6">
               Stay tuned — we'll let you know as soon as you can get started.
             </p>
             <button
               onClick={() => logout()}
-              className="w-full py-3 rounded-xl bg-primary/10 text-primary font-medium hover:bg-primary/15 transition-colors cursor-pointer text-sm"
+              className="w-full py-3 rounded-xl bg-[#5A4E40]/50 text-[#D8CABB] font-medium hover:bg-[#5A4E40] transition-colors cursor-pointer text-sm"
               data-testid="button-access-denied-logout"
             >
               Sign Out
             </button>
-          </GlassCard>
+          </div>
         </div>
       </div>
     );
   }
 
   const SessionsView = () => (
-    <div className="space-y-6" data-tour="dashboard-sessions">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
-          <Users size={18} className="text-accent" /> Active Sessions
-        </h2>
-        <span className="text-xs text-muted-foreground bg-secondary/50 px-3 py-1 rounded-full">{activeSessions.length} active</span>
+    <div className="space-y-5" data-tour="dashboard-sessions">
+      <div className="flex items-center gap-3 px-1">
+        <div className="p-2 rounded-xl bg-[#7B9E87]/12 text-[#8DB89A]">
+          <Users className="w-4 h-4" />
+        </div>
+        <h2 className="text-xl font-['Playfair_Display'] text-[#F0E6D8] tracking-wide">Active Sessions</h2>
+        <span className="ml-1 bg-[#7B9E87]/15 text-[#8DB89A] text-xs px-2.5 py-0.5 rounded-full font-medium">{activeSessions.length}</span>
       </div>
 
       {isLoading ? (
         <div className="space-y-4">
           {[1, 2].map(i => (
-            <GlassCard key={i} className="p-5 flex flex-col md:flex-row items-center gap-5 animate-pulse" hoverEffect={false}>
-              <div className="w-12 h-12 rounded-2xl bg-secondary/60" />
+            <div key={i} className="p-5 flex flex-col md:flex-row items-center gap-5 animate-pulse bg-[#4A3E32]/70 border border-[#5A4E40]/50 rounded-2xl">
+              <div className="w-14 h-14 rounded-2xl bg-[#5A4E40]/60" />
               <div className="flex-1 space-y-2 w-full">
-                <div className="h-4 bg-secondary/60 rounded-xl w-3/5" />
-                <div className="h-3 bg-secondary/40 rounded-xl w-2/5" />
+                <div className="h-4 bg-[#5A4E40]/60 rounded-xl w-3/5" />
+                <div className="h-3 bg-[#5A4E40]/40 rounded-xl w-2/5" />
               </div>
               <div className="flex gap-2 w-full md:w-auto">
-                <div className="h-12 bg-secondary/50 rounded-2xl w-28" />
-                <div className="h-12 bg-accent/20 rounded-2xl w-24" />
+                <div className="h-12 bg-[#5A4E40]/50 rounded-2xl w-28" />
+                <div className="h-12 bg-[#7B9E87]/20 rounded-2xl w-24" />
               </div>
-            </GlassCard>
+            </div>
           ))}
         </div>
       ) : activeSessions.length === 0 ? (
-        <GlassCard className="p-10 text-center" hoverEffect={false}>
-          <div className="w-16 h-16 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-primary/5 to-accent/10 flex items-center justify-center">
+        <div className="p-10 text-center bg-[#4A3E32]/70 border border-[#5A4E40]/50 rounded-2xl">
+          <div className="w-16 h-16 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-[#7B9E87]/10 to-[#C9956B]/10 flex items-center justify-center">
             <span className="text-3xl">{"\u{1F3D6}\uFE0F"}</span>
           </div>
-          <h3 className="text-xl font-serif text-foreground mb-2">No active sessions</h3>
-          <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">Create a session room and share the invite code with your client to get started.</p>
+          <h3 className="text-xl font-['Playfair_Display'] text-[#F0E6D8] mb-2">No active sessions</h3>
+          <p className="text-[#A89880] text-sm mb-6 max-w-xs mx-auto">Create a session room and share the invite code with your client to get started.</p>
           <button
             onClick={() => {
               setMobileTab("library");
               const toolsEl = document.querySelector('[data-tour="dashboard-tools"]');
               if (toolsEl) toolsEl.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
-            className="px-6 py-3 rounded-2xl inline-flex items-center gap-2 shadow-md cursor-pointer hover:brightness-105 transition-all bg-primary text-primary-foreground font-medium btn-warm"
+            className="px-6 py-3 rounded-2xl inline-flex items-center gap-2 shadow-lg shadow-[#C9956B]/20 cursor-pointer hover:from-[#D4A57A] hover:to-[#C9956B] transition-all bg-gradient-to-r from-[#C9956B] to-[#B8845E] text-white font-medium"
             data-testid="button-new-session-empty"
           >
             <Plus size={18} /> Choose a Tool to Begin
@@ -568,59 +580,63 @@ export default function Dashboard() {
           <div className="mt-3">
             <button
               onClick={() => navigate("/playroom/demo")}
-              className="text-sm text-accent hover:text-accent/80 transition-colors cursor-pointer underline underline-offset-2"
+              className="text-sm text-[#8DB89A] hover:text-[#7B9E87] transition-colors cursor-pointer underline underline-offset-2"
               data-testid="button-try-demo"
             >
               Or try a demo first
             </button>
           </div>
-        </GlassCard>
+        </div>
       ) : (
         activeSessions.map((sess) => (
           <div key={sess.id}>
-            <GlassCard className="p-5 flex flex-col md:flex-row items-center gap-5" hoverEffect={true}>
-              <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
-                <span className="text-xl">{"\u{1F3AE}"}</span>
-              </div>
-              <div className="flex-1 text-center md:text-left">
-                <h3 className="text-base font-serif text-foreground">{sess.name}</h3>
-                <div className="flex items-center justify-center md:justify-start gap-3 mt-1 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Calendar size={13} />
-                    {new Date(sess.createdAt).toLocaleDateString()}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">active</span>
+            <div className="group bg-[#4A3E32]/70 backdrop-blur-sm border border-[#5A4E40]/50 rounded-2xl p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-lg shadow-black/10 transition-all duration-300 hover:border-[#7B9E87]/25 hover:shadow-xl">
+              <div className="flex items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#7B9E87]/15 to-[#5A8068]/10 flex items-center justify-center text-2xl border border-[#7B9E87]/15 shrink-0">
+                  <span className="text-xl">{"\u{1F3AE}"}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-['Playfair_Display'] text-lg text-[#F0E6D8] mb-1">{sess.name}</h3>
+                  <div className="flex items-center gap-3 text-sm text-[#A89880]">
+                    <span className="flex items-center gap-1">
+                      <Calendar size={13} />
+                      {new Date(sess.createdAt).toLocaleDateString()}
+                    </span>
+                    <span className="w-1 h-1 rounded-full bg-[#5A4E40]" />
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[#7B9E87]/12 text-[#8DB89A]">active</span>
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-2 w-full md:w-auto flex-col sm:flex-row items-center">
+              <div className="flex items-center gap-3 w-full md:w-auto">
                 <button
                   onClick={() => copyInvite(sess.inviteCode)}
-                  className="min-h-[48px] px-4 py-3 bg-secondary border border-border text-foreground rounded-2xl text-sm font-medium hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2 cursor-pointer font-mono tracking-wider"
+                  className="flex items-center gap-2 px-3 py-2.5 bg-[#3D3228]/80 rounded-xl border border-[#5A4E40]/50 cursor-pointer hover:border-[#7B9E87]/20 transition-colors font-mono text-sm min-h-[44px]"
                   data-testid={`button-copy-invite-${sess.id}`}
                 >
-                  {copied === sess.inviteCode ? <CheckCircle2 size={16} className="text-primary" /> : <Copy size={16} />}
-                  {copied === sess.inviteCode ? "Copied!" : sess.inviteCode}
+                  <span className="text-[#B0A090]">{sess.inviteCode}</span>
+                  {copied === sess.inviteCode ? <CheckCircle2 size={16} className="text-[#8DB89A]" /> : <Copy size={16} className="text-[#7A6E60]" />}
                 </button>
-                <Link href={`/playroom/${sess.id}`} className="flex-1 no-underline">
+                <Link href={`/playroom/${sess.id}`} className="flex-1 md:flex-none no-underline">
                   <button
-                    className="w-full min-h-[48px] px-5 py-3 bg-primary text-primary-foreground rounded-2xl text-sm font-medium shadow-md hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer btn-warm"
+                    className="w-full min-h-[44px] rounded-xl bg-[#7B9E87] hover:bg-[#6B8E77] text-white px-5 py-2.5 text-sm font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#7B9E87]/20"
                     data-testid={`button-join-${sess.id}`}
                   >
-                    Enter <ArrowRight size={16} />
+                    <Play size={16} />
+                    Enter
                   </button>
                 </Link>
                 {endingSessionId === sess.id ? (
                   <div className="flex gap-1.5">
                     <button
                       onClick={() => setEndingSessionId(null)}
-                      className="min-h-[48px] px-3 py-3 bg-secondary border border-border text-muted-foreground rounded-2xl text-xs font-medium cursor-pointer hover:bg-secondary/80 transition-colors"
+                      className="min-h-[44px] px-3 py-2.5 bg-[#5A4E40]/50 border border-[#5A4E40] text-[#A89880] rounded-xl text-xs font-medium cursor-pointer hover:bg-[#5A4E40] transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={() => endSession.mutate(sess.id)}
                       disabled={endSession.isPending}
-                      className="min-h-[48px] px-3 py-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-2xl text-xs font-medium cursor-pointer hover:bg-destructive/20 transition-colors disabled:opacity-50"
+                      className="min-h-[44px] px-3 py-2.5 bg-[#C27878]/10 border border-[#C27878]/20 text-[#C27878] rounded-xl text-xs font-medium cursor-pointer hover:bg-[#C27878]/20 transition-colors disabled:opacity-50"
                       data-testid={`button-confirm-end-${sess.id}`}
                     >
                       {endSession.isPending ? "Ending..." : "End"}
@@ -629,36 +645,37 @@ export default function Dashboard() {
                 ) : (
                   <button
                     onClick={() => setEndingSessionId(sess.id)}
-                    className="min-h-[48px] px-3 py-3 text-destructive/60 hover:text-destructive hover:bg-destructive/5 rounded-2xl transition-colors cursor-pointer"
+                    className="min-h-[44px] px-3 py-2.5 text-[#7A6E60] hover:text-[#C27878] hover:bg-[#C27878]/5 rounded-xl transition-colors cursor-pointer"
                     title="End Session"
                     data-testid={`button-end-${sess.id}`}
                   >
-                    <Square size={16} className="fill-destructive/20" />
+                    <Square size={16} />
                   </button>
                 )}
               </div>
-            </GlassCard>
+            </div>
           </div>
         ))
       )}
 
       {pastSessions.length > 0 && (
         <div className="mt-8 space-y-4">
-          <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
-            <Calendar size={18} className="text-muted-foreground" /> Past Sessions
-          </h2>
+          <div className="flex items-center gap-3 px-1">
+            <div className="p-2 rounded-xl bg-[#5A4E40]/30 text-[#7A6E60]">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <h2 className="text-lg font-['Playfair_Display'] text-[#D8CABB] tracking-wide">Past Sessions</h2>
+          </div>
           {pastSessions.slice(0, 5).map((sess) => (
-            <div key={sess.id}>
-              <GlassCard className="p-4 flex items-center gap-4 opacity-80" hoverEffect={false}>
-                <div className="w-10 h-10 rounded-xl bg-secondary/50 flex items-center justify-center shrink-0">
-                  <Calendar size={18} className="text-muted-foreground" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium text-foreground">{sess.name}</h4>
-                  <p className="text-xs text-muted-foreground">{new Date(sess.createdAt).toLocaleDateString()}</p>
-                </div>
-                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">{sess.status}</span>
-              </GlassCard>
+            <div key={sess.id} className="bg-[#4A3E32]/40 border border-[#5A4E40]/30 rounded-2xl p-4 flex items-center gap-4 opacity-80">
+              <div className="w-10 h-10 rounded-xl bg-[#5A4E40]/40 flex items-center justify-center shrink-0">
+                <Calendar size={18} className="text-[#7A6E60]" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-medium text-[#D8CABB]">{sess.name}</h4>
+                <p className="text-xs text-[#7A6E60]">{new Date(sess.createdAt).toLocaleDateString()}</p>
+              </div>
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[#5A4E40]/30 text-[#7A6E60]">{sess.status}</span>
             </div>
           ))}
         </div>
@@ -669,52 +686,72 @@ export default function Dashboard() {
   const ToolLibraryView = () => (
     <div className="space-y-6" data-tour="dashboard-tools">
       {favoritedTools.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
-            <Star size={18} className="text-amber-500 fill-amber-500" /> Frequently Used
-          </h2>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 px-1">
+            <div className="p-2 rounded-xl bg-[#C9956B]/12 text-[#C9956B]">
+              <Star className="w-4 h-4" />
+            </div>
+            <h2 className="text-lg font-['Playfair_Display'] text-[#F0E6D8] tracking-wide">Frequently Used</h2>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {favoritedTools.map((tool) => {
               const isLocked = tool.tier === "pro" && !isPro;
+              const accentColor = TOOL_ACCENT_COLORS[tool.id] || "#C9956B";
               return (
-                <GlassCard key={tool.id} className="p-4 relative" hoverEffect={!isLocked}>
+                <div key={tool.id} className="relative bg-[#4A3E32]/60 border border-[#5A4E40]/40 rounded-2xl p-4 transition-all duration-300 hover:border-[#5A4E40] hover:shadow-lg">
                   <button
                     onClick={() => toggleFavorite(tool.id)}
                     className="absolute top-3 right-3 p-1 cursor-pointer z-10"
                     data-testid={`button-unfavorite-${tool.id}`}
                   >
-                    <Star size={14} className="text-amber-500 fill-amber-500" />
+                    <Star size={14} className="text-[#C9956B] fill-[#C9956B]" />
                   </button>
-                  <span className="text-2xl mb-2 block">{tool.emoji}</span>
-                  <h4 className="text-sm font-medium text-foreground">{tool.label}</h4>
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center mb-2 border"
+                    style={{
+                      background: `linear-gradient(135deg, ${accentColor}20, ${accentColor}08)`,
+                      borderColor: `${accentColor}20`,
+                    }}
+                  >
+                    <span className="text-xl">{tool.emoji}</span>
+                  </div>
+                  <h4 className="text-sm font-medium text-[#F0E6D8]">{tool.label}</h4>
                   {isLocked ? (
                     <button
                       onClick={() => checkout.mutate("monthly")}
-                      className="mt-2 text-xs text-accent font-medium flex items-center gap-1 cursor-pointer"
+                      className="mt-2 text-xs text-[#C9956B] font-medium flex items-center gap-1 cursor-pointer"
                       data-testid={`button-upgrade-fav-${tool.id}`}
                     >
                       <Lock size={10} /> Upgrade
                     </button>
                   ) : (
-                    <button onClick={() => { setPreselectedTool(tool.id); setShowNewSession(true); }} className="mt-2 text-xs text-accent font-medium flex items-center gap-1 cursor-pointer bg-transparent border-none p-0">
+                    <button
+                      onClick={() => { setPreselectedTool(tool.id); setShowNewSession(true); }}
+                      className="mt-2 text-xs font-medium flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+                      style={{ color: `${accentColor}` }}
+                    >
                       Launch <ArrowRight size={10} />
                     </button>
                   )}
-                </GlassCard>
+                </div>
               );
             })}
           </div>
         </div>
       )}
 
-      <div className="space-y-3">
-        <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
-          <Palette size={18} className="text-accent" /> All Tools
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 px-1">
+          <div className="p-2 rounded-xl bg-[#8B7BA8]/12 text-[#A898C0]">
+            <Palette className="w-4 h-4" />
+          </div>
+          <h2 className="text-xl font-['Playfair_Display'] text-[#F0E6D8] tracking-wide">All Tools</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {ALL_TOOLS.map((tool, i) => {
             const isLocked = tool.tier === "pro" && !isPro;
             const isFavorited = favorites.includes(tool.id);
+            const accentColor = TOOL_ACCENT_COLORS[tool.id] || "#C9956B";
 
             return (
               <motion.div
@@ -723,12 +760,24 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: i * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
               >
-              <GlassCard className={`relative p-4 ${isLocked ? "opacity-75" : ""}`} hoverEffect={!isLocked}>
+              <div
+                className={`group relative bg-[#4A3E32]/50 backdrop-blur-sm border border-[#5A4E40]/40 rounded-2xl p-6 transition-all duration-300 hover:bg-[#4A3E32]/80 hover:shadow-lg hover:-translate-y-0.5 ${isLocked ? "opacity-75" : ""}`}
+                onMouseEnter={(e) => {
+                  if (!isLocked) {
+                    e.currentTarget.style.borderColor = `${accentColor}33`;
+                    e.currentTarget.style.boxShadow = `0 10px 25px -5px ${accentColor}15`;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = '';
+                  e.currentTarget.style.boxShadow = '';
+                }}
+              >
                 {isLocked && (
-                  <div className="absolute inset-0 bg-card/60 rounded-2xl z-10 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[#3D3228]/70 rounded-2xl z-10 flex items-center justify-center">
                     <button
                       onClick={() => checkout.mutate("monthly")}
-                      className="bg-primary text-primary-foreground px-4 py-2 rounded-xl text-xs font-medium shadow-md flex items-center gap-1.5 cursor-pointer hover:brightness-105 transition-all btn-warm"
+                      className="bg-gradient-to-r from-[#C9956B] to-[#B8845E] text-white px-4 py-2 rounded-xl text-xs font-medium shadow-lg shadow-[#C9956B]/20 flex items-center gap-1.5 cursor-pointer hover:from-[#D4A57A] hover:to-[#C9956B] transition-all"
                       data-testid={`button-upgrade-${tool.id}`}
                     >
                       <Lock size={12} /> Unlock
@@ -736,37 +785,46 @@ export default function Dashboard() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between mb-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-secondary/40 flex items-center justify-center shrink-0">
-                    <span className="text-xl">{tool.emoji}</span>
+                <div className="flex items-center justify-between mb-3">
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl border transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3 origin-bottom-left"
+                    style={{
+                      background: `linear-gradient(135deg, ${accentColor}20, ${accentColor}08)`,
+                      borderColor: `${accentColor}20`,
+                    }}
+                  >
+                    {tool.emoji}
                   </div>
                   <button
                     onClick={() => toggleFavorite(tool.id)}
-                    className="p-1 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg hover:bg-[#5A4E40]/50 transition-colors cursor-pointer"
                     data-testid={`button-favorite-${tool.id}`}
                   >
-                    <Star size={13} className={isFavorited ? "text-amber-500 fill-amber-500" : "text-muted-foreground/30"} />
+                    <Star size={14} className={isFavorited ? "text-[#C9956B] fill-[#C9956B]" : "text-[#5A4E40]"} />
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1.5 mb-1">
-                  <h3 className="font-medium text-foreground text-xs leading-tight">{tool.label}</h3>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <h3 className="font-['Playfair_Display'] text-lg text-[#F0E6D8] leading-tight">{tool.label}</h3>
                   {tool.tier === "pro" && (
-                    <span className="text-[9px] px-1 py-0.5 rounded-full font-semibold border bg-primary/10 text-primary border-primary/20">PRO</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold border bg-[#C9956B]/10 text-[#C9956B] border-[#C9956B]/20">PRO</span>
                   )}
                 </div>
-                <p className="text-[11px] text-muted-foreground mb-3 leading-relaxed line-clamp-2">{tool.desc}</p>
+                <p className="text-[#A89880] text-sm leading-relaxed mb-5 line-clamp-2">{tool.desc}</p>
 
                 {!isLocked && (
                   <button
                     onClick={() => { setPreselectedTool(tool.id); setShowNewSession(true); }}
-                    className="w-full px-3 py-2 rounded-lg text-[11px] font-medium transition-colors cursor-pointer flex items-center justify-center gap-1 border bg-primary/8 text-primary border-primary/12 hover:bg-primary/15"
+                    className="flex items-center text-sm font-medium transition-colors cursor-pointer bg-transparent border-none p-0"
+                    style={{ color: `${accentColor}99` }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = accentColor; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = `${accentColor}99`; }}
                     data-testid={`button-launch-${tool.id}`}
                   >
-                    Launch <ArrowRight size={11} />
+                    Launch <ChevronRight className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
                   </button>
                 )}
-              </GlassCard>
+              </div>
               </motion.div>
             );
           })}
@@ -778,87 +836,81 @@ export default function Dashboard() {
   const AccountSidebar = () => (
     <div className="space-y-5" data-tour="dashboard-account">
       {user && (
-        <GlassCard className="p-5" hoverEffect={false}>
-          <div className="flex items-center gap-4 mb-4">
-            {user.profileImageUrl ? (
-              <img src={user.profileImageUrl} alt="" className="w-14 h-14 rounded-2xl object-cover border-2 border-border shadow-sm" />
-            ) : (
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-serif text-xl shadow-md">
-                {user.firstName?.charAt(0) || "C"}
-              </div>
-            )}
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="font-serif text-foreground font-medium">{user.firstName} {user.lastName}</p>
-                {subscriptionType === "founding" && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-amber-100 to-yellow-50 text-amber-700 border border-amber-200/60 shadow-sm" data-testid="badge-founding-member">
-                    <Crown size={10} className="text-amber-600" />
-                    Founder
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
-              <p className="text-xs text-accent font-medium mt-0.5">
-                {isPro
-                  ? subscriptionType === "founding" ? "Founding Member" : subscriptionType === "annual" ? "Annual Plan" : "Community Plan"
-                  : "Free Plan"
-                }
-              </p>
+        <div className="bg-[#4A3E32]/70 backdrop-blur-sm border border-[#5A4E40]/50 rounded-2xl p-6 flex flex-col items-center text-center shadow-lg shadow-black/10 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-[#8B7BA8]/[0.06] to-transparent" />
+
+          {user.profileImageUrl ? (
+            <img src={user.profileImageUrl} alt="" className="w-20 h-20 rounded-2xl object-cover shadow-lg shadow-[#8B7BA8]/20 mb-4 relative z-10 border-2 border-[#8B7BA8]/20" />
+          ) : (
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#8B7BA8] to-[#6B5B88] flex items-center justify-center text-white font-['Playfair_Display'] text-2xl shadow-lg shadow-[#8B7BA8]/25 mb-4 relative z-10">
+              {user.firstName?.charAt(0) || "C"}
             </div>
+          )}
+
+          <div className="relative z-10">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <h3 className="font-['Playfair_Display'] text-xl text-[#F0E6D8]">{user.firstName} {user.lastName}</h3>
+              {subscriptionType === "founding" && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#C9956B]/15 text-[#D4A57A] border border-[#C9956B]/20" data-testid="badge-founding-member">
+                  <Crown size={10} />
+                  Founder
+                </span>
+              )}
+            </div>
+            <p className="text-[#A89880] text-sm mb-1">{user.email}</p>
+            <span className="bg-[#8B7BA8]/12 text-[#A898C0] text-xs font-medium px-3 py-1 rounded-full inline-block mb-4">
+              {isPro
+                ? subscriptionType === "founding" ? "Founding Member" : subscriptionType === "annual" ? "Annual Plan" : "Community Plan"
+                : "Free Plan"
+              }
+            </span>
           </div>
-          <div className="space-y-2">
+
+          <div className="w-full grid grid-cols-2 gap-3 relative z-10">
             <Link href="/settings" className="no-underline">
-              <button className="w-full py-2.5 rounded-xl bg-secondary/50 text-foreground text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2" data-testid="button-settings">
-                <User size={14} />
+              <button className="w-full rounded-xl border border-[#5A4E40]/60 text-[#B0A090] hover:border-[#8B7BA8]/30 hover:text-[#A898C0] py-2.5 text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer" data-testid="button-settings">
+                <Settings className="w-4 h-4" />
                 Settings
               </button>
             </Link>
-            {isPro && (subscriptionType === "community" || subscriptionType === "annual") && (
-              <Link href="/settings" className="no-underline">
-                <button
-                  className="w-full py-2.5 rounded-xl bg-secondary/50 text-foreground text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2"
-                  data-testid="button-manage-billing"
-                >
-                  <CreditCard size={14} />
-                  Manage Billing
-                </button>
-              </Link>
-            )}
             <Link href="/contact" className="no-underline">
-              <button className="w-full py-2.5 rounded-xl bg-secondary/50 text-foreground text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center justify-center gap-2" data-testid="button-support-link">
-                <HelpCircle size={14} />
+              <button className="w-full rounded-xl border border-[#5A4E40]/60 text-[#B0A090] hover:border-[#8B7BA8]/30 hover:text-[#A898C0] py-2.5 text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer" data-testid="button-support-link">
+                <HelpCircle className="w-4 h-4" />
                 Support
               </button>
             </Link>
           </div>
-        </GlassCard>
+        </div>
       )}
 
       {!isPro && remaining > 0 && (
-        <GlassCard className="p-5 border-primary/20 bg-primary/[0.02]" hoverEffect={false}>
-          <div className="flex items-center gap-2 mb-3">
-            <Flame size={18} className="text-accent" />
-            <h3 className="font-serif text-lg text-foreground">Founding Member</h3>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Lifetime access for a one-time <span className="font-bold text-foreground">$99</span>.
-          </p>
-          <div className="mb-4">
-            <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
-              <span>{percentClaimed}% claimed</span>
-              <span className="font-semibold text-foreground" data-testid="text-founding-remaining">{remaining} left</span>
+        <div className="bg-gradient-to-br from-[#4E3E2E] to-[#443828] border border-[#C9956B]/15 rounded-2xl p-6 shadow-lg shadow-black/10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-xl bg-[#C9956B]/15 text-[#C9956B]">
+              <Flame className="w-5 h-5" />
             </div>
-            <div className="w-full bg-primary/10 rounded-full h-2 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-accent to-primary rounded-full transition-all duration-1000"
-                style={{ width: `${percentClaimed}%` }}
-              />
+            <h3 className="font-['Playfair_Display'] text-lg text-[#F0E6D8]">Founding Member</h3>
+          </div>
+
+          <div className="mb-5">
+            <div className="text-2xl text-[#F0E6D8] mb-1 font-['Playfair_Display']">$99 <span className="text-sm text-[#A89880] font-sans">/ lifetime</span></div>
+            <p className="text-sm text-[#A89880] leading-relaxed">Lock in lifetime access before we launch to the public.</p>
+          </div>
+
+          <div className="space-y-2 mb-5">
+            <div className="flex justify-between text-xs text-[#A89880]">
+              <span>{percentClaimed}% Claimed</span>
+              <span className="text-[#D4A57A] font-medium" data-testid="text-founding-remaining">{remaining} spots left</span>
+            </div>
+            <div className="w-full h-2 bg-[#5A4E40]/50 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[#C9956B] to-[#D4A57A] rounded-full transition-all duration-1000" style={{ width: `${percentClaimed}%` }} />
             </div>
           </div>
+
           <button
             onClick={() => checkout.mutate("founding")}
             disabled={checkout.isPending}
-            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 btn-warm"
+            className="w-full bg-gradient-to-r from-[#C9956B] to-[#B8845E] hover:from-[#D4A57A] hover:to-[#C9956B] text-white rounded-xl py-3 font-medium shadow-lg shadow-[#C9956B]/20 transition-all text-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
             data-testid="button-checkout-founding"
           >
             <Crown size={16} />
@@ -868,83 +920,110 @@ export default function Dashboard() {
             <button
               onClick={() => checkout.mutate("monthly")}
               disabled={checkout.isPending}
-              className="text-xs text-muted-foreground hover:text-accent transition-colors cursor-pointer underline"
+              className="text-xs text-[#A89880] hover:text-[#D4A57A] transition-colors cursor-pointer underline"
               data-testid="button-checkout-community"
             >
               Or start at $7/mo
             </button>
           </div>
-        </GlassCard>
+        </div>
       )}
 
       {!isPro && remaining <= 0 && (
-        <GlassCard className="p-5 border-accent/20" hoverEffect={false}>
-          <div className="flex items-center gap-2 mb-3">
-            <CreditCard size={18} className="text-accent" />
-            <h3 className="font-serif text-lg text-foreground">Upgrade to Pro</h3>
+        <div className="bg-[#4A3E32]/70 border border-[#C9956B]/15 rounded-2xl p-6 shadow-lg shadow-black/10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-xl bg-[#C9956B]/15 text-[#C9956B]">
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <h3 className="font-['Playfair_Display'] text-lg text-[#F0E6D8]">Upgrade to Pro</h3>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Unlock all tools for <span className="font-bold text-accent">$7/month</span>.
+          <p className="text-sm text-[#A89880] mb-4">
+            Unlock all tools for <span className="font-bold text-[#D4A57A]">$7/month</span>.
           </p>
           <button
             onClick={() => checkout.mutate("monthly")}
             disabled={checkout.isPending}
-            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-md hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 btn-warm"
+            className="w-full bg-gradient-to-r from-[#C9956B] to-[#B8845E] hover:from-[#D4A57A] hover:to-[#C9956B] text-white rounded-xl py-3 font-medium shadow-lg shadow-[#C9956B]/20 transition-all cursor-pointer disabled:opacity-50"
             data-testid="button-checkout-community-only"
           >
             {checkout.isPending ? "Loading..." : "Start Community Plan"}
           </button>
-        </GlassCard>
+        </div>
+      )}
+
+      {isPro && (subscriptionType === "community" || subscriptionType === "annual") && (
+        <Link href="/settings" className="no-underline block">
+          <button
+            className="w-full bg-[#4A3E32]/50 border border-[#5A4E40]/40 rounded-2xl p-4 flex items-center gap-3 hover:border-[#5A4E40] transition-colors cursor-pointer text-left"
+            data-testid="button-manage-billing"
+          >
+            <div className="p-2 rounded-xl bg-[#C9956B]/10 text-[#C9956B]">
+              <CreditCard className="w-4 h-4" />
+            </div>
+            <span className="text-sm text-[#B0A090] font-medium">Manage Billing</span>
+            <ChevronRight className="w-4 h-4 text-[#5A4E40] ml-auto" />
+          </button>
+        </Link>
       )}
 
       {CLINICAL_TIPS.length > 0 && (
-        <GlassCard className="p-5 border-accent/10" hoverEffect={false}>
+        <div className="bg-[#4A3E32]/50 border border-[#5A4E40]/40 rounded-2xl p-5 shadow-lg shadow-black/10">
           <div className="flex items-center gap-2 mb-3">
-            <Lightbulb size={18} className="text-accent" />
-            <h3 className="font-serif text-sm text-foreground">Clinician's Corner</h3>
+            <Lightbulb size={18} className="text-[#C9956B]" />
+            <h3 className="font-['Playfair_Display'] text-sm text-[#F0E6D8]">Clinician's Corner</h3>
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed italic">
+          <p className="text-sm text-[#A89880] leading-relaxed italic">
             "{CLINICAL_TIPS[tipIndex].tip}"
           </p>
-          <p className="text-xs text-accent font-medium mt-2">— {CLINICAL_TIPS[tipIndex].tool}</p>
-        </GlassCard>
+          <p className="text-xs text-[#C9956B] font-medium mt-2">— {CLINICAL_TIPS[tipIndex].tool}</p>
+        </div>
       )}
 
-      <GlassCard className="p-5" hoverEffect={false}>
-        <h3 className="font-serif text-sm text-foreground mb-3">Quick Stats</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="text-center p-3 rounded-2xl bg-secondary/30">
-            <p className="text-2xl font-serif text-foreground" data-testid="text-session-count">{sessions.length}</p>
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Total Sessions</p>
+      <div className="bg-[#4A3E32]/50 backdrop-blur-sm border border-[#5A4E40]/40 rounded-2xl p-6 shadow-lg shadow-black/10">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="p-2 rounded-xl bg-[#7B8FA8]/12 text-[#8DA0B8]">
+            <BarChart3 className="w-4 h-4" />
           </div>
-          <div className="text-center p-3 rounded-2xl bg-secondary/30">
-            <p className="text-2xl font-serif text-foreground" data-testid="text-active-count">{activeSessions.length}</p>
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Active</p>
+          <h3 className="font-['Playfair_Display'] text-lg text-[#F0E6D8]">Workspace Activity</h3>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-[#3D3228]/60 rounded-xl p-4 border border-[#7B8FA8]/10">
+            <div className="text-[#8DA0B8] text-[10px] mb-1 font-medium tracking-widest uppercase">Total Sessions</div>
+            <div className="text-3xl font-['Playfair_Display'] text-[#F0E6D8]" data-testid="text-session-count">{sessions.length}</div>
+          </div>
+          <div className="bg-[#7B9E87]/[0.07] rounded-xl p-4 border border-[#7B9E87]/12">
+            <div className="text-[#8DB89A] text-[10px] mb-1 font-medium tracking-widest uppercase">Active Now</div>
+            <div className="text-3xl font-['Playfair_Display'] text-[#8DB89A]" data-testid="text-active-count">{activeSessions.length}</div>
           </div>
         </div>
-      </GlassCard>
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-0 pt-20 md:pt-24 px-4 md:px-8">
+    <div className="min-h-screen bg-[#3D3228] text-[#D8CABB] pb-24 md:pb-0 pt-20 md:pt-24 px-4 md:px-8 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#C9956B]/[0.06] rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#7B9E87]/[0.04] rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-[#8B7BA8]/[0.03] rounded-full blur-[150px] pointer-events-none" />
+
       {isAuthenticated && !emailConfirmed && (
-        <div className="max-w-7xl mx-auto mb-4">
+        <div className="max-w-6xl mx-auto mb-4 relative z-10">
           <div
-            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/60"
+            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-[#C9956B]/10 border border-[#C9956B]/20"
             data-testid="banner-email-verification"
           >
-            <div className="shrink-0 w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
-              <Mail size={16} className="text-amber-600" />
+            <div className="shrink-0 w-9 h-9 rounded-xl bg-[#C9956B]/15 flex items-center justify-center">
+              <Mail size={16} className="text-[#D4A57A]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-amber-900">Please verify your email</p>
-              <p className="text-xs text-amber-700/70">Check your inbox for a confirmation link to activate your account.</p>
+              <p className="text-sm font-medium text-[#F0E6D8]">Please verify your email</p>
+              <p className="text-xs text-[#A89880]">Check your inbox for a confirmation link to activate your account.</p>
             </div>
             <button
               onClick={() => resendVerification.mutate()}
               disabled={resendVerification.isPending}
-              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-100 hover:bg-amber-200/80 text-amber-800 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#C9956B]/15 hover:bg-[#C9956B]/25 text-[#D4A57A] text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
               data-testid="button-resend-verification"
             >
               <RefreshCw size={12} className={resendVerification.isPending ? "animate-spin" : ""} />
@@ -955,21 +1034,21 @@ export default function Dashboard() {
       )}
 
       {billingStatus?.paymentFailed && (
-        <div className="max-w-7xl mx-auto mb-4">
+        <div className="max-w-6xl mx-auto mb-4 relative z-10">
           <div
-            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-red-50/80 border border-red-200/60"
+            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-[#C27878]/10 border border-[#C27878]/20"
             data-testid="banner-payment-failed"
           >
-            <div className="shrink-0 w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center">
-              <AlertTriangle size={16} className="text-red-600" />
+            <div className="shrink-0 w-9 h-9 rounded-xl bg-[#C27878]/15 flex items-center justify-center">
+              <AlertTriangle size={16} className="text-[#C27878]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-red-900">Your payment method needs updating</p>
-              <p className="text-xs text-red-700/70">We were unable to process your latest payment. Please update your payment method to keep your subscription active.</p>
+              <p className="text-sm font-medium text-[#F0E6D8]">Your payment method needs updating</p>
+              <p className="text-xs text-[#A89880]">We were unable to process your latest payment. Please update your payment method to keep your subscription active.</p>
             </div>
             <Link href="/settings" className="no-underline">
               <button
-                className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200/80 text-red-800 text-xs font-medium transition-colors cursor-pointer"
+                className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#C27878]/15 hover:bg-[#C27878]/25 text-[#C27878] text-xs font-medium transition-colors cursor-pointer"
                 data-testid="button-update-payment"
               >
                 <CreditCard size={12} />
@@ -981,17 +1060,17 @@ export default function Dashboard() {
       )}
 
       {trialActive && !isPro && (
-        <div className="max-w-7xl mx-auto mb-4">
+        <div className="max-w-6xl mx-auto mb-4 relative z-10">
           <div
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/5 border border-primary/10"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#7B9E87]/8 border border-[#7B9E87]/12"
             data-testid="banner-trial"
           >
-            <Clock size={14} className="text-primary/60 shrink-0" />
-            <p className="text-xs text-primary/70 font-medium">
+            <Clock size={14} className="text-[#8DB89A]/60 shrink-0" />
+            <p className="text-xs text-[#8DB89A]/70 font-medium">
               Free trial — {trialDaysLeft} {trialDaysLeft === 1 ? "day" : "days"} remaining
             </p>
             <Link href="/settings" className="ml-auto no-underline">
-              <span className="text-xs text-primary/50 hover:text-primary font-medium transition-colors cursor-pointer">
+              <span className="text-xs text-[#8DB89A]/50 hover:text-[#8DB89A] font-medium transition-colors cursor-pointer">
                 Upgrade
               </span>
             </Link>
@@ -1001,25 +1080,25 @@ export default function Dashboard() {
 
       {trialExpired && (
         <>
-          <div className="fixed inset-0 bg-black/40 z-50" />
+          <div className="fixed inset-0 bg-black/50 z-50" />
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Lock size={28} className="text-primary/60" />
+            <div className="bg-[#4A3E32] border border-[#5A4E40] rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-[#C9956B]/10 flex items-center justify-center">
+                <Lock size={28} className="text-[#C9956B]/60" />
               </div>
-              <h2 className="text-2xl font-serif text-foreground mb-3">Your free trial has ended</h2>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+              <h2 className="text-2xl font-['Playfair_Display'] text-[#F0E6D8] mb-3">Your free trial has ended</h2>
+              <p className="text-[#A89880] text-sm leading-relaxed mb-6">
                 Your 7-day free trial has expired. Upgrade to a paid plan to continue using ClinicalPlay's interactive therapy tools.
               </p>
               <Link href="/settings" className="no-underline">
-                <button className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-medium btn-warm cursor-pointer flex items-center justify-center gap-2">
+                <button className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#C9956B] to-[#B8845E] text-white font-medium cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-[#C9956B]/20">
                   <Crown size={16} />
                   View Plans & Upgrade
                 </button>
               </Link>
               <button
                 onClick={() => logout()}
-                className="mt-3 w-full py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                className="mt-3 w-full py-2.5 rounded-xl text-sm text-[#A89880] hover:text-[#D8CABB] transition-colors cursor-pointer"
               >
                 Sign Out
               </button>
@@ -1028,25 +1107,25 @@ export default function Dashboard() {
         </>
       )}
 
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-serif text-foreground mb-1" data-testid="text-dashboard-title">
-              Welcome back{user?.firstName ? `, ${user.firstName}` : ""}
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-5xl font-['Playfair_Display'] font-normal text-[#F0E6D8] tracking-tight" data-testid="text-dashboard-title">
+              Welcome{user?.firstName ? `, ${user.firstName}` : " back"}
             </h1>
-            <p className="text-muted-foreground text-sm flex items-center gap-2">
-              Your clinical workspace
+            <div className="flex items-center gap-3">
+              <span className="text-[#A89880] font-light text-lg">Your clinical workspace</span>
               {isPro && (
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                <span className={`inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-xs font-medium ${
                   subscriptionType === "founding"
-                    ? "bg-primary/10 text-primary"
-                    : "bg-accent/10 text-accent"
+                    ? "bg-[#C9956B]/15 border border-[#C9956B]/25 text-[#D4A57A]"
+                    : "bg-[#7B9E87]/15 border border-[#7B9E87]/25 text-[#8DB89A]"
                 }`} data-testid="text-plan-badge">
                   {subscriptionType === "founding" ? <Crown size={12} /> : <CheckCircle2 size={12} />}
                   {subscriptionType === "founding" ? "Founding Member" : subscriptionType === "annual" ? "Annual" : "Community"}
                 </span>
               )}
-            </p>
+            </div>
           </div>
           <button
             onClick={() => {
@@ -1054,7 +1133,7 @@ export default function Dashboard() {
               const toolsEl = document.querySelector('[data-tour="dashboard-tools"]');
               if (toolsEl) toolsEl.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
-            className="px-7 py-3.5 rounded-2xl flex items-center gap-2.5 shadow-md cursor-pointer w-full md:w-auto justify-center bg-primary text-primary-foreground font-medium btn-warm"
+            className="bg-gradient-to-r from-[#C9956B] to-[#B8845E] hover:from-[#D4A57A] hover:to-[#C9956B] text-white rounded-full px-7 py-3.5 shadow-lg shadow-[#C9956B]/25 transition-all duration-300 font-medium flex items-center gap-2 text-sm cursor-pointer w-full md:w-auto justify-center"
             data-testid="button-new-session"
           >
             <Plus size={20} /> Start New Session
@@ -1062,7 +1141,7 @@ export default function Dashboard() {
         </div>
 
         <div className="hidden md:grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-10">
             <SessionsView />
             <ToolLibraryView />
           </div>
@@ -1090,7 +1169,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 pb-24 md:pb-8">
+      <div className="max-w-6xl mx-auto px-6 pb-24 md:pb-8 relative z-10">
         <LegalDisclaimer />
       </div>
 
