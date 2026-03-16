@@ -188,8 +188,8 @@ export function WarmGrounded() {
                       <div className="w-12 h-12 bg-[#FDFBF7] border border-[#E6D5C3] rounded-xl flex items-center justify-center text-2xl shadow-inner">
                         {tool.emoji}
                       </div>
-                      <button className={\`p-2 rounded-full transition-colors \${tool.fav ? 'text-[#C67B3C] bg-[#FDFBF7]' : 'text-[#D4BCA3] hover:text-[#C67B3C] hover:bg-[#FDFBF7]'}\`}>
-                        <Star className={\`w-5 h-5 \${tool.fav ? 'fill-current' : ''}\`} />
+                      <button className={`p-2 rounded-full transition-colors ${tool.fav ? 'text-[#C67B3C] bg-[#FDFBF7]' : 'text-[#D4BCA3] hover:text-[#C67B3C] hover:bg-[#FDFBF7]'}`}>
+                        <Star className={`w-5 h-5 ${tool.fav ? 'fill-current' : ''}`} />
                       </button>
                     </div>
                     <h3 className="font-serif text-xl text-[#3A2A1F] mb-2">{tool.name}</h3>
