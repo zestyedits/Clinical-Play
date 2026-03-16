@@ -64,7 +64,7 @@ export default function EmailConfirmed() {
               </>
             ) : (
               <>
-                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
                   <CheckCircle2 size={32} className="text-emerald-500" />
                 </div>
                 <h1 className="text-3xl font-serif text-primary mb-3" data-testid="text-email-confirmed-title">Email Verified</h1>

@@ -238,8 +238,8 @@ export default function AdminPanel() {
                           disabled={upgradeUser.isPending}
                           className={`h-8 px-3 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
                             u.isPro
-                              ? "bg-orange-50 text-orange-600 hover:bg-orange-100"
-                              : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                              ? "bg-orange-500/10 text-orange-400 hover:bg-orange-500/20"
+                              : "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
                           }`}
                           data-testid={`button-toggle-pro-${u.id}`}
                         >
@@ -253,7 +253,7 @@ export default function AdminPanel() {
                             }
                           }}
                           disabled={deleteUser.isPending}
-                          className="h-8 px-3 rounded-full text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 flex items-center gap-1.5 transition-all cursor-pointer"
+                          className="h-8 px-3 rounded-full text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center gap-1.5 transition-all cursor-pointer"
                           data-testid={`button-delete-user-${u.id}`}
                         >
                           <UserX size={12} />

@@ -446,9 +446,9 @@ export default function Playroom() {
                 <span className="text-xs font-medium text-accent">Clinician</span>
               </div>
               {subscriptionType === "founding" && (
-                <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-100 to-yellow-50 border border-amber-200/60 shadow-sm shadow-amber-100/50" data-testid="badge-playroom-founding">
+                <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/15 to-yellow-500/10 border border-amber-500/20 shadow-sm shadow-amber-500/10" data-testid="badge-playroom-founding">
                   <Crown size={11} className="text-amber-600" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Founder</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Founder</span>
                 </div>
               )}
 
@@ -598,8 +598,8 @@ export default function Playroom() {
 
       <AnimatePresence>
       {isDemo && (
-        <div className="bg-amber-50 border-b border-amber-200/60 px-3 sm:px-4 py-2 flex items-center justify-center gap-2 sm:gap-3 shrink-0 z-20 flex-wrap" data-testid="banner-demo-mode">
-          <span className="text-[11px] sm:text-xs text-amber-700 font-medium whitespace-nowrap">Demo Mode — changes won't be saved</span>
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 sm:px-4 py-2 flex items-center justify-center gap-2 sm:gap-3 shrink-0 z-20 flex-wrap" data-testid="banner-demo-mode">
+          <span className="text-[11px] sm:text-xs text-amber-400 font-medium whitespace-nowrap">Demo Mode — changes won't be saved</span>
           <Link href="/dashboard" className="no-underline">
             <span className="text-[11px] sm:text-xs text-accent font-semibold hover:text-accent/80 transition-colors cursor-pointer underline underline-offset-2 whitespace-nowrap" data-testid="link-start-real-session">
               Start a Real Session

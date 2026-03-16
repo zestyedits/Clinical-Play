@@ -33,88 +33,46 @@
 }
 
 /*
-  ClinicalPlay Warm Clinical Palette
-  Sage Green: 145 22% 38%
-  Dusty Terracotta: 15 45% 62%
-  Warm Linen: 40 30% 97%
+  ClinicalPlay Warm Espresso Palette
+  Background: #3D3228 — warm espresso
+  Gold accent: #C9956B / #D4A57A
+  Sage green primary: #7B9E87
 */
 
 :root {
-  /* Warm Cream Background — richer warmth */
-  --background: 38 40% 96%;
-  --foreground: 30 12% 18%;
-
-  /* Warm neutral glass tokens */
-  --glass-blur: 14px;
-  --glass-border: rgba(190, 168, 130, 0.3);
-  --glass-tint: rgba(255, 250, 240, 0.65);
-
-  /* Cards — warm ivory */
-  --card: 38 35% 98%;
-  --card-foreground: 30 12% 18%;
-
-  --popover: 38 35% 98%;
-  --popover-foreground: 30 12% 18%;
-
-  /* Sage Green Primary — slightly warmer undertone */
-  --primary: 148 20% 36%;
-  --primary-foreground: 38 40% 97%;
-
-  /* Warm Sand Secondary — deeper warmth */
-  --secondary: 33 30% 91%;
-  --secondary-foreground: 30 12% 22%;
-
-  /* Soft Warm Muted — more golden warmth */
-  --muted: 34 22% 91%;
-  --muted-foreground: 30 10% 42%;
-
-  /* Dusty Terracotta Accent — slightly richer */
-  --accent: 16 48% 60%;
-  --accent-foreground: 38 40% 98%;
-
-  --destructive: 0 60% 52%;
-  --destructive-foreground: 0 0% 98%;
-
-  /* Warm honey borders */
-  --border: 34 20% 86%;
-  --input: 34 20% 86%;
-  --ring: 148 20% 36%;
-
-  --radius: 1.25rem;
-}
-
-.dark {
-  --background: 30 6% 10%;
-  --foreground: 35 22% 90%;
+  --background: 29 21% 20%;
+  --foreground: 35 44% 89%;
 
   --glass-blur: 14px;
-  --glass-border: rgba(255, 245, 230, 0.07);
-  --glass-tint: rgba(255, 248, 235, 0.04);
+  --glass-border: rgba(201, 149, 107, 0.12);
+  --glass-tint: rgba(74, 62, 50, 0.55);
 
-  --card: 30 6% 13%;
-  --card-foreground: 35 22% 90%;
+  --card: 30 19% 24%;
+  --card-foreground: 31 27% 79%;
 
-  --popover: 30 6% 13%;
-  --popover-foreground: 35 22% 90%;
+  --popover: 31 19% 27%;
+  --popover-foreground: 35 44% 89%;
 
-  --primary: 148 22% 58%;
-  --primary-foreground: 30 6% 10%;
+  --primary: 141 15% 55%;
+  --primary-foreground: 35 44% 89%;
 
-  --secondary: 30 6% 17%;
-  --secondary-foreground: 35 22% 90%;
+  --secondary: 30 17% 27%;
+  --secondary-foreground: 31 27% 79%;
 
-  --muted: 30 6% 19%;
-  --muted-foreground: 35 12% 55%;
+  --muted: 30 18% 26%;
+  --muted-foreground: 36 19% 58%;
 
-  --accent: 16 42% 55%;
+  --accent: 27 47% 60%;
   --accent-foreground: 0 0% 98%;
 
-  --destructive: 0 55% 45%;
+  --destructive: 0 38% 62%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 30 6% 21%;
-  --input: 30 6% 21%;
-  --ring: 16 48% 60%;
+  --border: 32 17% 30%;
+  --input: 33 16% 36%;
+  --ring: 27 47% 60%;
+
+  --radius: 1.25rem;
 }
 
 @layer base {

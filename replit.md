@@ -16,7 +16,7 @@ Preferred communication style: Simple, everyday language.
 - **UI Components**: shadcn/ui (New York style) built on Radix UI primitives, supplemented with custom components like GlassCard, ZenCanvas (Digital Sandtray), AssetLibrary, ModeratorBar, BreathingGuide, ToolSelector, ClinicalInsights, and GuidedTour.
 - **Animations**: Framer Motion for interactive UI and transitions.
 - **Typography**: Lora (serif headings), Inter (sans-serif body), Playfair Display (display text).
-- **Theming**: 6 accent color presets (Classic Navy & Gold, Emerald & Gold, Sapphire & Silver, Rose & Champagne, Amethyst & Copper, Ocean Teal & Sand), light mode only (dark mode removed pending redesign). Persisted via localStorage. ThemeProvider context wraps entire app. Color palette settings in Profile page.
+- **Theming**: Global warm espresso dark theme. CSS variables in `client/src/index.css` `:root` define the palette: background `#3D3228`, card `#4A3E32`, gold accent `#C9956B`, sage green primary `#7B9E87`, muted text `#A89880`, foreground `#F0E6D8`. All pages use the same dark palette via CSS tokens (`bg-background`, `text-foreground`, `bg-card`, `text-accent`, etc.). No light mode. Color-50/-100 Tailwind classes replaced with color-500/10 alpha variants for dark compatibility. Dashboard has additional hardcoded accent colors per section (sage for sessions, lavender for tools, slate for stats).
 
 ### Backend
 - **Runtime**: Node.js with Express 5

@@ -21,7 +21,7 @@ export default function CookiePolicy() {
             </div>
           </div>
 
-          <div className="bg-white/50 backdrop-blur-md rounded-3xl border border-white/30 p-8 md:p-12 space-y-10">
+          <div className="bg-card/50 backdrop-blur-md rounded-3xl border border-border/30 p-8 md:p-12 space-y-10">
             <div className="p-5 rounded-2xl bg-accent/5 border border-accent/20">
               <p className="text-sm text-primary font-medium leading-relaxed">
                 ClinicalPlay uses minimal cookies strictly necessary for platform functionality. We do not use cookies for advertising, tracking, or analytics purposes.

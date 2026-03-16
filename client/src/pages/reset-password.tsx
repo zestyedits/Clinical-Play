@@ -56,7 +56,7 @@ export default function ResetPassword() {
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="bg-card border border-border rounded-2xl shadow-lg p-8 md:p-10 text-center">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-emerald-50 flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
                 <CheckCircle2 size={32} className="text-emerald-500" />
               </div>
               <h1 className="text-3xl font-serif text-primary mb-3">Password Updated</h1>

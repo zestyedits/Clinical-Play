@@ -50,7 +50,7 @@ export default function Contact() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-500/10 flex items-center justify-center">
               <CheckCircle2 size={32} className="text-green-600" />
             </div>
             <h1 className="text-2xl md:text-3xl font-serif text-primary mb-3" data-testid="text-contact-success">

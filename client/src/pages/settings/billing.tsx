@@ -228,7 +228,7 @@ export default function BillingSettings() {
             <div className="mt-3 flex items-center gap-2">
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
                 <AlertTriangle size={14} className="text-amber-600" />
-                <span className="text-xs text-amber-700 font-medium">Cancellation pending</span>
+                <span className="text-xs text-amber-400 font-medium">Cancellation pending</span>
               </div>
               <button
                 onClick={() => resumeSubscription.mutate()}
@@ -244,8 +244,8 @@ export default function BillingSettings() {
           {hasActiveSub && !isCancelling && (
             <div className="mt-4">
               {confirmCancel ? (
-                <div className="p-3 rounded-xl bg-red-50/80 border border-red-200/50 space-y-3">
-                  <p className="text-xs text-red-800">Are you sure? You'll retain access until the end of your current billing period.</p>
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 space-y-3">
+                  <p className="text-xs text-red-400">Are you sure? You'll retain access until the end of your current billing period.</p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => cancelSubscription.mutate()}

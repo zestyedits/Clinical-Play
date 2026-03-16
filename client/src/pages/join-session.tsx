@@ -63,7 +63,7 @@ export default function JoinSession() {
         )}
         {status === "error" && (
           <>
-            <div className="w-12 h-12 mx-auto mb-6 rounded-full bg-red-100 flex items-center justify-center">
+            <div className="w-12 h-12 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center">
               <span className="text-2xl">✕</span>
             </div>
             <h2 className="font-serif text-2xl text-primary mb-2">Invalid Invite</h2>

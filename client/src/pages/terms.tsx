@@ -21,7 +21,7 @@ export default function TermsOfService() {
             </div>
           </div>
 
-          <div className="bg-white/50 backdrop-blur-md rounded-3xl border border-white/30 p-8 md:p-12 space-y-10">
+          <div className="bg-card/50 backdrop-blur-md rounded-3xl border border-border/30 p-8 md:p-12 space-y-10">
             <div className="p-5 rounded-2xl bg-primary/5 border border-primary/10">
               <p className="text-sm text-primary font-medium leading-relaxed">
                 ClinicalPlay is a therapeutic engagement platform designed for licensed mental health professionals. By using this service, you agree to the following terms.

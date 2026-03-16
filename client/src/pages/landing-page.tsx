@@ -351,11 +351,11 @@ function DemoEmotionExplorer() {
                   className="demo-card-enter group relative flex flex-col items-center justify-center rounded-2xl sm:rounded-3xl cursor-pointer transition-all duration-300"
                   style={{
                     aspectRatio: "1",
-                    background: `linear-gradient(145deg, ${emotion.bgSolid} 0%, white 100%)`,
+                    background: `linear-gradient(145deg, ${emotion.color}18 0%, rgba(74,62,50,0.95) 100%)`,
                     border: `2px solid ${emotion.color}${hoveredIdx === i ? "55" : "18"}`,
                     boxShadow: hoveredIdx === i
-                      ? `0 12px 32px ${emotion.color}25, 0 0 0 4px ${emotion.color}10, inset 0 1px 0 rgba(255,255,255,0.8)`
-                      : `0 2px 12px ${emotion.color}10, inset 0 1px 0 rgba(255,255,255,0.6)`,
+                      ? `0 12px 32px ${emotion.color}25, 0 0 0 4px ${emotion.color}10, inset 0 1px 0 rgba(255,255,255,0.06)`
+                      : `0 2px 12px ${emotion.color}10, inset 0 1px 0 rgba(255,255,255,0.03)`,
                     transform: hoveredIdx === i ? "translateY(-4px) scale(1.05)" : hoveredIdx !== null ? "scale(0.97)" : "",
                     opacity: hoveredIdx !== null && hoveredIdx !== i ? 0.6 : 1,
                     animationDelay: `${i * 50}ms`,
@@ -399,7 +399,7 @@ function DemoEmotionExplorer() {
                   onClick={() => pickSecondary(child)}
                   className="demo-card-enter group relative flex items-center gap-3 p-4 sm:p-5 rounded-2xl cursor-pointer transition-all duration-250 text-left"
                   style={{
-                    background: "rgba(255,255,255,0.85)",
+                    background: "rgba(74,62,50,0.85)",
                     backdropFilter: "blur(8px)",
                     border: `2px solid ${activeColor}18`,
                     boxShadow: `0 2px 12px ${activeColor}08`,
@@ -409,13 +409,13 @@ function DemoEmotionExplorer() {
                     e.currentTarget.style.borderColor = `${activeColor}40`;
                     e.currentTarget.style.boxShadow = `0 12px 28px ${activeColor}18, 0 0 0 3px ${activeColor}08`;
                     e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.background = `rgba(255,255,255,0.95)`;
+                    e.currentTarget.style.background = `rgba(74,62,50,0.95)`;
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.borderColor = `${activeColor}18`;
                     e.currentTarget.style.boxShadow = `0 2px 12px ${activeColor}08`;
                     e.currentTarget.style.transform = "";
-                    e.currentTarget.style.background = `rgba(255,255,255,0.85)`;
+                    e.currentTarget.style.background = `rgba(74,62,50,0.85)`;
                   }}
                 >
                   <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110 group-active:scale-90" style={{ background: `${activeColor}12` }}>
@@ -448,7 +448,7 @@ function DemoEmotionExplorer() {
                   onClick={() => pickTertiary(child)}
                   className="demo-card-enter group flex items-center gap-3 px-6 py-4 rounded-2xl cursor-pointer transition-all duration-250"
                   style={{
-                    background: "rgba(255,255,255,0.85)",
+                    background: "rgba(74,62,50,0.85)",
                     backdropFilter: "blur(8px)",
                     border: `2px solid ${activeColor}18`,
                     boxShadow: `0 2px 12px ${activeColor}08`,
@@ -501,7 +501,7 @@ function DemoEmotionExplorer() {
             </div>
 
             {/* Callout */}
-            <div className="max-w-sm mx-auto rounded-2xl p-4 mb-6" style={{ background: "rgba(255,255,255,0.7)", backdropFilter: "blur(8px)", border: `1px solid ${activeColor}15` }}>
+            <div className="max-w-sm mx-auto rounded-2xl p-4 mb-6" style={{ background: "rgba(74,62,50,0.7)", backdropFilter: "blur(8px)", border: `1px solid ${activeColor}15` }}>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white" style={{ background: activeColor }}>C</div>
                 <div>
@@ -529,11 +529,11 @@ function DemoEmotionExplorer() {
         )}
 
         {/* ── Bottom bar ── */}
-        <div className="flex items-center justify-between px-5 py-2.5" style={{ background: "rgba(255,255,255,0.5)", backdropFilter: "blur(4px)" }}>
+        <div className="flex items-center justify-between px-5 py-2.5" style={{ background: "rgba(74,62,50,0.5)", backdropFilter: "blur(4px)" }}>
           <div className="flex items-center gap-3">
             <div className="flex -space-x-1.5">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white ring-2 ring-white" style={{ background: activeColor }}>C</div>
-              <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ring-2 ring-white" style={{ background: `${activeColor}30`, color: activeColor }}>P</div>
+              <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white ring-2 ring-border" style={{ background: activeColor }}>C</div>
+              <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ring-2 ring-border" style={{ background: `${activeColor}30`, color: activeColor }}>P</div>
             </div>
             <span className="text-[10px] text-muted-foreground/40">2 in session</span>
           </div>
@@ -705,8 +705,8 @@ function DemoBreathingPacer() {
               onClick={() => selectPattern(p)}
               className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all cursor-pointer"
               style={{
-                background: activePattern.id === p.id ? `${p.color}18` : "rgba(255,255,255,0.6)",
-                color: activePattern.id === p.id ? p.color : "#666",
+                background: activePattern.id === p.id ? `${p.color}18` : "rgba(74,62,50,0.6)",
+                color: activePattern.id === p.id ? p.color : "#A89880",
                 border: `1.5px solid ${activePattern.id === p.id ? `${p.color}40` : "transparent"}`,
               }}
             >
@@ -811,7 +811,7 @@ function DemoBreathingPacer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="flex items-center justify-between px-5 py-2.5" style={{ background: "rgba(255,255,255,0.5)", backdropFilter: "blur(4px)" }}>
+        <div className="flex items-center justify-between px-5 py-2.5" style={{ background: "rgba(74,62,50,0.5)", backdropFilter: "blur(4px)" }}>
           <div className="flex items-center gap-3">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#22c55e", boxShadow: "0 0 6px #22c55e88" }} />
             <span className="text-[10px] font-medium text-muted-foreground/50">Live</span>
@@ -944,8 +944,8 @@ function DemoCopingDeck() {
             onClick={() => handleCategoryChange("all")}
             className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all cursor-pointer"
             style={{
-              background: activeCategory === "all" ? "rgba(99,102,241,0.15)" : "rgba(255,255,255,0.6)",
-              color: activeCategory === "all" ? "#6366f1" : "#666",
+              background: activeCategory === "all" ? "rgba(99,102,241,0.15)" : "rgba(74,62,50,0.6)",
+              color: activeCategory === "all" ? "#6366f1" : "#A89880",
               border: `1.5px solid ${activeCategory === "all" ? "rgba(99,102,241,0.3)" : "transparent"}`,
             }}
           >
@@ -957,8 +957,8 @@ function DemoCopingDeck() {
               onClick={() => handleCategoryChange(cat.id)}
               className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all cursor-pointer"
               style={{
-                background: activeCategory === cat.id ? `${cat.color}18` : "rgba(255,255,255,0.6)",
-                color: activeCategory === cat.id ? cat.color : "#666",
+                background: activeCategory === cat.id ? `${cat.color}18` : "rgba(74,62,50,0.6)",
+                color: activeCategory === cat.id ? cat.color : "#A89880",
                 border: `1.5px solid ${activeCategory === cat.id ? `${cat.color}40` : "transparent"}`,
               }}
             >
@@ -991,7 +991,7 @@ function DemoCopingDeck() {
                 className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center"
                 style={{
                   backfaceVisibility: "hidden",
-                  background: "rgba(255,255,255,0.95)",
+                  background: "rgba(74,62,50,0.95)",
                   border: `2px solid ${catColor}25`,
                   boxShadow: `0 8px 30px ${catColor}15`,
                 }}
@@ -1010,7 +1010,7 @@ function DemoCopingDeck() {
                 style={{
                   backfaceVisibility: "hidden",
                   transform: "rotateY(180deg)",
-                  background: "rgba(255,255,255,0.95)",
+                  background: "rgba(74,62,50,0.95)",
                   border: `2px solid ${catColor}25`,
                   boxShadow: `0 8px 30px ${catColor}15`,
                 }}
@@ -1034,7 +1034,7 @@ function DemoCopingDeck() {
               onClick={() => goTo(cardIndex - 1)}
               disabled={cardIndex === 0}
               className="w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-30 disabled:cursor-default"
-              style={{ background: "rgba(255,255,255,0.8)", border: `1.5px solid ${catColor}20` }}
+              style={{ background: "rgba(74,62,50,0.8)", border: `1.5px solid ${catColor}20` }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={catColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
@@ -1045,7 +1045,7 @@ function DemoCopingDeck() {
               onClick={() => goTo(cardIndex + 1)}
               disabled={cardIndex >= filteredCards.length - 1}
               className="w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:opacity-30 disabled:cursor-default"
-              style={{ background: "rgba(255,255,255,0.8)", border: `1.5px solid ${catColor}20` }}
+              style={{ background: "rgba(74,62,50,0.8)", border: `1.5px solid ${catColor}20` }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={catColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6"/></svg>
             </button>
@@ -1067,7 +1067,7 @@ function DemoCopingDeck() {
         </div>
 
         {/* Bottom bar */}
-        <div className="flex items-center justify-between px-5 py-2.5" style={{ background: "rgba(255,255,255,0.5)", backdropFilter: "blur(4px)" }}>
+        <div className="flex items-center justify-between px-5 py-2.5" style={{ background: "rgba(74,62,50,0.5)", backdropFilter: "blur(4px)" }}>
           <div className="flex items-center gap-3">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#22c55e", boxShadow: "0 0 6px #22c55e88" }} />
             <span className="text-[10px] font-medium text-muted-foreground/50">Live</span>
@@ -1278,7 +1278,7 @@ export default function LandingPage() {
                   className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer"
                   style={{
                     background: isActive ? `${tab.color}14` : "transparent",
-                    color: isActive ? tab.color : "#999",
+                    color: isActive ? tab.color : "#A89880",
                     border: `1.5px solid ${isActive ? `${tab.color}30` : "transparent"}`,
                   }}
                 >

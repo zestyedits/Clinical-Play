@@ -125,7 +125,7 @@ export default function Login() {
                   animate={{ opacity: 1, y: 0 }}
                   className="text-center py-4"
                 >
-                  <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                  <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
                     <CheckCircle2 size={28} className="text-emerald-500" />
                   </div>
                   <p className="text-sm text-foreground font-medium mb-1">Check your inbox</p>

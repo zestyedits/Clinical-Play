@@ -638,7 +638,7 @@ export default function InboxPage() {
                             </p>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-[10px] text-muted-foreground/40">{formatDate(msg.createdAt)}</span>
-                              {msg.priority === "high" && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-500 border border-rose-200/50 font-bold">Urgent</span>}
+                              {msg.priority === "high" && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold">Urgent</span>}
                               {msg.replies && msg.replies.length > 0 && <span className="text-[10px] text-muted-foreground/40">{msg.replies.length} replies</span>}
                             </div>
                           </div>

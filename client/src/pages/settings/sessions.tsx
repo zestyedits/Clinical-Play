@@ -136,8 +136,8 @@ export default function SessionSettings() {
           </div>
         </div>
 
-        <div className="mb-4 p-3 rounded-xl bg-amber-50/60 border border-amber-200/40">
-          <p className="text-[11px] text-amber-700/70 flex items-start gap-1.5">
+        <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <p className="text-[11px] text-amber-400/70 flex items-start gap-1.5">
             <ShieldAlert size={12} className="shrink-0 mt-0.5" />
             <span>Exports are stored locally on this device. No client-identifying information is included.</span>
           </p>

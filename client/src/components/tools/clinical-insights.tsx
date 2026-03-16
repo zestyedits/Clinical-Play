@@ -4,20 +4,20 @@ import { Lightbulb, MessageCircle, BookOpen, X, GripHorizontal } from "lucide-re
 import { cn } from "@/lib/utils";
 
 const MODALITY_COLORS: Record<string, string> = {
-  "CBT": "bg-blue-100/80 text-blue-700 border-blue-200/50",
-  "DBT": "bg-purple-100/80 text-purple-700 border-purple-200/50",
-  "Narrative": "bg-emerald-100/80 text-emerald-700 border-emerald-200/50",
-  "Solution-Focused": "bg-amber-100/80 text-amber-700 border-amber-200/50",
-  "Somatic": "bg-rose-100/80 text-rose-700 border-rose-200/50",
-  "Gestalt": "bg-orange-100/80 text-orange-700 border-orange-200/50",
-  "Play Therapy": "bg-pink-100/80 text-pink-700 border-pink-200/50",
-  "Attachment": "bg-sky-100/80 text-sky-700 border-sky-200/50",
-  "Psychodynamic": "bg-indigo-100/80 text-indigo-700 border-indigo-200/50",
-  "Mindfulness": "bg-teal-100/80 text-teal-700 border-teal-200/50",
-  "ACT": "bg-cyan-100/80 text-cyan-700 border-cyan-200/50",
-  "IFS": "bg-violet-100/80 text-violet-700 border-violet-200/50",
-  "MI": "bg-green-100/80 text-green-700 border-green-200/50",
-  "SFBT": "bg-amber-100/80 text-amber-700 border-amber-200/50",
+  "CBT": "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  "DBT": "bg-purple-500/10 text-purple-400 border-purple-500/20",
+  "Narrative": "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  "Solution-Focused": "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  "Somatic": "bg-rose-500/10 text-rose-400 border-rose-500/20",
+  "Gestalt": "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  "Play Therapy": "bg-pink-500/10 text-pink-400 border-pink-500/20",
+  "Attachment": "bg-sky-500/10 text-sky-400 border-sky-500/20",
+  "Psychodynamic": "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+  "Mindfulness": "bg-teal-500/10 text-teal-400 border-teal-500/20",
+  "ACT": "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+  "IFS": "bg-violet-500/10 text-violet-400 border-violet-500/20",
+  "MI": "bg-green-500/10 text-green-400 border-green-500/20",
+  "SFBT": "bg-amber-500/10 text-amber-400 border-amber-500/20",
 };
 
 const TOOL_PROMPTS: Record<string, { title: string; prompts: { text: string; modality: string }[] }> = {
@@ -263,7 +263,7 @@ export function ClinicalInsights({ isOpen, onToggle, activeTool }: ClinicalInsig
                       <MessageCircle size={14} className="text-accent mt-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
                       <div>
                         <p className="text-sm font-serif text-primary/80 leading-relaxed">{prompt.text}</p>
-                        <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-semibold border mt-1.5", MODALITY_COLORS[prompt.modality] || "bg-gray-100 text-gray-600")}>
+                        <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-semibold border mt-1.5", MODALITY_COLORS[prompt.modality] || "bg-muted text-muted-foreground")}>
                           {prompt.modality}
                         </span>
                       </div>

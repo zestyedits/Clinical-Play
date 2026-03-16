@@ -44,10 +44,10 @@ function saveCollections(cols: Collection[]) {
 // ── Intensity badge ──
 function IntensityBadge({ level }: { level: string }) {
   const config = {
-    gentle: { label: "Gentle", cls: "bg-green-100 text-green-700 border-green-200" },
-    moderate: { label: "Moderate", cls: "bg-amber-100 text-amber-700 border-amber-200" },
-    deep: { label: "Deep", cls: "bg-rose-100 text-rose-700 border-rose-200" },
-  }[level] || { label: level, cls: "bg-gray-100 text-gray-600 border-gray-200" };
+    gentle: { label: "Gentle", cls: "bg-green-500/10 text-green-400 border-green-500/20" },
+    moderate: { label: "Moderate", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
+    deep: { label: "Deep", cls: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
+  }[level] || { label: level, cls: "bg-muted text-muted-foreground border-border" };
   return <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-semibold border", config.cls)}>{config.label}</span>;
 }
 
@@ -93,7 +93,7 @@ function LibrarySection({
                   <div className="text-3xl">{tool.icon}</div>
                   <div className="flex items-center gap-1.5">
                     {tool.category === "game" && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold">Game</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">Game</span>
                     )}
                     <button
                       onClick={(e) => { e.stopPropagation(); toggleFavorite(tool.id); }}
@@ -153,7 +153,7 @@ function LibrarySection({
                       <h3 className="font-serif text-sm text-foreground">{tool.name}</h3>
                       <IntensityBadge level={tool.intensity} />
                       <StatusBadge status={tool.status} />
-                      {tool.category === "game" && <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold">Game</span>}
+                      {tool.category === "game" && <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">Game</span>}
                       {tool.tier === "pro" && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold">PRO</span>}
                     </div>
                     <p className="text-xs text-muted-foreground truncate">{tool.shortDescription}</p>
@@ -248,7 +248,7 @@ function ToolDetailDrawer({
               onClick={onToggleFavorite}
               className={cn(
                 "h-11 px-4 rounded-xl border text-sm font-medium flex items-center gap-2 cursor-pointer transition-colors whitespace-nowrap",
-                isFavorite ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-card border-border text-muted-foreground hover:bg-secondary"
+                isFavorite ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-card border-border text-muted-foreground hover:bg-secondary"
               )}
             >
               <Star size={15} className={cn("shrink-0", isFavorite ? "fill-amber-400" : "")} />
