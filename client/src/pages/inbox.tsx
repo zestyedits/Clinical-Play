@@ -6,9 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Mail, Send, Inbox as InboxIcon, ArrowLeft, Search, Pin, Archive,
   MailOpen, Megaphone, Lightbulb, Settings, Image, Headphones,
-  X, PenSquare, Check, ChevronDown,
+  X, PenSquare, Bell, Clock, CheckCircle2,
+  AlertCircle, MessageSquare,
 } from "lucide-react";
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import {
@@ -36,30 +37,47 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   support: Headphones, announcement: Megaphone, "tool-request": Lightbulb, system: Settings, artifact: Image,
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  support: "text-emerald-600 bg-emerald-500/10",
-  announcement: "text-blue-600 bg-blue-500/10",
-  "tool-request": "text-amber-600 bg-amber-500/10",
-  system: "text-slate-500 bg-slate-500/10",
-  artifact: "text-purple-600 bg-purple-500/10",
+const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; text: string }> = {
+  support: { icon: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400" },
+  announcement: { icon: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", text: "text-blue-400" },
+  "tool-request": { icon: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400" },
+  system: { icon: "text-slate-400", bg: "bg-slate-500/10", border: "border-slate-500/20", text: "text-slate-400" },
+  artifact: { icon: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", text: "text-purple-400" },
 };
 
 function CategoryIcon({ category, size = 14 }: { category: string; size?: number }) {
   const Icon = CATEGORY_ICONS[category] || Mail;
-  const colorClass = CATEGORY_COLORS[category] || "text-muted-foreground bg-secondary";
+  const colors = CATEGORY_COLORS[category] || { icon: "text-muted-foreground", bg: "bg-secondary" };
   return (
-    <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", colorClass)}>
-      <Icon size={size} />
+    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border", colors.bg, colors.border)}>
+      <Icon size={size} className={colors.icon} />
     </div>
   );
 }
 
 function CategoryBadge({ category }: { category: string }) {
-  const colorClass = CATEGORY_COLORS[category] || "text-muted-foreground bg-secondary";
+  const colors = CATEGORY_COLORS[category] || { bg: "bg-secondary", text: "text-muted-foreground", border: "border-border" };
   const label = CATEGORY_CONFIG[category as MessageCategory]?.label || category;
   return (
-    <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-full", colorClass)}>
+    <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-full border", colors.bg, colors.text, colors.border)}>
       {label}
+    </span>
+  );
+}
+
+const STATUS_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: string; border: string }> = {
+  resolved: { icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/8", border: "border-emerald-500/20" },
+  pending: { icon: Clock, color: "text-amber-400", bg: "bg-amber-500/8", border: "border-amber-500/20" },
+  open: { icon: AlertCircle, color: "text-blue-400", bg: "bg-blue-500/8", border: "border-blue-500/20" },
+};
+
+function StatusBadge({ status }: { status: string }) {
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG.open;
+  const Icon = config.icon;
+  return (
+    <span className={cn("inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium border", config.color, config.bg, config.border)}>
+      <Icon size={9} />
+      {status}
     </span>
   );
 }
@@ -146,22 +164,34 @@ function ComposeModal({ type, onClose, authFetch }: { type: "support" | "tool-re
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+      />
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="relative w-full max-w-lg bg-background rounded-2xl shadow-2xl border border-border/50 overflow-hidden"
+        className="relative w-full max-w-lg bg-card rounded-2xl shadow-2xl border border-border/60 overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/40">
-          <div>
-            <h3 className="text-lg font-serif text-foreground">
-              {type === "support" ? "Contact Support" : "Request a Tool"}
-            </h3>
-            {type === "tool-request" && (
-              <p className="text-xs text-muted-foreground mt-0.5">Help shape what we build next</p>
-            )}
+          <div className="flex items-center gap-3">
+            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center",
+              type === "support" ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-amber-500/10 border border-amber-500/20"
+            )}>
+              {type === "support" ? <Headphones size={16} className="text-emerald-400" /> : <Lightbulb size={16} className="text-amber-400" />}
+            </div>
+            <div>
+              <h3 className="text-lg font-serif text-foreground">
+                {type === "support" ? "Contact Support" : "Request a Tool"}
+              </h3>
+              {type === "tool-request" && (
+                <p className="text-xs text-muted-foreground mt-0.5">Help shape what we build next</p>
+              )}
+            </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-secondary/50 cursor-pointer transition-colors">
             <X size={16} className="text-muted-foreground" />
@@ -244,7 +274,7 @@ function MessageDetail({ message, onBack, onPin, onArchive, onMarkRead }: {
       transition={{ duration: 0.25 }}
       className="h-full flex flex-col"
     >
-      <div className="flex items-center gap-2 mb-4 md:mb-5">
+      <div className="flex items-center justify-between mb-5">
         <button
           onClick={onBack}
           className="md:hidden flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
@@ -253,65 +283,85 @@ function MessageDetail({ message, onBack, onPin, onArchive, onMarkRead }: {
           <ArrowLeft size={16} /> Back
         </button>
         <div className="hidden md:flex items-center gap-1">
-          <button onClick={() => onPin(message.id)} className={cn("p-2 rounded-lg cursor-pointer transition-colors", message.isPinned ? "text-primary bg-primary/10" : "text-muted-foreground/40 hover:bg-secondary")} data-testid="button-pin-detail">
+          <button onClick={() => onPin(message.id)} className={cn("p-2 rounded-lg cursor-pointer transition-all", message.isPinned ? "text-primary bg-primary/10" : "text-muted-foreground/40 hover:bg-secondary/50 hover:text-muted-foreground")} data-testid="button-pin-detail">
             <Pin size={14} />
           </button>
-          <button onClick={() => onMarkRead(message.id)} className="p-2 rounded-lg text-muted-foreground/40 hover:bg-secondary cursor-pointer transition-colors" data-testid="button-read-detail">
+          <button onClick={() => onMarkRead(message.id)} className="p-2 rounded-lg text-muted-foreground/40 hover:bg-secondary/50 hover:text-muted-foreground cursor-pointer transition-all" data-testid="button-read-detail">
             {message.isRead ? <Mail size={14} /> : <MailOpen size={14} />}
           </button>
-          <button onClick={() => onArchive(message.id)} className="p-2 rounded-lg text-muted-foreground/40 hover:bg-secondary cursor-pointer transition-colors" data-testid="button-archive-detail">
+          <button onClick={() => onArchive(message.id)} className="p-2 rounded-lg text-muted-foreground/40 hover:bg-secondary/50 hover:text-muted-foreground cursor-pointer transition-all" data-testid="button-archive-detail">
             <Archive size={14} />
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex items-start gap-3 mb-5">
-          <CategoryIcon category={message.category} size={16} />
-          <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-serif text-foreground leading-snug">{message.subject}</h2>
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-xs font-medium text-foreground/70">{message.fromName}</span>
-              <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-              <span className="text-xs text-muted-foreground">{formatDate(message.createdAt, true)}</span>
-              <CategoryBadge category={message.category} />
-              <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium border", {
-                "bg-emerald-500/8 text-emerald-600 border-emerald-500/20": message.status === "resolved",
-                "bg-amber-500/8 text-amber-600 border-amber-500/20": message.status === "pending",
-                "bg-blue-500/8 text-blue-600 border-blue-500/20": message.status === "open",
-              })}>
-                {message.status}
-              </span>
+      <div className="flex-1 overflow-y-auto pr-1">
+        <GlassCard className="p-5 md:p-6 mb-5" hoverEffect={false}>
+          <div className="flex items-start gap-3.5 mb-4">
+            <CategoryIcon category={message.category} size={16} />
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg md:text-xl font-serif text-foreground leading-snug">{message.subject}</h2>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <span className="text-xs font-medium text-foreground/70">{message.fromName}</span>
+                <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                <span className="text-xs text-muted-foreground">{formatDate(message.createdAt, true)}</span>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <CategoryBadge category={message.category} />
+                <StatusBadge status={message.status} />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap mb-6 pl-11">
-          {message.body}
-        </div>
+          <div className="border-t border-border/30 pt-4">
+            <div className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
+              {message.body}
+            </div>
+          </div>
+        </GlassCard>
 
         {message.replies && message.replies.length > 0 && (
-          <div className="border-t border-border/30 pt-5 pl-11 space-y-4">
-            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-[0.18em]">Conversation</p>
-            {message.replies.map(reply => (
-              <div key={reply.id} className={cn("p-4 rounded-xl border", reply.fromRole === "user" ? "bg-primary/4 border-primary/10 ml-4" : "bg-secondary/20 border-border/20 mr-4")}>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-semibold text-foreground/70">{reply.fromName}</span>
-                  <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                  <span className="text-[11px] text-muted-foreground">{formatDate(reply.createdAt, true)}</span>
-                </div>
-                <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{reply.body}</p>
-              </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 px-1">
+              <MessageSquare size={12} className="text-muted-foreground/40" />
+              <p className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-[0.18em]">
+                Conversation ({message.replies.length})
+              </p>
+              <div className="flex-1 h-px bg-border/20" />
+            </div>
+            {message.replies.map((reply, idx) => (
+              <motion.div
+                key={reply.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.08 }}
+              >
+                <GlassCard
+                  className={cn("p-4", reply.fromRole === "user" ? "ml-6 border-primary/15" : "mr-6")}
+                  hoverEffect={false}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold",
+                      reply.fromRole === "user" ? "bg-primary/15 text-primary" : "bg-accent/15 text-accent"
+                    )}>
+                      {reply.fromName[0]}
+                    </div>
+                    <span className="text-xs font-semibold text-foreground/70">{reply.fromName}</span>
+                    <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                    <span className="text-[11px] text-muted-foreground">{formatDate(reply.createdAt, true)}</span>
+                  </div>
+                  <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap pl-8">{reply.body}</p>
+                </GlassCard>
+              </motion.div>
             ))}
           </div>
         )}
 
-        {/* Mobile action buttons */}
         <div className="md:hidden flex gap-2 mt-6 pt-4 border-t border-border/30">
-          <button onClick={() => onPin(message.id)} className={cn("flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium cursor-pointer transition-colors", message.isPinned ? "bg-primary/10 text-primary" : "bg-secondary/30 text-muted-foreground")}>
+          <button onClick={() => onPin(message.id)} className={cn("flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium cursor-pointer transition-colors border", message.isPinned ? "bg-primary/10 text-primary border-primary/20" : "bg-card text-muted-foreground border-border/30")}>
             <Pin size={13} /> {message.isPinned ? "Unpin" : "Pin"}
           </button>
-          <button onClick={() => onArchive(message.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium bg-secondary/30 text-muted-foreground cursor-pointer transition-colors">
+          <button onClick={() => onArchive(message.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium bg-card text-muted-foreground cursor-pointer transition-colors border border-border/30">
             <Archive size={13} /> Archive
           </button>
         </div>
@@ -497,28 +547,34 @@ export default function InboxPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pt-4 md:pt-6 pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-4 md:pt-6 pb-6">
             <div>
-              <h1 className="text-xl md:text-2xl font-serif text-foreground tracking-tight flex items-center gap-3" data-testid="text-inbox-title">
-                Inbox
-                {unreadCount > 0 && (
-                  <span className="text-[11px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-sans font-bold">{unreadCount}</span>
-                )}
-              </h1>
-              <p className="text-xs text-muted-foreground mt-0.5">Messages, updates & tool requests</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
+                  <InboxIcon size={18} className="text-accent" />
+                </div>
+                <div>
+                  <h1 className="text-xl md:text-2xl font-serif text-foreground tracking-tight flex items-center gap-2.5" data-testid="text-inbox-title">
+                    Inbox
+                    {unreadCount > 0 && (
+                      <span className="text-[11px] bg-primary/15 text-primary px-2.5 py-0.5 rounded-full font-sans font-bold border border-primary/20">{unreadCount} new</span>
+                    )}
+                  </h1>
+                  <p className="text-xs text-muted-foreground mt-0.5">Messages, updates & tool requests</p>
+                </div>
+              </div>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowCompose("tool-request")}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-amber-600 hover:bg-amber-500/10 transition-all cursor-pointer border border-amber-500/20 active:scale-95"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-amber-500/8 text-amber-400 hover:bg-amber-500/15 transition-all cursor-pointer border border-amber-500/20 active:scale-95"
                 data-testid="button-request-tool"
               >
                 <Lightbulb size={13} /> Request Tool
               </button>
               <button
                 onClick={() => setShowCompose("support")}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-primary hover:bg-primary/8 transition-all cursor-pointer border border-primary/15 active:scale-95"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-primary/8 text-primary hover:bg-primary/15 transition-all cursor-pointer border border-primary/15 active:scale-95"
                 data-testid="button-contact-support"
               >
                 <PenSquare size={13} /> Support
@@ -526,64 +582,71 @@ export default function InboxPage() {
             </div>
           </div>
 
-          {/* Category tabs + search */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-5">
-            <div className="flex gap-1 overflow-x-auto pb-1 flex-1 scrollbar-hide">
-              {TABS.map(tab => {
-                const count = tab.key === "all"
-                  ? allMessages.filter(m => !m.isArchived).length
-                  : categoryCounts[tab.key] || 0;
-                const isActive = activeCategory === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveCategory(tab.key)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap cursor-pointer transition-all",
-                      isActive
-                        ? "bg-primary/10 text-primary border border-primary/20"
-                        : "bg-card text-muted-foreground hover:bg-secondary border border-border/30"
-                    )}
-                    data-testid={`tab-inbox-${tab.key}`}
-                  >
-                    {tab.icon && <tab.icon size={12} />}
-                    {tab.label}
-                    {count > 0 && <span className={cn("text-[10px]", isActive ? "text-primary/60" : "text-muted-foreground/50")}>{count}</span>}
+          <GlassCard className="p-1.5 mb-5" hoverEffect={false}>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex gap-1 overflow-x-auto flex-1 scrollbar-hide p-0.5">
+                {TABS.map(tab => {
+                  const count = tab.key === "all"
+                    ? allMessages.filter(m => !m.isArchived).length
+                    : categoryCounts[tab.key] || 0;
+                  const isActive = activeCategory === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveCategory(tab.key)}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer transition-all",
+                        isActive
+                          ? "bg-primary/12 text-primary shadow-sm"
+                          : "text-muted-foreground hover:text-foreground/80 hover:bg-secondary/40"
+                      )}
+                      data-testid={`tab-inbox-${tab.key}`}
+                    >
+                      {tab.icon && <tab.icon size={12} />}
+                      {tab.label}
+                      {count > 0 && (
+                        <span className={cn("text-[10px] min-w-[18px] text-center px-1 py-px rounded-full",
+                          isActive ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground/60"
+                        )}>
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="relative w-full sm:w-52">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Search messages..."
+                  className="w-full h-9 pl-9 pr-8 rounded-lg bg-secondary/30 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+                  data-testid="input-inbox-search"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground cursor-pointer">
+                    <X size={13} />
                   </button>
-                );
-              })}
+                )}
+              </div>
             </div>
-            <div className="relative w-full sm:w-52">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search messages..."
-                className="w-full h-9 pl-9 pr-8 rounded-xl bg-card border border-border/40 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
-                data-testid="input-inbox-search"
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground cursor-pointer">
-                  <X size={13} />
-                </button>
-              )}
-            </div>
-          </div>
+          </GlassCard>
 
-          {/* Two-panel layout */}
-          <div className="flex gap-0 md:gap-0 min-h-[calc(100vh-220px)]">
-            {/* Message list panel */}
+          <div className="flex gap-0 min-h-[calc(100vh-260px)]">
             <div
               ref={listRef}
               className={cn(
-                "w-full md:w-[340px] lg:w-[380px] md:shrink-0 md:border-r md:border-border/30 md:pr-0 overflow-y-auto",
+                "w-full md:w-[360px] lg:w-[400px] md:shrink-0 overflow-y-auto",
                 selectedMessage && "hidden md:block"
               )}
             >
               {filteredMessages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <InboxIcon size={36} className="text-muted-foreground/15 mb-3" />
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-secondary/30 flex items-center justify-center mx-auto mb-4">
+                    <InboxIcon size={28} className="text-muted-foreground/20" />
+                  </div>
                   {searchQuery ? (
                     <>
                       <p className="text-sm font-medium text-foreground/60">No results for "{searchQuery}"</p>
@@ -597,74 +660,92 @@ export default function InboxPage() {
                   ) : (
                     <>
                       <p className="text-sm font-medium text-foreground/60">All caught up</p>
-                      <p className="text-xs text-muted-foreground/50 mt-1 italic">Go build something beautiful.</p>
+                      <p className="text-xs text-muted-foreground/50 mt-1 font-serif italic">Go build something beautiful.</p>
                     </>
                   )}
                 </div>
               ) : (
-                <div className="space-y-0">
+                <div className="space-y-1">
                   {groupedMessages.map((group) => (
                     <div key={group.label}>
-                      <div className="px-3 py-2 sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+                      <div className="flex items-center gap-2 px-3 py-2.5">
+                        {group.label === "Pinned" ? (
+                          <Pin size={10} className="text-primary/50" />
+                        ) : (
+                          <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20" />
+                        )}
                         <p className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-[0.18em]">
-                          {group.label === "Pinned" && <Pin size={9} className="inline mr-1 -mt-0.5" />}
                           {group.label}
                         </p>
+                        <div className="flex-1 h-px bg-border/15" />
                       </div>
-                      {group.messages.map((msg) => (
-                        <div
-                          key={msg.id}
-                          onClick={() => openMessage(msg)}
-                          className={cn(
-                            "group relative flex items-start gap-3 px-3 py-3 cursor-pointer transition-all border-b border-border/15",
-                            selectedMessage?.id === msg.id
-                              ? "bg-primary/6 md:border-l-2 md:border-l-primary"
-                              : "hover:bg-secondary/30",
-                            !msg.isRead && "bg-primary/3"
-                          )}
-                          data-testid={`row-message-${msg.id}`}
-                        >
-                          <CategoryIcon category={msg.category} size={13} />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <h3 className={cn("text-sm truncate leading-snug", !msg.isRead ? "font-semibold text-foreground" : "text-foreground/70")}>
-                                {msg.subject}
-                              </h3>
-                              {!msg.isRead && <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
-                              {msg.isPinned && <Pin size={9} className="text-primary shrink-0" />}
-                            </div>
-                            <p className="text-[11px] text-muted-foreground/60 truncate mt-0.5 leading-snug">
-                              {msg.fromName} — {msg.body.slice(0, 60)}{msg.body.length > 60 ? "..." : ""}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[10px] text-muted-foreground/40">{formatDate(msg.createdAt)}</span>
-                              {msg.priority === "high" && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold">Urgent</span>}
-                              {msg.replies && msg.replies.length > 0 && <span className="text-[10px] text-muted-foreground/40">{msg.replies.length} replies</span>}
-                            </div>
-                          </div>
+                      <div className="space-y-1 px-1">
+                        {group.messages.map((msg) => (
+                          <motion.div
+                            key={msg.id}
+                            whileHover={{ x: 2 }}
+                            transition={{ duration: 0.15 }}
+                          >
+                            <div
+                              onClick={() => openMessage(msg)}
+                              className={cn(
+                                "group relative flex items-start gap-3 px-3 py-3 cursor-pointer transition-all rounded-xl border",
+                                selectedMessage?.id === msg.id
+                                  ? "bg-primary/8 border-primary/20 shadow-sm"
+                                  : "border-transparent hover:bg-card/80 hover:border-border/30",
+                                !msg.isRead && selectedMessage?.id !== msg.id && "bg-secondary/20 border-border/10"
+                              )}
+                              data-testid={`row-message-${msg.id}`}
+                            >
+                              <CategoryIcon category={msg.category} size={13} />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <h3 className={cn("text-sm truncate leading-snug", !msg.isRead ? "font-semibold text-foreground" : "text-foreground/70")}>
+                                    {msg.subject}
+                                  </h3>
+                                  {!msg.isRead && <span className="w-2 h-2 rounded-full bg-primary shrink-0 shadow-sm shadow-primary/30" />}
+                                  {msg.isPinned && <Pin size={9} className="text-primary shrink-0" />}
+                                </div>
+                                <p className="text-[11px] text-muted-foreground/60 truncate mt-0.5 leading-snug">
+                                  {msg.fromName} — {msg.body.slice(0, 55)}{msg.body.length > 55 ? "..." : ""}
+                                </p>
+                                <div className="flex items-center gap-2 mt-1.5">
+                                  <span className="text-[10px] text-muted-foreground/40">{formatDate(msg.createdAt)}</span>
+                                  {msg.priority === "high" && (
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold flex items-center gap-0.5">
+                                      <Bell size={8} /> Urgent
+                                    </span>
+                                  )}
+                                  {msg.replies && msg.replies.length > 0 && (
+                                    <span className="text-[10px] text-muted-foreground/40 flex items-center gap-0.5">
+                                      <MessageSquare size={8} /> {msg.replies.length}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
 
-                          {/* Quick actions on hover */}
-                          <div className="hidden sm:flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">
-                            <button onClick={e => { e.stopPropagation(); togglePin(msg.id); }}
-                              className={cn("p-1 rounded-md cursor-pointer transition-colors", msg.isPinned ? "text-primary" : "text-muted-foreground/30 hover:bg-secondary")}>
-                              <Pin size={11} />
-                            </button>
-                            <button onClick={e => { e.stopPropagation(); toggleArchive(msg.id); }}
-                              className="p-1 rounded-md text-muted-foreground/30 hover:bg-secondary cursor-pointer transition-colors">
-                              <Archive size={11} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                              <div className="hidden sm:flex flex-col items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">
+                                <button onClick={e => { e.stopPropagation(); togglePin(msg.id); }}
+                                  className={cn("p-1.5 rounded-lg cursor-pointer transition-all", msg.isPinned ? "text-primary bg-primary/10" : "text-muted-foreground/30 hover:bg-secondary/50 hover:text-muted-foreground")}>
+                                  <Pin size={11} />
+                                </button>
+                                <button onClick={e => { e.stopPropagation(); toggleArchive(msg.id); }}
+                                  className="p-1.5 rounded-lg text-muted-foreground/30 hover:bg-secondary/50 hover:text-muted-foreground cursor-pointer transition-all">
+                                  <Archive size={11} />
+                                </button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Detail panel */}
             <div className={cn(
-              "flex-1 min-w-0 md:pl-6",
+              "flex-1 min-w-0 md:pl-5 md:ml-5 md:border-l md:border-border/20",
               !selectedMessage && "hidden md:flex md:items-center md:justify-center"
             )}>
               {selectedMessage ? (
@@ -676,12 +757,12 @@ export default function InboxPage() {
                   onMarkRead={toggleRead}
                 />
               ) : (
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 rounded-2xl bg-secondary/30 flex items-center justify-center mx-auto mb-4">
-                    <MailOpen size={28} className="text-muted-foreground/20" />
+                <div className="text-center py-20">
+                  <div className="w-20 h-20 rounded-2xl bg-card border border-border/30 flex items-center justify-center mx-auto mb-5 shadow-sm">
+                    <MailOpen size={32} className="text-muted-foreground/15" />
                   </div>
-                  <p className="text-sm text-muted-foreground/50 font-medium">Select a message to read</p>
-                  <p className="text-xs text-muted-foreground/30 mt-1">Choose from the list on the left</p>
+                  <p className="text-sm text-foreground/50 font-medium">Select a message to read</p>
+                  <p className="text-xs text-muted-foreground/30 mt-1.5">Choose from the list on the left</p>
                 </div>
               )}
             </div>
@@ -689,7 +770,6 @@ export default function InboxPage() {
         </motion.div>
       </div>
 
-      {/* Compose modal */}
       <AnimatePresence>
         {showCompose && (
           <ComposeModal type={showCompose} onClose={() => setShowCompose(null)} authFetch={authFetch} />
