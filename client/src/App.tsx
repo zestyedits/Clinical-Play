@@ -55,12 +55,13 @@ function PageWrapper({ children }: { children: React.ReactNode }) {
 function Router() {
   const [location] = useLocation();
   const isPlayroom = location.startsWith("/playroom/");
+  const routeKey = location.startsWith("/settings") ? "/settings" : location;
 
   return (
     <>
       {!isPlayroom && <Navbar />}
       <AnimatePresence mode="wait">
-        <Switch key={location}>
+        <Switch key={routeKey}>
           <Route path="/">{() => <PageWrapper><LandingPage /></PageWrapper>}</Route>
           <Route path="/dashboard">{() => <PageWrapper><Dashboard /></PageWrapper>}</Route>
           <Route path="/playroom/:id">{(params) => <Playroom />}</Route>
@@ -77,11 +78,11 @@ function Router() {
           <Route path="/inbox">{() => <PageWrapper><InboxPage /></PageWrapper>}</Route>
           <Route path="/admin">{() => <PageWrapper><AdminPanel /></PageWrapper>}</Route>
           <Route path="/settings">{() => <PageWrapper><SettingsPage /></PageWrapper>}</Route>
-          <Route path="/settings/:section">{() => <Redirect to="/settings" />}</Route>
+          <Route path="/settings/:section">{() => <PageWrapper><SettingsPage /></PageWrapper>}</Route>
           <Route path="/workspace">{() => <Redirect to="/settings" />}</Route>
-          <Route path="/profile">{() => <Redirect to="/settings" />}</Route>
+          <Route path="/profile">{() => <Redirect to="/settings/profile" />}</Route>
           <Route path="/library">{() => <PageWrapper><LibraryPage /></PageWrapper>}</Route>
-          <Route path="/account">{() => <Redirect to="/settings" />}</Route>
+          <Route path="/account">{() => <Redirect to="/settings/profile" />}</Route>
           <Route>{() => <PageWrapper><NotFound /></PageWrapper>}</Route>
         </Switch>
       </AnimatePresence>

@@ -59,11 +59,11 @@ Preferred communication style: Simple, everyday language.
 - **Schema**: Shared `shared/schema.ts` defining 12 tables including `users`, `therapy_sessions`, `participants`, `sandtrayItems`, `waitlist_entries`, `thought_bridge_records`, `thought_bridge_evidence`, and tables for other therapeutic tools (e.g., `feeling_wheel_selections`).
 
 ### Settings Architecture
-- **Unified single page**: `/settings` — one scrollable page with all 8 sections, file: `client/src/pages/settings.tsx`
+- **Multi-page routing**: `/settings` shows a navigation hub with section cards; `/settings/:section` renders only that section's content. File: `client/src/pages/settings.tsx`
 - **Sections**: Profile, Professional, Appearance, Session Defaults, Plan & Billing, Team, Security, Data & Privacy
-- **Navigation**: Desktop sticky sidebar + mobile horizontal scrollable tabs; IntersectionObserver highlights active section on scroll; click-to-scroll-to-section
+- **Navigation**: Hub page shows all 8 sections as clickable cards. Section pages have desktop sticky sidebar with `Link` navigation + mobile back button to hub.
 - **Wired features**: Password reset (Supabase `resetPasswordForEmail`), account deletion (`DELETE /api/account` + Supabase admin delete), theme persistence (server + localStorage), profile save (API), session defaults (API)
-- **Old routes**: `/workspace`, `/account`, `/profile`, `/settings/:section` all redirect to `/settings`
+- **Old routes**: `/workspace` redirects to `/settings`; `/account`, `/profile` redirect to `/settings/profile`
 - **Legacy files**: `client/src/pages/settings/` directory contains old sub-page files (no longer imported)
 
 ### Project Structure Highlights
