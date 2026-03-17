@@ -22,7 +22,7 @@ export function LogoMark({ size = "md", className, variant = "full" }: LogoMarkP
       <img
         src={src}
         alt="ClinicalPlay"
-        className={cn(s.height, "w-auto object-contain")}
+        className={cn(s.height, "w-auto object-contain brightness-[1.8] contrast-[0.85]")}
         draggable={false}
       />
     </div>
