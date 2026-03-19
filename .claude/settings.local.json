@@ -30,7 +30,11 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "mcp__claude_ai_Vercel__deploy_to_vercel",
-      "Bash(npx vercel:*)"
+      "Bash(npx vercel:*)",
+      "Bash(for dir:*)",
+      "Bash(do echo:*)",
+      "Read(//home/runner/workspace/**)",
+      "Bash(done)"
     ]
   }
 }

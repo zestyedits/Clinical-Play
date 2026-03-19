@@ -149,6 +149,9 @@ export interface IStorage {
   removeGratitudeStone(id: string): Promise<void>;
   clearGratitudeStones(sessionId: string): Promise<void>;
 
+  // Fidget Tools
+  createFidgetSession(data: InsertFidgetSession): Promise<FidgetSession>;
+
   // Safety Map
   addSafetyPlanItem(data: InsertSafetyPlanItem): Promise<SafetyPlanItem>;
   getSafetyPlanItems(sessionId: string): Promise<SafetyPlanItem[]>;
@@ -552,6 +555,12 @@ export class DatabaseStorage implements IStorage {
   }
   async clearGratitudeStones(sessionId: string): Promise<void> {
     await db.delete(gratitudeStones).where(eq(gratitudeStones.sessionId, sessionId));
+  }
+
+  // --- Fidget Tools ---
+  async createFidgetSession(data: InsertFidgetSession): Promise<FidgetSession> {
+    const [r] = await db.insert(fidgetSessions).values(data).returning();
+    return r;
   }
 
   // --- Safety Map ---

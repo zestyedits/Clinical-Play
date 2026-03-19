@@ -262,6 +262,7 @@ export async function registerRoutes(
   app.get("/api/therapy-sessions/invite/:code", async (req, res) => {
     const session = await storage.getSessionByInviteCode(req.params.code);
     if (!session) return res.status(404).json({ message: "Invalid invite code" });
+    if (session.status === "ended") return res.status(410).json({ message: "This session has ended" });
     res.json(session);
   });
 

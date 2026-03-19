@@ -795,6 +795,12 @@ export function setupWebSocketServer(server: Server) {
           // --- Fidget Tools ---
           case "fidget-interaction": {
             if (!client) return;
+            storage.createFidgetSession({
+              sessionId: client.sessionId,
+              participantId: client.participantId,
+              widgetType: msg.widgetType,
+              interactionCount: msg.data?.interactionCount ?? 1,
+            }).catch(() => {});
             broadcast(client.sessionId, { type: "fidget-interaction-sync", widgetType: msg.widgetType, data: msg.data, participantId: client.participantId }, ws);
             break;
           }

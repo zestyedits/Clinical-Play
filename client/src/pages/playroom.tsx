@@ -16,6 +16,7 @@ import { MIMotivationGarden } from "@/components/tools/mi-motivation-garden";
 import { GroundingGrove } from "@/components/tools/somatic-grounding-grove";
 import { MiracleBridge } from "@/components/tools/sfbt-miracle-bridge";
 import { NarrativeQuest } from "@/components/tools/narrative-quest";
+import { EmotionVolcano } from "@/components/tools/emotion-volcano";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -151,7 +152,7 @@ export default function Playroom() {
     }
   }, []);
 
-  const { connected: wsConnected, send: wsSend } = useSessionSocket(
+  const { connected: wsConnected, reconnecting: wsReconnecting, send: wsSend } = useSessionSocket(
     sessionId,
     myParticipantId.current,
     myDisplayName,
@@ -655,6 +656,11 @@ export default function Playroom() {
                 <NarrativeQuest />
               </motion.div>
             )}
+            {activeTool === "emotion-volcano" && (
+              <motion.div key="emotion-volcano" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <EmotionVolcano />
+              </motion.div>
+            )}
           </AnimatePresence>
 
           {/* Tool Transition Label */}
@@ -792,7 +798,7 @@ export default function Playroom() {
         />
       )}
 
-      <ConnectionStatus connected={connected} sessionEnded={sessionEnded} />
+      <ConnectionStatus connected={connected} reconnecting={wsReconnecting} sessionEnded={sessionEnded} />
 
       {/* Session Ended Overlay */}
       <AnimatePresence>

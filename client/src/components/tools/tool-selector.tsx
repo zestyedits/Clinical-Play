@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Home, Scale, Compass, Shield, Sprout, TreePine, Footprints, BookOpen, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
+import { X, Home, Scale, Compass, Shield, Sprout, TreePine, Footprints, BookOpen, Flame, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 
@@ -24,6 +24,7 @@ const TOOLS: Tool[] = [
   { id: "somatic-grounding-grove", label: "The Grounding Grove", desc: "Explore your body, rate tension, and practice somatic grounding techniques", icon: TreePine, status: "active", accentColor: "#3a6b3a", iconClass: "icon-grounding-grove", category: "game" },
   { id: "sfbt-miracle-bridge", label: "The Miracle Bridge", desc: "Walk toward your preferred future using solution-focused questions", icon: Footprints, status: "active", accentColor: "#5b4a8a", iconClass: "icon-miracle-bridge", category: "game" },
   { id: "narrative-quest", label: "The Narrative Quest", desc: "Externalize problems, find exceptions, and rewrite your story", icon: BookOpen, status: "active", accentColor: "#8a6830", iconClass: "icon-narrative-quest", category: "game" },
+  { id: "emotion-volcano", label: "The Emotion Volcano", desc: "Explore anger triggers, map body warning signs, and build a cooling plan", icon: Flame, status: "active", accentColor: "#e06040", iconClass: "icon-emotion-volcano", category: "game" },
 ];
 
 interface ToolSelectorProps {
