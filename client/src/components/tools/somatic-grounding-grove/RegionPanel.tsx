@@ -30,6 +30,7 @@ export function RegionPanel({
 
   return (
     <div
+      className="tool-game-side-panel"
       style={{
         width: 320,
         background: "rgba(26, 42, 26, 0.96)",
@@ -52,8 +53,24 @@ export function RegionPanel({
           </div>
         </div>
         <button
+          type="button"
           onClick={onClose}
-          style={{ background: "rgba(212, 232, 208, 0.06)", border: "1px solid rgba(100, 160, 100, 0.15)", borderRadius: 8, padding: "4px 10px", color: "rgba(212, 232, 208, 0.5)", fontSize: 14, cursor: "pointer" }}
+          aria-label="Close region panel"
+          style={{
+            background: "rgba(212, 232, 208, 0.06)",
+            border: "1px solid rgba(100, 160, 100, 0.15)",
+            borderRadius: 8,
+            padding: "8px 12px",
+            minWidth: 44,
+            minHeight: 44,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "rgba(212, 232, 208, 0.5)",
+            fontSize: 14,
+            cursor: "pointer",
+            boxSizing: "border-box",
+          }}
         >
           {"\u2716"}
         </button>

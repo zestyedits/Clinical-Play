@@ -64,6 +64,7 @@ export function GroundingGrove() {
         overflow: "hidden",
         position: "relative",
         borderRadius: 12,
+        ["--game-panel-border" as string]: "rgba(100, 160, 100, 0.2)",
       }}
     >
       <div
@@ -103,14 +104,21 @@ export function GroundingGrove() {
           <button
             onClick={toggleMute}
             data-testid="button-grove-mute"
+            type="button"
             style={{
               background: "rgba(212, 232, 208, 0.1)",
               border: "1px solid rgba(100, 160, 100, 0.2)",
               borderRadius: 8,
-              padding: "5px 10px",
+              padding: "8px 12px",
+              minWidth: 44,
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
               color: "#d4e8d0",
               fontSize: 16,
               cursor: "pointer",
+              boxSizing: "border-box",
             }}
           >
             {isMuted ? "\u{1F507}" : "\u{1F50A}"}
@@ -118,8 +126,8 @@ export function GroundingGrove() {
         </div>
       </div>
 
-      <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflow: "hidden" }}>
+      <div className="tool-game-split">
+        <div className="tool-game-split-canvas">
           <BodyMap
             selectedRegion={selectedRegion}
             regionTension={regionTension}
@@ -158,7 +166,9 @@ export function GroundingGrove() {
             boxShadow: "0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1) inset",
             zIndex: 5,
             backdropFilter: "blur(10px)",
-            whiteSpace: "nowrap",
+            whiteSpace: "normal",
+            maxWidth: "min(calc(100vw - 32px), 380px)",
+            lineHeight: 1.35,
           }}
           data-testid="text-grove-complete"
         >

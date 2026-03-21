@@ -151,7 +151,11 @@ export function StepWrapper({
           display: "flex",
           alignItems: "center",
           justifyContent: isFirstStep ? "flex-end" : "space-between",
-          padding: "10px clamp(16px, 4vw, 28px) 12px",
+          gap: 10,
+          paddingTop: 10,
+          paddingLeft: "clamp(16px, 4vw, 28px)",
+          paddingRight: "clamp(16px, 4vw, 28px)",
+          paddingBottom: "max(12px, env(safe-area-inset-bottom, 0px))",
           flexShrink: 0,
           position: "relative",
           zIndex: 1,
@@ -159,28 +163,37 @@ export function StepWrapper({
           maxWidth: 720,
           margin: "0 auto",
           width: "100%",
+          boxSizing: "border-box",
         }}
       >
         {!isFirstStep && (
           <button
+            type="button"
             onClick={onBack}
             style={{
               background: "rgba(244, 228, 188, 0.06)",
               border: "1px solid rgba(244, 228, 188, 0.12)",
               borderRadius: 10,
               padding: "10px 20px",
+              minHeight: 44,
+              minWidth: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
               color: "rgba(244, 228, 188, 0.6)",
               fontSize: 13,
               fontWeight: 500,
               cursor: "pointer",
               fontFamily: "Inter, sans-serif",
               transition: "all 0.2s",
+              boxSizing: "border-box",
             }}
           >
             ← Back
           </button>
         )}
         <motion.button
+          type="button"
           onClick={onNext}
           disabled={!canProceed}
           whileHover={canProceed ? { scale: 1.02 } : {}}
@@ -192,6 +205,10 @@ export function StepWrapper({
             border: "none",
             borderRadius: 10,
             padding: "10px 28px",
+            minHeight: 44,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             color: canProceed ? "#0d0a06" : "rgba(244, 228, 188, 0.25)",
             fontSize: 14,
             fontWeight: 700,
@@ -200,6 +217,7 @@ export function StepWrapper({
             boxShadow: canProceed ? `0 4px 20px ${scene.accent}30` : "none",
             transition: "all 0.2s",
             fontFamily: "Inter, sans-serif",
+            boxSizing: "border-box",
           }}
         >
           {isLastStep ? "View Council Record 📜" : "Continue →"}

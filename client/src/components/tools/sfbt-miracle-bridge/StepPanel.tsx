@@ -46,6 +46,7 @@ export function StepPanel({
 
   return (
     <div
+      className="tool-game-side-panel"
       style={{
         width: 340,
         background: "linear-gradient(170deg, rgba(28, 30, 42, 0.98), rgba(20, 22, 35, 0.99))",
@@ -269,49 +270,98 @@ export function StepPanel({
         </AnimatePresence>
       </div>
 
-      <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(224, 221, 213, 0.06)", display: "flex", gap: 8, position: "relative", zIndex: 1, background: "linear-gradient(to top, rgba(0,0,0,0.2), transparent)" }}>
+      <div
+        style={{
+          paddingTop: 12,
+          paddingLeft: 16,
+          paddingRight: 16,
+          paddingBottom: "max(12px, env(safe-area-inset-bottom, 0px))",
+          borderTop: "1px solid rgba(224, 221, 213, 0.06)",
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          position: "relative",
+          zIndex: 1,
+          background: "linear-gradient(to top, rgba(0,0,0,0.2), transparent)",
+          flexShrink: 0,
+          boxSizing: "border-box",
+        }}
+      >
         {currentStep > 0 && (
           <button
+            type="button"
             onClick={onPrev}
             style={{
-              padding: "10px 16px", borderRadius: 8,
+              padding: "10px 16px",
+              borderRadius: 8,
               border: "1px solid rgba(224, 221, 213, 0.08)",
               background: "transparent",
               color: "rgba(224, 221, 213, 0.5)",
-              fontSize: 12, fontWeight: 500, cursor: "pointer",
+              fontSize: 12,
+              fontWeight: 500,
+              cursor: "pointer",
               fontFamily: "Inter, sans-serif",
+              minHeight: 44,
+              minWidth: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxSizing: "border-box",
             }}
           >
             ← Back
           </button>
         )}
         <button
+          type="button"
           onClick={() => setShowPrompt(!showPrompt)}
+          aria-label={showPrompt ? "Hide clinician prompt" : "Show clinician prompt"}
           style={{
-            padding: "10px 14px", borderRadius: 8,
+            padding: "10px 14px",
+            borderRadius: 8,
             border: "1px solid rgba(224, 221, 213, 0.08)",
             background: showPrompt ? "rgba(196, 148, 58, 0.08)" : "transparent",
             color: showPrompt ? "rgba(196, 162, 90, 0.8)" : "rgba(224, 221, 213, 0.35)",
-            fontSize: 12, fontWeight: 500, cursor: "pointer",
+            fontSize: 12,
+            fontWeight: 500,
+            cursor: "pointer",
             fontFamily: "Inter, sans-serif",
+            minHeight: 44,
+            minWidth: 44,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxSizing: "border-box",
           }}
         >
           💬
         </button>
         <motion.button
+          type="button"
           onClick={onNext}
           disabled={!canProceed}
           data-testid={isLast ? "button-bridge-complete" : "button-bridge-next"}
           whileHover={canProceed ? { scale: 1.02 } : {}}
           whileTap={canProceed ? { scale: 0.97 } : {}}
           style={{
-            flex: 1, padding: "10px 16px", borderRadius: 8, border: "none",
+            flex: 1,
+            padding: "10px 16px",
+            borderRadius: 8,
+            border: "none",
             background: canProceed ? `linear-gradient(135deg, ${step.color}, ${step.color}cc)` : "rgba(224, 221, 213, 0.04)",
             color: canProceed ? "#1c1e2a" : "rgba(224, 221, 213, 0.15)",
-            fontSize: 12, fontWeight: 600, cursor: canProceed ? "pointer" : "default",
-            fontFamily: "Inter, sans-serif", transition: "all 0.2s",
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: canProceed ? "pointer" : "default",
+            fontFamily: "Inter, sans-serif",
+            transition: "all 0.2s",
             letterSpacing: "0.3px",
             boxShadow: canProceed ? `0 2px 12px ${step.color}25` : "none",
+            minHeight: 44,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxSizing: "border-box",
           }}
         >
           {isLast ? "Complete Journey ✨" : "Continue →"}

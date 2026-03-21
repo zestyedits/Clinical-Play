@@ -70,6 +70,7 @@ export function MiracleBridge() {
         overflow: "hidden",
         position: "relative",
         borderRadius: 12,
+        ["--game-panel-border" as string]: "rgba(224, 221, 213, 0.08)",
       }}
     >
       <div
@@ -110,14 +111,21 @@ export function MiracleBridge() {
           <button
             onClick={toggleMute}
             data-testid="button-bridge-mute"
+            type="button"
             style={{
               background: "rgba(224, 221, 213, 0.04)",
               border: "1px solid rgba(224, 221, 213, 0.06)",
-              borderRadius: 6,
-              padding: "4px 8px",
+              borderRadius: 8,
+              padding: "8px 12px",
+              minWidth: 44,
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
               color: "#e0ddd5",
               fontSize: 14,
               cursor: "pointer",
+              boxSizing: "border-box",
             }}
           >
             {isMuted ? "\u{1F507}" : "\u{1F50A}"}
@@ -125,8 +133,8 @@ export function MiracleBridge() {
         </div>
       </div>
 
-      <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+      <div className="tool-game-split">
+        <div className="tool-game-split-canvas">
           <BridgeVisual
             currentStep={currentStep}
             completedSteps={completedSteps}

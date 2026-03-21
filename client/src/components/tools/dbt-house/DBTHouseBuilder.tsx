@@ -274,6 +274,7 @@ export function DBTHouseBuilder() {
         overflow: "hidden",
         position: "relative",
         borderRadius: 12,
+        ["--game-panel-border" as string]: "rgba(160, 146, 107, 0.15)",
       }}
     >
       <div
@@ -330,14 +331,21 @@ export function DBTHouseBuilder() {
           <button
             onClick={toggleMute}
             data-testid="button-dbt-mute"
+            type="button"
             style={{
               background: "rgba(240, 232, 216, 0.1)",
               border: "1px solid rgba(160, 146, 107, 0.3)",
               borderRadius: 8,
-              padding: "5px 10px",
+              padding: "8px 12px",
+              minWidth: 44,
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
               color: "#f0e8d8",
               fontSize: 16,
               cursor: "pointer",
+              boxSizing: "border-box",
             }}
           >
             {isMuted ? "\u{1F507}" : "\u{1F50A}"}
@@ -345,29 +353,13 @@ export function DBTHouseBuilder() {
         </div>
       </div>
 
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          overflow: "hidden",
-          position: "relative",
-        }}
-      >
+      <div className="tool-game-split">
         <FeelingsWheel
           isOpen={feelingsWheelOpen}
           onToggle={() => setFeelingsWheelOpen((v) => !v)}
         />
 
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 16,
-            overflow: "hidden",
-          }}
-        >
+        <div className="tool-game-split-canvas">
           <HouseCanvas
             layers={layers}
             onItemClick={handleItemClick}
@@ -413,7 +405,9 @@ export function DBTHouseBuilder() {
               "0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1) inset",
             zIndex: 5,
             backdropFilter: "blur(10px)",
-            whiteSpace: "nowrap",
+            whiteSpace: "normal",
+            maxWidth: "min(calc(100vw - 32px), 360px)",
+            lineHeight: 1.35,
           }}
           data-testid="text-dbt-complete"
         >

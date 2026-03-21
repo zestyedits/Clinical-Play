@@ -68,8 +68,11 @@ export function FeelingsWheel({ isOpen, onToggle }: FeelingsWheelProps) {
   return (
     <>
       <button
+        type="button"
         onClick={onToggle}
         data-testid="button-dbt-feelings-wheel"
+        aria-expanded={isOpen}
+        aria-label={isOpen ? "Close feelings wheel" : "Open feelings wheel"}
         style={{
           position: "absolute",
           left: isOpen ? "min(340px, calc(100vw - 60px))" : 0,
@@ -80,18 +83,22 @@ export function FeelingsWheel({ isOpen, onToggle }: FeelingsWheelProps) {
           border: "1px solid rgba(160, 146, 107, 0.3)",
           borderLeft: isOpen ? "none" : "1px solid rgba(160, 146, 107, 0.3)",
           borderRadius: "0 8px 8px 0",
-          padding: "10px 7px",
+          padding: "10px 8px",
+          minWidth: 44,
+          minHeight: 44,
           color: "#f0e8d8",
           cursor: "pointer",
           fontFamily: "Inter, sans-serif",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          justifyContent: "center",
           gap: 3,
           backdropFilter: "blur(10px)",
           boxShadow: "2px 0 12px rgba(0,0,0,0.15)",
           transition: "left 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
           writingMode: isOpen ? "horizontal-tb" : "vertical-rl",
+          boxSizing: "border-box",
         }}
       >
         <span style={{ fontSize: 14 }}>{"\u{1F3A1}"}</span>

@@ -21,6 +21,7 @@ export function LayerPanel({
 
   return (
     <div
+      className="tool-game-side-panel"
       style={{
         width: 260,
         background: "rgba(45, 40, 35, 0.94)",

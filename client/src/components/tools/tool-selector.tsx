@@ -100,7 +100,7 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
             animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, scale: 0.95, y: 20, filter: "blur(4px)" }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed inset-x-4 top-[10%] md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[520px] z-50 bg-card rounded-3xl shadow-xl border border-border overflow-hidden max-h-[80vh] flex flex-col"
+            className="fixed inset-x-4 top-[8%] md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[520px] z-50 bg-card rounded-3xl shadow-xl border border-border overflow-hidden max-h-[85dvh] flex flex-col"
           >
             <div className="flex items-center justify-between p-6 pb-2 shrink-0 relative z-10">
               <div>
@@ -278,7 +278,10 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
               </AnimatePresence>
             </div>
 
-            <div className="px-4 pb-4 pt-2 shrink-0 border-t border-border relative z-10">
+            <div
+              className="px-4 pt-2 shrink-0 border-t border-border relative z-10"
+              style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom, 16px))" }}
+            >
               {!showSuggest ? (
                 <button
                   onClick={() => setShowSuggest(true)}

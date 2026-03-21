@@ -158,6 +158,51 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Therapeutic games: canvas + side panel — stack on narrow viewports */
+  .tool-game-split {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    flex-direction: row;
+    position: relative;
+  }
+
+  .tool-game-split-canvas {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: 16px;
+    overflow: hidden;
+  }
+
+  .tool-game-side-panel {
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 767px) {
+    .tool-game-split {
+      flex-direction: column;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tool-game-split-canvas {
+      flex: 1 1 auto;
+      min-height: min(52vh, 440px);
+      max-height: 58vh;
+    }
+
+    .tool-game-side-panel {
+      width: 100% !important;
+      max-height: min(48vh, 400px);
+      border-left: none !important;
+      border-top: 1px solid var(--game-panel-border, rgba(255, 255, 255, 0.08));
+    }
+  }
 }
 
 /* ── Tool Icons ── */
