@@ -116,7 +116,7 @@ export function DistortionPicker({
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 12,
-                    color: "#1a1520",
+                    color: "#3a3228",
                     fontWeight: 700,
                   }}
                 >

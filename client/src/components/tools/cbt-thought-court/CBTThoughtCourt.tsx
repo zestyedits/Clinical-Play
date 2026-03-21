@@ -300,7 +300,7 @@ export function CBTThoughtCourt() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          background: "linear-gradient(170deg, #1a1520 0%, #2a2035 30%, #1e1a2e 60%, #15112a 100%)",
+          background: "linear-gradient(170deg, #faf8fc 0%, #f0e8f6 30%, #e8e0f0 60%, #e2dae8 100%)",
           fontFamily: "Inter, sans-serif",
           overflow: "hidden",
           position: "relative",
@@ -313,8 +313,8 @@ export function CBTThoughtCourt() {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "10px 16px",
-            background: "rgba(15, 10, 25, 0.92)",
-            borderBottom: "1px solid rgba(120, 100, 180, 0.3)",
+            background: "rgba(255, 252, 254, 0.92)",
+            borderBottom: "1px solid rgba(120, 100, 180, 0.18)",
             zIndex: 10,
             flexShrink: 0,
             backdropFilter: "blur(10px)",
@@ -323,10 +323,10 @@ export function CBTThoughtCourt() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 18 }}>{"\u2696\uFE0F"}</span>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#e8e0f0", lineHeight: 1.2 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#3a3228", lineHeight: 1.2 }}>
                 The Thought Court
               </div>
-              <div style={{ fontSize: 10, color: "rgba(232, 224, 240, 0.5)" }}>
+              <div style={{ fontSize: 10, color: "rgba(58, 48, 38, 0.55)" }}>
                 Case File Complete
               </div>
             </div>
@@ -335,18 +335,25 @@ export function CBTThoughtCourt() {
             <FurtherReading
               references={CBT_REFERENCES}
               accentColor="rgba(120,100,180,0.6)"
-              textColor="#e8e0f0"
-              bgColor="rgba(15,10,25,0.97)"
+              textColor="#3a3228"
+              bgColor="rgba(255,252,254,0.98)"
             />
             <button
+              type="button"
               onClick={toggleMute}
               data-testid="button-cbt-mute"
               style={{
-                background: "rgba(232, 224, 240, 0.1)",
-                border: "1px solid rgba(120, 100, 180, 0.3)",
+                background: "rgba(58, 48, 38, 0.06)",
+                border: "1px solid rgba(120, 100, 180, 0.22)",
                 borderRadius: 8,
-                padding: "5px 10px",
-                color: "#e8e0f0",
+                padding: "8px 12px",
+                minWidth: 44,
+                minHeight: 44,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxSizing: "border-box",
+                color: "#3a3228",
                 fontSize: 16,
                 cursor: "pointer",
               }}
@@ -371,7 +378,7 @@ export function CBTThoughtCourt() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: "linear-gradient(170deg, #1a1520 0%, #2a2035 30%, #1e1a2e 60%, #15112a 100%)",
+        background: "linear-gradient(170deg, #faf8fc 0%, #f0e8f6 30%, #e8e0f0 60%, #e2dae8 100%)",
         fontFamily: "Inter, sans-serif",
         overflow: "hidden",
         position: "relative",
@@ -385,8 +392,8 @@ export function CBTThoughtCourt() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "10px 16px",
-          background: "rgba(15, 10, 25, 0.92)",
-          borderBottom: "1px solid rgba(120, 100, 180, 0.3)",
+          background: "rgba(255, 252, 254, 0.92)",
+          borderBottom: "1px solid rgba(120, 100, 180, 0.18)",
           zIndex: 10,
           flexShrink: 0,
           backdropFilter: "blur(10px)",
@@ -395,21 +402,22 @@ export function CBTThoughtCourt() {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 18 }}>{"\u2696\uFE0F"}</span>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#e8e0f0", lineHeight: 1.2 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#3a3228", lineHeight: 1.2 }}>
               The Thought Court
             </div>
-            <div style={{ fontSize: 10, color: "rgba(232, 224, 240, 0.5)" }}>
+            <div style={{ fontSize: 10, color: "rgba(58, 48, 38, 0.55)" }}>
               Step {state.currentStep + 1} of {STEP_CONFIG.length} &mdash; {stepConfig.label}
             </div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <button
+            type="button"
             onClick={() => dispatch({ type: "TOGGLE_GUIDE" })}
             data-testid="button-distortions-guide"
             style={{
               background: "linear-gradient(135deg, #6b3fa0, #4a2d7a)",
-              color: "#e8e0f0",
+              color: "#faf8fc",
               border: "1px solid rgba(160, 130, 220, 0.4)",
               borderRadius: 8,
               padding: "5px 10px",
@@ -428,18 +436,25 @@ export function CBTThoughtCourt() {
           <FurtherReading
             references={CBT_REFERENCES}
             accentColor="rgba(120,100,180,0.6)"
-            textColor="#e8e0f0"
-            bgColor="rgba(15,10,25,0.97)"
+            textColor="#3a3228"
+            bgColor="rgba(255,252,254,0.98)"
           />
           <button
+            type="button"
             onClick={toggleMute}
             data-testid="button-cbt-mute"
             style={{
-              background: "rgba(232, 224, 240, 0.1)",
-              border: "1px solid rgba(120, 100, 180, 0.3)",
+              background: "rgba(58, 48, 38, 0.06)",
+              border: "1px solid rgba(120, 100, 180, 0.22)",
               borderRadius: 8,
-              padding: "5px 10px",
-              color: "#e8e0f0",
+              padding: "8px 12px",
+              minWidth: 44,
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxSizing: "border-box",
+              color: "#3a3228",
               fontSize: 16,
               cursor: "pointer",
             }}

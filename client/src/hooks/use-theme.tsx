@@ -81,8 +81,8 @@ function applyThemeVars(preset: AccentPreset) {
     "--primary": preset.primary,
     "--ring": preset.primary,
     "--accent": preset.accent,
-    "--primary-foreground": "35 44% 89%",
-    "--accent-foreground": "0 0% 98%",
+    "--primary-foreground": "0 0% 100%",
+    "--accent-foreground": "28 25% 16%",
   };
 
   let css = ":root {\n";
