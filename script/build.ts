@@ -24,6 +24,7 @@ const allowlist = [
   "passport",
   "passport-local",
   "pg",
+  "serverless-http",
   "stripe",
   "uuid",
   "ws",
@@ -47,11 +48,15 @@ async function buildAll() {
   const externals = allDeps.filter((dep) => !allowlist.includes(dep));
 
   await esbuild({
-    entryPoints: ["server/index.ts"],
+    entryPoints: {
+      index: "server/index.ts",
+      "vercel-handler": "server/vercel.ts",
+    },
     platform: "node",
     bundle: true,
     format: "cjs",
-    outfile: "dist/index.cjs",
+    outdir: "dist",
+    outExtension: { ".js": ".cjs" },
     define: {
       "process.env.NODE_ENV": '"production"',
     },

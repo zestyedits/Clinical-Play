@@ -47,8 +47,27 @@ export default function Login() {
         setLoading(false);
         return;
       }
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      console.error("[login]", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      if (
+        msg.includes("missing from server config") ||
+        msg.includes("/api/auth/config")
+      ) {
+        setError(
+          "Login service is not configured on this server (missing Supabase URL or key). This is a deployment issue, not your password.",
+        );
+      } else if (msg.includes("aborted") || (err instanceof Error && err.name === "AbortError")) {
+        setError("Connection timed out. Check your network and try again.");
+      } else if (msg.includes("JSON") || msg.includes("Unexpected token")) {
+        setError("Login service returned an invalid response. Try again or contact support if this persists.");
+      } else {
+        setError(
+          msg.length > 0 && msg.length < 120
+            ? msg
+            : "Something went wrong before sign-in. Open the browser console (F12) for details, or verify the site URL and try again.",
+        );
+      }
       setLoading(false);
     }
   };
@@ -75,8 +94,14 @@ export default function Login() {
         return;
       }
       setForgotSent(true);
-    } catch {
-      setForgotError("Something went wrong. Please try again.");
+    } catch (err) {
+      console.error("[login forgot-password]", err);
+      const msg = err instanceof Error ? err.message : "";
+      if (msg.includes("missing from server config") || msg.includes("/api/auth/config")) {
+        setForgotError("Password reset is unavailable: server Supabase config is missing.");
+      } else {
+        setForgotError("Something went wrong. Please try again.");
+      }
     } finally {
       setForgotLoading(false);
     }

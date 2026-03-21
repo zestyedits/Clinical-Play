@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "dist/index.cjs",
+      "src": "dist/vercel-handler.cjs",
       "use": "@vercel/node"
     },
     {
@@ -12,7 +12,7 @@
     }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "dist/index.cjs" },
-    { "src": "/(.*)", "dest": "dist/index.cjs" }
+    { "src": "/api/(.*)", "dest": "dist/vercel-handler.cjs" },
+    { "src": "/(.*)", "dest": "dist/vercel-handler.cjs" }
   ]
 }

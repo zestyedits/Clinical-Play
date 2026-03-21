@@ -4,7 +4,7 @@ import { db } from "./db";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
 import { isAuthenticated } from "./auth";
-import { log } from "./index";
+import { log } from "./logger";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("STRIPE_SECRET_KEY is required");

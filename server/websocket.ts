@@ -1,7 +1,7 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { type Server } from "http";
 import { storage } from "./storage";
-import { log } from "./index";
+import { log } from "./logger";
 
 interface WSClient {
   ws: WebSocket;
