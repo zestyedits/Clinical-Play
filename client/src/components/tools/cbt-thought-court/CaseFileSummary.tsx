@@ -497,7 +497,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
             borderRadius: 8,
             border: "none",
             background: "linear-gradient(135deg, #d4a853, #b8922e)",
-            color: "#faf8f5",
+            color: "#1e1a2e",
             fontSize: 15,
             fontWeight: 700,
             fontFamily: "'Georgia', 'Times New Roman', serif",
