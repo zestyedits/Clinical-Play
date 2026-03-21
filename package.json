@@ -7,7 +7,7 @@
     "dev:client": "vite dev --port 5000",
     "dev": "cross-env NODE_ENV=development npx tsx --env-file=.env server/index.ts",
     "build": "vite build && tsx script/build.ts",
-    "start": "node dist/index.js",
+    "start": "node dist/index.cjs",
     "check": "tsc",
     "db:push": "drizzle-kit push"
   },
