@@ -1,8 +1,10 @@
 {
+  "version": 2,
+  "builds": [
+    { "src": "package.json", "use": "@vercel/static-build" }
+  ],
   "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://clinical-play-production.up.railway.app/api/:path*"
-    }
+    { "source": "/api/(.*)", "destination": "https://clinical-play-production.up.railway.app/api/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
