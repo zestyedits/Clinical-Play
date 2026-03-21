@@ -6,8 +6,8 @@ interface MIGuideProps {
   onClose: () => void;
 }
 
-const PARCHMENT = "#e8dcc8";
-const BG = "#0a1f14";
+const PARCHMENT = "#3a3228";
+const BG = "#f5faf6";
 
 export function MIGuide({ isOpen, onClose }: MIGuideProps) {
   return (
@@ -41,14 +41,14 @@ export function MIGuide({ isOpen, onClose }: MIGuideProps) {
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
             style={{
-              background: `linear-gradient(180deg, ${BG} 0%, #061210 100%)`,
+              background: `linear-gradient(180deg, ${BG} 0%, #e2ebe4 100%)`,
               borderRadius: 18,
               maxWidth: 520,
               width: "100%",
               maxHeight: "90vh",
               border: "1px solid rgba(45, 122, 58, 0.25)",
               boxShadow:
-                "0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 0 40px rgba(45, 122, 58, 0.1)",
+                "0 24px 80px rgba(58, 48, 38, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.7) inset, 0 0 40px rgba(45, 122, 58, 0.08)",
               fontFamily: "Inter, sans-serif",
               overflow: "hidden",
               display: "flex",
@@ -86,10 +86,10 @@ export function MIGuide({ isOpen, onClose }: MIGuideProps) {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  background: "rgba(255, 255, 255, 0.06)",
+                  background: "rgba(45, 122, 58, 0.08)",
                   border: "1px solid rgba(45, 122, 58, 0.2)",
                   borderRadius: 8,
-                  color: "rgba(232, 220, 200, 0.6)",
+                  color: "rgba(58, 48, 38, 0.6)",
                   fontSize: 18,
                   cursor: "pointer",
                   transition: "background 0.15s, color 0.15s",
@@ -97,12 +97,12 @@ export function MIGuide({ isOpen, onClose }: MIGuideProps) {
                   lineHeight: 1,
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)";
-                  e.currentTarget.style.color = "rgba(232, 220, 200, 0.9)";
+                  e.currentTarget.style.background = "rgba(45, 122, 58, 0.14)";
+                  e.currentTarget.style.color = "rgba(58, 48, 38, 0.9)";
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
-                  e.currentTarget.style.color = "rgba(232, 220, 200, 0.6)";
+                  e.currentTarget.style.background = "rgba(45, 122, 58, 0.08)";
+                  e.currentTarget.style.color = "rgba(58, 48, 38, 0.6)";
                 }}
               >
                 {"\u2715"}
@@ -125,7 +125,7 @@ export function MIGuide({ isOpen, onClose }: MIGuideProps) {
                   margin: 0,
                   fontSize: 13,
                   lineHeight: 1.7,
-                  color: "rgba(232, 220, 200, 0.75)",
+                  color: "rgba(58, 48, 38, 0.75)",
                 }}
               >
                 Motivational Interviewing (MI) is a collaborative, person-centered
@@ -139,7 +139,7 @@ export function MIGuide({ isOpen, onClose }: MIGuideProps) {
                   key={concept.id}
                   style={{
                     background:
-                      "linear-gradient(135deg, rgba(12, 24, 18, 0.9) 0%, rgba(8, 18, 14, 0.95) 100%)",
+                      "linear-gradient(135deg, rgba(230, 240, 234, 0.95) 0%, rgba(220, 232, 226, 0.98) 100%)",
                     borderRadius: 14,
                     padding: "16px 18px",
                     border: "1px solid rgba(45, 122, 58, 0.12)",
@@ -172,7 +172,7 @@ export function MIGuide({ isOpen, onClose }: MIGuideProps) {
                       margin: "0 0 10px",
                       fontSize: 13,
                       lineHeight: 1.7,
-                      color: "rgba(232, 220, 200, 0.82)",
+                      color: "rgba(58, 48, 38, 0.82)",
                     }}
                   >
                     {concept.description}
@@ -205,7 +205,7 @@ export function MIGuide({ isOpen, onClose }: MIGuideProps) {
                         margin: 0,
                         fontSize: 13,
                         lineHeight: 1.6,
-                        color: "rgba(232, 220, 200, 0.75)",
+                        color: "rgba(58, 48, 38, 0.75)",
                       }}
                     >
                       {concept.inSession}

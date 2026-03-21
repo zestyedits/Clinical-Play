@@ -57,9 +57,9 @@ export function WelcomeScreen({
         alignItems: "center",
         justifyContent: "center",
         background:
-          "linear-gradient(170deg, #1a1520 0%, #251e35 30%, #1e1a2e 60%, #15112a 100%)",
+          "linear-gradient(170deg, #faf8fc 0%, #f0e8f6 30%, #e8e0f0 60%, #e2dae8 100%)",
         fontFamily: "Inter, sans-serif",
-        color: "#f0e8d8",
+        color: "#3a3228",
         overflow: "auto",
         borderRadius: 12,
         position: "relative",
@@ -131,7 +131,7 @@ export function WelcomeScreen({
           transition={{ delay: 0.4 }}
           style={{
             fontSize: "clamp(12px, 2.5vw, 14px)",
-            color: "rgba(240, 232, 216, 0.55)",
+            color: "rgba(58, 48, 38, 0.55)",
             margin: "0 0 20px",
             fontWeight: 400,
           }}
@@ -148,7 +148,7 @@ export function WelcomeScreen({
             justifyContent: "center",
             gap: 3,
             marginBottom: 20,
-            background: "rgba(240, 232, 216, 0.04)",
+            background: "rgba(58, 48, 38, 0.04)",
             borderRadius: 12,
             padding: 3,
           }}
@@ -175,7 +175,7 @@ export function WelcomeScreen({
                 color:
                   ageMode === value
                     ? "#f0e8d8"
-                    : "rgba(240, 232, 216, 0.5)",
+                    : "rgba(58, 48, 38, 0.5)",
                 boxShadow:
                   ageMode === value
                     ? "0 2px 10px rgba(107, 63, 160, 0.3)"
@@ -192,7 +192,7 @@ export function WelcomeScreen({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           style={{
-            background: "rgba(240, 232, 216, 0.04)",
+            background: "rgba(58, 48, 38, 0.04)",
             borderRadius: 14,
             padding: "14px 16px",
             marginBottom: 18,
@@ -205,7 +205,7 @@ export function WelcomeScreen({
               fontSize: "clamp(12px, 2.2vw, 13px)",
               lineHeight: 1.7,
               margin: 0,
-              color: "rgba(240, 232, 216, 0.75)",
+              color: "rgba(58, 48, 38, 0.75)",
             }}
           >
             {INSTRUCTIONS[ageMode]}
@@ -243,7 +243,7 @@ export function WelcomeScreen({
                 >
                   {step.emoji}
                 </div>
-                <span style={{ fontSize: 7, color: "rgba(240, 232, 216, 0.3)", whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 7, color: "rgba(58, 48, 38, 0.3)", whiteSpace: "nowrap" }}>
                   {step.label}
                 </span>
               </div>
@@ -288,7 +288,7 @@ export function WelcomeScreen({
             data-testid="button-open-distortions-guide"
             style={{
               background: "transparent",
-              color: "rgba(240, 232, 216, 0.45)",
+              color: "rgba(58, 48, 38, 0.45)",
               border: "none",
               borderRadius: 8,
               padding: "8px 16px",
@@ -298,8 +298,8 @@ export function WelcomeScreen({
               fontFamily: "Inter, sans-serif",
               transition: "color 0.15s",
             }}
-            onMouseOver={(e) => { e.currentTarget.style.color = "rgba(240, 232, 216, 0.7)"; }}
-            onMouseOut={(e) => { e.currentTarget.style.color = "rgba(240, 232, 216, 0.45)"; }}
+            onMouseOver={(e) => { e.currentTarget.style.color = "rgba(58, 48, 38, 0.7)"; }}
+            onMouseOut={(e) => { e.currentTarget.style.color = "rgba(58, 48, 38, 0.45)"; }}
           >
             Review Cognitive Distortions →
           </button>

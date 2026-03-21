@@ -72,17 +72,17 @@ const COLOR_THEMES: Record<ColorTheme, {
   preview: string[];
 }> = {
   charcoal: {
-    label: "Satin Charcoal",
-    bg: "#121212",
-    surface: "rgba(22,22,24,0.95)",
-    surfaceHover: "rgba(30,30,32,0.6)",
-    accent: "rgba(245,158,11,1)",
-    accentGlow: "rgba(245,158,11,0.15)",
-    border: "rgba(255,255,255,0.06)",
-    textPrimary: "rgba(255,255,255,0.8)",
-    textSecondary: "rgba(255,255,255,0.4)",
-    grain: 0.04,
-    preview: ["#121212", "#1c1c1e", "#f59e0b"],
+    label: "Warm Paper",
+    bg: "#f5f2eb",
+    surface: "rgba(255,252,248,0.95)",
+    surfaceHover: "rgba(58,48,38,0.06)",
+    accent: "rgba(201,149,107,1)",
+    accentGlow: "rgba(201,149,107,0.14)",
+    border: "rgba(58,48,38,0.1)",
+    textPrimary: "rgba(58,48,38,0.9)",
+    textSecondary: "rgba(58,48,38,0.48)",
+    grain: 0.02,
+    preview: ["#f5f2eb", "#ebe4d8", "#c9956b"],
   },
   midnight: {
     label: "Deep Midnight",
@@ -2059,8 +2059,8 @@ function Fader({
           ref={trackRef}
           className="relative rounded-sm cursor-pointer touch-none fader-track"
           style={{
-            background: "linear-gradient(180deg, #1a1a1c 0%, #0f0f10 100%)",
-            boxShadow: "inset 0 2px 8px rgba(0,0,0,0.8), inset 0 -1px 0 rgba(255,255,255,0.03)",
+            background: "linear-gradient(180deg, #e4dfd4 0%, #d5cfc2 100%)",
+            boxShadow: "inset 0 2px 8px rgba(58,48,38,0.12), inset 0 -1px 0 rgba(255,255,255,0.5)",
           }}
           onPointerDown={handlePointerDown}
         >
@@ -3891,7 +3891,7 @@ function ToolbarButton({
 
 
 const VOLUME_MIXER_CSS = `
-[data-volume-mixer-root]{position:fixed;inset:0;width:100vw;height:100vh;overflow:hidden;background:#121212;color:#e5e5e5;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-tap-highlight-color:transparent}
+[data-volume-mixer-root]{position:fixed;inset:0;width:100vw;height:100vh;overflow:hidden;background:#f5f2eb;color:#3a3228;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-tap-highlight-color:transparent}
 [data-volume-mixer-root] *{box-sizing:border-box}
 [data-volume-mixer-root] ::selection{background:rgba(245,158,11,0.3);color:white}
 [data-volume-mixer-root] ::-webkit-scrollbar{width:4px}
@@ -4291,7 +4291,7 @@ export function VolumeMixer() {
   }, [idleQuips.length]);
 
   return (
-    <div data-volume-mixer-root="" style={{ position: "fixed", inset: 0, width: "100vw", height: "100vh", overflow: "hidden", background: "#121212", color: "#e5e5e5" }}>
+    <div data-volume-mixer-root="" style={{ position: "fixed", inset: 0, width: "100vw", height: "100vh", overflow: "hidden", background: "#f5f2eb", color: "#3a3228" }}>
       <CrtIntro />
       <div
         ref={mixerRef}
@@ -4776,8 +4776,8 @@ export function VolumeMixer() {
               transition={{ duration: sunsetPhase === "fading" ? 5 : 0.5 }}
               style={{
                 background: sunsetPhase === "message"
-                  ? "linear-gradient(180deg, #0a0a1a 0%, #0d0825 30%, #120a2e 60%, #0a0a1a 100%)"
-                  : "linear-gradient(180deg, rgba(10,10,26,0) 0%, rgba(13,8,37,0.6) 30%, rgba(18,10,46,0.7) 60%, rgba(10,10,26,0) 100%)",
+                  ? "linear-gradient(180deg, #faf8f3 0%, #f0ebe2 30%, #e8e2d8 60%, #faf8f3 100%)"
+                  : "linear-gradient(180deg, rgba(58,48,38,0) 0%, rgba(58,48,38,0.12) 30%, rgba(58,48,38,0.18) 60%, rgba(58,48,38,0) 100%)",
                 transition: "background 5s ease",
               }}
             >
@@ -4788,7 +4788,7 @@ export function VolumeMixer() {
                   animate={{ opacity: [0, 0.4, 0.6, 0.3] }}
                   transition={{ duration: 5, ease: "easeInOut" }}
                 >
-                  <div className="text-[10px] text-indigo-300/30 uppercase tracking-[0.4em]">
+                  <div className="text-[10px] text-[#3a3228]/35 uppercase tracking-[0.4em]">
                     Settling...
                   </div>
                 </motion.div>
@@ -4802,16 +4802,16 @@ export function VolumeMixer() {
                   transition={{ duration: 1.5, delay: 0.3 }}
                 >
                   <p
-                    className="text-white/40 text-lg leading-relaxed mb-6"
+                    className="text-[#3a3228]/65 text-lg leading-relaxed mb-6"
                     style={{ fontFamily: "Georgia, serif", fontStyle: "italic" }}
                   >
                     "You have found clarity in the noise.<br />
                     Take this peace with you."
                   </p>
 
-                  <div className="w-16 h-px bg-white/[0.08] mx-auto mb-6" />
+                  <div className="w-16 h-px bg-[#3a3228]/12 mx-auto mb-6" />
 
-                  <p className="text-white/15 text-[10px] tracking-wider uppercase mb-8">
+                  <p className="text-[#3a3228]/40 text-[10px] tracking-wider uppercase mb-8">
                     Session Complete
                   </p>
 
@@ -4819,13 +4819,13 @@ export function VolumeMixer() {
                     onClick={() => window.location.reload()}
                     className="px-6 py-2.5 rounded-lg text-[10px] uppercase tracking-[0.2em] transition-all"
                     style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      color: "rgba(255,255,255,0.3)",
+                      background: "rgba(58,48,38,0.06)",
+                      border: "1px solid rgba(58,48,38,0.12)",
+                      color: "rgba(58,48,38,0.55)",
                     }}
                     whileHover={{
-                      background: "rgba(255,255,255,0.08)",
-                      color: "rgba(255,255,255,0.5)",
+                      background: "rgba(58,48,38,0.1)",
+                      color: "rgba(58,48,38,0.75)",
                     }}
                   >
                     New Session

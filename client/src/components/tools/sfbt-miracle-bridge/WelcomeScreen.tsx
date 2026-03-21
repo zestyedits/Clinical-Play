@@ -25,9 +25,9 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
         alignItems: "center",
         justifyContent: "center",
         background:
-          "linear-gradient(170deg, #1c1e2a 0%, #252840 30%, #1e2038 60%, #14162a 100%)",
+          "linear-gradient(170deg, #fdfaf6 0%, #f5f0e6 30%, #ebe4d6 60%, #e4dcc8 100%)",
         fontFamily: "Inter, sans-serif",
-        color: "#e0ddd5",
+        color: "#3a3228",
         overflow: "auto",
         borderRadius: 12,
         position: "relative",
@@ -100,7 +100,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
           transition={{ delay: 0.4 }}
           style={{
             fontSize: "clamp(12px, 2.5vw, 14px)",
-            color: "rgba(224, 221, 213, 0.5)",
+            color: "rgba(58, 48, 38, 0.5)",
             margin: "0 0 20px",
             fontWeight: 400,
             fontStyle: "italic",
@@ -114,7 +114,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           style={{
-            background: "rgba(224, 221, 213, 0.04)",
+            background: "rgba(58, 48, 38, 0.04)",
             borderRadius: 14,
             padding: "14px 16px",
             marginBottom: 18,
@@ -127,7 +127,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
               fontSize: "clamp(12px, 2.2vw, 13px)",
               lineHeight: 1.7,
               margin: 0,
-              color: "rgba(224, 221, 213, 0.75)",
+              color: "rgba(58, 48, 38, 0.75)",
             }}
           >
             Cross seven stepping stones, each one asking a question rooted in Solution-Focused therapy. By the end, you'll have a clear picture of the future you're building — and evidence that it's already started.
@@ -164,7 +164,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
                 >
                   {step.emoji}
                 </div>
-                <span style={{ fontSize: 7, color: "rgba(224, 221, 213, 0.3)", whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 7, color: "rgba(58, 48, 38, 0.3)", whiteSpace: "nowrap" }}>
                   {step.label}
                 </span>
               </div>
@@ -188,7 +188,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
             whileTap={{ scale: 0.97 }}
             style={{
               background: "linear-gradient(135deg, #c4a25a, #a8882e)",
-              color: "#1c1e2a",
+              color: "#faf8f5",
               border: "none",
               borderRadius: 14,
               padding: "14px 44px",

@@ -65,12 +65,12 @@ export function MiracleBridge() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: "#1c1e2a",
+        background: "linear-gradient(170deg, #faf9f6 0%, #f3efe8 40%, #ebe4da 100%)",
         fontFamily: "Inter, sans-serif",
         overflow: "hidden",
         position: "relative",
         borderRadius: 12,
-        ["--game-panel-border" as string]: "rgba(224, 221, 213, 0.08)",
+        ["--game-panel-border" as string]: "rgba(60, 48, 38, 0.1)",
       }}
     >
       <div
@@ -79,42 +79,42 @@ export function MiracleBridge() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "10px 16px",
-          background: "rgba(28, 30, 42, 0.98)",
-          borderBottom: "1px solid rgba(224, 221, 213, 0.06)",
+          background: "rgba(255, 252, 248, 0.92)",
+          borderBottom: "1px solid rgba(196, 162, 90, 0.2)",
           zIndex: 10,
           flexShrink: 0,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <svg width="22" height="14" viewBox="0 0 22 14" style={{ opacity: 0.7 }}>
-            <path d="M 1 12 Q 11 1 21 12" stroke="#c4a25a" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+          <svg width="22" height="14" viewBox="0 0 22 14" style={{ opacity: 0.75 }}>
+            <path d="M 1 12 Q 11 1 21 12" stroke="#b8954a" strokeWidth="1.5" fill="none" strokeLinecap="round" />
           </svg>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#e0ddd5", lineHeight: 1.2, fontFamily: "'Lora', Georgia, serif" }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#3a3228", lineHeight: 1.2, fontFamily: "'Lora', Georgia, serif" }}>
               The Miracle Bridge
             </div>
-            <div style={{ fontSize: 10, color: "rgba(224, 221, 213, 0.35)" }}>
+            <div style={{ fontSize: 10, color: "rgba(58, 48, 38, 0.5)" }}>
               Walk toward your preferred future
             </div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ fontSize: 11, color: "rgba(224, 221, 213, 0.35)" }}>
+          <div style={{ fontSize: 11, color: "rgba(58, 48, 38, 0.5)" }}>
             {completedSteps.size}/{BRIDGE_STEPS.length}
           </div>
           <FurtherReading
             references={SFBT_REFERENCES}
             accentColor="rgba(196,162,90,0.6)"
-            textColor="#e0ddd5"
-            bgColor="rgba(28,30,42,0.97)"
+            textColor="#3a3228"
+            bgColor="rgba(255,252,248,0.98)"
           />
           <button
             onClick={toggleMute}
             data-testid="button-bridge-mute"
             type="button"
             style={{
-              background: "rgba(224, 221, 213, 0.04)",
-              border: "1px solid rgba(224, 221, 213, 0.06)",
+              background: "rgba(58, 48, 38, 0.05)",
+              border: "1px solid rgba(196, 162, 90, 0.25)",
               borderRadius: 8,
               padding: "8px 12px",
               minWidth: 44,
@@ -122,7 +122,7 @@ export function MiracleBridge() {
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#e0ddd5",
+              color: "#3a3228",
               fontSize: 14,
               cursor: "pointer",
               boxSizing: "border-box",

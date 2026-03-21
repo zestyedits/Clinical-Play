@@ -49,8 +49,8 @@ export function StepPanel({
       className="tool-game-side-panel"
       style={{
         width: 340,
-        background: "linear-gradient(170deg, rgba(28, 30, 42, 0.98), rgba(20, 22, 35, 0.99))",
-        borderLeft: "1px solid rgba(224, 221, 213, 0.06)",
+        background: "linear-gradient(170deg, rgba(255, 252, 248, 0.98), rgba(245, 240, 232, 0.99))",
+        borderLeft: "1px solid rgba(60, 48, 38, 0.08)",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
@@ -91,7 +91,7 @@ export function StepPanel({
         }}
       />
 
-      <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(224, 221, 213, 0.06)", position: "relative", zIndex: 1 }}>
+      <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(58, 48, 38, 0.06)", position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
           <motion.div
             key={currentStep}
@@ -108,8 +108,8 @@ export function StepPanel({
             {step.emoji}
           </motion.div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#e0ddd5", fontFamily: "'Lora', Georgia, serif" }}>{step.name}</div>
-            <div style={{ fontSize: 10, color: "rgba(224, 221, 213, 0.35)", fontFamily: "Inter, sans-serif" }}>Step {currentStep + 1} of {BRIDGE_STEPS.length}</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#3a3228", fontFamily: "'Lora', Georgia, serif" }}>{step.name}</div>
+            <div style={{ fontSize: 10, color: "rgba(58, 48, 38, 0.35)", fontFamily: "Inter, sans-serif" }}>Step {currentStep + 1} of {BRIDGE_STEPS.length}</div>
           </div>
         </div>
         <div style={{ display: "flex", gap: 3, marginTop: 8 }}>
@@ -117,7 +117,7 @@ export function StepPanel({
             <motion.div
               key={i}
               animate={{
-                backgroundColor: i === currentStep ? step.color : i < currentStep ? `${step.color}60` : "rgba(224, 221, 213, 0.06)",
+                backgroundColor: i === currentStep ? step.color : i < currentStep ? `${step.color}60` : "rgba(58, 48, 38, 0.06)",
                 boxShadow: i === currentStep ? `0 0 6px ${step.color}30` : "none",
               }}
               transition={{ duration: 0.3 }}
@@ -141,12 +141,12 @@ export function StepPanel({
             <div style={{
               borderRadius: 12, padding: "16px",
               borderLeft: `3px solid ${step.color}50`,
-              background: "rgba(224, 221, 213, 0.03)",
+              background: "rgba(58, 48, 38, 0.03)",
             }}>
-              <p style={{ fontSize: 14, lineHeight: 1.75, color: "rgba(224, 221, 213, 0.88)", margin: 0, fontFamily: "'Lora', Georgia, serif" }}>
+              <p style={{ fontSize: 14, lineHeight: 1.75, color: "rgba(58, 48, 38, 0.88)", margin: 0, fontFamily: "'Lora', Georgia, serif" }}>
                 {step.question}
               </p>
-              <p style={{ fontSize: 11, color: "rgba(224, 221, 213, 0.35)", margin: "10px 0 0", fontStyle: "italic", fontFamily: "Inter, sans-serif" }}>
+              <p style={{ fontSize: 11, color: "rgba(58, 48, 38, 0.35)", margin: "10px 0 0", fontStyle: "italic", fontFamily: "Inter, sans-serif" }}>
                 {step.helpText}
               </p>
             </div>
@@ -165,9 +165,9 @@ export function StepPanel({
                     whileTap={{ scale: 0.9 }}
                     style={{
                       width: 28, height: 36, borderRadius: 6,
-                      border: mainScale === val ? `2px solid ${step.color}` : "1px solid rgba(224, 221, 213, 0.08)",
-                      background: val <= mainScale ? `${step.color}35` : "rgba(224, 221, 213, 0.03)",
-                      color: val <= mainScale ? "#e0ddd5" : "rgba(224, 221, 213, 0.2)",
+                      border: mainScale === val ? `2px solid ${step.color}` : "1px solid rgba(58, 48, 38, 0.08)",
+                      background: val <= mainScale ? `${step.color}35` : "rgba(58, 48, 38, 0.03)",
+                      color: val <= mainScale ? "#faf8f5" : "rgba(58, 48, 38, 0.2)",
                       fontSize: 12, fontWeight: 600, cursor: "pointer",
                       transition: "all 0.15s", fontFamily: "Inter, sans-serif",
                     }}
@@ -176,7 +176,7 @@ export function StepPanel({
                   </motion.button>
                 ))}
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "rgba(224, 221, 213, 0.25)", fontFamily: "Inter, sans-serif" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "rgba(58, 48, 38, 0.25)", fontFamily: "Inter, sans-serif" }}>
                 <span>Hardest</span>
                 <span>Miracle day</span>
               </div>
@@ -189,9 +189,9 @@ export function StepPanel({
                   key={sq.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  style={{ borderRadius: 10, padding: "12px", background: "rgba(224, 221, 213, 0.02)", border: "1px solid rgba(224, 221, 213, 0.05)" }}
+                  style={{ borderRadius: 10, padding: "12px", background: "rgba(58, 48, 38, 0.02)", border: "1px solid rgba(58, 48, 38, 0.05)" }}
                 >
-                  <p style={{ fontSize: 12, color: "rgba(224, 221, 213, 0.65)", margin: "0 0 8px", fontFamily: "Inter, sans-serif" }}>{sq.question}</p>
+                  <p style={{ fontSize: 12, color: "rgba(58, 48, 38, 0.65)", margin: "0 0 8px", fontFamily: "Inter, sans-serif" }}>{sq.question}</p>
                   <div style={{ display: "flex", gap: 3 }}>
                     {Array.from({ length: 10 }, (_, i) => i + 1).map((v) => (
                       <button
@@ -199,9 +199,9 @@ export function StepPanel({
                         onClick={() => onScalingChange(sq.id, v)}
                         style={{
                           flex: 1, height: 24, borderRadius: 4, border: "none",
-                          background: v <= val ? `${step.color}40` : "rgba(224, 221, 213, 0.04)",
+                          background: v <= val ? `${step.color}40` : "rgba(58, 48, 38, 0.04)",
                           cursor: "pointer", fontSize: 9,
-                          color: v <= val ? "#e0ddd5" : "transparent",
+                          color: v <= val ? "#faf8f5" : "transparent",
                           fontFamily: "Inter, sans-serif", transition: "all 0.1s",
                         }}
                       >
@@ -209,7 +209,7 @@ export function StepPanel({
                       </button>
                     ))}
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 8, color: "rgba(224, 221, 213, 0.2)", marginTop: 4, fontFamily: "Inter, sans-serif" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 8, color: "rgba(58, 48, 38, 0.2)", marginTop: 4, fontFamily: "Inter, sans-serif" }}>
                     <span>{sq.lowLabel}</span>
                     <span>{sq.highLabel}</span>
                   </div>
@@ -235,14 +235,14 @@ export function StepPanel({
             style={{
               width: "100%", minHeight: 120, padding: "12px 14px",
               borderRadius: 10,
-              border: "1px solid rgba(224, 221, 213, 0.06)",
-              background: "rgba(224, 221, 213, 0.03)",
-              color: "#e0ddd5", fontSize: 13, lineHeight: 1.75,
+              border: "1px solid rgba(58, 48, 38, 0.06)",
+              background: "rgba(58, 48, 38, 0.03)",
+              color: "#3a3228", fontSize: 13, lineHeight: 1.75,
               resize: "vertical", fontFamily: "Inter, sans-serif", outline: "none",
               transition: "border-color 0.2s",
             }}
             onFocus={(e) => { e.currentTarget.style.borderColor = `${step.color}50`; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(224, 221, 213, 0.06)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(58, 48, 38, 0.06)"; }}
           />
         )}
 
@@ -262,7 +262,7 @@ export function StepPanel({
               <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(196, 162, 90, 0.65)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontFamily: "Inter, sans-serif" }}>
                 Clinician Prompt
               </div>
-              <p style={{ fontSize: 13, lineHeight: 1.75, color: "rgba(224, 221, 213, 0.8)", margin: 0, fontStyle: "italic", fontFamily: "'Lora', Georgia, serif" }}>
+              <p style={{ fontSize: 13, lineHeight: 1.75, color: "rgba(58, 48, 38, 0.8)", margin: 0, fontStyle: "italic", fontFamily: "'Lora', Georgia, serif" }}>
                 {step.discussionPrompt}
               </p>
             </motion.div>
@@ -276,7 +276,7 @@ export function StepPanel({
           paddingLeft: 16,
           paddingRight: 16,
           paddingBottom: "max(12px, env(safe-area-inset-bottom, 0px))",
-          borderTop: "1px solid rgba(224, 221, 213, 0.06)",
+          borderTop: "1px solid rgba(58, 48, 38, 0.06)",
           display: "flex",
           gap: 8,
           alignItems: "center",
@@ -294,9 +294,9 @@ export function StepPanel({
             style={{
               padding: "10px 16px",
               borderRadius: 8,
-              border: "1px solid rgba(224, 221, 213, 0.08)",
+              border: "1px solid rgba(58, 48, 38, 0.08)",
               background: "transparent",
-              color: "rgba(224, 221, 213, 0.5)",
+              color: "rgba(58, 48, 38, 0.5)",
               fontSize: 12,
               fontWeight: 500,
               cursor: "pointer",
@@ -319,9 +319,9 @@ export function StepPanel({
           style={{
             padding: "10px 14px",
             borderRadius: 8,
-            border: "1px solid rgba(224, 221, 213, 0.08)",
+            border: "1px solid rgba(58, 48, 38, 0.08)",
             background: showPrompt ? "rgba(196, 148, 58, 0.08)" : "transparent",
-            color: showPrompt ? "rgba(196, 162, 90, 0.8)" : "rgba(224, 221, 213, 0.35)",
+            color: showPrompt ? "rgba(196, 162, 90, 0.8)" : "rgba(58, 48, 38, 0.35)",
             fontSize: 12,
             fontWeight: 500,
             cursor: "pointer",
@@ -348,8 +348,8 @@ export function StepPanel({
             padding: "10px 16px",
             borderRadius: 8,
             border: "none",
-            background: canProceed ? `linear-gradient(135deg, ${step.color}, ${step.color}cc)` : "rgba(224, 221, 213, 0.04)",
-            color: canProceed ? "#1c1e2a" : "rgba(224, 221, 213, 0.15)",
+            background: canProceed ? `linear-gradient(135deg, ${step.color}, ${step.color}cc)` : "rgba(58, 48, 38, 0.04)",
+            color: canProceed ? "#2a2218" : "rgba(58, 48, 38, 0.15)",
             fontSize: 12,
             fontWeight: 600,
             cursor: canProceed ? "pointer" : "default",

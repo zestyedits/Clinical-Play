@@ -47,9 +47,9 @@ export function WelcomeScreen({ onStart, ageMode, onSetAgeMode }: WelcomeScreenP
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(170deg, #1a1410 0%, #2a2218 30%, #241e14 60%, #18140e 100%)",
+        background: "linear-gradient(170deg, #fdf9f3 0%, #f5ebe0 30%, #ede2d4 60%, #e5d9c8 100%)",
         fontFamily: "Inter, sans-serif",
-        color: "#f4e8d0",
+        color: "#3a3228",
         overflow: "auto",
         borderRadius: 12,
         position: "relative",
@@ -121,7 +121,7 @@ export function WelcomeScreen({ onStart, ageMode, onSetAgeMode }: WelcomeScreenP
           transition={{ delay: 0.4 }}
           style={{
             fontSize: "clamp(12px, 2.5vw, 14px)",
-            color: "rgba(244, 232, 208, 0.55)",
+            color: "rgba(58, 48, 38, 0.55)",
             margin: "0 0 20px",
             fontWeight: 400,
           }}
@@ -138,7 +138,7 @@ export function WelcomeScreen({ onStart, ageMode, onSetAgeMode }: WelcomeScreenP
             justifyContent: "center",
             gap: 3,
             marginBottom: 20,
-            background: "rgba(244, 232, 208, 0.04)",
+            background: "rgba(58, 48, 38, 0.04)",
             borderRadius: 12,
             padding: 3,
           }}
@@ -159,7 +159,7 @@ export function WelcomeScreen({ onStart, ageMode, onSetAgeMode }: WelcomeScreenP
                 cursor: "pointer",
                 transition: "all 0.25s",
                 background: ageMode === value ? "linear-gradient(135deg, #8a6830, #6b5020)" : "transparent",
-                color: ageMode === value ? "#f4e8d0" : "rgba(244, 232, 208, 0.5)",
+                color: ageMode === value ? "#faf8f5" : "rgba(58, 48, 38, 0.5)",
                 boxShadow: ageMode === value ? "0 2px 10px rgba(138, 104, 48, 0.3)" : "none",
               }}
             >
@@ -173,7 +173,7 @@ export function WelcomeScreen({ onStart, ageMode, onSetAgeMode }: WelcomeScreenP
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           style={{
-            background: "rgba(244, 232, 208, 0.04)",
+            background: "rgba(58, 48, 38, 0.04)",
             borderRadius: 14,
             padding: "14px 16px",
             marginBottom: 18,
@@ -186,7 +186,7 @@ export function WelcomeScreen({ onStart, ageMode, onSetAgeMode }: WelcomeScreenP
               fontSize: "clamp(12px, 2.2vw, 13px)",
               lineHeight: 1.7,
               margin: 0,
-              color: "rgba(244, 232, 208, 0.75)",
+              color: "rgba(58, 48, 38, 0.75)",
             }}
           >
             {INSTRUCTIONS[ageMode]}
@@ -224,7 +224,7 @@ export function WelcomeScreen({ onStart, ageMode, onSetAgeMode }: WelcomeScreenP
                 >
                   {step.emoji}
                 </div>
-                <span style={{ fontSize: 7, color: "rgba(244, 232, 208, 0.3)", whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 7, color: "rgba(58, 48, 38, 0.3)", whiteSpace: "nowrap" }}>
                   {step.label}
                 </span>
               </div>
@@ -248,7 +248,7 @@ export function WelcomeScreen({ onStart, ageMode, onSetAgeMode }: WelcomeScreenP
             whileTap={{ scale: 0.97 }}
             style={{
               background: "linear-gradient(135deg, #8a6830, #6b5020)",
-              color: "#f4e8d0",
+              color: "#faf8f5",
               border: "none",
               borderRadius: 14,
               padding: "14px 44px",

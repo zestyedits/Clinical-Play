@@ -44,14 +44,14 @@ export function DistortionsGuide({
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
             style={{
-              background: "linear-gradient(180deg, #1e1a2e 0%, #16132a 100%)",
+              background: "linear-gradient(180deg, #faf8fc 0%, #f0e8f4 100%)",
               borderRadius: 18,
               maxWidth: 640,
               width: "100%",
               maxHeight: "90vh",
-              border: "1px solid rgba(139, 92, 246, 0.25)",
+              border: "1px solid rgba(139, 92, 246, 0.2)",
               boxShadow:
-                "0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 0 40px rgba(139, 92, 246, 0.1)",
+                "0 24px 80px rgba(58, 48, 38, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.6) inset, 0 0 40px rgba(139, 92, 246, 0.08)",
               fontFamily: "Inter, sans-serif",
               overflow: "hidden",
               display: "flex",
@@ -74,7 +74,7 @@ export function DistortionsGuide({
                   margin: 0,
                   fontSize: 18,
                   fontWeight: 700,
-                  color: "#e8dff5",
+                  color: "#3a3228",
                   letterSpacing: "-0.01em",
                 }}
               >
@@ -89,10 +89,10 @@ export function DistortionsGuide({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  background: "rgba(255, 255, 255, 0.06)",
+                  background: "rgba(58, 48, 38, 0.06)",
                   border: "1px solid rgba(139, 92, 246, 0.2)",
                   borderRadius: 8,
-                  color: "rgba(232, 223, 245, 0.6)",
+                  color: "rgba(58, 48, 38, 0.55)",
                   fontSize: 16,
                   cursor: "pointer",
                   transition: "background 0.15s, color 0.15s",
@@ -100,12 +100,12 @@ export function DistortionsGuide({
                   lineHeight: 1,
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)";
-                  e.currentTarget.style.color = "rgba(232, 223, 245, 0.9)";
+                  e.currentTarget.style.background = "rgba(139, 92, 246, 0.1)";
+                  e.currentTarget.style.color = "rgba(58, 48, 38, 0.9)";
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
-                  e.currentTarget.style.color = "rgba(232, 223, 245, 0.6)";
+                  e.currentTarget.style.background = "rgba(58, 48, 38, 0.06)";
+                  e.currentTarget.style.color = "rgba(58, 48, 38, 0.55)";
                 }}
               >
                 {"\u2715"}
@@ -128,11 +128,11 @@ export function DistortionsGuide({
                   key={distortion.id}
                   style={{
                     background:
-                      "linear-gradient(135deg, rgba(45, 36, 58, 0.8) 0%, rgba(35, 28, 50, 0.9) 100%)",
+                      "linear-gradient(135deg, rgba(250, 248, 255, 0.98) 0%, rgba(244, 238, 252, 0.99) 100%)",
                     borderRadius: 14,
                     padding: "16px 18px",
                     border: "1px solid rgba(139, 92, 246, 0.12)",
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+                    boxShadow: "0 2px 8px rgba(58, 48, 38, 0.06)",
                   }}
                 >
                   {/* Distortion header */}
@@ -150,7 +150,7 @@ export function DistortionsGuide({
                         margin: 0,
                         fontSize: 15,
                         fontWeight: 650,
-                        color: "#c4b5fd",
+                        color: "#6d28d9",
                       }}
                     >
                       {distortion.name}
@@ -163,7 +163,7 @@ export function DistortionsGuide({
                       margin: "0 0 10px",
                       fontSize: 13,
                       lineHeight: 1.7,
-                      color: "rgba(232, 223, 245, 0.82)",
+                      color: "rgba(58, 48, 38, 0.85)",
                     }}
                   >
                     {distortion.description[ageMode]}
@@ -183,7 +183,7 @@ export function DistortionsGuide({
                       style={{
                         margin: 0,
                         fontSize: 12,
-                        color: "rgba(196, 181, 253, 0.55)",
+                        color: "rgba(91, 33, 182, 0.65)",
                         fontWeight: 600,
                         textTransform: "uppercase" as const,
                         letterSpacing: "0.05em",
@@ -197,7 +197,7 @@ export function DistortionsGuide({
                         margin: 0,
                         fontSize: 13,
                         lineHeight: 1.6,
-                        color: "rgba(232, 223, 245, 0.75)",
+                        color: "rgba(58, 48, 38, 0.78)",
                         fontStyle: "italic",
                       }}
                     >
@@ -220,7 +220,7 @@ export function DistortionsGuide({
                         margin: 0,
                         fontSize: 13,
                         lineHeight: 1.6,
-                        color: "rgba(250, 230, 160, 0.88)",
+                        color: "rgba(58, 48, 38, 0.88)",
                       }}
                     >
                       {"\uD83D\uDE02"} {distortion.humor[ageMode]}

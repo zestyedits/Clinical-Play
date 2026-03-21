@@ -110,7 +110,7 @@ export function LookoutPoint({ barriers, ageMode }: LookoutPointProps) {
           alignItems: "center",
           justifyContent: "center",
           background:
-            "linear-gradient(180deg, #0a1525 0%, #1a3545 60%, #2a3540 100%)",
+            "linear-gradient(180deg, #f0f8fc 0%, #e2eef6 60%, #d8e8f2 100%)",
           borderRadius: 12,
           overflow: "hidden",
         }}
@@ -130,9 +130,9 @@ export function LookoutPoint({ barriers, ageMode }: LookoutPointProps) {
                 left: "100%",
                 padding: "10px 22px",
                 borderRadius: 28,
-                background: "rgba(200, 210, 225, 0.12)",
-                border: "1px solid rgba(200, 210, 225, 0.06)",
-                color: "rgba(232, 220, 200, 0.5)",
+                background: "rgba(255, 255, 255, 0.55)",
+                border: "1px solid rgba(58, 48, 38, 0.08)",
+                color: "rgba(58, 48, 38, 0.45)",
                 fontSize: 13,
                 fontStyle: "italic",
                 whiteSpace: "nowrap",
@@ -163,7 +163,7 @@ export function LookoutPoint({ barriers, ageMode }: LookoutPointProps) {
               fontStyle: "italic",
               fontSize: 18,
               lineHeight: 1.65,
-              color: "#e8dcc8",
+              color: "#3a3228",
               margin: 0,
             }}
           >
@@ -194,7 +194,7 @@ export function LookoutPoint({ barriers, ageMode }: LookoutPointProps) {
             fontSize: 13,
             fontFamily: "Georgia, 'Times New Roman', serif",
             fontStyle: "italic",
-            color: "rgba(232, 220, 200, 0.55)",
+            color: "rgba(58, 48, 38, 0.55)",
             minHeight: 20,
             animation: "lp-fade-in 1.5s ease-out both",
           }}

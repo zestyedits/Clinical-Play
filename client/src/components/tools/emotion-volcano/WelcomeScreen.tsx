@@ -23,7 +23,7 @@ export function WelcomeScreen({ ageMode, onSetAgeMode, onStart }: WelcomeScreenP
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(170deg, #1a1210 0%, #251815 30%, #2a1510 60%, #1a0e0a 100%)",
+        background: "linear-gradient(170deg, #fff9f5 0%, #fff0e8 30%, #ffe8dc 60%, #ffe0d4 100%)",
         fontFamily: "Inter, sans-serif",
         padding: "20px",
         position: "relative",
@@ -91,7 +91,7 @@ export function WelcomeScreen({ ageMode, onSetAgeMode, onStart }: WelcomeScreenP
         style={{
           position: "absolute",
           bottom: 0, left: 0, right: 0, height: 200,
-          background: "radial-gradient(ellipse at 50% 100%, rgba(224,96,64,0.15), transparent 70%)",
+          background: "radial-gradient(ellipse at 50% 100%, rgba(224,96,64,0.1), transparent 70%)",
           animation: "welcome-glow 3s ease-in-out infinite",
           pointerEvents: "none",
         }}
@@ -112,7 +112,7 @@ export function WelcomeScreen({ ageMode, onSetAgeMode, onStart }: WelcomeScreenP
         transition={{ delay: 0.3, duration: 0.5 }}
         style={{
           margin: 0, fontSize: 28, fontWeight: 800,
-          color: "#f0e8d8",
+          color: "#3a3228",
           fontFamily: "'Lora', Georgia, serif",
           textAlign: "center",
           lineHeight: 1.2,
@@ -127,7 +127,7 @@ export function WelcomeScreen({ ageMode, onSetAgeMode, onStart }: WelcomeScreenP
         transition={{ delay: 0.5, duration: 0.5 }}
         style={{
           margin: "8px 0 24px", fontSize: 14,
-          color: "rgba(240, 232, 216, 0.55)",
+          color: "rgba(58, 48, 38, 0.55)",
           textAlign: "center",
           maxWidth: 380,
           lineHeight: 1.5,
@@ -159,15 +159,15 @@ export function WelcomeScreen({ ageMode, onSetAgeMode, onStart }: WelcomeScreenP
                 gap: 4,
                 padding: "12px 16px",
                 borderRadius: 12,
-                border: isSelected ? "1.5px solid rgba(224,96,64,0.6)" : "1px solid rgba(240, 232, 216, 0.1)",
-                background: isSelected ? "rgba(224,96,64,0.12)" : "rgba(240, 232, 216, 0.04)",
+                border: isSelected ? "1.5px solid rgba(224,96,64,0.6)" : "1px solid rgba(58, 48, 38, 0.12)",
+                background: isSelected ? "rgba(224,96,64,0.12)" : "rgba(58, 48, 38, 0.04)",
                 cursor: "pointer",
                 transition: "all 0.2s",
                 minWidth: 85,
               }}
             >
               <span style={{ fontSize: 24 }}>{mode.emoji}</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: isSelected ? "#e06040" : "rgba(240,232,216,0.5)" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: isSelected ? "#e06040" : "rgba(58,48,38,0.5)" }}>
                 {mode.label}
               </span>
             </motion.button>
@@ -202,7 +202,7 @@ export function WelcomeScreen({ ageMode, onSetAgeMode, onStart }: WelcomeScreenP
           border: "none",
           borderRadius: 14,
           padding: "14px 44px",
-          color: "#0a0a0a",
+          color: "#faf8f5",
           fontSize: 16,
           fontWeight: 700,
           cursor: "pointer",

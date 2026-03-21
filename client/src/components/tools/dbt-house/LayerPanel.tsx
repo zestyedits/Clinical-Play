@@ -24,8 +24,8 @@ export function LayerPanel({
       className="tool-game-side-panel"
       style={{
         width: 260,
-        background: "rgba(45, 40, 35, 0.94)",
-        borderLeft: "1px solid rgba(160, 146, 107, 0.15)",
+        background: "rgba(255, 252, 248, 0.96)",
+        borderLeft: "1px solid rgba(160, 146, 107, 0.2)",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
@@ -43,7 +43,7 @@ export function LayerPanel({
           style={{
             fontSize: 13,
             fontWeight: 600,
-            color: "#f0e8d8",
+            color: "#3a3228",
             marginBottom: 2,
           }}
         >
@@ -52,7 +52,7 @@ export function LayerPanel({
         <div
           style={{
             fontSize: 10,
-            color: "rgba(240, 232, 216, 0.4)",
+            color: "rgba(58, 48, 38, 0.45)",
           }}
         >
           Place each floor, then explore its items
@@ -77,9 +77,9 @@ export function LayerPanel({
               style={{
                 marginBottom: 6,
                 background: layer.placed
-                  ? "rgba(240, 232, 216, 0.05)"
+                  ? "rgba(58, 48, 38, 0.05)"
                   : isLocked
-                    ? "rgba(240, 232, 216, 0.015)"
+                    ? "rgba(58, 48, 38, 0.015)"
                     : "rgba(107, 139, 107, 0.08)",
                 borderRadius: 10,
                 border: `1px solid ${
@@ -113,8 +113,8 @@ export function LayerPanel({
                       background: layer.completed
                         ? "rgba(107, 139, 107, 0.2)"
                         : isLocked
-                          ? "rgba(240, 232, 216, 0.04)"
-                          : "rgba(240, 232, 216, 0.06)",
+                          ? "rgba(58, 48, 38, 0.04)"
+                          : "rgba(58, 48, 38, 0.06)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -133,7 +133,7 @@ export function LayerPanel({
                       style={{
                         fontSize: 11,
                         fontWeight: 600,
-                        color: "#f0e8d8",
+                        color: "#3a3228",
                         lineHeight: 1.3,
                       }}
                     >
@@ -142,7 +142,7 @@ export function LayerPanel({
                     <div
                       style={{
                         fontSize: 9,
-                        color: "rgba(240, 232, 216, 0.4)",
+                        color: "rgba(58, 48, 38, 0.45)",
                         marginTop: 1,
                       }}
                     >
@@ -158,7 +158,7 @@ export function LayerPanel({
                     style={{
                       background:
                         "linear-gradient(135deg, #6b8b6b, #5a7a5a)",
-                      color: "#f0e8d8",
+                      color: "#3a3228",
                       border: "none",
                       borderRadius: 8,
                       padding: "6px 14px",
@@ -186,9 +186,9 @@ export function LayerPanel({
                   <div
                     style={{
                       fontSize: 9,
-                      color: "rgba(240, 232, 216, 0.45)",
+                      color: "rgba(58, 48, 38, 0.45)",
                       whiteSpace: "nowrap",
-                      background: "rgba(240, 232, 216, 0.06)",
+                      background: "rgba(58, 48, 38, 0.06)",
                       padding: "2px 7px",
                       borderRadius: 5,
                     }}
@@ -219,7 +219,7 @@ export function LayerPanel({
                         padding: "7px 9px",
                         background: item.completed
                           ? "rgba(107, 139, 107, 0.12)"
-                          : "rgba(240, 232, 216, 0.04)",
+                          : "rgba(58, 48, 38, 0.04)",
                         border: `1px solid ${
                           item.completed
                             ? "rgba(107, 139, 107, 0.18)"
@@ -235,12 +235,12 @@ export function LayerPanel({
                       onMouseOver={(e) => {
                         if (!item.completed)
                           e.currentTarget.style.background =
-                            "rgba(240, 232, 216, 0.08)";
+                            "rgba(58, 48, 38, 0.08)";
                       }}
                       onMouseOut={(e) => {
                         if (!item.completed)
                           e.currentTarget.style.background =
-                            "rgba(240, 232, 216, 0.04)";
+                            "rgba(58, 48, 38, 0.04)";
                       }}
                     >
                       <div
@@ -250,7 +250,7 @@ export function LayerPanel({
                           borderRadius: 5,
                           background: item.completed
                             ? "rgba(107, 139, 107, 0.2)"
-                            : "rgba(240, 232, 216, 0.06)",
+                            : "rgba(58, 48, 38, 0.06)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -264,8 +264,8 @@ export function LayerPanel({
                         style={{
                           fontSize: 10,
                           color: item.completed
-                            ? "rgba(240, 232, 216, 0.45)"
-                            : "rgba(240, 232, 216, 0.85)",
+                            ? "rgba(58, 48, 38, 0.45)"
+                            : "rgba(58, 48, 38, 0.85)",
                           textDecoration: item.completed
                             ? "line-through"
                             : "none",
@@ -300,7 +300,7 @@ export function LayerPanel({
             style={{
               fontSize: 10,
               fontWeight: 500,
-              color: "rgba(240, 232, 216, 0.5)",
+              color: "rgba(58, 48, 38, 0.5)",
             }}
           >
             Session Progress
@@ -308,7 +308,7 @@ export function LayerPanel({
           <div
             style={{
               fontSize: 10,
-              color: "rgba(240, 232, 216, 0.35)",
+              color: "rgba(58, 48, 38, 0.35)",
             }}
           >
             {Math.round(progress * 100)}%
@@ -317,7 +317,7 @@ export function LayerPanel({
         <div
           style={{
             height: 4,
-            background: "rgba(240, 232, 216, 0.08)",
+            background: "rgba(58, 48, 38, 0.08)",
             borderRadius: 3,
             overflow: "hidden",
           }}

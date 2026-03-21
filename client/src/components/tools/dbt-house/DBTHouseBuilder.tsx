@@ -269,7 +269,7 @@ export function DBTHouseBuilder() {
         display: "flex",
         flexDirection: "column",
         background:
-          "linear-gradient(170deg, #dce8dc 0%, #c8d8c4 30%, #b8c8b0 60%, #a8bca0 100%)",
+          "linear-gradient(170deg, #f2f7f0 0%, #e4efe2 30%, #d8e8d4 60%, #ccdfc8 100%)",
         fontFamily: "Inter, sans-serif",
         overflow: "hidden",
         position: "relative",
@@ -283,8 +283,8 @@ export function DBTHouseBuilder() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "10px 16px",
-          background: "rgba(45, 40, 35, 0.92)",
-          borderBottom: "1px solid rgba(160, 146, 107, 0.3)",
+          background: "rgba(255, 252, 248, 0.92)",
+          borderBottom: "1px solid rgba(160, 146, 107, 0.22)",
           zIndex: 10,
           flexShrink: 0,
           backdropFilter: "blur(10px)",
@@ -297,7 +297,7 @@ export function DBTHouseBuilder() {
               style={{
                 fontSize: 14,
                 fontWeight: 700,
-                color: "#f0e8d8",
+                color: "#3a3228",
                 lineHeight: 1.2,
               }}
             >
@@ -306,7 +306,7 @@ export function DBTHouseBuilder() {
             <div
               style={{
                 fontSize: 10,
-                color: "rgba(240, 232, 216, 0.5)",
+                color: "rgba(58, 48, 38, 0.55)",
               }}
             >
               Build your skills, layer by layer
@@ -317,7 +317,7 @@ export function DBTHouseBuilder() {
           <div
             style={{
               fontSize: 11,
-              color: "rgba(240, 232, 216, 0.5)",
+              color: "rgba(58, 48, 38, 0.5)",
             }}
           >
             {discussedCount}/{totalItems} discussed
@@ -325,16 +325,16 @@ export function DBTHouseBuilder() {
           <FurtherReading
             references={DBT_REFERENCES}
             accentColor="rgba(160,146,107,0.6)"
-            textColor="#f0e8d8"
-            bgColor="rgba(45,40,35,0.97)"
+            textColor="#3a3228"
+            bgColor="rgba(255,252,248,0.98)"
           />
           <button
             onClick={toggleMute}
             data-testid="button-dbt-mute"
             type="button"
             style={{
-              background: "rgba(240, 232, 216, 0.1)",
-              border: "1px solid rgba(160, 146, 107, 0.3)",
+              background: "rgba(58, 48, 38, 0.05)",
+              border: "1px solid rgba(160, 146, 107, 0.25)",
               borderRadius: 8,
               padding: "8px 12px",
               minWidth: 44,
@@ -342,7 +342,7 @@ export function DBTHouseBuilder() {
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#f0e8d8",
+              color: "#3a3228",
               fontSize: 16,
               cursor: "pointer",
               boxSizing: "border-box",

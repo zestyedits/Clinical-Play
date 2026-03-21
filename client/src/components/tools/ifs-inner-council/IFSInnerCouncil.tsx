@@ -213,7 +213,7 @@ export function IFSInnerCouncil() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          background: "linear-gradient(170deg, #1a1208 0%, #2a1f14 30%, #1f1710 60%, #0d0a06 100%)",
+          background: "linear-gradient(170deg, #fdfaf3 0%, #f3ead8 30%, #ebe0cc 60%, #e5d8c2 100%)",
           fontFamily: "Inter, sans-serif",
           overflow: "hidden",
           position: "relative",
@@ -226,8 +226,8 @@ export function IFSInnerCouncil() {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "10px 16px",
-            background: "rgba(26, 18, 8, 0.92)",
-            borderBottom: "1px solid rgba(139, 115, 85, 0.3)",
+            background: "rgba(255, 252, 248, 0.92)",
+            borderBottom: "1px solid rgba(139, 115, 85, 0.2)",
             zIndex: 10,
             flexShrink: 0,
             backdropFilter: "blur(10px)",
@@ -236,10 +236,10 @@ export function IFSInnerCouncil() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 18 }}>{"\u2694"}</span>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#f4e4bc", lineHeight: 1.2 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#3a3228", lineHeight: 1.2 }}>
                 The Inner Council
               </div>
-              <div style={{ fontSize: 10, color: "rgba(244, 228, 188, 0.5)" }}>
+              <div style={{ fontSize: 10, color: "rgba(58, 48, 38, 0.55)" }}>
                 Council Complete
               </div>
             </div>
@@ -248,20 +248,27 @@ export function IFSInnerCouncil() {
             <FurtherReading
               references={IFS_REFERENCES}
               accentColor="rgba(139,115,85,0.6)"
-              textColor="#f4e4bc"
-              bgColor="rgba(26,18,8,0.97)"
+              textColor="#3a3228"
+              bgColor="rgba(255,252,248,0.98)"
             />
             <button
+              type="button"
               onClick={toggleMute}
               data-testid="button-ifs-mute"
               style={{
-                background: "rgba(244, 228, 188, 0.1)",
-                border: "1px solid rgba(139, 115, 85, 0.3)",
+                background: "rgba(58, 48, 38, 0.06)",
+                border: "1px solid rgba(139, 115, 85, 0.22)",
                 borderRadius: 8,
-                padding: "5px 10px",
-                color: "#f4e4bc",
+                padding: "8px 12px",
+                minWidth: 44,
+                minHeight: 44,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#3a3228",
                 fontSize: 16,
                 cursor: "pointer",
+                boxSizing: "border-box",
               }}
             >
               {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
@@ -288,7 +295,7 @@ export function IFSInnerCouncil() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: "linear-gradient(170deg, #1a1208 0%, #2a1f14 30%, #1f1710 60%, #0d0a06 100%)",
+        background: "linear-gradient(170deg, #fdfaf3 0%, #f3ead8 30%, #ebe0cc 60%, #e5d8c2 100%)",
         fontFamily: "Inter, sans-serif",
         overflow: "hidden",
         position: "relative",
@@ -302,8 +309,8 @@ export function IFSInnerCouncil() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "10px 16px",
-          background: "rgba(26, 18, 8, 0.92)",
-          borderBottom: "1px solid rgba(139, 115, 85, 0.3)",
+          background: "rgba(255, 252, 248, 0.92)",
+          borderBottom: "1px solid rgba(139, 115, 85, 0.2)",
           zIndex: 10,
           flexShrink: 0,
           backdropFilter: "blur(10px)",
@@ -312,10 +319,10 @@ export function IFSInnerCouncil() {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 18 }}>{"\u2694"}</span>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#f4e4bc", lineHeight: 1.2 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#3a3228", lineHeight: 1.2 }}>
               The Inner Council
             </div>
-            <div style={{ fontSize: 10, color: "rgba(244, 228, 188, 0.5)" }}>
+            <div style={{ fontSize: 10, color: "rgba(58, 48, 38, 0.55)" }}>
               Step {state.currentStep + 1} of {STEP_CONFIGS.length} &mdash; {stepConfig.label}
             </div>
           </div>
@@ -324,20 +331,27 @@ export function IFSInnerCouncil() {
           <FurtherReading
             references={IFS_REFERENCES}
             accentColor="rgba(139,115,85,0.6)"
-            textColor="#f4e4bc"
-            bgColor="rgba(26,18,8,0.97)"
+            textColor="#3a3228"
+            bgColor="rgba(255,252,248,0.98)"
           />
           <button
+            type="button"
             onClick={toggleMute}
             data-testid="button-ifs-mute"
             style={{
-              background: "rgba(244, 228, 188, 0.1)",
-              border: "1px solid rgba(139, 115, 85, 0.3)",
+              background: "rgba(58, 48, 38, 0.06)",
+              border: "1px solid rgba(139, 115, 85, 0.22)",
               borderRadius: 8,
-              padding: "5px 10px",
-              color: "#f4e4bc",
+              padding: "8px 12px",
+              minWidth: 44,
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#3a3228",
               fontSize: 16,
               cursor: "pointer",
+              boxSizing: "border-box",
             }}
           >
             {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}

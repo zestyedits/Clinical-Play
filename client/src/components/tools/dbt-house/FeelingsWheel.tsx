@@ -79,14 +79,14 @@ export function FeelingsWheel({ isOpen, onToggle }: FeelingsWheelProps) {
           top: "50%",
           transform: "translateY(-50%)",
           zIndex: 25,
-          background: "rgba(45, 40, 35, 0.92)",
-          border: "1px solid rgba(160, 146, 107, 0.3)",
-          borderLeft: isOpen ? "none" : "1px solid rgba(160, 146, 107, 0.3)",
+          background: "rgba(255, 252, 248, 0.95)",
+          border: "1px solid rgba(160, 146, 107, 0.28)",
+          borderLeft: isOpen ? "none" : "1px solid rgba(160, 146, 107, 0.28)",
           borderRadius: "0 8px 8px 0",
           padding: "10px 8px",
           minWidth: 44,
           minHeight: 44,
-          color: "#f0e8d8",
+          color: "#3a3228",
           cursor: "pointer",
           fontFamily: "Inter, sans-serif",
           display: "flex",
@@ -121,8 +121,8 @@ export function FeelingsWheel({ isOpen, onToggle }: FeelingsWheelProps) {
           top: 0,
           bottom: 0,
           width: "min(340px, calc(100vw - 50px))",
-          background: "rgba(45, 40, 35, 0.96)",
-          borderRight: "1px solid rgba(160, 146, 107, 0.2)",
+          background: "rgba(255, 252, 248, 0.98)",
+          borderRight: "1px solid rgba(160, 146, 107, 0.22)",
           zIndex: 24,
           transform: isOpen ? "translateX(0)" : "translateX(-100%)",
           transition: "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -155,7 +155,7 @@ export function FeelingsWheel({ isOpen, onToggle }: FeelingsWheelProps) {
                 margin: 0,
                 fontSize: 14,
                 fontWeight: 600,
-                color: "#f0e8d8",
+                color: "#3a3228",
               }}
             >
               Feelings Wheel
@@ -165,7 +165,7 @@ export function FeelingsWheel({ isOpen, onToggle }: FeelingsWheelProps) {
             style={{
               margin: 0,
               fontSize: 10,
-              color: "rgba(240, 232, 216, 0.4)",
+              color: "rgba(58, 48, 38, 0.4)",
               lineHeight: 1.5,
             }}
           >
@@ -177,13 +177,13 @@ export function FeelingsWheel({ isOpen, onToggle }: FeelingsWheelProps) {
               position: "absolute",
               top: 12,
               right: 12,
-              background: "rgba(240, 232, 216, 0.1)",
+              background: "rgba(58, 48, 38, 0.1)",
               border: "none",
               borderRadius: 7,
               width: 26,
               height: 26,
               cursor: "pointer",
-              color: "rgba(240, 232, 216, 0.5)",
+              color: "rgba(58, 48, 38, 0.5)",
               fontSize: 13,
               display: "flex",
               alignItems: "center",
@@ -210,7 +210,7 @@ export function FeelingsWheel({ isOpen, onToggle }: FeelingsWheelProps) {
               height: 160,
               objectFit: "contain",
               borderRadius: 8,
-              background: "rgba(240, 232, 216, 0.04)",
+              background: "rgba(58, 48, 38, 0.04)",
             }}
           />
         </div>
@@ -238,7 +238,7 @@ export function FeelingsWheel({ isOpen, onToggle }: FeelingsWheelProps) {
                     padding: "8px 10px",
                     background: isExpanded
                       ? emotion.bgColor
-                      : "rgba(240, 232, 216, 0.03)",
+                      : "rgba(58, 48, 38, 0.03)",
                     border: `1px solid ${
                       isExpanded
                         ? `${emotion.color}33`
@@ -272,7 +272,7 @@ export function FeelingsWheel({ isOpen, onToggle }: FeelingsWheelProps) {
                       style={{
                         fontSize: 12,
                         fontWeight: 600,
-                        color: "#f0e8d8",
+                        color: "#3a3228",
                       }}
                     >
                       {emotion.core}
@@ -281,7 +281,7 @@ export function FeelingsWheel({ isOpen, onToggle }: FeelingsWheelProps) {
                   <span
                     style={{
                       fontSize: 10,
-                      color: "rgba(240, 232, 216, 0.35)",
+                      color: "rgba(58, 48, 38, 0.35)",
                       transform: isExpanded
                         ? "rotate(180deg)"
                         : "rotate(0deg)",
@@ -314,7 +314,7 @@ export function FeelingsWheel({ isOpen, onToggle }: FeelingsWheelProps) {
                           borderRadius: 5,
                           background: `${emotion.color}18`,
                           border: `1px solid ${emotion.color}25`,
-                          color: "rgba(240, 232, 216, 0.75)",
+                          color: "rgba(58, 48, 38, 0.75)",
                           fontFamily: "Inter, sans-serif",
                           whiteSpace: "nowrap",
                         }}

@@ -15,13 +15,13 @@ export interface StepWrapperProps {
 }
 
 const STEP_SCENES: Record<number, { bg: string; accent: string; glow: string }> = {
-  0: { bg: "linear-gradient(170deg, #0e2218 0%, #183428 40%, #1d3d2e 70%, #132a1e 100%)", accent: "#5ab88f", glow: "rgba(90,184,143,0.08)" },
-  1: { bg: "linear-gradient(170deg, #0e2218 0%, #1a3a28 40%, #224530 70%, #152d1f 100%)", accent: "#6bc99a", glow: "rgba(107,201,154,0.1)" },
-  2: { bg: "linear-gradient(170deg, #161022 0%, #1e1630 40%, #221a38 70%, #140e20 100%)", accent: "#9b8ec4", glow: "rgba(155,142,196,0.08)" },
-  3: { bg: "linear-gradient(170deg, #0e1c28 0%, #152838 40%, #1a3040 70%, #0c1820 100%)", accent: "#64b5d9", glow: "rgba(100,181,217,0.08)" },
-  4: { bg: "linear-gradient(170deg, #1a1508 0%, #28200e 40%, #302812 70%, #1a1408 100%)", accent: "#d4a24c", glow: "rgba(212,162,76,0.08)" },
-  5: { bg: "linear-gradient(170deg, #0e2218 0%, #1a3a28 40%, #224530 70%, #152d1f 100%)", accent: "#5ab88f", glow: "rgba(90,184,143,0.1)" },
-  6: { bg: "linear-gradient(170deg, #0e2218 0%, #1a3022 40%, #20382a 70%, #12281c 100%)", accent: "#2d7a3a", glow: "rgba(45,122,58,0.1)" },
+  0: { bg: "linear-gradient(170deg, #f5faf7 0%, #e8f2eb 45%, #dceae0 100%)", accent: "#5ab88f", glow: "rgba(90,184,143,0.2)" },
+  1: { bg: "linear-gradient(170deg, #f3faf6 0%, #e4f0e8 45%, #d8e8dd 100%)", accent: "#6bc99a", glow: "rgba(107,201,154,0.22)" },
+  2: { bg: "linear-gradient(170deg, #f8f7fb 0%, #ebe8f4 45%, #e0dcf0 100%)", accent: "#9b8ec4", glow: "rgba(155,142,196,0.2)" },
+  3: { bg: "linear-gradient(170deg, #f4fafc 0%, #e6f1f7 45%, #dae8f0 100%)", accent: "#64b5d9", glow: "rgba(100,181,217,0.2)" },
+  4: { bg: "linear-gradient(170deg, #fdfaf3 0%, #f5ecd8 45%, #ebe0c8 100%)", accent: "#d4a24c", glow: "rgba(212,162,76,0.22)" },
+  5: { bg: "linear-gradient(170deg, #f4faf6 0%, #e6f0ea 45%, #dae8df 100%)", accent: "#5ab88f", glow: "rgba(90,184,143,0.2)" },
+  6: { bg: "linear-gradient(170deg, #f2f8f3 0%, #e2ede4 45%, #d4e4d8 100%)", accent: "#2d7a3a", glow: "rgba(45,122,58,0.2)" },
 };
 
 const FLOATING_ELEMENTS: Record<number, string[]> = {
@@ -77,7 +77,7 @@ export function StepWrapper({
             top: i === 0 ? "12%" : i === 1 ? "25%" : "18%",
             right: i === 0 ? "8%" : i === 1 ? "15%" : "22%",
             fontSize: i === 0 ? 28 : i === 1 ? 20 : 16,
-            opacity: 0.15,
+            opacity: 0.1,
             animation: `mg-float-${i} ${4 + i}s ease-in-out infinite`,
             pointerEvents: "none",
             zIndex: 0,
@@ -111,7 +111,7 @@ export function StepWrapper({
                   initial={{ scale: 0.8 }}
                   animate={{
                     scale: isCurrent ? 1 : 1,
-                    backgroundColor: isCurrent ? scene.accent : isCompleted ? `${scene.accent}80` : "rgba(232, 220, 200, 0.1)",
+                    backgroundColor: isCurrent ? scene.accent : isCompleted ? `${scene.accent}80` : "rgba(58, 48, 38, 0.12)",
                     boxShadow: isCurrent ? `0 0 8px ${scene.accent}40` : "none",
                   }}
                   transition={{ duration: 0.35 }}
@@ -146,7 +146,7 @@ export function StepWrapper({
               margin: 0,
               fontSize: 18,
               fontWeight: 700,
-              color: "#e8dcc8",
+              color: "#3a3228",
               fontFamily: "'Lora', Georgia, serif",
               lineHeight: 1.2,
             }}
@@ -157,7 +157,7 @@ export function StepWrapper({
             style={{
               margin: "4px 0 0",
               fontSize: 12,
-              color: "rgba(232, 220, 200, 0.5)",
+              color: "rgba(58, 48, 38, 0.55)",
               lineHeight: 1.35,
             }}
           >
@@ -193,7 +193,7 @@ export function StepWrapper({
           flexShrink: 0,
           position: "relative",
           zIndex: 1,
-          background: "linear-gradient(to top, rgba(0,0,0,0.3), transparent)",
+          background: "linear-gradient(to top, rgba(255,252,248,0.94), transparent)",
           maxWidth: 720,
           margin: "0 auto",
           width: "100%",
@@ -205,8 +205,8 @@ export function StepWrapper({
             type="button"
             onClick={onBack}
             style={{
-              background: "rgba(232, 220, 200, 0.06)",
-              border: "1px solid rgba(232, 220, 200, 0.12)",
+              background: "rgba(58, 48, 38, 0.05)",
+              border: "1px solid rgba(58, 48, 38, 0.12)",
               borderRadius: 10,
               padding: "10px 20px",
               minHeight: 44,
@@ -214,7 +214,7 @@ export function StepWrapper({
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "rgba(232, 220, 200, 0.6)",
+              color: "rgba(58, 48, 38, 0.65)",
               fontSize: 13,
               fontWeight: 500,
               cursor: "pointer",
@@ -234,7 +234,7 @@ export function StepWrapper({
           style={{
             background: canProceed
               ? `linear-gradient(135deg, ${scene.accent}, ${scene.accent}cc)`
-              : "rgba(232, 220, 200, 0.08)",
+              : "rgba(58, 48, 38, 0.08)",
             border: "none",
             borderRadius: 10,
             padding: "10px 28px",
@@ -242,7 +242,7 @@ export function StepWrapper({
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            color: canProceed ? "#0a1f14" : "rgba(232, 220, 200, 0.25)",
+            color: canProceed ? "#2a2218" : "rgba(58, 48, 38, 0.35)",
             fontSize: 14,
             fontWeight: 700,
             cursor: canProceed ? "pointer" : "not-allowed",

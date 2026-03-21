@@ -22,9 +22,9 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
         alignItems: "center",
         justifyContent: "center",
         background:
-          "linear-gradient(170deg, #2d2820 0%, #3a3028 30%, #2a3a2a 60%, #1e2a1e 100%)",
+          "linear-gradient(170deg, #f7faf5 0%, #eef4ea 30%, #e4ebe0 60%, #dae3d6 100%)",
         fontFamily: "Inter, sans-serif",
-        color: "#f0e8d8",
+        color: "#3a3228",
         overflow: "auto",
         borderRadius: 12,
         position: "relative",
@@ -96,7 +96,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
           transition={{ delay: 0.4 }}
           style={{
             fontSize: "clamp(12px, 2.5vw, 14px)",
-            color: "rgba(240, 232, 216, 0.55)",
+            color: "rgba(58, 48, 38, 0.55)",
             margin: "0 0 20px",
             fontWeight: 400,
           }}
@@ -109,7 +109,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           style={{
-            background: "rgba(240, 232, 216, 0.04)",
+            background: "rgba(58, 48, 38, 0.04)",
             borderRadius: 14,
             padding: "14px 16px",
             marginBottom: 18,
@@ -122,7 +122,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
               fontSize: "clamp(12px, 2.2vw, 13px)",
               lineHeight: 1.7,
               margin: 0,
-              color: "rgba(240, 232, 216, 0.75)",
+              color: "rgba(58, 48, 38, 0.75)",
             }}
           >
             Build a house from the ground up. Each layer represents a core DBT skill area. Place a layer, then tap items inside to explore discussion prompts and therapeutic activities.
@@ -158,7 +158,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
                 >
                   {step.emoji}
                 </div>
-                <span style={{ fontSize: 8, color: "rgba(240, 232, 216, 0.35)", whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 8, color: "rgba(58, 48, 38, 0.35)", whiteSpace: "nowrap" }}>
                   {step.label}
                 </span>
               </div>
@@ -182,7 +182,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
             whileTap={{ scale: 0.97 }}
             style={{
               background: "linear-gradient(135deg, #6b8b6b, #5a7a5a)",
-              color: "#f0e8d8",
+              color: "#faf8f5",
               border: "none",
               borderRadius: 14,
               padding: "14px 44px",

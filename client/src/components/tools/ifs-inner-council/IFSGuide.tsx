@@ -6,9 +6,9 @@ interface IFSGuideProps {
   onClose: () => void;
 }
 
-const CANDLELIGHT = "#f4e4bc";
+const CANDLELIGHT = "#3a3228";
 const AMBER = "#b8860b";
-const BG = "#1a1208";
+const BG = "#fdfaf3";
 
 export function IFSGuide({ isOpen, onClose }: IFSGuideProps) {
   return (
@@ -42,14 +42,14 @@ export function IFSGuide({ isOpen, onClose }: IFSGuideProps) {
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
             style={{
-              background: `linear-gradient(180deg, ${BG} 0%, #0d0a06 100%)`,
+              background: `linear-gradient(180deg, ${BG} 0%, #f0e8dc 100%)`,
               borderRadius: 18,
               maxWidth: 520,
               width: "100%",
               maxHeight: "90vh",
               border: "1px solid rgba(139, 115, 85, 0.25)",
               boxShadow:
-                "0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 0 40px rgba(139, 115, 85, 0.1)",
+                "0 24px 80px rgba(58, 48, 38, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.7) inset, 0 0 40px rgba(139, 115, 85, 0.08)",
               fontFamily: "Inter, sans-serif",
               overflow: "hidden",
               display: "flex",
@@ -87,10 +87,10 @@ export function IFSGuide({ isOpen, onClose }: IFSGuideProps) {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  background: "rgba(255, 255, 255, 0.06)",
+                  background: "rgba(139, 115, 85, 0.1)",
                   border: "1px solid rgba(139, 115, 85, 0.2)",
                   borderRadius: 8,
-                  color: "rgba(244, 228, 188, 0.6)",
+                  color: "rgba(58, 48, 38, 0.6)",
                   fontSize: 18,
                   cursor: "pointer",
                   transition: "background 0.15s, color 0.15s",
@@ -98,12 +98,12 @@ export function IFSGuide({ isOpen, onClose }: IFSGuideProps) {
                   lineHeight: 1,
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)";
-                  e.currentTarget.style.color = "rgba(244, 228, 188, 0.9)";
+                  e.currentTarget.style.background = "rgba(139, 115, 85, 0.16)";
+                  e.currentTarget.style.color = "rgba(58, 48, 38, 0.9)";
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
-                  e.currentTarget.style.color = "rgba(244, 228, 188, 0.6)";
+                  e.currentTarget.style.background = "rgba(139, 115, 85, 0.1)";
+                  e.currentTarget.style.color = "rgba(58, 48, 38, 0.6)";
                 }}
               >
                 {"\u2715"}
@@ -127,7 +127,7 @@ export function IFSGuide({ isOpen, onClose }: IFSGuideProps) {
                   margin: 0,
                   fontSize: 13,
                   lineHeight: 1.7,
-                  color: "rgba(244, 228, 188, 0.75)",
+                  color: "rgba(58, 48, 38, 0.75)",
                 }}
               >
                 Internal Family Systems (IFS) is an evidence-based model that
@@ -145,11 +145,11 @@ export function IFSGuide({ isOpen, onClose }: IFSGuideProps) {
                   key={concept.id}
                   style={{
                     background:
-                      "linear-gradient(135deg, rgba(26, 18, 8, 0.9) 0%, rgba(13, 10, 6, 0.95) 100%)",
+                      "linear-gradient(135deg, rgba(253, 250, 243, 0.98) 0%, rgba(245, 238, 228, 0.99) 100%)",
                     borderRadius: 14,
                     padding: "16px 18px",
                     border: "1px solid rgba(139, 115, 85, 0.12)",
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+                    boxShadow: "0 2px 8px rgba(58, 48, 38, 0.06)",
                   }}
                 >
                   {/* Concept header */}
@@ -180,7 +180,7 @@ export function IFSGuide({ isOpen, onClose }: IFSGuideProps) {
                       margin: "0 0 10px",
                       fontSize: 13,
                       lineHeight: 1.7,
-                      color: "rgba(244, 228, 188, 0.82)",
+                      color: "rgba(58, 48, 38, 0.82)",
                     }}
                   >
                     {concept.description}
@@ -214,7 +214,7 @@ export function IFSGuide({ isOpen, onClose }: IFSGuideProps) {
                         margin: 0,
                         fontSize: 13,
                         lineHeight: 1.6,
-                        color: "rgba(244, 228, 188, 0.75)",
+                        color: "rgba(58, 48, 38, 0.75)",
                       }}
                     >
                       {concept.inSession}

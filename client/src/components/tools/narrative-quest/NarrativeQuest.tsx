@@ -264,7 +264,7 @@ export function NarrativeQuest() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          background: "linear-gradient(170deg, #1a1410 0%, #2a2218 30%, #241e14 60%, #18140e 100%)",
+          background: "linear-gradient(170deg, #fdfaf5 0%, #f3ebe0 30%, #eadfd2 60%, #e2d5c8 100%)",
           fontFamily: "Inter, sans-serif",
           overflow: "hidden",
           position: "relative",
@@ -277,8 +277,8 @@ export function NarrativeQuest() {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "10px 16px",
-            background: "rgba(26, 20, 16, 0.92)",
-            borderBottom: "1px solid rgba(180, 140, 80, 0.3)",
+            background: "rgba(255, 252, 248, 0.92)",
+            borderBottom: "1px solid rgba(180, 140, 80, 0.22)",
             zIndex: 10,
             flexShrink: 0,
             backdropFilter: "blur(10px)",
@@ -287,10 +287,10 @@ export function NarrativeQuest() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 18 }}>📖</span>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#f4e8d0", lineHeight: 1.2 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#3a3228", lineHeight: 1.2 }}>
                 The Narrative Quest
               </div>
-              <div style={{ fontSize: 10, color: "rgba(244, 232, 208, 0.5)" }}>
+              <div style={{ fontSize: 10, color: "rgba(58, 48, 38, 0.55)" }}>
                 Story Complete
               </div>
             </div>
@@ -299,20 +299,27 @@ export function NarrativeQuest() {
             <FurtherReading
               references={NARRATIVE_REFERENCES}
               accentColor="rgba(180,140,80,0.6)"
-              textColor="#f4e8d0"
-              bgColor="rgba(26,20,16,0.97)"
+              textColor="#3a3228"
+              bgColor="rgba(255,252,248,0.98)"
             />
             <button
+              type="button"
               onClick={toggleMute}
               data-testid="button-nq-mute"
               style={{
-                background: "rgba(244, 232, 208, 0.1)",
-                border: "1px solid rgba(180, 140, 80, 0.3)",
+                background: "rgba(58, 48, 38, 0.06)",
+                border: "1px solid rgba(180, 140, 80, 0.22)",
                 borderRadius: 8,
-                padding: "5px 10px",
-                color: "#f4e8d0",
+                padding: "8px 12px",
+                minWidth: 44,
+                minHeight: 44,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#3a3228",
                 fontSize: 16,
                 cursor: "pointer",
+                boxSizing: "border-box",
               }}
             >
               {isMuted ? "🔇" : "🔊"}
@@ -348,7 +355,7 @@ export function NarrativeQuest() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: "linear-gradient(170deg, #1a1410 0%, #2a2218 30%, #241e14 60%, #18140e 100%)",
+        background: "linear-gradient(170deg, #fdfaf5 0%, #f3ebe0 30%, #eadfd2 60%, #e2d5c8 100%)",
         fontFamily: "Inter, sans-serif",
         overflow: "hidden",
         position: "relative",
@@ -361,8 +368,8 @@ export function NarrativeQuest() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "10px 16px",
-          background: "rgba(26, 20, 16, 0.92)",
-          borderBottom: "1px solid rgba(180, 140, 80, 0.3)",
+          background: "rgba(255, 252, 248, 0.92)",
+          borderBottom: "1px solid rgba(180, 140, 80, 0.22)",
           zIndex: 10,
           flexShrink: 0,
           backdropFilter: "blur(10px)",
@@ -371,10 +378,10 @@ export function NarrativeQuest() {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 18 }}>📖</span>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#f4e8d0", lineHeight: 1.2 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#3a3228", lineHeight: 1.2 }}>
               The Narrative Quest
             </div>
-            <div style={{ fontSize: 10, color: "rgba(244, 232, 208, 0.5)" }}>
+            <div style={{ fontSize: 10, color: "rgba(58, 48, 38, 0.55)" }}>
               Step {state.currentStep + 1} of {STEP_CONFIGS.length} &mdash; {stepConfig.label}
             </div>
           </div>
@@ -383,20 +390,27 @@ export function NarrativeQuest() {
           <FurtherReading
             references={NARRATIVE_REFERENCES}
             accentColor="rgba(180,140,80,0.6)"
-            textColor="#f4e8d0"
-            bgColor="rgba(26,20,16,0.97)"
+            textColor="#3a3228"
+            bgColor="rgba(255,252,248,0.98)"
           />
           <button
+            type="button"
             onClick={toggleMute}
             data-testid="button-nq-mute"
             style={{
-              background: "rgba(244, 232, 208, 0.1)",
-              border: "1px solid rgba(180, 140, 80, 0.3)",
+              background: "rgba(58, 48, 38, 0.06)",
+              border: "1px solid rgba(180, 140, 80, 0.22)",
               borderRadius: 8,
-              padding: "5px 10px",
-              color: "#f4e8d0",
+              padding: "8px 12px",
+              minWidth: 44,
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#3a3228",
               fontSize: 16,
               cursor: "pointer",
+              boxSizing: "border-box",
             }}
           >
             {isMuted ? "🔇" : "🔊"}

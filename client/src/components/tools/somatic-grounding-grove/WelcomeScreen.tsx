@@ -22,9 +22,9 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
         alignItems: "center",
         justifyContent: "center",
         background:
-          "linear-gradient(170deg, #1a2a1a 0%, #253525 30%, #1e3028 60%, #162016 100%)",
+          "linear-gradient(170deg, #f5faf5 0%, #eaf2ea 30%, #dfeadf 60%, #d4e2d4 100%)",
         fontFamily: "Inter, sans-serif",
-        color: "#d4e8d0",
+        color: "#3a3228",
         overflow: "auto",
         borderRadius: 12,
         position: "relative",
@@ -96,7 +96,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
           transition={{ delay: 0.4 }}
           style={{
             fontSize: "clamp(12px, 2.5vw, 14px)",
-            color: "rgba(212, 232, 208, 0.55)",
+            color: "rgba(58, 48, 38, 0.55)",
             margin: "0 0 20px",
             fontWeight: 400,
           }}
@@ -109,7 +109,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           style={{
-            background: "rgba(212, 232, 208, 0.04)",
+            background: "rgba(58, 48, 38, 0.04)",
             borderRadius: 14,
             padding: "14px 16px",
             marginBottom: 18,
@@ -122,7 +122,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
               fontSize: "clamp(12px, 2.2vw, 13px)",
               lineHeight: 1.7,
               margin: 0,
-              color: "rgba(212, 232, 208, 0.75)",
+              color: "rgba(58, 48, 38, 0.75)",
             }}
           >
             Explore different areas of your body to notice where you hold tension, stress, or discomfort. For each region, try grounding techniques designed to help you reconnect and release.
@@ -158,7 +158,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
                 >
                   {step.emoji}
                 </div>
-                <span style={{ fontSize: 8, color: "rgba(212, 232, 208, 0.35)", whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 8, color: "rgba(58, 48, 38, 0.35)", whiteSpace: "nowrap" }}>
                   {step.label}
                 </span>
               </div>
@@ -182,7 +182,7 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
             whileTap={{ scale: 0.97 }}
             style={{
               background: "linear-gradient(135deg, #3a6b3a, #2d5a2d)",
-              color: "#d4e8d0",
+              color: "#faf8f5",
               border: "none",
               borderRadius: 14,
               padding: "14px 44px",

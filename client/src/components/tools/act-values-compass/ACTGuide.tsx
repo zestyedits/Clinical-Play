@@ -6,10 +6,10 @@ interface ACTGuideProps {
   onClose: () => void;
 }
 
-const PARCHMENT = "#e8dcc8";
+const PARCHMENT = "#3a3228";
 const GOLD = "#c9a84c";
 const TEAL = "#2d8a8a";
-const BG = "#0f1a1f";
+const BG = "#f4fafb";
 
 export function ACTGuide({ isOpen, onClose }: ACTGuideProps) {
   return (
@@ -43,14 +43,14 @@ export function ACTGuide({ isOpen, onClose }: ACTGuideProps) {
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
             style={{
-              background: `linear-gradient(180deg, ${BG} 0%, #0a1318 100%)`,
+              background: `linear-gradient(180deg, ${BG} 0%, #e2eef2 100%)`,
               borderRadius: 18,
               maxWidth: 520,
               width: "100%",
               maxHeight: "90vh",
               border: `1px solid rgba(45, 138, 138, 0.25)`,
               boxShadow:
-                "0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 0 40px rgba(45, 138, 138, 0.1)",
+                "0 24px 80px rgba(58, 48, 38, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.7) inset, 0 0 40px rgba(45, 138, 138, 0.08)",
               fontFamily: "Inter, sans-serif",
               overflow: "hidden",
               display: "flex",
@@ -88,10 +88,10 @@ export function ACTGuide({ isOpen, onClose }: ACTGuideProps) {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  background: "rgba(255, 255, 255, 0.06)",
+                  background: "rgba(45, 138, 138, 0.1)",
                   border: `1px solid rgba(45, 138, 138, 0.2)`,
                   borderRadius: 8,
-                  color: `rgba(232, 220, 200, 0.6)`,
+                  color: `rgba(58, 48, 38, 0.55)`,
                   fontSize: 18,
                   cursor: "pointer",
                   transition: "background 0.15s, color 0.15s",
@@ -99,12 +99,12 @@ export function ACTGuide({ isOpen, onClose }: ACTGuideProps) {
                   lineHeight: 1,
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)";
-                  e.currentTarget.style.color = "rgba(232, 220, 200, 0.9)";
+                  e.currentTarget.style.background = "rgba(45, 138, 138, 0.16)";
+                  e.currentTarget.style.color = "rgba(58, 48, 38, 0.9)";
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
-                  e.currentTarget.style.color = "rgba(232, 220, 200, 0.6)";
+                  e.currentTarget.style.background = "rgba(45, 138, 138, 0.1)";
+                  e.currentTarget.style.color = "rgba(58, 48, 38, 0.55)";
                 }}
               >
                 {"\u2715"}
@@ -128,7 +128,7 @@ export function ACTGuide({ isOpen, onClose }: ACTGuideProps) {
                   margin: 0,
                   fontSize: 13,
                   lineHeight: 1.7,
-                  color: `rgba(232, 220, 200, 0.75)`,
+                  color: `rgba(58, 48, 38, 0.75)`,
                 }}
               >
                 Acceptance and Commitment Therapy (ACT) builds psychological
@@ -144,11 +144,11 @@ export function ACTGuide({ isOpen, onClose }: ACTGuideProps) {
                   key={concept.id}
                   style={{
                     background:
-                      "linear-gradient(135deg, rgba(15, 26, 31, 0.9) 0%, rgba(10, 19, 24, 0.95) 100%)",
+                      "linear-gradient(135deg, rgba(250, 252, 253, 0.98) 0%, rgba(236, 244, 246, 0.99) 100%)",
                     borderRadius: 14,
                     padding: "16px 18px",
                     border: "1px solid rgba(45, 138, 138, 0.12)",
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+                    boxShadow: "0 2px 8px rgba(58, 48, 38, 0.06)",
                   }}
                 >
                   {/* Concept header */}
@@ -179,7 +179,7 @@ export function ACTGuide({ isOpen, onClose }: ACTGuideProps) {
                       margin: "0 0 10px",
                       fontSize: 13,
                       lineHeight: 1.7,
-                      color: `rgba(232, 220, 200, 0.82)`,
+                      color: `rgba(58, 48, 38, 0.82)`,
                     }}
                   >
                     {concept.description}
@@ -212,7 +212,7 @@ export function ACTGuide({ isOpen, onClose }: ACTGuideProps) {
                         margin: 0,
                         fontSize: 13,
                         lineHeight: 1.6,
-                        color: `rgba(232, 220, 200, 0.75)`,
+                        color: `rgba(58, 48, 38, 0.75)`,
                       }}
                     >
                       {concept.inSession}

@@ -118,7 +118,7 @@ export function GardenPlot({ changeTopic, onSelectTopic, ageMode }: GardenPlotPr
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 10,
-                  color: "#0a1f14",
+                  color: "#3a3228",
                   fontWeight: 700,
                 }}
               >

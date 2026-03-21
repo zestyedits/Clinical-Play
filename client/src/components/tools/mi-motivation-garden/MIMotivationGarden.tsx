@@ -330,7 +330,7 @@ export function MIMotivationGarden() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          background: "linear-gradient(170deg, #0a1f14 0%, #152520 30%, #1a2a25 60%, #0d1814 100%)",
+          background: "linear-gradient(170deg, #f5faf6 0%, #e6f0ea 30%, #dae8df 60%, #d0dfd6 100%)",
           fontFamily: "Inter, sans-serif",
           overflow: "hidden",
           position: "relative",
@@ -343,17 +343,18 @@ export function MIMotivationGarden() {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "8px 14px",
-            borderBottom: "1px solid rgba(45, 122, 58, 0.15)",
+            background: "rgba(255, 252, 250, 0.88)",
+            borderBottom: "1px solid rgba(45, 122, 58, 0.18)",
             zIndex: 10,
             flexShrink: 0,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ fontSize: 16 }}>{"\uD83C\uDF31"}</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#e8dcc8" }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#3a3228" }}>
               Motivation Garden
             </span>
-            <span style={{ fontSize: 10, color: "rgba(232, 220, 200, 0.35)" }}>
+            <span style={{ fontSize: 10, color: "rgba(58, 48, 38, 0.45)" }}>
               — Complete
             </span>
           </div>
@@ -361,20 +362,27 @@ export function MIMotivationGarden() {
             <FurtherReading
               references={MI_REFERENCES}
               accentColor="rgba(45,122,58,0.6)"
-              textColor="#e8dcc8"
-              bgColor="rgba(10,31,20,0.97)"
+              textColor="#3a3228"
+              bgColor="rgba(255,252,250,0.98)"
             />
             <button
+              type="button"
               onClick={toggleMute}
               data-testid="button-mi-mute"
               style={{
-                background: "transparent",
-                border: "none",
-                borderRadius: 6,
-                padding: "4px 8px",
-                color: "rgba(232, 220, 200, 0.5)",
+                background: "rgba(58, 48, 38, 0.05)",
+                border: "1px solid rgba(45, 122, 58, 0.15)",
+                borderRadius: 8,
+                padding: "8px 12px",
+                minWidth: 44,
+                minHeight: 44,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#3a3228",
                 fontSize: 14,
                 cursor: "pointer",
+                boxSizing: "border-box",
               }}
             >
               {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
@@ -411,7 +419,7 @@ export function MIMotivationGarden() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: "linear-gradient(170deg, #0a1f14 0%, #152520 30%, #1a2a25 60%, #0d1814 100%)",
+        background: "linear-gradient(170deg, #f5faf6 0%, #e6f0ea 30%, #dae8df 60%, #d0dfd6 100%)",
         fontFamily: "Inter, sans-serif",
         overflow: "hidden",
         position: "relative",
@@ -424,14 +432,15 @@ export function MIMotivationGarden() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "8px 14px",
-          borderBottom: "1px solid rgba(45, 122, 58, 0.15)",
+          background: "rgba(255, 252, 250, 0.88)",
+          borderBottom: "1px solid rgba(45, 122, 58, 0.18)",
           zIndex: 10,
           flexShrink: 0,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: 16 }}>{"\uD83C\uDF31"}</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: "#e8dcc8" }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#3a3228" }}>
             Motivation Garden
           </span>
         </div>
@@ -439,20 +448,27 @@ export function MIMotivationGarden() {
           <FurtherReading
             references={MI_REFERENCES}
             accentColor="rgba(45,122,58,0.6)"
-            textColor="#e8dcc8"
-            bgColor="rgba(10,31,20,0.97)"
+            textColor="#3a3228"
+            bgColor="rgba(255,252,250,0.98)"
           />
           <button
+            type="button"
             onClick={toggleMute}
             data-testid="button-mi-mute"
             style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: 6,
-              padding: "4px 8px",
-              color: "rgba(232, 220, 200, 0.5)",
+              background: "rgba(58, 48, 38, 0.05)",
+              border: "1px solid rgba(45, 122, 58, 0.15)",
+              borderRadius: 8,
+              padding: "8px 12px",
+              minWidth: 44,
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#3a3228",
               fontSize: 14,
               cursor: "pointer",
+              boxSizing: "border-box",
             }}
           >
             {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}

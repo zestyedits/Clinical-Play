@@ -297,7 +297,7 @@ export function ACTValuesCompass() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          background: "linear-gradient(170deg, #0f1a1f 0%, #152530 30%, #1a2a35 60%, #0d1820 100%)",
+          background: "linear-gradient(170deg, #f5faf9 0%, #e8f3f1 30%, #dcecea 60%, #d4e4e0 100%)",
           fontFamily: "Inter, sans-serif",
           overflow: "hidden",
           position: "relative",
@@ -310,8 +310,8 @@ export function ACTValuesCompass() {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "10px 16px",
-            background: "rgba(10, 18, 25, 0.92)",
-            borderBottom: "1px solid rgba(45, 138, 138, 0.3)",
+            background: "rgba(255, 252, 250, 0.92)",
+            borderBottom: "1px solid rgba(45, 138, 138, 0.2)",
             zIndex: 10,
             flexShrink: 0,
             backdropFilter: "blur(10px)",
@@ -320,10 +320,10 @@ export function ACTValuesCompass() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 18 }}>{"\uD83E\uDDED"}</span>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#e8dcc8", lineHeight: 1.2 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#3a3228", lineHeight: 1.2 }}>
                 The Values Compass
               </div>
-              <div style={{ fontSize: 10, color: "rgba(232, 220, 200, 0.5)" }}>
+              <div style={{ fontSize: 10, color: "rgba(58, 48, 38, 0.55)" }}>
                 Expedition Complete
               </div>
             </div>
@@ -332,20 +332,27 @@ export function ACTValuesCompass() {
             <FurtherReading
               references={ACT_REFERENCES}
               accentColor="rgba(45,138,138,0.6)"
-              textColor="#e8dcc8"
-              bgColor="rgba(10,18,25,0.97)"
+              textColor="#3a3228"
+              bgColor="rgba(255,252,250,0.98)"
             />
             <button
+              type="button"
               onClick={toggleMute}
               data-testid="button-act-mute"
               style={{
-                background: "rgba(232, 220, 200, 0.1)",
-                border: "1px solid rgba(45, 138, 138, 0.3)",
+                background: "rgba(58, 48, 38, 0.06)",
+                border: "1px solid rgba(45, 138, 138, 0.22)",
                 borderRadius: 8,
-                padding: "5px 10px",
-                color: "#e8dcc8",
+                padding: "8px 12px",
+                minWidth: 44,
+                minHeight: 44,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#3a3228",
                 fontSize: 16,
                 cursor: "pointer",
+                boxSizing: "border-box",
               }}
             >
               {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}
@@ -374,7 +381,7 @@ export function ACTValuesCompass() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: "linear-gradient(170deg, #0f1a1f 0%, #152530 30%, #1a2a35 60%, #0d1820 100%)",
+        background: "linear-gradient(170deg, #f5faf9 0%, #e8f3f1 30%, #dcecea 60%, #d4e4e0 100%)",
         fontFamily: "Inter, sans-serif",
         overflow: "hidden",
         position: "relative",
@@ -388,8 +395,8 @@ export function ACTValuesCompass() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "10px 16px",
-          background: "rgba(10, 18, 25, 0.92)",
-          borderBottom: "1px solid rgba(45, 138, 138, 0.3)",
+          background: "rgba(255, 252, 250, 0.92)",
+          borderBottom: "1px solid rgba(45, 138, 138, 0.2)",
           zIndex: 10,
           flexShrink: 0,
           backdropFilter: "blur(10px)",
@@ -398,10 +405,10 @@ export function ACTValuesCompass() {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 18 }}>{"\uD83E\uDDED"}</span>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#e8dcc8", lineHeight: 1.2 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#3a3228", lineHeight: 1.2 }}>
               The Values Compass
             </div>
-            <div style={{ fontSize: 10, color: "rgba(232, 220, 200, 0.5)" }}>
+            <div style={{ fontSize: 10, color: "rgba(58, 48, 38, 0.55)" }}>
               Step {state.currentStep + 1} of {STEP_CONFIGS.length} &mdash; {stepConfig.label}
             </div>
           </div>
@@ -410,20 +417,27 @@ export function ACTValuesCompass() {
           <FurtherReading
             references={ACT_REFERENCES}
             accentColor="rgba(45,138,138,0.6)"
-            textColor="#e8dcc8"
-            bgColor="rgba(10,18,25,0.97)"
+            textColor="#3a3228"
+            bgColor="rgba(255,252,250,0.98)"
           />
           <button
+            type="button"
             onClick={toggleMute}
             data-testid="button-act-mute"
             style={{
-              background: "rgba(232, 220, 200, 0.1)",
-              border: "1px solid rgba(45, 138, 138, 0.3)",
+              background: "rgba(58, 48, 38, 0.06)",
+              border: "1px solid rgba(45, 138, 138, 0.22)",
               borderRadius: 8,
-              padding: "5px 10px",
-              color: "#e8dcc8",
+              padding: "8px 12px",
+              minWidth: 44,
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#3a3228",
               fontSize: 16,
               cursor: "pointer",
+              boxSizing: "border-box",
             }}
           >
             {isMuted ? "\uD83D\uDD07" : "\uD83D\uDD0A"}

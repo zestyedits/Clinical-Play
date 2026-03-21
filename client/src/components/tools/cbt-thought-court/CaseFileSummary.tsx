@@ -19,7 +19,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
 
   const handleExport = async () => {
     if (!summaryRef.current) return;
-    const canvas = await html2canvas(summaryRef.current, { backgroundColor: "#1e1a2e" });
+    const canvas = await html2canvas(summaryRef.current, { backgroundColor: "#faf8fc" });
     const link = document.createElement("a");
     link.download = `thought-court-case-file-${Date.now()}.png`;
     link.href = canvas.toDataURL();
@@ -39,7 +39,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
   const beliefBarStyle = (value: number, color: string): React.CSSProperties => ({
     height: 14,
     borderRadius: 7,
-    background: "#1e1a2e",
+    background: "#ebe4f0",
     width: "100%",
     position: "relative",
     overflow: "hidden",
@@ -72,7 +72,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
   const bodyTextStyle: React.CSSProperties = {
     fontFamily: "'Georgia', 'Times New Roman', serif",
     fontSize: 15,
-    color: "#f0e8d8",
+    color: "#3a3228",
     lineHeight: 1.6,
   };
 
@@ -94,7 +94,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
       <div
         ref={summaryRef}
         style={{
-          background: "#2a2438",
+          background: "#faf8fc",
           borderRadius: 12,
           border: "2px solid rgba(212, 168, 83, 0.4)",
           overflow: "hidden",
@@ -103,7 +103,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
         {/* Header */}
         <div
           style={{
-            background: "linear-gradient(135deg, #1e1a2e, #2a2438)",
+            background: "linear-gradient(135deg, #faf8fc, #ebe4f4)",
             padding: "clamp(16px, 3vw, 28px) clamp(16px, 3vw, 28px) 20px",
             borderBottom: "2px solid rgba(212, 168, 83, 0.4)",
             textAlign: "center",
@@ -127,7 +127,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
             style={{
               fontFamily: "'Georgia', 'Times New Roman', serif",
               fontSize: 12,
-              color: "rgba(240, 232, 216, 0.5)",
+              color: "rgba(58, 48, 38, 0.5)",
               marginTop: 6,
               letterSpacing: 2,
               textTransform: "uppercase",
@@ -172,7 +172,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
             <div
               style={{
                 ...bodyTextStyle,
-                background: "rgba(30, 26, 46, 0.6)",
+                background: "rgba(139, 92, 246, 0.08)",
                 padding: "12px 16px",
                 borderRadius: 8,
                 borderLeft: "3px solid #d4a853",
@@ -182,7 +182,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
                 "{state.originalThought}"
               </div>
               {state.situation && (
-                <div style={{ fontSize: 13, color: "rgba(240, 232, 216, 0.6)" }}>
+                <div style={{ fontSize: 13, color: "rgba(58, 48, 38, 0.6)" }}>
                   Situation: {state.situation}
                 </div>
               )}
@@ -257,7 +257,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
                     style={{
                       marginBottom: 6,
                       paddingLeft: 4,
-                      color: "#f0e8d8",
+                      color: "#3a3228",
                     }}
                   >
                     <span style={{ borderLeft: "2px solid #e57373", paddingLeft: 8 }}>
@@ -293,7 +293,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
                     style={{
                       marginBottom: 6,
                       paddingLeft: 4,
-                      color: "#f0e8d8",
+                      color: "#3a3228",
                     }}
                   >
                     <span style={{ borderLeft: "2px solid #81c784", paddingLeft: 8 }}>
@@ -315,7 +315,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
             <div
               style={{
                 ...bodyTextStyle,
-                background: "rgba(30, 26, 46, 0.6)",
+                background: "rgba(139, 92, 246, 0.08)",
                 padding: "12px 16px",
                 borderRadius: 8,
               }}
@@ -356,7 +356,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
                 display: "flex",
                 flexDirection: "column",
                 gap: 10,
-                background: "rgba(30, 26, 46, 0.6)",
+                background: "rgba(139, 92, 246, 0.08)",
                 padding: "16px 20px",
                 borderRadius: 8,
               }}
@@ -366,7 +366,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
                 <div
                   style={{
                     fontSize: 12,
-                    color: "rgba(240, 232, 216, 0.5)",
+                    color: "rgba(58, 48, 38, 0.5)",
                     marginBottom: 4,
                     fontFamily: "'Georgia', 'Times New Roman', serif",
                   }}
@@ -401,7 +401,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
                 <div
                   style={{
                     fontSize: 12,
-                    color: "rgba(240, 232, 216, 0.5)",
+                    color: "rgba(58, 48, 38, 0.5)",
                     marginBottom: 4,
                     fontFamily: "'Georgia', 'Times New Roman', serif",
                   }}
@@ -431,7 +431,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
                   textAlign: "center",
                   fontSize: 14,
                   fontFamily: "'Georgia', 'Times New Roman', serif",
-                  color: beliefShift > 0 ? "#81c784" : beliefShift < 0 ? "#e57373" : "rgba(240, 232, 216, 0.6)",
+                  color: beliefShift > 0 ? "#81c784" : beliefShift < 0 ? "#e57373" : "rgba(58, 48, 38, 0.6)",
                   fontWeight: 600,
                   marginTop: 4,
                 }}
@@ -477,7 +477,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
             style={{
               fontFamily: "'Georgia', 'Times New Roman', serif",
               fontSize: 13,
-              color: "rgba(240, 232, 216, 0.6)",
+              color: "rgba(58, 48, 38, 0.6)",
               marginTop: 4,
             }}
           >
@@ -497,7 +497,7 @@ export function CaseFileSummary({ state, onNewTrial }: CaseFileSummaryProps) {
             borderRadius: 8,
             border: "none",
             background: "linear-gradient(135deg, #d4a853, #b8922e)",
-            color: "#1e1a2e",
+            color: "#faf8f5",
             fontSize: 15,
             fontWeight: 700,
             fontFamily: "'Georgia', 'Times New Roman', serif",

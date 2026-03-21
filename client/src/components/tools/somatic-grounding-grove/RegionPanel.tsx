@@ -33,8 +33,8 @@ export function RegionPanel({
       className="tool-game-side-panel"
       style={{
         width: 320,
-        background: "rgba(26, 42, 26, 0.96)",
-        borderLeft: "1px solid rgba(100, 160, 100, 0.15)",
+        background: "rgba(255, 252, 250, 0.97)",
+        borderLeft: "1px solid rgba(100, 160, 100, 0.2)",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
@@ -44,11 +44,11 @@ export function RegionPanel({
     >
       <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(100, 160, 100, 0.12)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: "#d4e8d0", display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#3a3228", display: "flex", alignItems: "center", gap: 6 }}>
             <span>{region.emoji}</span> {region.name}
             {regionCompleted && <span style={{ fontSize: 12 }}>{"\u2705"}</span>}
           </div>
-          <div style={{ fontSize: 10, color: "rgba(212, 232, 208, 0.4)", marginTop: 2 }}>
+          <div style={{ fontSize: 10, color: "rgba(58, 48, 38, 0.5)", marginTop: 2 }}>
             {regionTechCompleted}/{region.groundingTechniques.length} techniques practiced
           </div>
         </div>
@@ -57,8 +57,8 @@ export function RegionPanel({
           onClick={onClose}
           aria-label="Close region panel"
           style={{
-            background: "rgba(212, 232, 208, 0.06)",
-            border: "1px solid rgba(100, 160, 100, 0.15)",
+            background: "rgba(58, 48, 38, 0.05)",
+            border: "1px solid rgba(100, 160, 100, 0.2)",
             borderRadius: 8,
             padding: "8px 12px",
             minWidth: 44,
@@ -66,7 +66,7 @@ export function RegionPanel({
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "rgba(212, 232, 208, 0.5)",
+            color: "rgba(58, 48, 38, 0.55)",
             fontSize: 14,
             cursor: "pointer",
             boxSizing: "border-box",

@@ -41,9 +41,9 @@ export function WelcomeScreen({
         alignItems: "center",
         justifyContent: "center",
         background:
-          "linear-gradient(170deg, #0a1a20 0%, #122830 30%, #182e38 60%, #0d1820 100%)",
+          "linear-gradient(170deg, #f4fafb 0%, #e8f4f4 30%, #dceeee 60%, #d4e8e8 100%)",
         fontFamily: "Inter, sans-serif",
-        color: "#e8dcc8",
+        color: "#3a3228",
         overflow: "auto",
         borderRadius: 12,
         position: "relative",
@@ -67,7 +67,7 @@ export function WelcomeScreen({
         style={{
           position: "absolute",
           top: 0, left: 0, right: 0, height: "50%",
-          background: "radial-gradient(ellipse at 50% 0%, rgba(45,138,138,0.12), transparent 70%)",
+          background: "radial-gradient(ellipse at 50% 0%, rgba(45,138,138,0.08), transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -115,7 +115,7 @@ export function WelcomeScreen({
           transition={{ delay: 0.4 }}
           style={{
             fontSize: "clamp(12px, 2.5vw, 14px)",
-            color: "rgba(232, 220, 200, 0.55)",
+            color: "rgba(58, 48, 38, 0.55)",
             margin: "0 0 20px",
             fontWeight: 400,
           }}
@@ -132,7 +132,7 @@ export function WelcomeScreen({
             justifyContent: "center",
             gap: 3,
             marginBottom: 20,
-            background: "rgba(232, 220, 200, 0.04)",
+            background: "rgba(58, 48, 38, 0.04)",
             borderRadius: 12,
             padding: 3,
           }}
@@ -158,8 +158,8 @@ export function WelcomeScreen({
                     : "transparent",
                 color:
                   ageMode === value
-                    ? "#e8dcc8"
-                    : "rgba(232, 220, 200, 0.5)",
+                    ? "#faf8f5"
+                    : "rgba(58, 48, 38, 0.5)",
                 boxShadow:
                   ageMode === value
                     ? "0 2px 10px rgba(45, 138, 138, 0.3)"
@@ -176,7 +176,7 @@ export function WelcomeScreen({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           style={{
-            background: "rgba(232, 220, 200, 0.04)",
+            background: "rgba(58, 48, 38, 0.04)",
             borderRadius: 14,
             padding: "14px 16px",
             marginBottom: 18,
@@ -189,7 +189,7 @@ export function WelcomeScreen({
               fontSize: "clamp(12px, 2.2vw, 13px)",
               lineHeight: 1.7,
               margin: 0,
-              color: "rgba(232, 220, 200, 0.75)",
+              color: "rgba(58, 48, 38, 0.75)",
             }}
           >
             {WELCOME_CONTENT.instruction[ageMode]}
@@ -225,7 +225,7 @@ export function WelcomeScreen({
                 >
                   {step.emoji}
                 </div>
-                <span style={{ fontSize: 7, color: "rgba(232, 220, 200, 0.3)", whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 7, color: "rgba(58, 48, 38, 0.3)", whiteSpace: "nowrap" }}>
                   {step.label}
                 </span>
               </div>
@@ -249,7 +249,7 @@ export function WelcomeScreen({
             whileTap={{ scale: 0.97 }}
             style={{
               background: "linear-gradient(135deg, #2d8a8a, #1f6b6b)",
-              color: "#e8dcc8",
+              color: "#faf8f5",
               border: "none",
               borderRadius: 14,
               padding: "14px 44px",
@@ -270,7 +270,7 @@ export function WelcomeScreen({
             data-testid="button-open-act-guide"
             style={{
               background: "transparent",
-              color: "rgba(232, 220, 200, 0.45)",
+              color: "rgba(58, 48, 38, 0.45)",
               border: "none",
               borderRadius: 8,
               padding: "8px 16px",
@@ -280,8 +280,8 @@ export function WelcomeScreen({
               fontFamily: "Inter, sans-serif",
               transition: "color 0.15s",
             }}
-            onMouseOver={(e) => { e.currentTarget.style.color = "rgba(232, 220, 200, 0.7)"; }}
-            onMouseOut={(e) => { e.currentTarget.style.color = "rgba(232, 220, 200, 0.45)"; }}
+            onMouseOver={(e) => { e.currentTarget.style.color = "rgba(58, 48, 38, 0.7)"; }}
+            onMouseOut={(e) => { e.currentTarget.style.color = "rgba(58, 48, 38, 0.45)"; }}
           >
             Learn about ACT concepts →
           </button>

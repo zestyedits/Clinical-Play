@@ -18,8 +18,8 @@ interface CouncilSummaryProps {
 
 const AMBER = "#b8860b";
 const SELF_ACCENT = "#5f9ea0";
-const CANDLELIGHT = "#f4e4bc";
-const SHADOW = "#2a1f14";
+const CANDLELIGHT = "#3a3228";
+const SHADOW = "#f5efe6";
 const STONE = "#8b7355";
 
 const SERIF = "'Georgia', 'Times New Roman', serif";
@@ -93,7 +93,7 @@ export function CouncilSummary({
         {/* Header */}
         <div
           style={{
-            background: `linear-gradient(135deg, #1a1208, ${SHADOW})`,
+            background: `linear-gradient(135deg, #fdfaf3, #ebe4d6)`,
             padding: "14px 20px 12px",
             borderBottom: `1.5px solid ${AMBER}66`,
             display: "flex",
@@ -203,7 +203,7 @@ export function CouncilSummary({
                 cx={miniCx}
                 cy={miniCy}
                 r={miniTableR}
-                fill={`#1a1208`}
+                fill="#dcd4c8"
                 stroke={STONE}
                 strokeWidth={1.5}
               />
@@ -431,7 +431,7 @@ export function CouncilSummary({
             borderRadius: 8,
             border: "none",
             background: `linear-gradient(135deg, ${AMBER}, #8b6914)`,
-            color: "#1a1208",
+            color: "#faf8f5",
             fontSize: 14,
             fontWeight: 700,
             fontFamily: SERIF,
