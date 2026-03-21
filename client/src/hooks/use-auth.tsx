@@ -10,11 +10,27 @@ interface AuthResult {
   emailConfirmed: boolean;
 }
 
+const AUTH_FETCH_TIMEOUT_MS = 20_000;
+
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  timeoutMs = AUTH_FETCH_TIMEOUT_MS,
+): Promise<Response> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    return await fetch(input, { ...init, signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function fetchUser(session: Session | null): Promise<AuthResult> {
   if (!session?.access_token) return { user: null, accessDenied: false, emailConfirmed: false };
 
   try {
-    const response = await fetch("/api/auth/user", {
+    const response = await fetchWithTimeout("/api/auth/user", {
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },
@@ -58,29 +74,37 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     let unsubscribe: (() => void) | null = null;
 
     async function init() {
-      const supabase = await getSupabase();
+      try {
+        const supabase = await getSupabase();
 
-      // Subscribe to auth changes FIRST so we don't miss events
-      // (e.g. OAuth redirect token exchange that happens during initialization)
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
-        if (mounted) {
-          setSession(newSession);
-          setSessionLoading(false);
-          queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        // Subscribe to auth changes FIRST so we don't miss events
+        // (e.g. OAuth redirect token exchange that happens during initialization)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+          if (mounted) {
+            setSession(newSession);
+            setSessionLoading(false);
+            queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
 
-          if (event === "PASSWORD_RECOVERY") {
-            window.location.href = "/reset-password";
+            if (event === "PASSWORD_RECOVERY") {
+              window.location.href = "/reset-password";
+            }
           }
+        });
+
+        unsubscribe = () => subscription.unsubscribe();
+
+        // Also call getSession as a fallback to ensure we have the current state
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (mounted) {
+          setSession(currentSession);
+          setSessionLoading(false);
         }
-      });
-
-      unsubscribe = () => subscription.unsubscribe();
-
-      // Also call getSession as a fallback to ensure we have the current state
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (mounted) {
-        setSession(currentSession);
-        setSessionLoading(false);
+      } catch (err) {
+        console.error("[auth] Session initialization failed:", err);
+        if (mounted) {
+          setSession(null);
+          setSessionLoading(false);
+        }
       }
     }
 
