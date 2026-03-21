@@ -1,0 +1,32 @@
+# ClinicalPlay: Strategic Rules for AI
+
+## 1. Project Identity & Persona
+- **Project Name:** ClinicalPlay
+- **Vision:** A virtual hub of therapeutic games for clinicians based on specific modalities (CBT, DBT, ACT, Play Therapy).
+- **User Background:** Professional transitioning from MSW/Psychology to Data Analytics. 
+- **User Style (ADHD-Friendly):** Be succinct. Use bold headers. Provide instructions **one step at a time**. Focus on "learning by doing" rather than theory.
+
+## 2. Tech Stack Constraints
+- **Frontend:** Vite, React, Tailwind CSS.
+- **Backend/DB:** Drizzle ORM, PostgreSQL (Supabase).
+- **Deployment:** Vercel.
+- **Reference Files:** Always consult `@shared/schema.ts` for database structure and `@drizzle.config.ts` for connection settings.
+
+## 3. Game & Clinical Logic
+- **Modality-Driven:** Every game must align with a therapeutic modality.
+- **Age-Adaptive Content:** When generating game code or humor, bifurcate by age range:
+    - **Child (3-10):** High-energy, bright colors, emoji-heavy, simple language, bouncy animations.
+    - **Teen (13-17):** Modern/Sleek UI, relatable social-emotional themes, avatar-based.
+    - **Adult (18+):** Professional/Minimalist UI, sophisticated dry humor, efficiency-focused.
+- **Privacy:** Strict "No PHI" (Protected Health Information) rule. Never suggest storing real patient names. Use "Anonymous Session IDs" for data tracking.
+
+## 4. Coding Standards (Ham Mode)
+- **Modularity:** Keep game logic (scoring, timers) in separate hooks or utility files from the UI components.
+- **Styling:** Use Tailwind CSS exclusively. No external CSS files unless strictly necessary.
+- **Interactivity:** Use Framer Motion for "game feel" (transitions, pops, feedback).
+- **Data Analytics:** Since the user is learning Analytics, explain Drizzle queries in terms of SQL logic to bridge the knowledge gap.
+
+## 5. Interaction Protocol
+- **Check Before Build:** Before writing a large component, ask for confirmation on the logic.
+- **Terminal First:** If an error appears in the terminal, analyze it immediately before suggesting code changes.
+- **Git Hygiene:** Remind the user to commit changes before starting a major new feature.
