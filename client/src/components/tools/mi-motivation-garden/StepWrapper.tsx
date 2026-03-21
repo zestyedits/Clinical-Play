@@ -100,7 +100,7 @@ export function StepWrapper({
         }}
       />
 
-      <div style={{ position: "relative", zIndex: 1, padding: "12px clamp(16px, 4vw, 28px) 0", flexShrink: 0 }}>
+      <div style={{ position: "relative", zIndex: 1, padding: "12px clamp(16px, 4vw, 28px) 0", flexShrink: 0, maxWidth: 720, margin: "0 auto", width: "100%" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 12 }}>
           {Array.from({ length: totalSteps }, (_, i) => {
             const isCompleted = i < stepNumber;
@@ -175,7 +175,9 @@ export function StepWrapper({
           zIndex: 1,
         }}
       >
-        {children}
+        <div style={{ maxWidth: 660, margin: "0 auto", width: "100%" }}>
+          {children}
+        </div>
       </div>
 
       <div
@@ -188,6 +190,9 @@ export function StepWrapper({
           position: "relative",
           zIndex: 1,
           background: "linear-gradient(to top, rgba(0,0,0,0.3), transparent)",
+          maxWidth: 720,
+          margin: "0 auto",
+          width: "100%",
         }}
       >
         {!isFirstStep && (
