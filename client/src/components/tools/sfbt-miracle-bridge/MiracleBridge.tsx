@@ -6,6 +6,7 @@ import { JourneySummary } from "./JourneySummary";
 import { BRIDGE_STEPS } from "./bridge-data";
 import { useAudio } from "../../../lib/stores/useAudio";
 import { FurtherReading } from "../shared/FurtherReading";
+import { ClinicalToolFrame } from "../shared/clinical-tool-frame";
 import { SFBT_REFERENCES } from "../shared/references-data";
 
 export function MiracleBridge() {
@@ -58,18 +59,12 @@ export function MiracleBridge() {
   }
 
   return (
-    <div
+    <ClinicalToolFrame
       data-testid="tool-miracle-bridge"
       style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
         background: "#1c1e2a",
         fontFamily: "Inter, sans-serif",
-        overflow: "hidden",
         position: "relative",
-        borderRadius: 12,
         ["--game-panel-border" as string]: "rgba(224, 221, 213, 0.08)",
       }}
     >
@@ -168,6 +163,6 @@ export function MiracleBridge() {
           to { opacity: 1; }
         }
       `}</style>
-    </div>
+    </ClinicalToolFrame>
   );
 }

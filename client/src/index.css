@@ -181,6 +181,21 @@
     flex-shrink: 0;
   }
 
+  /* Very wide monitors: keep canvas + side panel as one balanced unit */
+  @media (min-width: 1800px) {
+    .tool-game-split {
+      max-width: min(100%, 1920px);
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .tool-game-split-canvas {
+      padding: 12px;
+    }
+  }
+
   @media (max-width: 767px) {
     .tool-game-split {
       flex-direction: column;
@@ -190,15 +205,27 @@
 
     .tool-game-split-canvas {
       flex: 1 1 auto;
-      min-height: min(52vh, 440px);
-      max-height: 58vh;
+      min-height: min(52dvh, 440px);
+      max-height: 58dvh;
     }
 
     .tool-game-side-panel {
       width: 100% !important;
-      max-height: min(48vh, 400px);
+      max-height: min(48dvh, 400px);
       border-left: none !important;
       border-top: 1px solid var(--game-panel-border, rgba(58, 48, 38, 0.1));
+    }
+  }
+
+  /* Landscape phones: leave room for the panel + avoid a single giant canvas */
+  @media (max-width: 767px) and (orientation: landscape) {
+    .tool-game-split-canvas {
+      min-height: min(40dvh, 280px);
+      max-height: 50dvh;
+    }
+
+    .tool-game-side-panel {
+      max-height: min(52dvh, 340px);
     }
   }
 }

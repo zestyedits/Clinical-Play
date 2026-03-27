@@ -187,7 +187,7 @@ export function IFSInnerCouncil() {
     return (
       <div
         data-testid="tool-ifs-inner-council"
-        style={{ width: "100%", height: "100%", position: "relative" }}
+        style={{ width: "100%", height: "100%", minHeight: 0, minWidth: 0, position: "relative" }}
       >
         <WelcomeScreen
           onStart={() => dispatch({ type: "START_COUNCIL" })}
@@ -211,6 +211,8 @@ export function IFSInnerCouncil() {
         style={{
           width: "100%",
           height: "100%",
+          minHeight: 0,
+          minWidth: 0,
           display: "flex",
           flexDirection: "column",
           background: "linear-gradient(170deg, #1a1208 0%, #2a1f14 30%, #1f1710 60%, #0d0a06 100%)",
@@ -268,7 +270,7 @@ export function IFSInnerCouncil() {
             </button>
           </div>
         </div>
-        <div style={{ flex: 1, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
           <CouncilSummary
             selectedParts={state.selectedParts}
             ageMode={state.ageMode}
@@ -286,6 +288,8 @@ export function IFSInnerCouncil() {
       style={{
         width: "100%",
         height: "100%",
+        minHeight: 0,
+        minWidth: 0,
         display: "flex",
         flexDirection: "column",
         background: "linear-gradient(170deg, #1a1208 0%, #2a1f14 30%, #1f1710 60%, #0d0a06 100%)",

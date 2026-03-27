@@ -304,7 +304,7 @@ export function MIMotivationGarden() {
     return (
       <div
         data-testid="tool-mi-motivation-garden"
-        style={{ width: "100%", height: "100%", position: "relative" }}
+        style={{ width: "100%", height: "100%", minHeight: 0, minWidth: 0, position: "relative" }}
       >
         <WelcomeScreen
           onStart={() => dispatch({ type: "START_GARDEN" })}
@@ -328,6 +328,8 @@ export function MIMotivationGarden() {
         style={{
           width: "100%",
           height: "100%",
+          minHeight: 0,
+          minWidth: 0,
           display: "flex",
           flexDirection: "column",
           background: "linear-gradient(170deg, #0a1f14 0%, #152520 30%, #1a2a25 60%, #0d1814 100%)",
@@ -381,7 +383,7 @@ export function MIMotivationGarden() {
             </button>
           </div>
         </div>
-        <div style={{ flex: 1, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
           <BouquetHarvest
             changeTopic={state.changeTopic}
             seeds={state.seeds}
@@ -409,6 +411,8 @@ export function MIMotivationGarden() {
       style={{
         width: "100%",
         height: "100%",
+        minHeight: 0,
+        minWidth: 0,
         display: "flex",
         flexDirection: "column",
         background: "linear-gradient(170deg, #0a1f14 0%, #152520 30%, #1a2a25 60%, #0d1814 100%)",

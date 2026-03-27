@@ -400,7 +400,7 @@ export default function Dashboard() {
 
   const createSession = useMutation({
     mutationFn: async ({ name, mode, tool }: { name: string; mode: string; tool: string }) => {
-      pendingToolRef.current = tool || ALL_TOOLS[0]?.id || "volume-mixer";
+      pendingToolRef.current = tool || ALL_TOOLS[0]?.id || "dbt-house";
       const res = await authFetch("/api/therapy-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

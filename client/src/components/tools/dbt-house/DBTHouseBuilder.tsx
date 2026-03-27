@@ -6,6 +6,7 @@ import { FeelingsWheel } from "./FeelingsWheel";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { useAudio } from "../../../lib/stores/useAudio";
 import { FurtherReading } from "../shared/FurtherReading";
+import { ClinicalToolFrame } from "../shared/clinical-tool-frame";
 import { DBT_REFERENCES } from "../shared/references-data";
 
 export interface HouseLayer {
@@ -261,19 +262,13 @@ export function DBTHouseBuilder() {
   }
 
   return (
-    <div
+    <ClinicalToolFrame
       data-testid="tool-dbt-house"
       style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
         background:
           "linear-gradient(170deg, #dce8dc 0%, #c8d8c4 30%, #b8c8b0 60%, #a8bca0 100%)",
         fontFamily: "Inter, sans-serif",
-        overflow: "hidden",
         position: "relative",
-        borderRadius: 12,
         ["--game-panel-border" as string]: "rgba(160, 146, 107, 0.15)",
       }}
     >
@@ -429,6 +424,6 @@ export function DBTHouseBuilder() {
           to { opacity: 1; }
         }
       `}</style>
-    </div>
+    </ClinicalToolFrame>
   );
 }

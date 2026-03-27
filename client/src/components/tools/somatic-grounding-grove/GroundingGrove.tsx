@@ -5,6 +5,7 @@ import { RegionPanel } from "./RegionPanel";
 import { BODY_REGIONS } from "./grove-data";
 import { useAudio } from "../../../lib/stores/useAudio";
 import { FurtherReading } from "../shared/FurtherReading";
+import { ClinicalToolFrame } from "../shared/clinical-tool-frame";
 import { SOMATIC_REFERENCES } from "../shared/references-data";
 
 export function GroundingGrove() {
@@ -52,18 +53,12 @@ export function GroundingGrove() {
   }
 
   return (
-    <div
+    <ClinicalToolFrame
       data-testid="tool-grounding-grove"
       style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
         background: "linear-gradient(170deg, #1a2a1a 0%, #2a3a2a 30%, #1e3028 60%, #162016 100%)",
         fontFamily: "Inter, sans-serif",
-        overflow: "hidden",
         position: "relative",
-        borderRadius: 12,
         ["--game-panel-border" as string]: "rgba(100, 160, 100, 0.2)",
       }}
     >
@@ -182,6 +177,6 @@ export function GroundingGrove() {
           to { opacity: 1; }
         }
       `}</style>
-    </div>
+    </ClinicalToolFrame>
   );
 }

@@ -25,6 +25,24 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { getSupabase } from "@/lib/supabase";
 import type { TherapySession, Participant } from "@shared/schema";
 
+/** Tools rendered in the playroom canvas (legacy ids like volume-mixer map to a default). */
+const PLAYROOM_GAME_TOOL_IDS = new Set([
+  "dbt-house",
+  "cbt-thought-court",
+  "act-values-compass",
+  "ifs-inner-council",
+  "mi-motivation-garden",
+  "somatic-grounding-grove",
+  "sfbt-miracle-bridge",
+  "narrative-quest",
+  "emotion-volcano",
+]);
+
+function normalizePlayroomTool(id: string | null | undefined): string {
+  if (id && PLAYROOM_GAME_TOOL_IDS.has(id)) return id;
+  return "dbt-house";
+}
+
 interface OnlineUser {
   participantId: string;
   displayName: string;
@@ -43,10 +61,9 @@ export default function Playroom() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [toolsOpen, setToolsOpen] = useState(false);
-  const [activeTool, setActiveTool] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("tool") || "volume-mixer";
-  });
+  const [activeTool, setActiveTool] = useState(() =>
+    normalizePlayroomTool(new URLSearchParams(window.location.search).get("tool")),
+  );
   const [joinNotification, setJoinNotification] = useState<string | null>(null);
   const [toolSelectorOpen, setToolSelectorOpen] = useState(false);
   const [insightsOpen, setInsightsOpen] = useState(false);
@@ -111,7 +128,7 @@ export default function Playroom() {
         if (msg.activeTool) {
           // Prefer URL tool param over server's stored activeTool on first init
           const urlTool = new URLSearchParams(window.location.search).get("tool");
-          setActiveTool(urlTool || msg.activeTool);
+          setActiveTool(normalizePlayroomTool(urlTool || msg.activeTool));
         }
         if (msg.toolSettings) setToolSettings(msg.toolSettings);
         break;
@@ -136,7 +153,7 @@ export default function Playroom() {
         ));
         break;
       case "tool-changed":
-        setActiveTool(msg.tool);
+        setActiveTool(normalizePlayroomTool(msg.tool));
         break;
       case "activity-pulse":
         setOnlineUsers(prev => prev.map(u =>
@@ -167,7 +184,7 @@ export default function Playroom() {
           if (msg.data) setSession(prev => prev ? { ...prev, ...msg.data } : prev);
           break;
         case "tool-change":
-          setActiveTool(msg.tool);
+          setActiveTool(normalizePlayroomTool(msg.tool));
           break;
         case "tool-settings-update":
           setToolSettings(prev => ({ ...prev, [msg.toolId]: { ...(prev[msg.toolId] || {}), ...msg.settings } }));
@@ -182,7 +199,8 @@ export default function Playroom() {
     if (isDemo) {
       const params = new URLSearchParams(window.location.search);
       const toolParam = params.get("tool");
-      if (toolParam) setActiveTool(toolParam);
+      const resolvedTool = normalizePlayroomTool(toolParam);
+      if (toolParam) setActiveTool(resolvedTool);
       setSession({
         id: "demo",
         name: "Demo Playroom",
@@ -192,7 +210,7 @@ export default function Playroom() {
         status: "active",
         clinicianId: "demo-clinician",
         createdAt: new Date(),
-        activeTool: toolParam || "volume-mixer",
+        activeTool: resolvedTool,
         endedAt: null,
       } as TherapySession);
       setOnlineUsers([{
@@ -225,8 +243,9 @@ export default function Playroom() {
     const params = new URLSearchParams(window.location.search);
     const toolParam = params.get("tool");
     if (toolParam) {
-      setActiveTool(toolParam);
-      send({ type: "tool-change", tool: toolParam });
+      const t = normalizePlayroomTool(toolParam);
+      setActiveTool(t);
+      send({ type: "tool-change", tool: t });
     }
   }, [connected, isDemo, send]);
 
@@ -267,6 +286,8 @@ export default function Playroom() {
       "somatic-grounding-grove": "The Grounding Grove",
       "sfbt-miracle-bridge": "The Miracle Bridge",
       "narrative-quest": "The Narrative Quest",
+      "emotion-volcano": "The Emotion Volcano",
+      "volume-mixer": "Volume Mixer",
     };
     return names[tool] || tool;
   };
@@ -369,10 +390,10 @@ export default function Playroom() {
 
 
   return (
-    <div className="h-screen w-full bg-background overflow-hidden flex flex-col font-sans">
+    <div className="flex h-dvh max-h-dvh min-h-0 w-full flex-col overflow-hidden bg-background font-sans">
       {/* Header */}
       <motion.header
-        className="h-14 md:h-16 bg-card border-b border-border flex items-center justify-between px-4 z-20 shrink-0"
+        className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-4 pt-[env(safe-area-inset-top,0px)] z-20 md:h-16"
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -617,47 +638,47 @@ export default function Playroom() {
         <div className="flex-1 relative overflow-hidden" ref={toolAreaRef}>
           <AnimatePresence mode="wait">
             {activeTool === "dbt-house" && (
-              <motion.div key="dbt-house" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+              <motion.div key="dbt-house" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <DBTHouseBuilder />
               </motion.div>
             )}
             {activeTool === "cbt-thought-court" && (
-              <motion.div key="cbt-thought-court" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+              <motion.div key="cbt-thought-court" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <CBTThoughtCourt />
               </motion.div>
             )}
             {activeTool === "act-values-compass" && (
-              <motion.div key="act-values-compass" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+              <motion.div key="act-values-compass" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <ACTValuesCompass />
               </motion.div>
             )}
             {activeTool === "ifs-inner-council" && (
-              <motion.div key="ifs-inner-council" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+              <motion.div key="ifs-inner-council" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <IFSInnerCouncil />
               </motion.div>
             )}
             {activeTool === "mi-motivation-garden" && (
-              <motion.div key="mi-motivation-garden" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+              <motion.div key="mi-motivation-garden" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <MIMotivationGarden />
               </motion.div>
             )}
             {activeTool === "somatic-grounding-grove" && (
-              <motion.div key="somatic-grounding-grove" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+              <motion.div key="somatic-grounding-grove" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <GroundingGrove />
               </motion.div>
             )}
             {activeTool === "sfbt-miracle-bridge" && (
-              <motion.div key="sfbt-miracle-bridge" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+              <motion.div key="sfbt-miracle-bridge" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <MiracleBridge />
               </motion.div>
             )}
             {activeTool === "narrative-quest" && (
-              <motion.div key="narrative-quest" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+              <motion.div key="narrative-quest" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <NarrativeQuest />
               </motion.div>
             )}
             {activeTool === "emotion-volcano" && (
-              <motion.div key="emotion-volcano" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+              <motion.div key="emotion-volcano" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <EmotionVolcano />
               </motion.div>
             )}

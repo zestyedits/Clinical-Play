@@ -327,7 +327,17 @@ export function EmotionVolcano() {
   };
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+    <div
+      data-testid="tool-emotion-volcano"
+      style={{
+        width: "100%",
+        height: "100%",
+        minHeight: 0,
+        minWidth: 0,
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={state.currentStep}

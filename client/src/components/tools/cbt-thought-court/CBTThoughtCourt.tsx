@@ -273,7 +273,7 @@ export function CBTThoughtCourt() {
     return (
       <div
         data-testid="tool-cbt-thought-court"
-        style={{ width: "100%", height: "100%", position: "relative" }}
+        style={{ width: "100%", height: "100%", minHeight: 0, minWidth: 0, position: "relative" }}
       >
         <WelcomeScreen
           onStart={() => dispatch({ type: "START_TRIAL" })}
@@ -298,6 +298,8 @@ export function CBTThoughtCourt() {
         style={{
           width: "100%",
           height: "100%",
+          minHeight: 0,
+          minWidth: 0,
           display: "flex",
           flexDirection: "column",
           background: "linear-gradient(170deg, #faf8fc 0%, #f0e8f6 30%, #e8e0f0 60%, #e2dae8 100%)",
@@ -362,7 +364,7 @@ export function CBTThoughtCourt() {
             </button>
           </div>
         </div>
-        <div style={{ flex: 1, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
           <CaseFileSummary state={state} onNewTrial={() => dispatch({ type: "RESET_TRIAL" })} />
         </div>
       </div>
@@ -376,6 +378,8 @@ export function CBTThoughtCourt() {
       style={{
         width: "100%",
         height: "100%",
+        minHeight: 0,
+        minWidth: 0,
         display: "flex",
         flexDirection: "column",
         background: "linear-gradient(170deg, #faf8fc 0%, #f0e8f6 30%, #e8e0f0 60%, #e2dae8 100%)",

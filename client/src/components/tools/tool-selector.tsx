@@ -100,7 +100,7 @@ export function ToolSelector({ isOpen, onClose, activeTool, onSelectTool }: Tool
             animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, scale: 0.95, y: 20, filter: "blur(4px)" }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed inset-x-4 top-[8%] md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[520px] z-50 bg-card rounded-3xl shadow-xl border border-border overflow-hidden max-h-[85dvh] flex flex-col"
+            className="fixed inset-x-4 top-[8%] z-50 flex max-h-[min(85dvh,900px)] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-xl md:inset-auto md:left-1/2 md:top-1/2 md:w-[min(520px,calc(100vw-2rem))] md:-translate-x-1/2 md:-translate-y-1/2"
           >
             <div className="flex items-center justify-between p-6 pb-2 shrink-0 relative z-10">
               <div>

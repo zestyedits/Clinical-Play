@@ -140,7 +140,7 @@ export function StepWrapper({
         </div>
       </div>
 
-      <div style={{ flex: 1, overflow: "auto", padding: "12px clamp(16px, 4vw, 28px) 12px", position: "relative", zIndex: 1 }}>
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "12px clamp(16px, 4vw, 28px) 12px", position: "relative", zIndex: 1 }}>
         <div style={{ maxWidth: 660, margin: "0 auto", width: "100%" }}>
           {children}
         </div>

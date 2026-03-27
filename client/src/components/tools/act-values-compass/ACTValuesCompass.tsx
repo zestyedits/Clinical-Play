@@ -271,7 +271,7 @@ export function ACTValuesCompass() {
     return (
       <div
         data-testid="tool-act-values-compass"
-        style={{ width: "100%", height: "100%", position: "relative" }}
+        style={{ width: "100%", height: "100%", minHeight: 0, minWidth: 0, position: "relative" }}
       >
         <WelcomeScreen
           onStart={() => dispatch({ type: "START_EXPEDITION" })}
@@ -295,6 +295,8 @@ export function ACTValuesCompass() {
         style={{
           width: "100%",
           height: "100%",
+          minHeight: 0,
+          minWidth: 0,
           display: "flex",
           flexDirection: "column",
           background: "linear-gradient(170deg, #0f1a1f 0%, #152530 30%, #1a2a35 60%, #0d1820 100%)",
@@ -352,7 +354,7 @@ export function ACTValuesCompass() {
             </button>
           </div>
         </div>
-        <div style={{ flex: 1, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
           <ExpeditionMap
             ageMode={state.ageMode}
             domains={state.domains}
@@ -372,6 +374,8 @@ export function ACTValuesCompass() {
       style={{
         width: "100%",
         height: "100%",
+        minHeight: 0,
+        minWidth: 0,
         display: "flex",
         flexDirection: "column",
         background: "linear-gradient(170deg, #0f1a1f 0%, #152530 30%, #1a2a35 60%, #0d1820 100%)",

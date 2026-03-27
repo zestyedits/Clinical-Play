@@ -169,6 +169,7 @@ export function StepWrapper({
       <div
         style={{
           flex: 1,
+          minHeight: 0,
           overflow: "auto",
           padding: "12px clamp(16px, 4vw, 28px) 12px",
           position: "relative",

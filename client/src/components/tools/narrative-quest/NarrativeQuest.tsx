@@ -244,7 +244,7 @@ export function NarrativeQuest() {
     return (
       <div
         data-testid="tool-narrative-quest"
-        style={{ width: "100%", height: "100%", position: "relative" }}
+        style={{ width: "100%", height: "100%", minHeight: 0, minWidth: 0, position: "relative" }}
       >
         <WelcomeScreen
           onStart={() => dispatch({ type: "START_QUEST" })}
@@ -262,6 +262,8 @@ export function NarrativeQuest() {
         style={{
           width: "100%",
           height: "100%",
+          minHeight: 0,
+          minWidth: 0,
           display: "flex",
           flexDirection: "column",
           background: "linear-gradient(170deg, #1a1410 0%, #2a2218 30%, #241e14 60%, #18140e 100%)",
@@ -319,7 +321,7 @@ export function NarrativeQuest() {
             </button>
           </div>
         </div>
-        <div style={{ flex: 1, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "16px clamp(12px, 3vw, 24px)" }}>
           <div style={{ maxWidth: 660, margin: "0 auto", width: "100%" }}>
           <StorySummary
             ageMode={state.ageMode}
@@ -346,6 +348,8 @@ export function NarrativeQuest() {
       style={{
         width: "100%",
         height: "100%",
+        minHeight: 0,
+        minWidth: 0,
         display: "flex",
         flexDirection: "column",
         background: "linear-gradient(170deg, #1a1410 0%, #2a2218 30%, #241e14 60%, #18140e 100%)",
