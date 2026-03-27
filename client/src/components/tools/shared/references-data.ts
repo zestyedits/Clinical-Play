@@ -63,3 +63,11 @@ export const NARRATIVE_REFERENCES: Reference[] = [
   { title: "Narrative Therapy with Children and Their Families", author: "Michael White & Alice Morgan", year: 2006, description: "Applying narrative practices with young people, including playful externalization techniques." },
   { title: "What Is Narrative Therapy? An Easy-to-Read Introduction", author: "Alice Morgan", year: 2000, description: "A clear, jargon-free guide to narrative therapy principles and practices." },
 ];
+
+export const EXPOSURE_REFERENCES: Reference[] = [
+  { title: "Exposure and Response Prevention for OCD", author: "Michael Tompkins", year: 2021, description: "A practical guide to ERP for OCD, covering hierarchy building, in-session exposure, and between-session practice." },
+  { title: "Anxiety: The Definitive Guide to a Clinically Proven Treatment for Anxiety", author: "Edmund J. Bourne", year: 2020, description: "The comprehensive anxiety workbook covering exposure therapy, cognitive restructuring, and lifestyle-based anxiety management." },
+  { title: "Mastery of Your Anxiety and Panic (MAP-4)", author: "David H. Barlow & Michelle G. Craske", year: 2007, description: "The gold-standard CBT workbook for panic disorder and agoraphobia with structured exposure exercises and SUDS monitoring." },
+  { title: "Treating Your OCD with Exposure and Response Prevention Therapy", author: "Elna Yadin, Edna B. Foa & Tracey K. Lichner", year: 2012, description: "A client workbook for ERP therapy providing step-by-step guidance on creating and completing exposure hierarchies." },
+  { title: "The Shyness and Social Anxiety Workbook", author: "Martin M. Antony & Richard P. Swinson", year: 2017, description: "Evidence-based CBT workbook for social anxiety including graduated exposure hierarchies and cognitive challenging techniques." },
+];

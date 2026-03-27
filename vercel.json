@@ -1,18 +1,11 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "dist/vercel-handler.cjs",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "dist/public" }
-    }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "dist/vercel-handler.cjs" },
-    { "src": "/(.*)", "dest": "dist/vercel-handler.cjs" }
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": "dist/public",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/server" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

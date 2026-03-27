@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Home, Scale, Compass, Shield, Sprout, TreePine, Footprints, BookOpen, Flame, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
+import { X, Home, Scale, Compass, Shield, Sprout, TreePine, Footprints, BookOpen, Flame, Wind, Flower, TrendingUp, Sparkles, MessageSquarePlus, Send, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 
@@ -25,6 +25,10 @@ const TOOLS: Tool[] = [
   { id: "sfbt-miracle-bridge", label: "The Miracle Bridge", desc: "Walk toward your preferred future using solution-focused questions", icon: Footprints, status: "active", accentColor: "#5b4a8a", iconClass: "icon-miracle-bridge", category: "game" },
   { id: "narrative-quest", label: "The Narrative Quest", desc: "Externalize problems, find exceptions, and rewrite your story", icon: BookOpen, status: "active", accentColor: "#8a6830", iconClass: "icon-narrative-quest", category: "game" },
   { id: "emotion-volcano", label: "The Emotion Volcano", desc: "Explore anger triggers, map body warning signs, and build a cooling plan", icon: Flame, status: "active", accentColor: "#e06040", iconClass: "icon-emotion-volcano", category: "game" },
+  { id: "mindfulness-meadow", label: "The Mindfulness Meadow", desc: "A guided MBSR practice: breathe, body scan, name thoughts, ground your senses, offer loving-kindness", icon: Wind, status: "active", accentColor: "#5ba8c4", iconClass: "icon-mindfulness-meadow", category: "game" },
+  { id: "grief-journey", label: "The Grief Journey", desc: "Honor loss, name feelings, write a letter, make meaning, and carry love forward", icon: Flower, status: "active", accentColor: "#c49a6c", iconClass: "icon-grief-journey", category: "game" },
+  { id: "anxiety-ladder", label: "The Anxiety Ladder", desc: "Build a fear hierarchy, rate distress levels, and plan gradual exposure steps", icon: TrendingUp, status: "active", accentColor: "#64a8d4", iconClass: "icon-anxiety-ladder", category: "game" },
+  { id: "attachment-constellation", label: "The Attachment Constellation", desc: "Explore early bonds, find your attachment pattern, and build toward earned security", icon: Sparkles, status: "active", accentColor: "#c4a84c", iconClass: "icon-attachment-constellation", category: "game" },
 ];
 
 interface ToolSelectorProps {

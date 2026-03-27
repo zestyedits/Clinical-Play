@@ -17,6 +17,10 @@ import { GroundingGrove } from "@/components/tools/somatic-grounding-grove";
 import { MiracleBridge } from "@/components/tools/sfbt-miracle-bridge";
 import { NarrativeQuest } from "@/components/tools/narrative-quest";
 import { EmotionVolcano } from "@/components/tools/emotion-volcano";
+import { MindfulnessMeadow } from "@/components/tools/mindfulness-meadow";
+import { GriefJourney } from "@/components/tools/grief-journey";
+import { AnxietyLadder } from "@/components/tools/anxiety-ladder";
+import { AttachmentConstellation } from "@/components/tools/attachment-constellation";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useSessionSocket } from "@/hooks/use-session-socket";
 import { useAuth } from "@/hooks/use-auth";
@@ -287,6 +291,10 @@ export default function Playroom() {
       "sfbt-miracle-bridge": "The Miracle Bridge",
       "narrative-quest": "The Narrative Quest",
       "emotion-volcano": "The Emotion Volcano",
+      "mindfulness-meadow": "The Mindfulness Meadow",
+      "grief-journey": "The Grief Journey",
+      "anxiety-ladder": "The Anxiety Ladder",
+      "attachment-constellation": "The Attachment Constellation",
       "volume-mixer": "Volume Mixer",
     };
     return names[tool] || tool;
@@ -680,6 +688,26 @@ export default function Playroom() {
             {activeTool === "emotion-volcano" && (
               <motion.div key="emotion-volcano" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
                 <EmotionVolcano />
+              </motion.div>
+            )}
+            {activeTool === "mindfulness-meadow" && (
+              <motion.div key="mindfulness-meadow" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <MindfulnessMeadow />
+              </motion.div>
+            )}
+            {activeTool === "grief-journey" && (
+              <motion.div key="grief-journey" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <GriefJourney />
+              </motion.div>
+            )}
+            {activeTool === "anxiety-ladder" && (
+              <motion.div key="anxiety-ladder" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <AnxietyLadder />
+              </motion.div>
+            )}
+            {activeTool === "attachment-constellation" && (
+              <motion.div key="attachment-constellation" className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                <AttachmentConstellation />
               </motion.div>
             )}
           </AnimatePresence>
