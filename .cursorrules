@@ -1,0 +1,103 @@
+# ClinicalPlay — Cursor Rules
+
+## What ClinicalPlay Is
+ClinicalPlay (clinicalplay.app) is a virtual therapy platform where clinicians use **interactive, evidence-based games and activities** with clients during live sessions. Think of each activity as its own self-contained React game — visually distinct, therapeutically grounded, and running in real time between two participants over WebSockets.
+
+Target users: therapists, PMHNPs, psychiatrists, speech-language pathologists, and other clinical professionals.
+
+**Stack**: Next.js (App Router), Node.js, TypeScript, WebSockets  
+**Developer**: Solo dev / clinician. AI-assisted. Prioritize clarity, stability, and craft.
+
+---
+
+## Design Philosophy — Non-Negotiable
+
+### Each Activity Is a Crafted Experience
+- Every activity/game must feel **purpose-built** — not like a generic UI component.
+- Visuals should be **modern, polished, and distinct per activity** while still feeling like they belong to the same platform.
+- Avoid: flat generic layouts, cookie-cutter card grids, overused gradients, default Tailwind aesthetics, "AI slop" patterns.
+- Aim for: **delightful micro-interactions**, smooth motion, expressive typography, and a sense of intentionality in every element.
+- Each activity should feel like something a clinician would be **proud to show a client**.
+
+### Consistent Familiar Flow, Varied Experiences
+- All activities share a **predictable shell**: session start → activity in progress → session wrap/notes.
+- Inside that shell, the **activity itself** can be wildly different — drag-and-drop, sliders, drawing, tapping, card flips, timers, etc.
+- Clinicians should feel oriented even in a brand new activity.
+
+### Cross-Device Consistency Is Core
+- Every activity must work and **look intentional** on desktop, tablet, and mobile.
+- The clinician is typically on desktop. The client may be on any device.
+- Use responsive layouts that don't break or look accidental at any screen size.
+- Touch targets, font sizes, and interaction surfaces must be appropriately sized for mobile.
+
+---
+
+## Real-Time Clinician/Client Sync
+- The clinician can **observe the client's input and state in real-time** (not just final results).
+- When building activity state, think: *"What would the clinician see as the client interacts?"*
+- Use WebSocket events to sync meaningful interaction moments — not just final submissions.
+- Keep clinician view and client view **clearly separated in component logic**.
+- WebSocket logic lives in `websocket.ts`. Don't duplicate or reinvent it elsewhere.
+
+---
+
+## Evidence-Based Approach Guidelines
+
+### Supported Modalities (and growing)
+CBT, DBT, ACT, SFBT, IFS, motivational interviewing, exposure therapy, somatic approaches, cognitive processing, narrative therapy, and tools relevant to PMHNPs, psychiatrists, and speech-language pathologists.
+
+### Source Links Are Required
+- Every activity **must include a subtle, accessible link** to an authoritative external source about the therapeutic approach it's based on (e.g., APA, SAMHSA, official modality organization).
+- This link should be **unobtrusive** — a small info icon, a footer note, or a "Learn about [approach]" link. Never the focal point, always present.
+- Use real, accurate source URLs. If uncertain, leave a `// TODO: verify source URL` comment.
+
+### Clinical Integrity
+- Activity mechanics should **actually reflect the therapeutic approach** — not just borrow the name.
+- For example, a DBT distress tolerance activity should involve actual DBT skills, not just a mood slider labeled "DBT."
+- If building a new activity, ask: *"Does this actually operationalize the therapy technique?"*
+
+---
+
+## Code Standards
+
+### Safety First
+- Make changes **one focused thing at a time**.
+- Never refactor unrelated code in the same edit.
+- If a change could break real-time sync, session state, or activity flow — **flag it before doing it**.
+- Session tracking logic is critical. Treat it like patient data infrastructure.
+
+### TypeScript
+- Type all function parameters and return values.
+- Use `interface` for object shapes, `type` for unions/aliases.
+- No `any` without an explanation. No silent `as` casts.
+
+### Consistency
+- Match the code style of whatever file you're editing.
+- Follow Next.js App Router conventions (server vs. client components, route handlers).
+- Keep new files close to where they're used. No new folders without a reason.
+
+### Comments & Learning
+- Add short inline comments on non-obvious logic — explain the *why*, not the *what*.
+- Flag patterns worth remembering with `// PATTERN:` comments.
+- If an architectural decision is made, note it in 1–2 sentences.
+
+---
+
+## Don'ts
+- Don't install new packages without asking first.
+- Don't delete or overwrite existing logic without confirming.
+- Don't add unasked-for features.
+- Don't use `console.log` in production paths.
+- Don't store PHI. Ever. If something risks capturing it, flag it immediately.
+- Don't build an activity that looks like a web form with a therapy label on it.
+
+---
+
+## ClinicalPlay Activity Checklist
+When building or modifying any activity, verify:
+- [ ] Has its own distinct visual identity
+- [ ] Works correctly on mobile, tablet, and desktop
+- [ ] Clinician receives real-time client state via WebSocket
+- [ ] Includes a subtle source link to the evidence-based approach
+- [ ] Fits within the familiar ClinicalPlay session flow
+- [ ] Actually reflects the therapeutic technique it claims to use
