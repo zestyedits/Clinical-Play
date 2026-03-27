@@ -1,10 +1,11 @@
 /**
  * Vercel Serverless entry for the Express app (serverless-http bundle).
- * PATTERN: Legacy vercel.json "builds" + "routes" are often ignored when the
- * project is linked as Vite; a file under /api is always deployed as a function.
+ * Use .js (ESM) here: Vercel only matches `functions` patterns against standard
+ * api/*.js / api/*.ts entrypoints — `api/server.cjs` is not recognized.
  */
-"use strict";
+import { createRequire } from "node:module";
 
+const require = createRequire(import.meta.url);
 const bundled = require("../dist/vercel-handler.cjs");
 const handler = typeof bundled === "function" ? bundled : bundled.default;
 if (typeof handler !== "function") {
@@ -12,4 +13,4 @@ if (typeof handler !== "function") {
     "dist/vercel-handler.cjs must export a default function; run npm run build before deploy.",
   );
 }
-module.exports = handler;
+export default handler;

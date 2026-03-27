@@ -9,7 +9,7 @@
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/server.cjs": {
+    "api/server.js": {
       "includeFiles": "dist/**"
     }
   }
