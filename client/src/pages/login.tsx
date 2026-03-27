@@ -51,11 +51,14 @@ export default function Login() {
       console.error("[login]", err);
       const msg = err instanceof Error ? err.message : String(err);
       if (
-        msg.includes("missing from server config") ||
-        msg.includes("/api/auth/config")
+        msg.includes("missing from server") ||
+        msg.includes("/api/auth/config") ||
+        msg.includes("SUPABASE_URL") ||
+        msg.includes("SUPABASE_ANON_KEY") ||
+        msg.includes("HTTP 503")
       ) {
         setError(
-          "Login service is not configured on this server (missing Supabase URL or key). This is a deployment issue, not your password.",
+          "The live site can't reach Supabase: the server doesn't have SUPABASE_URL and SUPABASE_ANON_KEY (or they're empty). In Vercel → your project → Settings → Environment Variables, add both from Supabase → Project Settings → API, enable them for Production (and Preview if you use preview links), then Redeploy. This is not your password.",
         );
       } else if (msg.includes("aborted") || (err instanceof Error && err.name === "AbortError")) {
         setError("Connection timed out. Check your network and try again.");
@@ -97,8 +100,15 @@ export default function Login() {
     } catch (err) {
       console.error("[login forgot-password]", err);
       const msg = err instanceof Error ? err.message : "";
-      if (msg.includes("missing from server config") || msg.includes("/api/auth/config")) {
-        setForgotError("Password reset is unavailable: server Supabase config is missing.");
+      if (
+        msg.includes("missing from server") ||
+        msg.includes("/api/auth/config") ||
+        msg.includes("SUPABASE_URL") ||
+        msg.includes("HTTP 503")
+      ) {
+        setForgotError(
+          "Password reset needs Supabase env vars on the server (SUPABASE_URL + SUPABASE_ANON_KEY in Vercel, then redeploy).",
+        );
       } else {
         setForgotError("Something went wrong. Please try again.");
       }

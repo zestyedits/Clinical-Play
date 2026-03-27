@@ -10,14 +10,34 @@ async function fetchAuthConfig(): Promise<{ url: string; anonKey: string }> {
   const timer = setTimeout(() => ctrl.abort(), CONFIG_FETCH_TIMEOUT_MS);
   try {
     const res = await fetch("/api/auth/config", { signal: ctrl.signal });
-    if (!res.ok) {
-      throw new Error(`/api/auth/config returned ${res.status}`);
+    let data: {
+      configured?: boolean;
+      url?: unknown;
+      anonKey?: unknown;
+      missing?: unknown;
+      message?: unknown;
+    } = {};
+    try {
+      data = (await res.json()) as typeof data;
+    } catch {
+      throw new Error(`HTTP ${res.status}: /api/auth/config did not return JSON`);
     }
-    const data = (await res.json()) as { url?: unknown; anonKey?: unknown };
+
+    if (!res.ok) {
+      const parts: string[] = [`HTTP ${res.status}`];
+      if (typeof data.message === "string" && data.message.trim()) parts.push(data.message.trim());
+      if (Array.isArray(data.missing) && data.missing.length) {
+        parts.push(`Missing: ${data.missing.filter((m) => typeof m === "string").join(", ")}`);
+      }
+      throw new Error(parts.join(" "));
+    }
+
     const url = typeof data.url === "string" ? data.url.trim() : "";
     const anonKey = typeof data.anonKey === "string" ? data.anonKey.trim() : "";
     if (!url || !anonKey) {
-      throw new Error("Supabase URL or anon key missing from server config");
+      throw new Error(
+        "Supabase URL or anon key missing from server response (server should return 503 when unset — if you see this, redeploy the API).",
+      );
     }
     return { url, anonKey };
   } finally {

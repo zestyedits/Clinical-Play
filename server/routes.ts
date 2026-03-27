@@ -34,10 +34,20 @@ export async function registerRoutes(
 ): Promise<Server> {
 
   app.get("/api/auth/config", (_req, res) => {
-    res.json({
-      url: process.env.SUPABASE_URL,
-      anonKey: process.env.SUPABASE_ANON_KEY,
-    });
+    const url = (process.env.SUPABASE_URL ?? "").trim();
+    const anonKey = (process.env.SUPABASE_ANON_KEY ?? "").trim();
+    if (!url || !anonKey) {
+      const missing: string[] = [];
+      if (!url) missing.push("SUPABASE_URL");
+      if (!anonKey) missing.push("SUPABASE_ANON_KEY");
+      return res.status(503).json({
+        configured: false,
+        missing,
+        message:
+          "Add SUPABASE_URL and SUPABASE_ANON_KEY to the server environment (e.g. Vercel → Project → Settings → Environment Variables), apply to Production and Preview as needed, then redeploy.",
+      });
+    }
+    res.json({ configured: true, url, anonKey });
   });
 
   app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
