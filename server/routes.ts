@@ -21,6 +21,11 @@ import {
   gardenPlants, gardenJournalEntries, gardenWeeds,
 } from "@shared/schema";
 import { notifyAdminWaitlistSignup, notifyAdminSupportMessage, sendAnnouncementEmail, sendWelcomeVerificationEmail, sendWaitlistConfirmationEmail } from "./email";
+import {
+  resolveSupabaseAnonKey,
+  resolveSupabaseUrl,
+  stripEnvValue,
+} from "./supabase-env";
 
 const ADMIN_EMAIL = "clinicalplayapp@gmail.com";
 
@@ -34,17 +39,23 @@ export async function registerRoutes(
 ): Promise<Server> {
 
   app.get("/api/auth/config", (_req, res) => {
-    const url = (process.env.SUPABASE_URL ?? "").trim();
-    const anonKey = (process.env.SUPABASE_ANON_KEY ?? "").trim();
+    const url = resolveSupabaseUrl();
+    const anonKey = resolveSupabaseAnonKey();
     if (!url || !anonKey) {
       const missing: string[] = [];
       if (!url) missing.push("SUPABASE_URL");
       if (!anonKey) missing.push("SUPABASE_ANON_KEY");
+      const inferredNote =
+        !url && stripEnvValue(process.env.DATABASE_URL)
+          ? " Could not infer API URL from DATABASE_URL (expected host db.<ref>.supabase.co)."
+          : "";
       return res.status(503).json({
         configured: false,
         missing,
         message:
-          "Add SUPABASE_URL and SUPABASE_ANON_KEY to the server environment (e.g. Vercel → Project → Settings → Environment Variables), apply to Production and Preview as needed, then redeploy.",
+          "Add SUPABASE_ANON_KEY (and preferably SUPABASE_URL) in Vercel → Environment Variables for this deployment, save, then Redeploy without cache." +
+          " If SUPABASE_URL is set in the UI but still missing at runtime, the API URL can be derived from DATABASE_URL when it uses db.<project-ref>.supabase.co." +
+          inferredNote,
       });
     }
     res.json({ configured: true, url, anonKey });

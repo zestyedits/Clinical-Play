@@ -58,7 +58,7 @@ export default function Login() {
         msg.includes("HTTP 503")
       ) {
         setError(
-          "The live site can't reach Supabase: the server doesn't have SUPABASE_URL and SUPABASE_ANON_KEY (or they're empty). In Vercel → your project → Settings → Environment Variables, add both from Supabase → Project Settings → API, enable them for Production (and Preview if you use preview links), then Redeploy. This is not your password.",
+          "The server still can't read Supabase settings at runtime (not your password). In Vercel: confirm SUPABASE_ANON_KEY + SUPABASE_URL (or a Supabase DATABASE_URL) for this project, then Deployments → ⋮ → Redeploy and enable “Clear cache”. Open /api/auth/config in the browser: if it shows configured:false, the function still doesn’t see those variables.",
         );
       } else if (msg.includes("aborted") || (err instanceof Error && err.name === "AbortError")) {
         setError("Connection timed out. Check your network and try again.");
