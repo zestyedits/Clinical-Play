@@ -54,11 +54,37 @@ export async function registerRoutes(
         missing,
         message:
           "Add SUPABASE_ANON_KEY (and preferably SUPABASE_URL) in Vercel → Environment Variables for this deployment, save, then Redeploy without cache." +
+          " The server also accepts VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY if those are what you set." +
           " If SUPABASE_URL is set in the UI but still missing at runtime, the API URL can be derived from DATABASE_URL when it uses db.<project-ref>.supabase.co." +
+          " Use GET /api/auth/env-status for a safe boolean snapshot (no secrets)." +
           inferredNote,
       });
     }
     res.json({ configured: true, url, anonKey });
+  });
+
+  /** Safe diagnostics: which env names are non-empty + whether resolution succeeded (no secret values). */
+  app.get("/api/auth/env-status", (_req, res) => {
+    const url = resolveSupabaseUrl();
+    const anonKey = resolveSupabaseAnonKey();
+    res.json({
+      vercel: Boolean(process.env.VERCEL),
+      vercelEnv: process.env.VERCEL_ENV ?? null,
+      nodeEnv: process.env.NODE_ENV ?? null,
+      flags: {
+        supabaseUrlSet: Boolean(stripEnvValue(process.env.SUPABASE_URL)),
+        viteSupabaseUrlSet: Boolean(stripEnvValue(process.env.VITE_SUPABASE_URL)),
+        supabaseAnonKeySet: Boolean(stripEnvValue(process.env.SUPABASE_ANON_KEY)),
+        viteSupabaseAnonKeySet: Boolean(
+          stripEnvValue(process.env.VITE_SUPABASE_ANON_KEY),
+        ),
+        databaseUrlSet: Boolean(stripEnvValue(process.env.DATABASE_URL)),
+      },
+      resolved: {
+        apiUrl: Boolean(url),
+        anonKey: Boolean(anonKey),
+      },
+    });
   });
 
   app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {

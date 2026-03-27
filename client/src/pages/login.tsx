@@ -58,7 +58,7 @@ export default function Login() {
         msg.includes("HTTP 503")
       ) {
         setError(
-          "The server still can't read Supabase settings at runtime (not your password). In Vercel: confirm SUPABASE_ANON_KEY + SUPABASE_URL (or a Supabase DATABASE_URL) for this project, then Deployments → ⋮ → Redeploy and enable “Clear cache”. Open /api/auth/config in the browser: if it shows configured:false, the function still doesn’t see those variables.",
+          "The server still can't read Supabase settings at runtime (not your password). In Vercel: confirm SUPABASE_ANON_KEY + SUPABASE_URL (or VITE_SUPABASE_* / DATABASE_URL) for Production, then Deployments → ⋮ → Redeploy with “Clear cache”. Open /api/auth/env-status (booleans only) and /api/auth/config; if resolved stays false, those variables are not reaching the API function for this deployment.",
         );
       } else if (msg.includes("aborted") || (err instanceof Error && err.name === "AbortError")) {
         setError("Connection timed out. Check your network and try again.");
@@ -107,7 +107,7 @@ export default function Login() {
         msg.includes("HTTP 503")
       ) {
         setForgotError(
-          "Password reset needs Supabase env vars on the server (SUPABASE_URL + SUPABASE_ANON_KEY in Vercel, then redeploy).",
+          "Password reset needs Supabase env vars on the server (SUPABASE_URL + SUPABASE_ANON_KEY or VITE_SUPABASE_* in Vercel, then redeploy). Check /api/auth/env-status.",
         );
       } else {
         setForgotError("Something went wrong. Please try again.");

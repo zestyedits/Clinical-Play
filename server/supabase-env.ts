@@ -3,6 +3,8 @@
  * PATTERN: Some hosts (incl. bundled Vercel functions) have been observed to omit
  * SUPABASE_URL at runtime even when set in the dashboard; DATABASE_URL from the same
  * Supabase project always includes the project ref and can derive the REST URL.
+ * VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY are accepted as fallbacks when only
+ * Vite-prefixed names were added in the host dashboard.
  */
 
 export function stripEnvValue(value: string | undefined): string {
@@ -31,6 +33,8 @@ export function inferSupabaseApiUrlFromDatabaseUrl(databaseUrl: string): string 
 export function resolveSupabaseUrl(): string {
   const direct = stripEnvValue(process.env.SUPABASE_URL);
   if (direct) return direct;
+  const vite = stripEnvValue(process.env.VITE_SUPABASE_URL);
+  if (vite) return vite;
   const dbUrl = stripEnvValue(process.env.DATABASE_URL);
   if (dbUrl) {
     const inferred = inferSupabaseApiUrlFromDatabaseUrl(dbUrl);
@@ -40,5 +44,8 @@ export function resolveSupabaseUrl(): string {
 }
 
 export function resolveSupabaseAnonKey(): string {
-  return stripEnvValue(process.env.SUPABASE_ANON_KEY);
+  return (
+    stripEnvValue(process.env.SUPABASE_ANON_KEY) ||
+    stripEnvValue(process.env.VITE_SUPABASE_ANON_KEY)
+  );
 }
